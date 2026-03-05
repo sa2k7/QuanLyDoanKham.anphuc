@@ -23,6 +23,7 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<PayrollRecord> PayrollRecords { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<SupplyTransaction> SupplyTransactions { get; set; }
+        public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,8 +32,13 @@ namespace QuanLyDoanKham.API.Data
             // Seed Roles
             modelBuilder.Entity<AppRole>().HasData(
                 new AppRole { RoleId = 1, RoleName = "Admin" },
-                new AppRole { RoleId = 2, RoleName = "Staff" },
-                new AppRole { RoleId = 3, RoleName = "Customer" }
+                new AppRole { RoleId = 2, RoleName = "PersonnelManager" },   // Quản lý NHÂN SỰ
+                new AppRole { RoleId = 3, RoleName = "ContractManager" },    // Quản lý CÔNG TY, HỢP ĐỒNG
+                new AppRole { RoleId = 4, RoleName = "PayrollManager" },     // Quản lý TÍNH LƯƠNG
+                new AppRole { RoleId = 5, RoleName = "MedicalGroupManager" },// Quản lý ĐOÀN KHÁM
+                new AppRole { RoleId = 6, RoleName = "WarehouseManager" },   // Quản lý VẬT TƯ
+                new AppRole { RoleId = 7, RoleName = "MedicalStaff" },       // Nhân viên đi khám (Chuyên môn)
+                new AppRole { RoleId = 8, RoleName = "Customer" }            // Khách hàng (Xem kết quả)
             );
 
             // Seed Admin User (Pass: admin123)

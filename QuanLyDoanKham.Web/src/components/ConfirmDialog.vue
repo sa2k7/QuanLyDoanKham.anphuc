@@ -15,7 +15,7 @@
           <p class="text-slate-600 font-bold mb-8 leading-relaxed">{{ message }}</p>
           
           <div class="flex space-x-4">
-            <button @click="cancel" class="flex-1 px-6 py-3 rounded-xl font-black text-slate-500 hover:bg-slate-100 transition-all">
+            <button @click="cancel" class="flex-1 px-6 py-3 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all border border-slate-200">
               Hủy
             </button>
             <button @click="confirm" :class="['flex-1 px-6 py-3 rounded-xl font-black text-white transition-all', confirmBtnClass]">
@@ -55,7 +55,7 @@ const iconBgClass = computed(() => {
   switch(props.variant) {
     case 'danger': return 'bg-rose-50'
     case 'warning': return 'bg-amber-50'
-    case 'success': return 'bg-success/10'
+    case 'success': return 'bg-emerald-50'
     default: return 'bg-slate-50'
   }
 })
@@ -64,7 +64,7 @@ const iconColorClass = computed(() => {
   switch(props.variant) {
     case 'danger': return 'text-rose-600'
     case 'warning': return 'text-amber-600'
-    case 'success': return 'text-success'
+    case 'success': return 'text-emerald-600'
     default: return 'text-slate-600'
   }
 })
@@ -73,7 +73,7 @@ const confirmBtnClass = computed(() => {
   switch(props.variant) {
     case 'danger': return 'bg-rose-600 hover:bg-rose-700'
     case 'warning': return 'bg-amber-600 hover:bg-amber-700'
-    case 'success': return 'bg-success hover:bg-success/90'
+    case 'success': return 'bg-emerald-600 hover:bg-emerald-700'
     default: return 'bg-slate-900 hover:bg-black'
   }
 })

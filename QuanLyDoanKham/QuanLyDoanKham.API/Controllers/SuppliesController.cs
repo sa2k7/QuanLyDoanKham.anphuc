@@ -19,8 +19,9 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Supplies
+        // GET: api/Supplies — Admin và WarehouseManager được xem
         [HttpGet]
+        [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<ActionResult<IEnumerable<SupplyDto>>> GetSupplies()
         {
             return await _context.Supplies
@@ -35,8 +36,9 @@ namespace QuanLyDoanKham.API.Controllers
                 .ToListAsync();
         }
 
-        // POST: api/Supplies (Nhập vật tư mới)
+        // POST: api/Supplies (Nhập vật tư mới) — Admin và WarehouseManager được tạo
         [HttpPost]
+        [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<ActionResult<Supply>> PostSupply(SupplyDto dto)
         {
             var supply = new Supply
@@ -50,11 +52,21 @@ namespace QuanLyDoanKham.API.Controllers
             _context.Supplies.Add(supply);
             await _context.SaveChangesAsync();
 
-            return Ok(supply);
+            var supplyDto = new SupplyDto
+            {
+                SupplyId = supply.SupplyId,
+                SupplyName = supply.SupplyName,
+                IsFixedAsset = supply.IsFixedAsset,
+                UnitPrice = supply.UnitPrice,
+                StockQuantity = supply.StockQuantity
+            };
+
+            return CreatedAtAction(nameof(GetSupplies), new { id = supply.SupplyId }, supplyDto);
         }
 
-        // PUT: api/Supplies/{id} (Update vật tư)
+        // PUT: api/Supplies/{id} — Admin và WarehouseManager được sửa
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<IActionResult> UpdateSupply(int id, SupplyDto dto)
         {
             var supply = await _context.Supplies.FindAsync(id);
@@ -69,8 +81,9 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(supply);
         }
 
-        // DELETE: api/Supplies/{id}
+        // DELETE: api/Supplies/{id} — Chỉ Admin được xóa
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteSupply(int id)
         {
             var supply = await _context.Supplies.FindAsync(id);
@@ -81,8 +94,9 @@ namespace QuanLyDoanKham.API.Controllers
             return NoContent();
         }
 
-        // GET: api/Supplies/transactions
+        // GET: api/Supplies/transactions — Admin và WarehouseManager được xem
         [HttpGet("transactions")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<ActionResult<IEnumerable<SupplyTransactionDto>>> GetAllTransactions()
         {
             return await _context.SupplyTransactions
@@ -103,9 +117,9 @@ namespace QuanLyDoanKham.API.Controllers
                 .ToListAsync();
         }
 
-        // GET: api/Supplies/transactions/{id}
-        // POST: api/Supplies/import/{id} (Nhập thêm hàng vào kho)
+        // POST: api/Supplies/import/{id} — Admin và WarehouseManager được nhập kho
         [HttpPost("import/{id}")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<IActionResult> ImportStock(int id, [FromBody] ImportStockDto dto)
         {
             var supply = await _context.Supplies.FindAsync(id);

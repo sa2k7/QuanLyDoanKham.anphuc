@@ -27,8 +27,35 @@ namespace QuanLyDoanKham.API.DTOs
         public string IDCardFrontPath { get; set; }
         public string IDCardBackPath { get; set; }
         public string PracticeCertificatePath { get; set; }
+        public string AvatarPath { get; set; }
         public decimal BaseSalary { get; set; }
         public bool IsActive { get; set; }
+        
+        // Trạng thái vận hành hiện tại
+        public string CurrentGroupName { get; set; }
+        public bool IsWorking { get; set; }
+
+        // Vai trò hệ thống được cấp (Manager, Staff, etc.)
+        public string SystemRole { get; set; }
+    }
+
+    public class StaffDetailDto : StaffDto
+    {
+        public List<StaffWorkdayDto> Workdays { get; set; } = new List<StaffWorkdayDto>();
+        public List<StaffShiftDto> Shifts { get; set; } = new List<StaffShiftDto>();
+    }
+
+    public class StaffWorkdayDto
+    {
+        public DateTime Date { get; set; }
+        public string GroupName { get; set; }
+    }
+
+    public class StaffShiftDto
+    {
+        public string GroupName { get; set; }
+        public double ShiftType { get; set; } // 0.5 or 1.0
+        public decimal CalculatedSalary { get; set; }
     }
 
     public class AddStaffToGroupDto

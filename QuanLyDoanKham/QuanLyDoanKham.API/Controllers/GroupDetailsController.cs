@@ -23,8 +23,23 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/GroupDetails/staff/{groupId}
         [HttpGet("staff/{groupId}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<ActionResult<IEnumerable<GroupStaffItemDto>>> GetStaffByGroup(int groupId)
         {
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+            if (role == "Customer" && !string.IsNullOrEmpty(companyIdClaim))
+            {
+                int companyId = int.Parse(companyIdClaim);
+                var group = await _context.MedicalGroups
+                    .Include(mg => mg.HealthContract)
+                    .FirstOrDefaultAsync(mg => mg.GroupId == groupId);
+                
+                if (group == null || group.HealthContract.CompanyId != companyId)
+                    return StatusCode(403, "Bạn không có quyền xem nhân sự của đoàn khám này.");
+            }
+
             var list = await _context.GroupStaffDetails
                 .Include(d => d.Staff)
                 .Where(d => d.GroupId == groupId)
@@ -44,6 +59,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/GroupDetails/staff
         [HttpPost("staff")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<GroupStaffDetail>> AddStaffToGroup(AddStaffToGroupDto dto)
         {
             // Check if staff already allocated to this group
@@ -78,6 +94,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/GroupDetails/staff/{id}
         [HttpDelete("staff/{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> RemoveStaffFromGroup(int id)
         {
             var detail = await _context.GroupStaffDetails.FindAsync(id);
@@ -93,8 +110,23 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/GroupDetails/supply/{groupId}
         [HttpGet("supply/{groupId}")]
+        [Authorize(Roles = "Admin,Staff,Customer")]
         public async Task<ActionResult<IEnumerable<GroupSupplyItemDto>>> GetSupplyByGroup(int groupId)
         {
+            var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            var companyIdClaim = User.FindFirst("CompanyId")?.Value;
+
+            if (role == "Customer" && !string.IsNullOrEmpty(companyIdClaim))
+            {
+                int companyId = int.Parse(companyIdClaim);
+                var group = await _context.MedicalGroups
+                    .Include(mg => mg.HealthContract)
+                    .FirstOrDefaultAsync(mg => mg.GroupId == groupId);
+                
+                if (group == null || group.HealthContract.CompanyId != companyId)
+                    return StatusCode(403, "Bạn không có quyền xem vật tư của đoàn khám này.");
+            }
+
             var list = await _context.GroupSupplyDetails
                 .Include(d => d.Supply)
                 .Where(d => d.GroupId == groupId)
@@ -115,6 +147,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/GroupDetails/supply (Xuất kho cho đoàn)
         [HttpPost("supply")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> AddSupplyToGroup(AddSupplyToGroupDto dto)
         {
             var supply = await _context.Supplies.FindAsync(dto.SupplyId);
@@ -143,6 +176,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/GroupDetails/supply/{id}/return (Nhập lại vật tư thừa)
         [HttpPut("supply/{id}/return")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult> ReturnSupply(int id, [FromBody] ReturnSupplyDto dto)
         {
             var detail = await _context.GroupSupplyDetails

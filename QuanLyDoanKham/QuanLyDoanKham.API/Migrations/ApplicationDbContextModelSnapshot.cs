@@ -37,7 +37,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasKey("RoleId");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
 
                     b.HasData(
                         new
@@ -48,11 +48,36 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             RoleId = 2,
-                            RoleName = "Staff"
+                            RoleName = "PersonnelManager"
                         },
                         new
                         {
                             RoleId = 3,
+                            RoleName = "ContractManager"
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            RoleName = "PayrollManager"
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            RoleName = "MedicalGroupManager"
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            RoleName = "WarehouseManager"
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            RoleName = "MedicalStaff"
+                        },
+                        new
+                        {
+                            RoleId = 8,
                             RoleName = "Customer"
                         });
                 });
@@ -64,6 +89,9 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("UserId"));
+
+                    b.Property<string>("AvatarPath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("CompanyId")
                         .HasColumnType("int");
@@ -96,14 +124,14 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
 
                     b.HasData(
                         new
                         {
                             UserId = 1,
                             FullName = "System Administrator",
-                            PasswordHash = "$2a$11$4.HBcgWMaQla58Z5.6eayOtzVWm9Y9tNAp40/c6/lg/7wZIFs/kDq",
+                            PasswordHash = "$2a$11$SFddXxxBYTr8Xi.kKAvJle3qThr1SwBElZihGqeWj0jgOkuPX.sIm",
                             RoleId = 1,
                             Username = "admin"
                         });
@@ -148,7 +176,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("AuditLogs", (string)null);
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Company", b =>
@@ -176,7 +204,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasKey("CompanyId");
 
-                    b.ToTable("Companies", (string)null);
+                    b.ToTable("Companies");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.ExamResult", b =>
@@ -218,7 +246,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("ExamResults", (string)null);
+                    b.ToTable("ExamResults");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
@@ -247,7 +275,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("GroupStaffDetails", (string)null);
+                    b.ToTable("GroupStaffDetails");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupSupplyDetail", b =>
@@ -276,7 +304,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("SupplyId");
 
-                    b.ToTable("GroupSupplyDetails", (string)null);
+                    b.ToTable("GroupSupplyDetails");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.HealthContract", b =>
@@ -309,7 +337,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("CompanyId");
 
-                    b.ToTable("Contracts", (string)null);
+                    b.ToTable("Contracts");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroup", b =>
@@ -331,11 +359,42 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int>("HealthContractId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsFinished")
+                        .HasColumnType("bit");
+
                     b.HasKey("GroupId");
 
                     b.HasIndex("HealthContractId");
 
-                    b.ToTable("MedicalGroups", (string)null);
+                    b.ToTable("MedicalGroups");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.PasswordResetRequest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsProcessed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NewPassword")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("RequestedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PasswordResetRequests");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Patient", b =>
@@ -380,7 +439,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("HealthContractId");
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.PayrollRecord", b =>
@@ -416,7 +475,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("StaffId");
 
-                    b.ToTable("PayrollRecords", (string)null);
+                    b.ToTable("PayrollRecords");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>
@@ -426,6 +485,9 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StaffId"));
+
+                    b.Property<string>("AvatarPath")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("BankAccountName")
                         .HasMaxLength(100)
@@ -506,7 +568,7 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasKey("StaffId");
 
-                    b.ToTable("Staffs", (string)null);
+                    b.ToTable("Staffs");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Supply", b =>
@@ -533,7 +595,44 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasKey("SupplyId");
 
-                    b.ToTable("Supplies", (string)null);
+                    b.ToTable("Supplies");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.SupplyTransaction", b =>
+                {
+                    b.Property<int>("TransactionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TransactionId"));
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("ProcessedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SupplyId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Type")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("TransactionId");
+
+                    b.HasIndex("ProcessedByUserId");
+
+                    b.HasIndex("SupplyId");
+
+                    b.ToTable("SupplyTransactions");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.AppUser", b =>
@@ -596,7 +695,7 @@ namespace QuanLyDoanKham.API.Migrations
                         .IsRequired();
 
                     b.HasOne("QuanLyDoanKham.API.Models.Staff", "Staff")
-                        .WithMany()
+                        .WithMany("GroupStaffDetails")
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -638,13 +737,13 @@ namespace QuanLyDoanKham.API.Migrations
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroup", b =>
                 {
-                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "Contract")
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
                         .WithMany()
                         .HasForeignKey("HealthContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Contract");
+                    b.Navigation("HealthContract");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Patient", b =>
@@ -667,6 +766,28 @@ namespace QuanLyDoanKham.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.SupplyTransaction", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "ProcessedUser")
+                        .WithMany()
+                        .HasForeignKey("ProcessedByUserId");
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Supply", "Supply")
+                        .WithMany()
+                        .HasForeignKey("SupplyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ProcessedUser");
+
+                    b.Navigation("Supply");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>
+                {
+                    b.Navigation("GroupStaffDetails");
                 });
 #pragma warning restore 612, 618
         }

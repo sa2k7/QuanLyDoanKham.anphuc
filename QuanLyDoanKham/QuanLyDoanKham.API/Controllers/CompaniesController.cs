@@ -9,7 +9,7 @@ namespace QuanLyDoanKham.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize] // Require Login mostly
+    [Authorize] // Tất cả phải đăng nhập
     public class CompaniesController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
@@ -19,15 +19,17 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Companies
+        // GET: api/Companies — Admin và ContractManager được xem
         [HttpGet]
+        [Authorize(Roles = "Admin,ContractManager")]
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             return await _context.Companies.ToListAsync();
         }
 
-        // POST: api/Companies
+        // POST: api/Companies — Admin và ContractManager được tạo mới
         [HttpPost]
+        [Authorize(Roles = "Admin,ContractManager")]
         public async Task<ActionResult<Company>> PostCompany(CompanyDto dto)
         {
             var company = new Company
@@ -44,8 +46,9 @@ namespace QuanLyDoanKham.API.Controllers
             return CreatedAtAction("GetCompanies", new { id = company.CompanyId }, company);
         }
 
-        // PUT: api/Companies/{id}
+        // PUT: api/Companies/{id} — Admin và ContractManager được sửa
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,ContractManager")]
         public async Task<IActionResult> UpdateCompany(int id, CompanyDto dto)
         {
             var company = await _context.Companies.FindAsync(id);
@@ -60,8 +63,9 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(company);
         }
 
-        // DELETE: api/Companies/{id}
+        // DELETE: api/Companies/{id} — Admin và ContractManager được xóa
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,ContractManager")]
         public async Task<IActionResult> DeleteCompany(int id)
         {
             var company = await _context.Companies.FindAsync(id);

@@ -9,7 +9,8 @@ export const useAuthStore = defineStore('auth', {
         token: localStorage.getItem('token') || null,
         refreshToken: localStorage.getItem('refreshToken') || null,
         loading: false,
-        error: null
+        error: null,
+        isInitialized: false
     }),
     getters: {
         isAuthenticated: (state) => !!state.token,
@@ -18,6 +19,30 @@ export const useAuthStore = defineStore('auth', {
         currentUser: (state) => state.user?.username || null
     },
     actions: {
+        async checkAuth() {
+            if (this.token && !this.isInitialized) {
+                try {
+                    // Xác thực token với Backend
+                    axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+                    const res = await axios.get('http://localhost:5283/api/auth/profile')
+                    this.profile = res.data
+                    this.user = {
+                        username: res.data.username,
+                        role: res.data.roleName,
+                        companyId: res.data.companyId
+                    }
+                    sessionStorage.setItem('user', JSON.stringify(this.user))
+                    this.isInitialized = true
+                    return true
+                } catch (e) {
+                    console.warn("Token verify failed or expired", e)
+                    this.logout()
+                    return false
+                }
+            }
+            this.isInitialized = true
+            return !!this.token
+        },
         async fetchProfile() {
             try {
                 const res = await axios.get('http://localhost:5283/api/auth/profile')
@@ -73,6 +98,7 @@ export const useAuthStore = defineStore('auth', {
             this.user = null
             this.token = null
             this.refreshToken = null
+            this.profile = null
             localStorage.removeItem('token')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('user')
@@ -87,21 +113,34 @@ axios.interceptors.response.use(
     response => response,
     async error => {
         const originalRequest = error.config
-        if (error.response?.status === 401 && !originalRequest._retry) {
+
+        // Tránh loop vô tận khi refresh token cũng fail
+        if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('refresh-token')) {
             originalRequest._retry = true
             const authStore = useAuthStore()
-            const newToken = await authStore.refresh()
-            if (newToken) {
-                originalRequest.headers['Authorization'] = `Bearer ${newToken}`
-                return axios(originalRequest)
+            if (authStore.refreshToken) {
+                const newToken = await authStore.refresh()
+                if (newToken) {
+                    originalRequest.headers['Authorization'] = `Bearer ${newToken}`
+                    return axios(originalRequest)
+                }
             }
         }
+
+        if (error.response?.status === 403) {
+            const currentPath = router.currentRoute.value.path
+            if (currentPath !== '/forbidden') {
+                router.push('/forbidden')
+            }
+        }
+
         return Promise.reject(error)
     }
 )
 
-// Initial setup
+// Initial setup - Chạy khi file được nạp lần đầu
 const token = localStorage.getItem('token')
 if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }
+

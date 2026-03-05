@@ -10,6 +10,11 @@ const routes = [
         meta: { guest: true }
     },
     {
+        path: '/forbidden',
+        name: 'Forbidden',
+        component: () => import('../views/Forbidden.vue')
+    },
+    {
         path: '/',
         name: 'Dashboard',
         component: () => import('../views/Dashboard.vue'),
@@ -19,49 +24,55 @@ const routes = [
         path: '/companies',
         name: 'Companies',
         component: () => import('../views/Companies.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'ContractManager'] }
     },
     {
         path: '/contracts',
         name: 'Contracts',
         component: () => import('../views/Contracts.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'ContractManager', 'Customer'] }
     },
     {
         path: '/groups',
         name: 'Groups',
         component: () => import('../views/Groups.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] }
     },
     {
         path: '/staff',
         name: 'Staff',
         component: () => import('../views/Staff.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager'] }
     },
     {
         path: '/supplies',
         name: 'Supplies',
         component: () => import('../views/Supplies.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'WarehouseManager'] }
     },
     {
         path: '/reports',
         name: 'Reports',
         component: () => import('../views/Reports.vue'),
-        meta: { requiresAuth: true } // All authenticated users can view reports
+        meta: { requiresAuth: true, roles: ['Admin', 'PayrollManager'] }
     },
     {
         path: '/patients',
         name: 'Patients',
         component: () => import('../views/Patients.vue'),
-        meta: { requiresAuth: true, roles: ['Admin'] }
+        meta: { requiresAuth: true, roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff'] }
     },
     {
         path: '/users',
         name: 'Users',
         component: () => import('../views/Users.vue'),
         meta: { requiresAuth: true, roles: ['Admin'] }
+    },
+    {
+        path: '/payroll',
+        name: 'Payroll',
+        component: () => import('../views/Payroll.vue'),
+        meta: { requiresAuth: true, roles: ['Admin', 'PayrollManager'] }
     }
 ]
 

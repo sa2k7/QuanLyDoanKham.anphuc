@@ -15,6 +15,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string FullName { get; set; }
         public int RoleId { get; set; }
         public int? CompanyId { get; set; }
+        public string AvatarPath { get; set; }
     }
 
     public class AuthResponseDto
@@ -37,6 +38,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string Password { get; set; } // Nếu cung cấp thì đổi mật khẩu
         public int RoleId { get; set; }
         public int? CompanyId { get; set; }
+        public string AvatarPath { get; set; }
     }
 
     public class UserProfileDto
@@ -48,5 +50,22 @@ namespace QuanLyDoanKham.API.DTOs
         public int RoleId { get; set; }
         public int? CompanyId { get; set; }
         public string CompanyName { get; set; }
+        public string AvatarPath { get; set; }
+    }
+    public class ChangePasswordDto
+    {
+        public string CurrentPassword { get; set; }
+        public string NewPassword { get; set; }
+    }
+
+    public class ResetRequestDto
+    {
+        public string Username { get; set; }
+    }
+
+    public class ProcessResetDto
+    {
+        public int Id { get; set; }
+        public string NewPassword { get; set; }
     }
 }

@@ -1,124 +1,116 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-[#f0f9ff] p-6 relative overflow-hidden">
-    <!-- Decorative geometric shapes -->
-    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-    <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style="animation-delay: 1s"></div>
-    
-    <div class="w-full max-w-5xl bg-white rounded-[2rem] shadow-2xl overflow-hidden flex relative z-10 border border-slate-100">
-      <!-- Left side: Illustration area -->
-      <div class="hidden lg:flex w-1/2 bg-gradient-to-br from-primary to-primary-dark p-12 flex-col justify-between text-white relative">
-        <div class="flex items-center space-x-2">
-            <div class="bg-white/20 p-2 rounded-lg backdrop-blur-md">
-                <Stethoscope class="text-white w-6 h-6" />
-            </div>
-            <span class="font-extrabold text-2xl tracking-tight">HealthCare</span>
+  <div class="min-h-screen flex items-center justify-center bg-slate-50 p-6 font-sans relative overflow-hidden">
+    <!-- Decorative background elements -->
+    <div class="absolute top-[-10%] right-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px]"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/5 rounded-full blur-[120px]"></div>
+
+    <div class="w-full max-w-[28rem] bg-white rounded-[3rem] shadow-2xl p-12 border-2 border-slate-50 animate-slide-up relative z-10">
+      <div class="text-center mb-12">
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-primary text-white rounded-[1.8rem] mb-6 shadow-2xl shadow-primary/30 transform -rotate-3">
+          <Stethoscope class="w-10 h-10" />
         </div>
-        
-        <div>
-            <h1 class="text-5xl font-black leading-tight mb-6">Nền tảng Y tế <br/> số một Việt Nam</h1>
-            <p class="text-primary-light text-lg font-medium max-w-md">
-                Cung cấp giải pháp tối ưu cho việc quản lý đoàn khám sức khỏe doanh nghiệp, hỗ trợ bởi trí tuệ nhân tạo.
-            </p>
-        </div>
-        
-        <div class="flex items-center space-x-6">
-            <div class="flex -space-x-3">
-                <div v-for="i in 4" :key="i" class="w-10 h-10 rounded-full border-2 border-primary bg-slate-200 overflow-hidden">
-                    <img :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${i}`" alt="user" />
-                </div>
-            </div>
-            <span class="text-sm font-bold">+5,000 khách hàng tin dùng</span>
+        <h2 class="text-4xl font-black text-slate-900 tracking-tighter">HealthCare</h2>
+        <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-4">Hệ điều hành Quản lý Đoàn khám</p>
+      </div>
+
+      <form @submit.prevent="handleLogin" class="space-y-8">
+        <div class="space-y-3">
+          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh tài khoản</label>
+          <div class="relative group">
+            <span class="absolute inset-y-0 left-0 pl-6 flex items-center text-slate-300 group-focus-within:text-primary transition-colors">
+              <User class="w-5 h-5" />
+            </span>
+            <input 
+              v-model="username"
+              type="text" 
+              class="w-full pl-14 pr-6 py-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none font-black text-slate-600 transition-all shadow-inner group-hover:bg-slate-100/50"
+              placeholder="Nhập tên đăng nhập..."
+              required
+            />
+          </div>
         </div>
 
-        <!-- Floatting element -->
-        <div class="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 bg-white/10 backdrop-blur-xl p-6 rounded-3xl border border-white/20 shadow-2xl">
-            <Sparkles class="text-accent w-8 h-8 mb-4" />
-            <div class="space-y-2">
-                <div class="h-2 w-24 bg-white/30 rounded"></div>
-                <div class="h-2 w-16 bg-white/20 rounded"></div>
+        <div class="space-y-3">
+          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Mật khẩu bảo mật</label>
+          <div class="relative group">
+            <span class="absolute inset-y-0 left-0 pl-6 flex items-center text-slate-300 group-focus-within:text-primary transition-colors">
+              <Lock class="w-5 h-5" />
+            </span>
+            <input 
+              v-model="password"
+              :type="showPassword ? 'text' : 'password'" 
+              class="w-full pl-14 pr-14 py-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none font-black text-slate-600 transition-all shadow-inner group-hover:bg-slate-100/50"
+              placeholder="••••••••"
+              required
+            />
+            <button 
+              type="button"
+              @click="showPassword = !showPassword"
+              class="absolute inset-y-0 right-0 pr-6 flex items-center text-slate-300 hover:text-primary transition-colors"
+            >
+              <Eye v-if="!showPassword" class="w-5 h-5" />
+              <EyeOff v-else class="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button 
+            type="button" 
+            @click="showForgotModal = true"
+            class="text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-primary transition-colors pr-2"
+          >
+            Quên mật khẩu?
+          </button>
+        </div>
+
+        <transition name="fade">
+          <div v-if="authStore.error" class="bg-rose-50 text-rose-600 p-5 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-3 border border-rose-100 animate-shake">
+              <AlertCircle class="w-4 h-4 flex-shrink-0" />
+              <span>{{ authStore.error }}</span>
+          </div>
+        </transition>
+
+        <button 
+          :disabled="authStore.loading"
+          type="submit" 
+          class="w-full btn-premium bg-slate-900 text-white hover:bg-black py-6 shadow-2xl shadow-slate-200"
+        >
+          <span v-if="!authStore.loading" class="tracking-[0.3em] text-xs uppercase font-black">Xác thực truy cập</span>
+          <Loader2 v-else class="w-6 h-6 animate-spin" />
+          <ArrowRight v-if="!authStore.loading" class="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+        </button>
+      </form>
+
+      <!-- Forgot Password Modal -->
+      <div v-if="showForgotModal" class="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 border-2 border-slate-50 animate-scale-up text-center">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <ShieldAlert class="w-8 h-8" />
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">Yêu cầu cấp lại mật khẩu</h3>
+            <p class="text-xs font-bold text-slate-400 leading-relaxed mb-8">
+                Hệ thống sẽ gửi thông báo đến **Admin**. Vui lòng nhập tên đăng nhập của bạn:
+            </p>
+            
+            <div class="space-y-4 mb-8">
+                <input v-model="resetUsername" type="text" class="input-premium text-center" placeholder="Username cần cấp lại..." />
+                <p v-if="resetMessage" :class="['text-[10px] font-black uppercase tracking-widest', resetSuccess ? 'text-emerald-500' : 'text-rose-500']">
+                  {{ resetMessage }}
+                </p>
+            </div>
+
+            <div class="flex gap-4">
+                <button @click="showForgotModal = false; resetMessage = ''; resetUsername = ''" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest">Hủy</button>
+                <button @click="submitResetRequest" :disabled="isResetting" class="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl disabled:opacity-50">
+                  {{ isResetting ? 'ĐANG GỬI...' : 'GỬI YÊU CẦU' }}
+                </button>
             </div>
         </div>
       </div>
 
-      <!-- Right side: Login form -->
-      <div class="w-full lg:w-1/2 p-12 md:p-20 bg-white flex flex-col justify-center">
-        <div class="mb-12 text-center lg:text-left">
-          <div class="lg:hidden flex items-center justify-center space-x-2 mb-8 uppercase tracking-widest text-primary font-black">
-             <Stethoscope class="w-6 h-6" />
-             <span>HealthCare</span>
-          </div>
-          <h2 class="text-4xl font-black text-slate-900 mb-2">Chào mừng trở lại!</h2>
-          <p class="text-slate-500 font-medium">Vui lòng đăng nhập để quản lý đoàn khám.</p>
-        </div>
-
-        <form @submit.prevent="handleLogin" class="space-y-6">
-          <div class="space-y-2">
-            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tài khoản</label>
-            <div class="relative group">
-              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-primary transition-colors">
-                <User class="w-5 h-5" />
-              </span>
-              <input 
-                v-model="username"
-                type="text" 
-                class="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:outline-none transition-all font-bold text-slate-800"
-                placeholder="Ví dụ: admin"
-                required
-              />
-            </div>
-          </div>
-
-          <div class="space-y-2">
-            <div class="flex justify-between items-center px-1">
-                <label class="text-xs font-black uppercase tracking-widest text-slate-400">Mật khẩu</label>
-                <a href="#" class="text-xs font-bold text-primary hover:underline">Quên mật khẩu?</a>
-            </div>
-            <div class="relative group">
-              <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-primary transition-colors">
-                <Lock class="w-5 h-5" />
-              </span>
-              <input 
-                v-model="password"
-                :type="showPassword ? 'text' : 'password'" 
-                class="w-full pl-12 pr-12 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white focus:outline-none transition-all font-bold text-slate-800"
-                placeholder="••••••••"
-                required
-              />
-              <button 
-                type="button"
-                @click="showPassword = !showPassword"
-                class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-primary transition-colors"
-              >
-                <Eye v-if="!showPassword" class="w-5 h-5" />
-                <EyeOff v-else class="w-5 h-5" />
-              </button>
-            </div>
-          </div>
-
-          <transition name="fade">
-            <div v-if="authStore.error" class="bg-rose-50 text-rose-600 p-4 rounded-2xl text-sm font-bold flex items-center space-x-3 border border-rose-100">
-                <AlertCircle class="w-5 h-5 flex-shrink-0" />
-                <span>{{ authStore.error }}</span>
-            </div>
-          </transition>
-
-          <button 
-            :disabled="authStore.loading"
-            type="submit" 
-            class="w-full bg-primary hover:bg-primary-dark text-white font-black py-4 rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all flex items-center justify-center space-x-3 active:scale-[0.98] disabled:opacity-50"
-          >
-            <span v-if="!authStore.loading">ĐĂNG NHẬP NGAY</span>
-            <span v-else class="flex items-center space-x-2">
-                <Loader2 class="w-5 h-5 animate-spin" />
-                <span>Đang kiểm tra...</span>
-            </span>
-            <ArrowRight v-if="!authStore.loading" class="w-5 h-5" />
-          </button>
-        </form>
-
-        <div class="mt-12 text-center">
-            <p class="text-slate-500 font-medium">Bạn chưa có tài khoản? <a href="#" class="text-primary font-black hover:underline">Liên hệ hợp tác</a></p>
-        </div>
+      <div class="mt-12 text-center">
+          <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">© 2026 HealthCare System</p>
       </div>
     </div>
   </div>
@@ -128,6 +120,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import axios from 'axios'
 import { 
   Stethoscope, 
   User, 
@@ -137,7 +130,7 @@ import {
   ArrowRight, 
   Loader2, 
   AlertCircle,
-  Sparkles
+  ShieldAlert
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -146,6 +139,40 @@ const authStore = useAuthStore()
 const username = ref('')
 const password = ref('')
 const showPassword = ref(false)
+const showForgotModal = ref(false)
+
+// Reset Password Request State
+const resetUsername = ref('')
+const isResetting = ref(false)
+const resetMessage = ref('')
+const resetSuccess = ref(false)
+
+const submitResetRequest = async () => {
+  if (!resetUsername.value) {
+    resetMessage.value = 'Vui lòng nhập Username'
+    resetSuccess.value = false
+    return
+  }
+  
+  isResetting.value = true
+  resetMessage.value = ''
+  
+  try {
+    const res = await axios.post('http://localhost:5283/api/Auth/request-reset', { username: resetUsername.value })
+    resetMessage.value = res.data.message
+    resetSuccess.value = true
+    setTimeout(() => {
+      showForgotModal.value = false
+      resetMessage.value = ''
+      resetUsername.value = ''
+    }, 3000)
+  } catch (e) {
+    resetMessage.value = e.response?.data || 'Lỗi khi gửi yêu cầu'
+    resetSuccess.value = false
+  } finally {
+    isResetting.value = false
+  }
+}
 
 const handleLogin = async () => {
   const success = await authStore.login(username.value, password.value)
@@ -156,6 +183,21 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
+.animate-slide-up {
+  animation: slideUp 0.6s ease-out forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }

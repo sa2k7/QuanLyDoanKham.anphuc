@@ -30,5 +30,6 @@ namespace QuanLyDoanKham.API.DTOs
         public DateTime ExamDate { get; set; }
         public int HealthContractId { get; set; }
         public string CompanyName { get; set; } // Optional: to show which company this group belongs to
+        public bool IsFinished { get; set; }
     }
 }

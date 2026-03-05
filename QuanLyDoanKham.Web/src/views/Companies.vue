@@ -1,13 +1,38 @@
 <template>
-  <div class="space-y-6 animate-fade-in">
+  <div class="space-y-6">
     <!-- Header Actions -->
-    <div class="flex justify-between items-center">
-      <h2 class="text-3xl font-black text-slate-800">Đối tác Doanh nghiệp</h2>
-      <button @click="showForm = !showForm" :disabled="isLoading"
-              class="bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-2xl font-bold flex items-center space-x-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight flex items-center gap-3 text-gray-800">
+          <div class="bg-primary p-2 rounded-xl">
+            <Building2 class="w-6 h-6 text-white" />
+          </div>
+          Đối tác Doanh nghiệp
+        </h2>
+        <p class="text-gray-500 font-medium mt-1">Quản lý danh sách khách hàng và đối tác</p>
+      </div>
+      <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'" 
+              @click="showForm = !showForm" 
+              class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-md shadow-primary/20 flex items-center gap-2">
         <Plus class="w-5 h-5" />
-        <span>Thêm Đối tác mới</span>
+        <span>THÊM ĐỐI TÁC</span>
       </button>
+    </div>
+
+    <!-- Company Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tổng số pháp nhân</p>
+        <p class="text-3xl font-bold text-gray-900">{{ list.length }} <span class="text-xs font-medium text-gray-400 ml-1">Công ty</span></p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Kết quả tìm kiếm</p>
+        <p class="text-3xl font-bold text-primary">{{ filteredList.length }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tình trạng hệ thống</p>
+        <p class="text-3xl font-bold text-gray-900">Ổn định</p>
+      </div>
     </div>
 
     <!-- Rule: Arrow pointing to form -->
@@ -16,116 +41,119 @@
     </div>
 
     <!-- Form Add/Edit Company -->
-    <div v-if="showForm || editingCompany" class="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-xl search-shadow mb-10 overflow-hidden relative">
-        <h3 class="text-xl font-black mb-6 text-slate-800 flex items-center">
-            <div class="w-2 h-6 bg-accent rounded-full mr-3"></div>
-            {{ editingCompany ? 'Chỉnh sửa thông tin công ty' : 'Thông tin công ty mới' }}
+    <div v-if="showForm || editingCompany" class="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 mb-8">
+        <h3 class="text-xl font-bold mb-6 text-gray-800 flex items-center gap-3">
+            <Building2 class="w-5 h-5 text-primary" />
+            {{ editingCompany ? 'Hiệu chỉnh thông tin đối tác' : 'Khai báo thông tin đối tác mới' }}
         </h3>
         <form @submit.prevent="editingCompany ? updateCompany() : addCompany()" class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="space-y-2">
-                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tên Công ty</label>
-                <input v-model="currentCompany.companyName" required :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none transition-all font-bold disabled:opacity-50" />
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Tên gọi pháp nhân</label>
+                <input v-model="currentCompany.companyName" required :disabled="isLoading" class="input-premium" placeholder="Tên công ty..." />
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Mã số thuế</label>
-                <input v-model="currentCompany.taxCode" required :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none transition-all font-bold disabled:opacity-50" />
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Mã số thuế</label>
+                <input v-model="currentCompany.taxCode" required :disabled="isLoading" class="input-premium" placeholder="Mã số thuế..." />
             </div>
             <div class="space-y-2 md:col-span-2">
-                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ</label>
-                <input v-model="currentCompany.address" required :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none transition-all font-bold disabled:opacity-50" />
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Địa chỉ</label>
+                <input v-model="currentCompany.address" required :disabled="isLoading" class="input-premium" placeholder="Địa chỉ..." />
             </div>
             <div class="space-y-2">
-                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại (10 số)</label>
-                <div class="relative group">
-                  <input 
-                    type="text"
-                    maxlength="12"
-                    @input="handlePhoneInput"
-                    required 
-                    :disabled="isLoading"
-                    class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none transition-all font-black text-2xl tracking-widest text-primary disabled:opacity-50" 
-                    placeholder="0xxx.xxx.xxx"
-                  />
-                  <div class="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black bg-white px-2 py-1 rounded-lg border border-slate-100 shadow-sm" :class="currentCompany.phoneNumber.length === 10 ? 'text-success border-success/20' : 'text-slate-300'">
-                    {{ currentCompany.phoneNumber.length }}/10
-                  </div>
-                </div>
-                <p v-if="currentCompany.phoneNumber.length > 0" class="text-sm font-black text-primary ml-2 animate-pulse flex items-center">
-                   <Phone class="w-3 h-3 mr-2" /> {{ formatPhone(currentCompany.phoneNumber) }}
-                </p>
+                <label class="text-xs font-bold uppercase tracking-wider text-gray-400">Số điện thoại</label>
+                <input 
+                  type="text"
+                  maxlength="12"
+                  :value="formatPhone(currentCompany.phoneNumber)"
+                  @input="handlePhoneInput"
+                  required 
+                  :disabled="isLoading"
+                  class="input-premium" 
+                  placeholder="0xxx.xxx.xxx"
+                />
             </div>
-            <div class="flex items-end justify-end space-x-4">
-                <button type="button" @click="cancelEdit" :disabled="isLoading" class="px-6 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-xl transition-all disabled:opacity-50">Hủy bỏ</button>
-                <button type="submit" :disabled="isLoading" class="bg-slate-900 text-white px-10 py-4 rounded-2xl font-black shadow-lg hover:bg-black transition-all disabled:opacity-50 flex items-center space-x-2">
-                    <Loader v-if="isLoading" class="w-5 h-5 animate-spin" />
-                    <span>{{ isLoading ? 'ĐANG XỬ LÝ...' : (editingCompany ? 'CẬP NHẬT' : 'LƯU THÔNG TIN') }}</span>
+            <div class="flex items-end justify-end gap-3 md:col-span-1">
+                <button type="button" @click="cancelEdit" :disabled="isLoading" class="px-4 py-2 text-gray-400 font-bold text-sm uppercase">Hủy</button>
+                <button type="submit" :disabled="isLoading" class="px-6 py-2 bg-primary text-white rounded-lg font-bold shadow-md shadow-primary/20">
+                    {{ isLoading ? '...' : (editingCompany ? 'CẬP NHẬT' : 'LƯU LẠI') }}
                 </button>
             </div>
         </form>
     </div>
 
-    <!-- Statistics Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">Tổng đối tác</p>
-            <p class="text-3xl font-black text-slate-900">{{ filteredList.length }}</p>
-        </div>
-        <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-            <p class="text-slate-400 text-xs font-black uppercase tracking-widest mb-1">Đang hiển thị</p>
-            <p class="text-3xl font-black text-primary">{{ filteredList.length }}</p>
-        </div>
-    </div>
 
     <!-- Table List -->
-    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-xl overflow-hidden">
-        <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-            <h3 class="font-black text-slate-800 tracking-tight">DANH SÁCH ĐỐI TÁC</h3>
-            <div class="relative">
+    <div class="premium-card overflow-hidden">
+        <div class="p-8 border-b-2 border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6 bg-slate-50/30">
+            <div>
+                <h3 class="text-xl font-black text-slate-800 tracking-tight">DANH SÁCH ĐỐI TÁC</h3>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Tổng cộng: {{ filteredList.length }} pháp nhân</p>
+            </div>
+            <div class="relative w-full md:w-80">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <input v-model="searchQuery" placeholder="Tìm nhanh..." class="pl-10 pr-4 py-2 bg-white rounded-full border border-slate-200 text-sm outline-none focus:ring-2 focus:ring-primary/20 font-bold" />
+                <input v-model="searchQuery" placeholder="Tìm tên, mã số thuế..." class="input-premium pl-12 py-3 text-sm" />
             </div>
         </div>
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
-                    <th class="px-8 py-6">Tên Công ty</th>
-                    <th class="px-8 py-6">MST</th>
-                    <th class="px-8 py-6">Liên hệ</th>
-                    <th class="px-8 py-6 text-right">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-                <tr v-for="item in filteredList" :key="item.companyId" class="hover:bg-slate-50/80 transition-colors group">
-                    <td class="px-8 py-6">
-                        <div class="font-black text-slate-800 text-lg">{{ item.companyName }}</div>
-                        <div class="text-xs font-medium text-slate-400 flex items-center mt-1">
-                            <MapPin class="w-3 h-3 mr-1" /> {{ item.address }}
-                        </div>
-                    </td>
-                    <td class="px-8 py-6">
-                        <div class="inline-flex items-center px-3 py-1 rounded-lg bg-slate-100 text-slate-700 font-bold text-sm">
-                            # {{ item.taxCode }}
-                        </div>
-                    </td>
-                    <td class="px-8 py-6">
-                        <div class="flex items-center text-primary font-black text-lg tracking-tight">
-                            <Phone class="w-5 h-5 mr-2 opacity-50" /> {{ formatPhone(item.phoneNumber) }}
-                        </div>
-                    </td>
-                    <td class="px-8 py-6 text-right">
-                        <div class="flex justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button @click="editCompany(item)" class="bg-indigo-50 text-indigo-600 p-3 rounded-xl hover:bg-indigo-100 transition-all"><Edit2 class="w-4 h-4" /></button>
-                            <button @click="confirmDelete(item)" class="bg-rose-50 text-rose-600 p-3 rounded-xl hover:bg-rose-100 transition-all"><Trash2 class="w-4 h-4" /></button>
-                        </div>
-                    </td>
-                </tr>
-                <tr v-if="filteredList.length === 0">
-                    <td colspan="4" class="px-8 py-20 text-center text-slate-300 font-bold italic">
-                        {{ searchQuery ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có dữ liệu đối tác' }}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <div class="overflow-x-auto">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th class="text-left w-1/3 border-r border-slate-100">Cơ quan / Doanh nghiệp</th>
+                        <th class="text-center border-r border-slate-100">Mã số thuế</th>
+                        <th class="text-left">Đầu mối liên hệ</th>
+                        <th class="text-right"></th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y-2 divide-slate-50">
+                    <tr v-for="item in filteredList" :key="item.companyId" class="group">
+                        <td class="border-r border-slate-50">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-black group-hover:bg-sky-600 group-hover:text-white transition-all shadow-sm">
+                                    {{ item.companyName.charAt(0) }}
+                                </div>
+                                <div>
+                                    <div class="font-black text-slate-800 leading-tight group-hover:text-primary transition-colors">{{ item.companyName }}</div>
+                                    <div class="text-[10px] font-bold text-slate-400 flex items-center mt-1 uppercase tracking-wider">
+                                        <MapPin class="w-3 h-3 mr-1" /> {{ item.address }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="text-center border-r border-slate-50">
+                            <span class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 font-black text-[10px] tracking-widest border border-slate-200">
+                                {{ item.taxCode }}
+                            </span>
+                        </td>
+                        <td class="font-bold">
+                            <div class="flex items-center text-indigo-600">
+                                <div class="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center mr-3">
+                                    <Phone class="w-4 h-4" />
+                                </div>
+                                {{ formatPhone(item.phoneNumber) }}
+                            </div>
+                        </td>
+                        <td class="text-right">
+                            <div v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'" class="flex justify-end gap-2 pr-4">
+                                <button @click="editCompany(item)" class="p-3 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-indigo-100 shadow-sm shadow-transparent hover:shadow-indigo-100/50">
+                                    <Edit2 class="w-5 h-5" />
+                                </button>
+                                <button @click="confirmDelete(item)" class="p-3 text-slate-400 hover:text-rose-600 hover:bg-white rounded-xl transition-all border border-transparent hover:border-rose-100 shadow-sm shadow-transparent hover:shadow-rose-100/50">
+                                    <Trash2 class="w-5 h-5" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div v-if="filteredList.length === 0" class="py-32 flex flex-col items-center justify-center gap-4 bg-slate-50/20">
+            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center text-slate-200">
+                <Building2 class="w-10 h-10" />
+            </div>
+            <p class="text-slate-400 font-black uppercase tracking-widest text-sm">
+                {{ searchQuery ? 'Không tìm thấy kết quả phù hợp' : 'Chưa có dữ liệu đối tác' }}
+            </p>
+        </div>
     </div>
 
     <!-- Confirm Delete Dialog -->
@@ -143,10 +171,12 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { Plus, Search, MapPin, Phone, Edit2, Trash2, ArrowDown, Loader } from 'lucide-vue-next'
+import { Plus, Search, MapPin, Phone, Edit2, Trash2, ArrowDown, Loader, Building2 } from 'lucide-vue-next'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useToast } from '../composables/useToast'
+import { useAuthStore } from '../stores/auth'
 
+const authStore = useAuthStore()
 const toast = useToast()
 const list = ref([])
 const searchQuery = ref('')

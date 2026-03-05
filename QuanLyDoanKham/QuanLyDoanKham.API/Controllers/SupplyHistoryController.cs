@@ -19,6 +19,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/SupplyHistory
         [HttpGet]
+        [Authorize(Roles = "Admin,Staff")]
         public async Task<ActionResult> GetSupplyHistory()
         {
             var history = new List<object>();

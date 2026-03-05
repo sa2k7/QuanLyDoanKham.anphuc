@@ -1,155 +1,214 @@
 <template>
   <div class="space-y-6 animate-fade-in">
-    <div class="flex justify-between items-center text-slate-800">
-      <h2 class="text-3xl font-black">Kho Vật tư Y tế</h2>
-      <button @click="showForm = !showForm" :disabled="isLoading"
-              class="bg-amber-500 hover:bg-amber-600 text-white px-6 py-3 rounded-2xl font-bold flex items-center space-x-2 transition-all shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div>
+        <h2 class="text-3xl font-bold tracking-tight flex items-center gap-3 text-gray-800">
+          <div class="bg-primary p-2 rounded-xl">
+            <Package class="w-6 h-6 text-white" />
+          </div>
+          Kho Vật tư Y tế
+        </h2>
+        <p class="text-gray-500 font-medium mt-1">Quản lý định mức tiêu hao và tài sản cố định</p>
+      </div>
+      <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+              @click="showForm = !showForm" 
+              class="px-6 py-3 bg-primary hover:bg-primary-dark text-white rounded-xl font-bold transition-all shadow-md shadow-primary/20 flex items-center gap-2">
         <Plus class="w-5 h-5" />
-        <span>Nhập vật tư mới</span>
+        <span>THÊM VẬT TƯ</span>
       </button>
     </div>
 
+    <!-- Inventory Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Giá trị tồn kho</p>
+        <p class="text-2xl font-bold text-gray-900">{{ formatPrice(list.reduce((sum, item) => sum + (item.unitPrice * item.stockQuantity), 0)) }}</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Vật tư tiêu hao</p>
+        <p class="text-3xl font-bold text-gray-900">{{ list.filter(i => !i.isFixedAsset).length }} <span class="text-xs font-medium text-gray-400 ml-1">Loại</span></p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">Tài sản cố định</p>
+        <p class="text-3xl font-bold text-gray-900">{{ list.filter(i => i.isFixedAsset).length }} <span class="text-xs font-medium text-gray-400 ml-1">Loại</span></p>
+      </div>
+    </div>
+
     <!-- Tab Navigation -->
-    <div class="flex space-x-3 border-b-2 border-slate-100">
-      <button @click="activeTab = 'inventory'" :class="['px-6 py-3 font-black text-sm transition-all relative', activeTab === 'inventory' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600']">
-        <Package class="w-4 h-4 inline mr-2" />
-        Tồn kho
-        <div v-if="activeTab === 'inventory'" class="absolute bottom-0 left-0 right-0 h-1 bg-amber-500 rounded-t-full"></div>
+    <div class="flex space-x-8 border-b border-gray-100">
+      <button @click="activeTab = 'inventory'" :class="['pb-4 font-bold text-sm transition-all relative uppercase tracking-widest', activeTab === 'inventory' ? 'text-primary' : 'text-gray-400 hover:text-gray-600']">
+        <div class="flex items-center gap-2">
+            <Package class="w-4 h-4" />
+            <span>Tồn kho hiện tại</span>
+        </div>
+        <div v-if="activeTab === 'inventory'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full"></div>
       </button>
-      <button @click="activeTab = 'history'" :class="['px-6 py-3 font-black text-sm transition-all relative', activeTab === 'history' ? 'text-amber-600' : 'text-slate-400 hover:text-slate-600']">
-        <Clock class="w-4 h-4 inline mr-2" />
-        Lịch sử giao dịch
-        <div v-if="activeTab === 'history'" class="absolute bottom-0 left-0 right-0 h-1 bg-amber-500 rounded-t-full"></div>
+      <button @click="activeTab = 'history'" :class="['pb-4 font-bold text-sm transition-all relative uppercase tracking-widest', activeTab === 'history' ? 'text-primary' : 'text-gray-400 hover:text-gray-600']">
+        <div class="flex items-center gap-2">
+            <Clock class="w-4 h-4" />
+            <span>Lịch sử luân chuyển</span>
+        </div>
+        <div v-if="activeTab === 'history'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary rounded-t-full"></div>
       </button>
     </div>
 
     <!-- Inventory Tab -->
     <div v-show="activeTab === 'inventory'">
       <!-- Form -->
-      <div v-if="showForm || editingSupply" class="bg-white p-8 rounded-[2rem] border border-amber-100 shadow-xl mb-10">
-          <h3 class="text-xl font-black mb-6 text-slate-800 flex items-center">
-              <div class="w-2 h-6 bg-amber-400 rounded-full mr-3"></div>
-              {{ editingSupply ? 'Chỉnh sửa vật tư' : 'Khai báo vật tư/thiết bị' }}
-          </h3>
-          <form @submit.prevent="editingSupply ? updateSupply() : addSupply()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div class="space-y-2 lg:col-span-2">
-                  <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Tên vật tư</label>
-                  <input v-model="currentSupply.supplyName" required :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white outline-none transition-all font-bold disabled:opacity-50" />
+      <div v-if="showForm || editingSupply" class="bg-white p-10 rounded-[3rem] neo-shadow border border-white/20 mb-10 animate-scale-up">
+          <h3 class="text-2xl font-black mb-10 text-slate-800 flex items-center gap-4">
+              <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+                  <Package class="w-6 h-6" />
               </div>
-              <div class="space-y-2">
-                  <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Loại tài sản</label>
-                  <select v-model="currentSupply.isFixedAsset" :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white outline-none transition-all font-bold disabled:opacity-50">
-                      <option :value="false">Vật tư tiêu hao</option>
-                      <option :value="true">Tài sản cố định (Mượn)</option>
+              {{ editingSupply ? 'Hiệu chỉnh thông tin vật tư' : 'Khai báo vật tư/thiết bị mới' }}
+          </h3>
+          <form @submit.prevent="editingSupply ? updateSupply() : addSupply()" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              <div class="space-y-3 lg:col-span-2">
+                  <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Tên gọi vật tư/thiết bị</label>
+                  <input v-model="currentSupply.supplyName" required :disabled="isLoading" class="input-premium" placeholder="Nhập tên vật tư..." />
+              </div>
+              <div class="space-y-3">
+                  <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Phân loại tài sản</label>
+                  <select v-model="currentSupply.isFixedAsset" :disabled="isLoading" class="input-premium">
+                      <option :value="false">Vật tư tiêu hao (Một lần)</option>
+                      <option :value="true">Tài sản cố định (Tái sử dụng)</option>
                   </select>
               </div>
-              <div class="space-y-2">
-                  <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">{{ editingSupply ? 'Tồn kho hiện tại' : 'Số lượng tồn kho' }}</label>
-                  <input v-model="currentSupply.stockQuantity" type="number" required :disabled="isLoading" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white outline-none transition-all font-black text-2xl tracking-widest text-slate-700 disabled:opacity-50" />
+              <div class="space-y-3">
+                  <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">{{ editingSupply ? 'Tồn kho hiện tại' : 'Số lượng nhập kho' }}</label>
+                  <input v-model="currentSupply.stockQuantity" type="number" required :disabled="isLoading" class="input-premium text-2xl font-black tracking-tighter" />
               </div>
-              <div class="space-y-2">
-                  <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá (VNĐ)</label>
-                  <input 
-                    type="text" 
-                    :value="currentSupply.unitPrice.toLocaleString('vi-VN')" 
-                    :disabled="isLoading"
-                    @input="e => {
-                      const val = e.target.value.replace(/\D/g, '');
-                      currentSupply.unitPrice = val ? parseInt(val) : 0;
-                      e.target.value = currentSupply.unitPrice.toLocaleString('vi-VN');
-                    }"
-                    required 
-                    class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-amber-400/20 focus:bg-white outline-none transition-all font-black text-2xl tracking-widest text-amber-600 disabled:opacity-50" 
-                  />
-                  <p v-if="currentSupply.unitPrice > 0" class="text-xs font-black text-amber-600 ml-2 animate-pulse">
-                     ➔ {{ formatPrice(currentSupply.unitPrice) }}
-                  </p>
+              <div class="space-y-3 lg:col-span-2">
+                  <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn giá nhập (VNĐ)</label>
+                  <div class="relative">
+                      <input 
+                        type="text" 
+                        :value="currentSupply.unitPrice.toLocaleString('vi-VN')" 
+                        :disabled="isLoading"
+                        @input="e => {
+                          const val = e.target.value.replace(/\D/g, '');
+                          currentSupply.unitPrice = val ? parseInt(val) : 0;
+                          e.target.value = currentSupply.unitPrice.toLocaleString('vi-VN');
+                        }"
+                        required 
+                        class="input-premium pl-8 pr-16 text-2xl font-black text-indigo-600 tracking-tighter" 
+                      />
+                      <span class="absolute right-6 top-1/2 -translate-y-1/2 text-xs font-black text-slate-300">VNĐ</span>
+                  </div>
               </div>
-              <div class="lg:col-span-3 flex items-end justify-end space-x-4">
-                  <button type="button" @click="cancelEdit" :disabled="isLoading" class="px-6 py-4 text-slate-400 font-bold hover:bg-slate-50 rounded-xl transition-all disabled:opacity-50">Hủy bỏ</button>
-                  <button type="submit" :disabled="isLoading" class="bg-amber-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg hover:bg-amber-700 transition-all disabled:opacity-50 flex items-center space-x-2">
+              <div class="lg:col-span-2 flex items-end justify-end gap-4">
+                  <button type="button" @click="cancelEdit" :disabled="isLoading" class="px-8 py-4 text-slate-400 font-black hover:bg-slate-50 rounded-2xl transition-all uppercase tracking-widest text-[10px]">Hủy bỏ</button>
+                  <button type="submit" :disabled="isLoading" class="btn-premium bg-indigo-600 text-white shadow-indigo-600/20">
                       <Loader v-if="isLoading" class="w-5 h-5 animate-spin" />
-                      <span>{{ isLoading ? 'ĐANG XỬ LÝ...' : (editingSupply ? 'CẬP NHẬT' : 'NHẬP KHO') }}</span>
+                      <span>{{ isLoading ? 'ĐANG XỬ LÝ...' : (editingSupply ? 'CẬP NHẬT' : 'KHỞI TẠO VẬT TƯ') }}</span>
                   </button>
               </div>
           </form>
       </div>
 
       <!-- Inventory Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          <div v-for="item in list" :key="item.supplyId" class="bg-white p-6 rounded-[2rem] border border-slate-50 shadow-md hover:shadow-xl transition-all group relative">
-              <div class="flex justify-between items-start mb-6">
-                  <div :class="['p-3 rounded-2xl shadow-inner', item.isFixedAsset ? 'bg-indigo-50 text-indigo-500' : 'bg-amber-50 text-amber-500']">
-                      <component :is="item.isFixedAsset ? HardDrive : Droplets" class="w-6 h-6" />
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div v-for="item in list" :key="item.supplyId" 
+               class="premium-card p-8 group overflow-hidden relative">
+              
+              <!-- Asset Status Ribbon -->
+              <div v-if="item.isFixedAsset" class="absolute -right-12 top-6 rotate-45 bg-indigo-600 text-white text-[8px] font-black px-12 py-1 uppercase tracking-widest shadow-sm">
+                  Tài sản
+              </div>
+
+              <div class="flex justify-between items-start mb-8">
+                  <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner transition-transform group-hover:scale-110 duration-500', item.isFixedAsset ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600']">
+                      <component :is="item.isFixedAsset ? HardDrive : Droplets" class="w-7 h-7" />
                   </div>
                   <div class="text-right">
-                      <span class="text-xs font-bold text-slate-400 uppercase tracking-tighter">{{ item.isFixedAsset ? 'Cố định' : 'Tiêu hao' }}</span>
-                      <p class="font-black text-slate-800 text-xl">{{ item.stockQuantity }}</p>
+                      <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 block">Tồn kho</span>
+                      <p :class="['font-black text-3xl tracking-tighter', item.stockQuantity < 10 ? 'text-rose-500 animate-pulse' : 'text-slate-900']">{{ item.stockQuantity }}</p>
                   </div>
               </div>
-              <h4 class="font-black text-slate-800 text-lg mb-4 leading-tight min-h-[50px]">{{ item.supplyName }}</h4>
-              <div class="pt-4 border-t border-slate-50 flex justify-between items-center text-sm mb-4">
-                  <span class="text-slate-400 font-bold">Đơn giá</span>
-                  <span class="font-black text-slate-800">{{ formatPrice(item.unitPrice) }}</span>
+
+              <h4 class="font-black text-slate-800 text-lg mb-4 leading-tight min-h-[56px] group-hover:text-primary transition-colors tracking-tight">{{ item.supplyName }}</h4>
+              
+              <div class="pt-6 border-t-2 border-slate-50 flex justify-between items-center mb-8">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đơn giá nhập</span>
+                  <span class="font-black text-indigo-600">{{ formatPrice(item.unitPrice) }}</span>
               </div>
+
               <!-- Action Buttons -->
-              <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <button @click="showRestockModal(item)" class="flex-1 bg-success/10 text-success px-3 py-2 rounded-xl text-xs font-black hover:bg-success/20 transition-all flex items-center justify-center space-x-1">
-                      <Package class="w-3 h-3" />
-                      <span>NHẬP THÊM</span>
+              <div v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" class="flex items-center gap-2">
+                  <button @click="showRestockModal(item)" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-xl text-[10px] font-black transition-all shadow-lg shadow-emerald-100 uppercase tracking-widest active:scale-95">
+                      NHẬP KHO
                   </button>
-                  <button @click="editSupply(item)" class="bg-indigo-50 text-indigo-600 p-2 rounded-xl hover:bg-indigo-100 transition-all"><Edit2 class="w-4 h-4" /></button>
-                  <button @click="confirmDelete(item)" class="bg-rose-50 text-rose-600 p-2 rounded-xl hover:bg-rose-100 transition-all"><Trash2 class="w-4 h-4" /></button>
+                  <button @click="editSupply(item)" class="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-indigo-50 hover:text-indigo-600 transition-all border border-transparent hover:border-indigo-100"><Edit2 class="w-4 h-4" /></button>
+                  <button @click="confirmDelete(item)" class="p-3 bg-slate-50 text-slate-400 rounded-xl hover:bg-rose-50 hover:text-rose-600 transition-all border border-transparent hover:border-rose-100"><Trash2 class="w-4 h-4" /></button>
               </div>
           </div>
           
-          <div v-if="list.length === 0" class="col-span-full py-20 text-center text-slate-300 font-bold italic bg-white rounded-[2rem] border-2 border-dashed border-slate-100 uppercase tracking-widest">
-              Kho hàng trống
+          <div v-if="list.length === 0" class="col-span-full py-40 flex flex-col items-center justify-center gap-6 bg-slate-50/20 rounded-[3rem] border-4 border-dashed border-slate-100">
+              <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center text-slate-100 shadow-sm">
+                  <Package class="w-12 h-12" />
+              </div>
+              <p class="text-slate-300 font-black uppercase tracking-[0.3em] text-sm">Kho hàng trống</p>
           </div>
       </div>
     </div>
 
     <!-- History Tab -->
-    <div v-show="activeTab === 'history'" class="bg-white rounded-[2rem] shadow-xl overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-slate-800 text-white">
-            <tr>
-              <th class="px-6 py-4 text-left font-black text-xs uppercase tracking-widest">Ngày</th>
-              <th class="px-6 py-4 text-left font-black text-xs uppercase tracking-widest">Loại</th>
-              <th class="px-6 py-4 text-left font-black text-xs uppercase tracking-widest">Vật tư</th>
-              <th class="px-6 py-4 text-right font-black text-xs uppercase tracking-widest">Số lượng</th>
-              <th class="px-6 py-4 text-left font-black text-xs uppercase tracking-widest">Đoàn khám</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="t in supplyHistory" :key="t.transactionId" class="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
-              <td class="px-6 py-4 text-sm font-bold text-slate-600">{{ formatDate(t.transactionDate) }}</td>
-              <td class="px-6 py-4">
-                <span :class="['px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest', getHistoryTypeBadge(t.type)]">{{ t.type }}</span>
-              </td>
-              <td class="px-6 py-4">
-                <p class="font-black text-slate-800">{{ t.supplyName }}</p>
-                <p class="text-[10px] text-slate-400 font-bold uppercase">{{ t.note }}</p>
-              </td>
-              <td class="px-6 py-4 text-right">
-                <span :class="['font-black text-lg', t.type === 'IMPORT' ? 'text-emerald-500' : 'text-amber-500']">
-                  {{ t.type === 'IMPORT' ? '+' : '-' }}{{ t.quantity }}
-                </span>
-              </td>
-              <td class="px-6 py-4 text-sm font-bold text-slate-500 flex items-center space-x-2">
-                <div class="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black uppercase">{{ t.processedBy?.[0] || 'S' }}</div>
-                <span>{{ t.processedBy || 'System' }}</span>
-              </td>
-            </tr>
-            <tr v-if="supplyHistory.length === 0">
-              <td colspan="5" class="px-6 py-20 text-center text-slate-300 font-bold italic uppercase tracking-widest">
-                Chưa có giao dịch nào
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div v-show="activeTab === 'history'" class="premium-card overflow-hidden">
+        <div class="p-8 border-b-2 border-slate-50 bg-slate-50/30">
+            <h3 class="text-xl font-black text-slate-800 tracking-tight flex items-center gap-3">
+                <Clock class="w-6 h-6 text-indigo-500" />
+                LỊCH SỬ BIẾN ĐỘNG KHO
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="professional-table">
+                <thead>
+                    <tr>
+                        <th class="text-left border-r border-slate-100">Thời gian</th>
+                        <th class="text-center border-r border-slate-100">Loại giao dịch</th>
+                        <th class="text-left border-r border-slate-100">Vật tư & Nội dung</th>
+                        <th class="text-right border-r border-slate-100">Số lượng</th>
+                        <th class="text-left">Người xử lý</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y-2 divide-slate-50">
+                    <tr v-for="t in supplyHistory" :key="t.transactionId" class="group">
+                        <td class="border-r border-slate-50">
+                            <div class="font-black text-slate-600 text-sm">{{ formatDate(t.transactionDate) }}</div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{{ new Date(t.transactionDate).toLocaleTimeString('vi-VN') }}</div>
+                        </td>
+                        <td class="text-center border-r border-slate-50">
+                            <span :class="['status-badge', t.type === 'IMPORT' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700']">
+                                <ArrowDown v-if="t.type==='IMPORT'" class="w-3 h-3 rotate-180" />
+                                <ArrowDown v-else class="w-3 h-3" />
+                                {{ t.type === 'IMPORT' ? 'NHẬP KHO' : 'XUẤT KHO' }}
+                            </span>
+                        </td>
+                        <td class="border-r border-slate-50">
+                            <p class="font-black text-slate-800 group-hover:text-primary transition-colors text-base leading-tight">{{ t.supplyName }}</p>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">{{ t.note || 'Không có ghi chú' }}</p>
+                        </td>
+                        <td class="text-right border-r border-slate-50 font-black text-xl tracking-tighter">
+                            <span :class="t.type === 'IMPORT' ? 'text-emerald-600' : 'text-slate-900'">
+                                {{ t.type === 'IMPORT' ? '+' : '-' }}{{ t.quantity }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 border-2 border-white shadow-sm">
+                                    {{ t.processedBy?.[0] || 'S' }}
+                                </div>
+                                <span class="text-sm font-bold text-slate-500">{{ t.processedBy || 'Hệ thống' }}</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div v-if="supplyHistory.length === 0" class="py-32 flex flex-col items-center justify-center gap-4 bg-slate-50/20">
+            <Clock class="w-12 h-12 text-slate-200" />
+            <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-sm">Chưa có giao dịch kho</p>
+        </div>
     </div>
 
     <!-- Restock Modal -->
@@ -192,7 +251,9 @@ import axios from 'axios'
 import { Plus, ArrowDown, HardDrive, Droplets, Package, Edit2, Trash2, Loader, Clock } from 'lucide-vue-next'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useToast } from '../composables/useToast'
+import { useAuthStore } from '../stores/auth'
 
+const authStore = useAuthStore()
 const toast = useToast()
 const list = ref([])
 const activeTab = ref('inventory')
@@ -236,7 +297,7 @@ const fetchHistory = async () => {
 
 const getHistoryTypeBadge = (type) => {
     if (type === 'IMPORT') return 'bg-emerald-50 text-emerald-600 border border-emerald-100'
-    if (type === 'EXPORT') return 'bg-amber-50 text-amber-600 border border-amber-100'
+    if (type === 'EXPORT') return 'bg-primary/10 text-primary border border-primary/20'
     return 'bg-blue-50 text-blue-600 border border-blue-100'
 }
 

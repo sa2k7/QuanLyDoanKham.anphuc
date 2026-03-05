@@ -33,6 +33,7 @@ namespace QuanLyDoanKham.API.Models
         public int? CompanyId { get; set; }
         public string RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
+        public string AvatarPath { get; set; }
         [ForeignKey("CompanyId")]
         public Company Company { get; set; }
     }
@@ -78,7 +79,9 @@ namespace QuanLyDoanKham.API.Models
         
         public int HealthContractId { get; set; }
         [ForeignKey("HealthContractId")]
-        public HealthContract Contract { get; set; }
+        public HealthContract HealthContract { get; set; }
+
+        public bool IsFinished { get; set; } = false;
     }
 
     public class Staff
@@ -132,6 +135,7 @@ namespace QuanLyDoanKham.API.Models
         public string IDCardFrontPath { get; set; } // CMND_MatTruoc
         public string IDCardBackPath { get; set; } // CMND_MatSau
         public string PracticeCertificatePath { get; set; } // ChungChiHanhNghe
+        public string AvatarPath { get; set; } // AnhChanDung
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal BaseSalary { get; set; }
@@ -139,6 +143,8 @@ namespace QuanLyDoanKham.API.Models
         public bool IsActive { get; set; } = true; // TrangThai
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime? ModifiedDate { get; set; }
+
+        public ICollection<GroupStaffDetail> GroupStaffDetails { get; set; } = new List<GroupStaffDetail>();
     }
 
     public class GroupStaffDetail
@@ -315,5 +321,22 @@ namespace QuanLyDoanKham.API.Models
         public int? ProcessedByUserId { get; set; }
         [ForeignKey("ProcessedByUserId")]
         public AppUser ProcessedUser { get; set; }
+    }
+    // === PASSWORD RESET REQUESTS ===
+    public class PasswordResetRequest
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        [Required]
+        [MaxLength(50)]
+        public string Username { get; set; }
+        
+        public DateTime RequestedDate { get; set; } = DateTime.Now;
+        
+        public bool IsProcessed { get; set; } = false;
+        
+        [MaxLength(100)]
+        public string NewPassword { get; set; } // Optional: Admin can set this here
     }
 }

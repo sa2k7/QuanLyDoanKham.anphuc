@@ -1,73 +1,133 @@
 <template>
-  <div class="p-8 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
-    <!-- Header -->
-    <div class="mb-8">
-      <h1 class="text-4xl font-black text-slate-900 mb-2">Quản lý Bệnh nhân</h1>
-      <p class="text-slate-600 font-medium">Quản lý danh sách bệnh nhân và kết quả khám sức khỏe</p>
+  <div class="space-y-8 animate-fade-in pb-20">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10">
+      <div>
+        <h2 class="text-4xl font-black tracking-tighter text-slate-800 flex items-center gap-4">
+          <div class="w-14 h-14 bg-primary text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-primary/20">
+            <UsersIcon class="w-8 h-8" />
+          </div>
+          Hồ sơ Bệnh nhân
+        </h2>
+        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-4 ml-1">Lưu trữ & Truy xuất kết quả khám sức khỏe định kỳ</p>
+      </div>
+      <div v-if="selectedContractId" class="flex gap-4">
+          <button @click="exportToExcel" 
+                  :disabled="isLoading || patients.length === 0"
+                  class="btn-premium bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white border-2 border-emerald-100 shadow-xl shadow-emerald-50 px-8 py-4 disabled:opacity-50">
+            <Download class="w-6 h-6" />
+            <span>XUẤT EXCEL</span>
+          </button>
+          <button v-if="authStore.role === 'Admin'" 
+                  @click="openModal()" 
+                  class="btn-premium bg-primary text-white hover:bg-slate-900 shadow-2xl shadow-primary/10 px-10 py-4">
+            <UserPlus class="w-6 h-6" />
+            <span>THÊM BỆNH NHÂN</span>
+          </button>
+      </div>
     </div>
 
-    <!-- Contract Selection -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-      <label class="block text-sm font-bold text-slate-700 mb-2">Chọn Hợp đồng</label>
-      <select 
-        v-model="selectedContractId" 
-        @change="fetchPatients"
-        class="w-full md:w-96 px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none font-medium"
-      >
-        <option :value="null">-- Chọn hợp đồng --</option>
-        <option v-for="contract in contracts" :key="contract.contractId" :value="contract.contractId">
-          {{ contract.companyName }} - {{ contract.contractName }}
-        </option>
-      </select>
+    <!-- Contract Selection Card -->
+    <div class="premium-card p-10 bg-white border-2 border-slate-50 mb-10 relative overflow-hidden group">
+      <div class="absolute right-0 top-0 w-64 h-64 bg-slate-50 rounded-full -mr-32 -mt-32 transition-transform group-hover:scale-110"></div>
+      <div class="flex flex-col md:flex-row items-center gap-10 relative z-10">
+          <div class="flex-1 space-y-4 w-full">
+              <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-1">Vui lòng chọn hợp đồng chỉ định</label>
+              <div class="relative group/sel">
+                <select 
+                  v-model="selectedContractId" 
+                  @change="fetchPatients"
+                  class="w-full px-8 py-5 rounded-2xl bg-white border-2 border-slate-100 focus:border-primary/20 outline-none font-black text-slate-700 text-lg shadow-sm appearance-none cursor-pointer transition-all"
+                >
+                  <option :value="null">-------------------- LỰA CHỌN HỢP ĐỒNG --------------------</option>
+                  <option v-for="contract in activeContracts" :key="contract.contractId ?? contract.healthContractId" :value="contract.contractId ?? contract.healthContractId">
+                    {{ contract.companyName }} • #{{ contract.healthContractId ?? contract.contractId }}
+                  </option>
+                </select>
+                <div class="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none text-slate-300 group-hover/sel:text-primary transition-colors">
+                    <ChevronDown class="w-6 h-6" />
+                </div>
+              </div>
+          </div>
+          <div v-if="selectedContractId" class="hidden md:flex flex-col items-center bg-slate-900 text-white p-6 rounded-3xl shadow-xl shadow-slate-200">
+              <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2">QUY MÔ NHÂN SỰ</p>
+              <p class="text-4xl font-black text-white leading-none tracking-tighter">{{ patients.length }}</p>
+          </div>
+      </div>
     </div>
 
     <!-- Patients List -->
-    <div v-if="selectedContractId" class="bg-white rounded-2xl shadow-lg p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-black text-slate-900">Danh sách Bệnh nhân</h2>
-        <button 
-          @click="openModal()"
-          class="flex items-center space-x-2 bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-xl font-bold shadow-lg transition-all"
-        >
-          <UserPlus class="w-5 h-5" />
-          <span>Thêm Bệnh nhân</span>
-        </button>
-      </div>
+    <div v-if="selectedContractId" class="premium-card bg-white border-2 border-slate-50 overflow-hidden mb-20 animate-slide-up">
+        <div class="p-10 border-b border-slate-50 flex flex-col md:flex-row justify-between items-center gap-8 bg-slate-50/30">
+            <h3 class="font-black text-slate-800 uppercase text-xs tracking-[0.2em] flex items-center gap-3">
+                <div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>
+                Danh sách nhân sự khám thực tế
+            </h3>
+            <div class="relative w-full md:w-96 group">
+                <Search class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                <input placeholder="Tìm tên bệnh nhân, CMND..." 
+                       class="w-full pl-16 pr-8 py-4 rounded-2xl bg-white border-2 border-slate-100 focus:border-primary/20 outline-none text-sm font-black text-slate-600 shadow-sm transition-all" />
+            </div>
+        </div>
 
       <!-- Patients Table -->
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="professional-table">
           <thead>
-            <tr class="border-b-2 border-slate-200">
-              <th class="text-left py-4 px-4 font-black text-slate-700">Họ tên</th>
-              <th class="text-left py-4 px-4 font-black text-slate-700">Ngày sinh</th>
-              <th class="text-left py-4 px-4 font-black text-slate-700">Giới tính</th>
-              <th class="text-left py-4 px-4 font-black text-slate-700">CMND</th>
-              <th class="text-left py-4 px-4 font-black text-slate-700">Phòng ban</th>
-              <th class="text-right py-4 px-4 font-black text-slate-700">Thao tác</th>
+            <tr>
+              <th class="w-20">#</th>
+              <th>Họ tên & Thông tin cơ bản</th>
+              <th>Ngày sinh</th>
+              <th>Giới tính</th>
+              <th>Định danh (CMND)</th>
+              <th>Phòng ban / Tổ đội</th>
+              <th class="text-right">Thao tác</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="patient in patients" :key="patient.patientId" class="border-b border-slate-100 hover:bg-slate-50">
-              <td class="py-4 px-4 font-bold text-slate-900">{{ patient.fullName }}</td>
-              <td class="py-4 px-4 text-slate-600">{{ formatDate(patient.dateOfBirth) }}</td>
-              <td class="py-4 px-4 text-slate-600">{{ patient.gender }}</td>
-              <td class="py-4 px-4 text-slate-600">{{ patient.idCardNumber }}</td>
-              <td class="py-4 px-4 text-slate-600">{{ patient.department }}</td>
-              <td class="py-4 px-4 text-right">
-                <button 
-                  @click="viewExamResults(patient)"
-                  class="text-primary hover:text-primary-dark font-bold mr-3"
-                >
-                  <FileText class="w-5 h-5 inline" />
-                </button>
-                <button 
-                  @click="deletePatient(patient.patientId)"
-                  class="text-rose-600 hover:text-rose-700 font-bold"
-                >
-                  <Trash2 class="w-5 h-5 inline" />
-                </button>
+          <tbody class="divide-y divide-slate-50">
+            <tr v-for="(patient, idx) in patients" :key="patient.patientId" class="hover:bg-slate-50/50 transition-all group">
+              <td>
+                  <span class="text-slate-300 font-black text-xs">{{ (idx + 1).toString().padStart(2, '0') }}</span>
               </td>
+              <td>
+                  <div class="flex items-center gap-4">
+                      <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 group-hover:bg-primary group-hover:text-white transition-all text-xs">
+                          {{ patient.fullName.charAt(0) }}
+                      </div>
+                      <span class="font-black text-slate-800 text-sm">{{ patient.fullName }}</span>
+                  </div>
+              </td>
+              <td class="text-sm font-bold text-slate-600">{{ formatDate(patient.dateOfBirth) }}</td>
+              <td>
+                  <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest"
+                        :class="patient.gender === 'Nam' ? 'bg-indigo-50 text-indigo-600' : 'bg-rose-50 text-rose-600'">
+                      {{ patient.gender }}
+                  </span>
+              </td>
+              <td class="text-sm font-black text-slate-500 tracking-wider">{{ patient.idCardNumber }}</td>
+              <td class="text-sm font-bold text-slate-700 italic">{{ patient.department }}</td>
+              <td class="text-right">
+                  <div class="flex justify-end gap-2">
+                    <button 
+                      @click="viewExamResults(patient)"
+                      class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:bg-white hover:text-primary transition-all border border-transparent hover:border-slate-100 shadow-sm"
+                      title="Xem kết quả"
+                    >
+                      <FileText class="w-5 h-5" />
+                    </button>
+                    <button 
+                      v-if="authStore.role === 'Admin'"
+                      @click="confirmDeletePatient(patient)"
+                      class="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-50 text-slate-300 hover:bg-white hover:text-rose-600 transition-all border border-transparent hover:border-slate-100 shadow-sm"
+                      title="Xóa bệnh nhân"
+                    >
+                      <Trash2 class="w-5 h-5" />
+                    </button>
+                  </div>
+              </td>
+            </tr>
+            <tr v-if="patients.length === 0">
+              <td colspan="7" class="py-32 text-center text-slate-200 font-black uppercase tracking-[0.2em] text-xs">Chưa có dữ liệu nhân sự cho hợp đồng này</td>
             </tr>
           </tbody>
         </table>
@@ -120,7 +180,9 @@
 
         <div class="p-6 border-t border-slate-200 flex justify-end space-x-3">
           <button @click="showModal = false" class="px-6 py-3 rounded-xl font-bold text-slate-700 hover:bg-slate-100">Hủy</button>
-          <button @click="savePatient" class="px-6 py-3 rounded-xl font-bold bg-primary hover:bg-primary-dark text-white">Lưu</button>
+          <button @click="savePatient" :disabled="isLoading" class="px-6 py-3 rounded-xl font-bold bg-primary hover:bg-primary-dark text-white disabled:opacity-50">
+            {{ isLoading ? 'Đang lưu...' : 'Lưu' }}
+          </button>
         </div>
       </div>
     </div>
@@ -134,6 +196,7 @@
         
         <div class="p-6">
           <button 
+            v-if="authStore.role === 'Admin' || authStore.role === 'MedicalStaff'"
             @click="showAddExamForm = !showAddExamForm"
             class="mb-4 flex items-center space-x-2 bg-primary hover:bg-primary-dark text-white px-4 py-2 rounded-xl font-bold"
           >
@@ -155,7 +218,9 @@
               <label class="block text-sm font-bold text-slate-700 mb-2">Chẩn đoán</label>
               <input v-model="newExam.diagnosis" type="text" class="w-full px-4 py-2 rounded-xl border-2 border-slate-200 focus:border-primary focus:outline-none" />
             </div>
-            <button @click="saveExamResult" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-xl font-bold">Lưu kết quả</button>
+            <button @click="saveExamResult" :disabled="isLoading" class="bg-primary hover:bg-primary-dark text-white px-6 py-2 rounded-xl font-bold disabled:opacity-50">
+              {{ isLoading ? 'Đang lưu...' : 'Lưu kết quả' }}
+            </button>
           </div>
 
           <!-- Exam Results List -->
@@ -169,6 +234,7 @@
               <p class="text-slate-700"><strong>Chẩn đoán:</strong> {{ exam.diagnosis }}</p>
               <p v-if="exam.doctorName" class="text-sm text-slate-500 mt-2">Bác sĩ: {{ exam.doctorName }}</p>
             </div>
+            <div v-if="examResults.length === 0" class="text-center py-8 text-slate-300 font-bold italic">Chưa có kết quả khám nào</div>
           </div>
         </div>
 
@@ -177,13 +243,30 @@
         </div>
       </div>
     </div>
+
+    <!-- Confirm Delete Dialog -->
+    <ConfirmDialog
+      v-model="showDeleteConfirm"
+      title="Xóa bệnh nhân?"
+      :message="`Bạn có chắc muốn xóa &quot;${patientToDelete?.fullName}&quot;? Hành động này không thể hoàn tác.`"
+      confirmText="Xóa ngay"
+      variant="danger"
+      @confirm="deletePatient"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+// BUG FIX: Thêm đầy đủ các import bị thiếu (ref, onMounted, axios)
+import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { UserPlus, FileText, Trash2, Plus } from 'lucide-vue-next'
+import { UserPlus, FileText, Trash2, Plus, Users as UsersIcon, Search, ChevronDown, Download } from 'lucide-vue-next'
+import { useAuthStore } from '../stores/auth'
+import { useToast } from '../composables/useToast'
+import ConfirmDialog from '../components/ConfirmDialog.vue'
+
+const authStore = useAuthStore()
+const toast = useToast()
 
 const contracts = ref([])
 const selectedContractId = ref(null)
@@ -193,6 +276,11 @@ const showExamModal = ref(false)
 const showAddExamForm = ref(false)
 const selectedPatient = ref(null)
 const examResults = ref([])
+const isLoading = ref(false)
+
+// For delete confirmation
+const showDeleteConfirm = ref(false)
+const patientToDelete = ref(null)
 
 const currentPatient = ref({
   fullName: '',
@@ -201,6 +289,10 @@ const currentPatient = ref({
   idCardNumber: '',
   phoneNumber: '',
   department: ''
+})
+
+const activeContracts = computed(() => {
+  return contracts.value.filter(c => !c.isFinished)
 })
 
 const newExam = ref({
@@ -219,6 +311,7 @@ const fetchContracts = async () => {
     contracts.value = res.data
   } catch (e) {
     console.error(e)
+    toast.error('Không thể tải danh sách hợp đồng')
   }
 }
 
@@ -229,6 +322,7 @@ const fetchPatients = async () => {
     patients.value = res.data
   } catch (e) {
     console.error(e)
+    toast.error('Không thể tải danh sách bệnh nhân')
   }
 }
 
@@ -245,17 +339,21 @@ const openModal = () => {
 }
 
 const savePatient = async () => {
+  if (!currentPatient.value.fullName) return toast.warning('Vui lòng nhập họ tên bệnh nhân!')
   try {
+    isLoading.value = true
     await axios.post('http://localhost:5283/api/Patients', {
       ...currentPatient.value,
       healthContractId: selectedContractId.value
     })
-    alert('✅ Đã thêm bệnh nhân!')
+    toast.success('Đã thêm bệnh nhân thành công!')
     showModal.value = false
     fetchPatients()
   } catch (e) {
     console.error(e)
-    alert('❌ Lỗi khi thêm bệnh nhân')
+    toast.error('Lỗi khi thêm bệnh nhân')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -268,19 +366,23 @@ const viewExamResults = async (patient) => {
     examResults.value = res.data
   } catch (e) {
     console.error(e)
+    toast.error('Không thể tải kết quả khám')
   }
 }
 
 const saveExamResult = async () => {
   try {
+    isLoading.value = true
     await axios.post(`http://localhost:5283/api/Patients/${selectedPatient.value.patientId}/exam-result`, newExam.value)
-    alert('✅ Đã lưu kết quả khám!')
+    toast.success('Đã lưu kết quả khám!')
     showAddExamForm.value = false
     newExam.value = { examType: '', result: '', diagnosis: '' }
     viewExamResults(selectedPatient.value)
   } catch (e) {
     console.error(e)
-    alert('❌ Lỗi khi lưu kết quả')
+    toast.error('Lỗi khi lưu kết quả khám')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -290,19 +392,63 @@ const closeExamModal = () => {
   examResults.value = []
 }
 
-const deletePatient = async (id) => {
-  if (!confirm('Bạn có chắc muốn xóa bệnh nhân này?')) return
+const confirmDeletePatient = (patient) => {
+  patientToDelete.value = patient
+  showDeleteConfirm.value = true
+}
+
+const deletePatient = async () => {
   try {
-    await axios.delete(`http://localhost:5283/api/Patients/${id}`)
-    alert('✅ Đã xóa bệnh nhân!')
+    isLoading.value = true
+    await axios.delete(`http://localhost:5283/api/Patients/${patientToDelete.value.patientId}`)
+    toast.success(`Đã xóa bệnh nhân "${patientToDelete.value.fullName}"`)
+    patientToDelete.value = null
     fetchPatients()
   } catch (e) {
     console.error(e)
-    alert('❌ Lỗi khi xóa')
+    toast.error('Lỗi khi xóa bệnh nhân')
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const exportToExcel = async () => {
+  if (!selectedContractId.value) return toast.warning('Vui lòng chọn hợp đồng để xuất danh sách!')
+  try {
+    isLoading.value = true
+    const response = await axios.get(`http://localhost:5283/api/Patients/export/${selectedContractId.value}`, {
+      responseType: 'blob'
+    })
+    
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    
+    // Fallback filename
+    let fileName = 'DanhSachBenhNhan.xlsx'
+    const contentDisposition = response.headers['content-disposition']
+    if (contentDisposition) {
+      const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/)
+      if (fileNameMatch) fileName = fileNameMatch[1]
+    }
+    
+    link.setAttribute('download', fileName)
+    document.body.appendChild(link)
+    link.click()
+    
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+    toast.success('Đã xuất file Excel thành công!')
+  } catch (e) {
+    console.error(e)
+    toast.error('Lỗi khi xuất file Excel')
+  } finally {
+    isLoading.value = false
   }
 }
 
 const formatDate = (date) => {
+  if (!date) return ''
   return new Date(date).toLocaleDateString('vi-VN')
 }
 </script>

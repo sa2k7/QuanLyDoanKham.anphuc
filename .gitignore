@@ -25,6 +25,5 @@ node_modules.zip
 Thumbs.db
 
 # Project specific
-.agent/
 .gemini/
 *.log
