@@ -51,18 +51,6 @@ const routes = [
         meta: { requiresAuth: true, roles: ['Admin', 'WarehouseManager'] }
     },
     {
-        path: '/reports',
-        name: 'Reports',
-        component: () => import('../views/Reports.vue'),
-        meta: { requiresAuth: true, roles: ['Admin', 'PayrollManager'] }
-    },
-    {
-        path: '/patients',
-        name: 'Patients',
-        component: () => import('../views/Patients.vue'),
-        meta: { requiresAuth: true, roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff'] }
-    },
-    {
         path: '/users',
         name: 'Users',
         component: () => import('../views/Users.vue'),

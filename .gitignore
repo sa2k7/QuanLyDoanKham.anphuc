@@ -26,4 +26,11 @@ Thumbs.db
 
 # Project specific
 .gemini/
+.agent/
+.agents/
 *.log
+wwwroot/uploads/
+*.xlsx
+*.pdf
+.env*
+! .env.example

@@ -8,8 +8,8 @@
           <Stethoscope class="text-white w-7 h-7" />
         </div>
         <div>
-          <h1 class="font-black text-2xl text-slate-900 tracking-tighter leading-none">Health<span class="text-primary italic">Care</span></h1>
-          <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Management System</p>
+          <h1 class="font-black text-xl text-slate-900 tracking-tighter leading-none">CÔNG TY <span class="text-primary italic">KHÁM SỨC KHỎE</span></h1>
+          <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Hệ thống Điều hành Nội bộ</p>
         </div>
       </div>
 
@@ -228,9 +228,8 @@
               <Reports v-if="activeMenu === 'reports'" />
               <AccountManager v-if="activeMenu === 'users'" />
               <Payroll v-if="activeMenu === 'payroll'" />
-              <Patients v-if="activeMenu === 'patients'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'reports', 'users', 'payroll', 'patients'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[3rem] border-4 border-dashed border-slate-50">
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'payroll'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[3rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
                 </div>
@@ -297,8 +296,8 @@ import Contracts from './Contracts.vue'
 import Staff from './Staff.vue'
 import Groups from './Groups.vue'
 import Supplies from './Supplies.vue'
-import Reports from './Reports.vue'
-import Patients from './Patients.vue'
+// import Reports from './Reports.vue'
+// import Patients from './Patients.vue'
 import AccountManager from './Users.vue'
 import Payroll from './Payroll.vue'
 
@@ -352,14 +351,12 @@ const handleChangePassword = async () => {
 
 const menuItems = [
   { id: 'home', name: 'Dashboard', icon: Bot, color: 'bg-primary-light text-primary', desc: 'Trung tâm điều khiển và phân tích.' },
-  { id: 'companies', name: 'Đối tác', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: 'Pháp nhân & Doanh nghiệp khách hàng.', roles: ['Admin', 'ContractManager'] },
+  { id: 'companies', name: 'Công ty', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: 'Pháp nhân & Doanh nghiệp khách hàng.', roles: ['Admin', 'ContractManager'] },
   { id: 'contracts', name: 'Hợp đồng', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: 'Quản lý pháp lý & ký kết HĐ.', roles: ['Admin', 'ContractManager', 'Customer'] },
   { id: 'groups', name: 'Đoàn khám', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: 'Vận hành thực địa & điều phối.', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
-  { id: 'patients', name: 'Bệnh nhân', icon: UsersIcon, color: 'bg-indigo-50 text-indigo-600', desc: 'Hồ sơ sức khỏe & kết quả khám.', roles: ['Admin', 'MedicalStaff', 'Customer'] },
   { id: 'staff', name: 'Nhân sự', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: 'Đội ngũ Y bác sĩ & Vận hành.', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager'] },
   { id: 'payroll', name: 'Tính lương', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: 'Kế toán thù lao & lương cứng.', roles: ['Admin', 'PayrollManager'] },
-  { id: 'supplies', name: 'Vật tư', icon: Package, color: 'bg-violet-50 text-violet-600', desc: 'Kho thiết bị & định mức y tế.', roles: ['Admin', 'WarehouseManager'] },
-  { id: 'reports', name: 'Báo cáo', icon: BarChart3, color: 'bg-amber-50 text-amber-600', desc: 'Phân tích doanh thu & hiệu suất.', roles: ['Admin', 'PayrollManager'] },
+  { id: 'supplies', name: 'Vật tư kho', icon: Package, color: 'bg-violet-50 text-violet-600', desc: 'Kho vật tư & Phiếu xuất kho.', roles: ['Admin', 'WarehouseManager'] },
   { id: 'users', name: 'Tài khoản', icon: Shield, color: 'bg-slate-50 text-slate-600', desc: 'Phân quyền & bảo mật tài khoản.', roles: ['Admin'] },
 ]
 
