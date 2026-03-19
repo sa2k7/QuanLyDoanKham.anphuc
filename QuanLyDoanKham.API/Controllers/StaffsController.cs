@@ -20,9 +20,9 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Staffs — Admin và Staff được xem
+        // GET: api/Staffs — Admin, MedicalStaff và PersonnelManager được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,Staff,PersonnelManager")] // Cho phép PersonnelManager xem danh sách
+        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager")] // Fix role name 'Staff' -> 'MedicalStaff' bh pk bh
         public async Task<ActionResult<IEnumerable<StaffDto>>> GetStaffs()
         {
             var staffs = await _context.Staffs
@@ -56,6 +56,7 @@ namespace QuanLyDoanKham.API.Controllers
                     BankName = s.BankName,
                     PhoneNumber = s.PhoneNumber,
                     JobTitle = s.JobTitle,
+                    Email = s.Email,
                     Department = s.Department,
                     EmployeeType = s.EmployeeType,
                     AvatarPath = s.AvatarPath,
@@ -70,9 +71,9 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(result);
         }
 
-        // GET: api/Staffs/5 — Admin và Staff được xem
+        // GET: api/Staffs/5 — Admin, MedicalStaff, PersonnelManager và MedicalGroupManager được xem
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,Staff")]
+        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager,MedicalGroupManager")] // Chuẩn hóa vai trò bh pk bh
         public async Task<ActionResult<StaffDetailDto>> GetStaff(int id)
         {
             var staff = await _context.Staffs
@@ -84,6 +85,9 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 return NotFound();
             }
+
+            var userAccount = await _context.Users.Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
 
             var dto = new StaffDetailDto
             {
@@ -99,6 +103,7 @@ namespace QuanLyDoanKham.API.Controllers
                 BankAccountName = staff.BankAccountName,
                 BankName = staff.BankName,
                 PhoneNumber = staff.PhoneNumber,
+                Email = staff.Email,
                 JobTitle = staff.JobTitle,
                 Department = staff.Department,
                 EmployeeType = staff.EmployeeType,
@@ -108,6 +113,7 @@ namespace QuanLyDoanKham.API.Controllers
                 AvatarPath = staff.AvatarPath,
                 BaseSalary = staff.BaseSalary,
                 IsActive = staff.IsActive,
+                SystemRole = userAccount?.Role?.RoleName ?? "MedicalStaff",
                 Workdays = staff.GroupStaffDetails.Select(gsd => new StaffWorkdayDto
                 {
                     Date = gsd.MedicalGroup.ExamDate,
@@ -131,9 +137,25 @@ namespace QuanLyDoanKham.API.Controllers
         [Authorize(Roles = "Admin,PersonnelManager")]
         public async Task<ActionResult<Staff>> PostStaff(StaffDto dto)
         {
+            // Tự động sinh mã nếu trống
+            if (string.IsNullOrEmpty(dto.EmployeeCode))
+            {
+                dto.EmployeeCode = await GenerateNextEmployeeCode();
+            }
+
+            // Kiểm tra trùng lặp
+            if (!string.IsNullOrEmpty(dto.EmployeeCode) && await _context.Staffs.AnyAsync(s => s.EmployeeCode == dto.EmployeeCode && s.IsActive))
+                return BadRequest("Mã nhân viên đã tồn tại.");
+            if (!string.IsNullOrEmpty(dto.IDCardNumber) && await _context.Staffs.AnyAsync(s => s.IDCardNumber == dto.IDCardNumber && s.IsActive))
+                return BadRequest("Số CCCD/CMND đã được đăng ký cho nhân sự khác.");
+            if (!string.IsNullOrEmpty(dto.TaxCode) && await _context.Staffs.AnyAsync(s => s.TaxCode == dto.TaxCode && s.IsActive))
+                return BadRequest("Mã số thuế cá nhân đã tồn tại.");
+            if (!string.IsNullOrEmpty(dto.PhoneNumber) && await _context.Staffs.AnyAsync(s => s.PhoneNumber == dto.PhoneNumber && s.IsActive))
+                return BadRequest("Số điện thoại đã được đăng ký cho nhân sự khác.");
+
             var staff = new Staff
             {
-                EmployeeCode = string.IsNullOrEmpty(dto.EmployeeCode) ? $"NV{DateTime.Now:yyyyMMddHHmmss}" : dto.EmployeeCode,
+                EmployeeCode = dto.EmployeeCode,
                 FullName = dto.FullName,
                 FullNameUnsigned = StringHelper.RemoveVietnameseAccents(dto.FullName).ToUpper(),
                 BirthYear = dto.BirthYear,
@@ -144,6 +166,7 @@ namespace QuanLyDoanKham.API.Controllers
                 BankAccountName = dto.BankAccountName,
                 BankName = dto.BankName,
                 PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
                 JobTitle = dto.JobTitle,
                 Department = dto.Department,
                 EmployeeType = dto.EmployeeType,
@@ -165,11 +188,13 @@ namespace QuanLyDoanKham.API.Controllers
             
             if (userRole != null)
             {
+                var username = staff.EmployeeCode.ToLower();
+                var initialPassword = "Password@123";
                 var newUser = new AppUser
                 {
-                    Username = staff.EmployeeCode.ToLower(),
+                    Username = username,
                     FullName = staff.FullName,
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                     RoleId = userRole.RoleId,
                     AvatarPath = staff.AvatarPath
                 };
@@ -179,6 +204,12 @@ namespace QuanLyDoanKham.API.Controllers
                 {
                     _context.Users.Add(newUser);
                     await _context.SaveChangesAsync();
+
+                    // Gửi thông báo thông tin tài khoản qua Email nêú có
+                    if (!string.IsNullOrEmpty(staff.Email))
+                    {
+                        EmailHelper.SendAccountCredentialNotification(staff.Email, staff.FullName, username, initialPassword);
+                    }
                 }
             }
 
@@ -202,6 +233,16 @@ namespace QuanLyDoanKham.API.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra trùng lặp (loại trừ chính nó)
+            if (!string.IsNullOrEmpty(dto.EmployeeCode) && await _context.Staffs.AnyAsync(s => s.EmployeeCode == dto.EmployeeCode && s.StaffId != id && s.IsActive))
+                return BadRequest("Mã nhân viên đã tồn tại.");
+            if (!string.IsNullOrEmpty(dto.IDCardNumber) && await _context.Staffs.AnyAsync(s => s.IDCardNumber == dto.IDCardNumber && s.StaffId != id && s.IsActive))
+                return BadRequest("Số CCCD/CMND đã tồn tại.");
+            if (!string.IsNullOrEmpty(dto.TaxCode) && await _context.Staffs.AnyAsync(s => s.TaxCode == dto.TaxCode && s.StaffId != id && s.IsActive))
+                return BadRequest("Mã số thuế đã tồn tại.");
+            if (!string.IsNullOrEmpty(dto.PhoneNumber) && await _context.Staffs.AnyAsync(s => s.PhoneNumber == dto.PhoneNumber && s.StaffId != id && s.IsActive))
+                return BadRequest("Số điện thoại đã tồn tại.");
+
             staff.EmployeeCode = dto.EmployeeCode;
             staff.FullName = dto.FullName;
             staff.FullNameUnsigned = StringHelper.RemoveVietnameseAccents(dto.FullName).ToUpper();
@@ -213,6 +254,7 @@ namespace QuanLyDoanKham.API.Controllers
             staff.BankAccountName = dto.BankAccountName;
             staff.BankName = dto.BankName;
             staff.PhoneNumber = dto.PhoneNumber;
+            staff.Email = dto.Email;
             staff.JobTitle = dto.JobTitle;
             staff.Department = dto.Department;
             staff.EmployeeType = dto.EmployeeType;
@@ -225,16 +267,44 @@ namespace QuanLyDoanKham.API.Controllers
                 await _context.SaveChangesAsync();
 
                 // Cập nhật vai trò hệ thống nếu có thay đổi
-                if (User.IsInRole("Admin") && !string.IsNullOrEmpty(dto.SystemRole))
+                if (!string.IsNullOrEmpty(dto.SystemRole))
                 {
-                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.Username.Equals(staff.EmployeeCode, StringComparison.OrdinalIgnoreCase));
-                    if (userAccount != null)
+                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
+                    var newRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == dto.SystemRole);
+                    
+                    if (userAccount != null && newRole != null)
                     {
-                        var newRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == dto.SystemRole);
-                        if (newRole != null && userAccount.RoleId != newRole.RoleId)
+                        bool isRoleChanged = userAccount.RoleId != newRole.RoleId;
+                        userAccount.RoleId = newRole.RoleId;
+                        userAccount.FullName = staff.FullName;
+                        userAccount.AvatarPath = staff.AvatarPath;
+                        await _context.SaveChangesAsync();
+
+                        // Nếu đổi vai trò và có email thì thông báo
+                        if (isRoleChanged && !string.IsNullOrEmpty(staff.Email))
                         {
-                            userAccount.RoleId = newRole.RoleId;
-                            await _context.SaveChangesAsync();
+                            EmailHelper.SendRoleChangeNotification(staff.Email, staff.FullName, newRole.RoleName);
+                        }
+                    }
+                    else if (userAccount == null && newRole != null)
+                    {
+                        // Nếu chưa có tài khoản, tự động tạo mới khi Update Staff
+                        var initialPassword = "Password@123";
+                        var newUser = new AppUser
+                        {
+                            Username = staff.EmployeeCode.ToLower(),
+                            FullName = staff.FullName,
+                            PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
+                            RoleId = newRole.RoleId,
+                            AvatarPath = staff.AvatarPath
+                        };
+                        _context.Users.Add(newUser);
+                        await _context.SaveChangesAsync();
+
+                        // Thông báo tài khoản mới
+                        if (!string.IsNullOrEmpty(staff.Email))
+                        {
+                            EmailHelper.SendAccountCredentialNotification(staff.Email, staff.FullName, newUser.Username, initialPassword);
                         }
                     }
                 }
@@ -251,7 +321,7 @@ namespace QuanLyDoanKham.API.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(staff);
         }
 
         // DELETE: api/Staffs/5 (Soft Delete) — Admin và PersonnelManager được xóa
@@ -274,7 +344,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Staffs/upload-avatar
         [HttpPost("upload-avatar")]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,PersonnelManager")]
         public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -351,14 +421,19 @@ namespace QuanLyDoanKham.API.Controllers
                     var worksheet = workbook.Worksheet(1);
                     var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Bỏ qua header
 
+                    var medicalStaffRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "MedicalStaff");
+
                     foreach (var r in rows)
                     {
+                        var employeeCode = r.Cell(1).Value.ToString();
                         var fullName = r.Cell(2).Value.ToString();
                         if (string.IsNullOrEmpty(fullName)) continue;
 
+                        if (await _context.Staffs.AnyAsync(s => s.EmployeeCode == employeeCode && s.IsActive)) continue;
+
                         var staff = new Staff
                         {
-                            EmployeeCode = r.Cell(1).Value.ToString() ?? $"NV{DateTime.Now:yyyyMMddHHmmss}",
+                            EmployeeCode = string.IsNullOrEmpty(employeeCode) ? await GenerateNextEmployeeCode() : employeeCode,
                             FullName = fullName,
                             FullNameUnsigned = StringHelper.RemoveVietnameseAccents(fullName).ToUpper(),
                             JobTitle = r.Cell(3).Value.ToString() ?? "Bác sĩ",
@@ -367,11 +442,51 @@ namespace QuanLyDoanKham.API.Controllers
                             CreatedDate = DateTime.Now
                         };
                         _context.Staffs.Add(staff);
+                        await _context.SaveChangesAsync(); // Save staff first to get ID/Code
+
+                        // Tự động tạo tài khoản
+                        if (medicalStaffRole != null)
+                        {
+                            var username = staff.EmployeeCode.ToLower();
+                            if (!await _context.Users.AnyAsync(u => u.Username == username))
+                            {
+                                var newUser = new AppUser
+                                {
+                                    Username = username,
+                                    FullName = staff.FullName,
+                                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
+                                    RoleId = medicalStaffRole.RoleId
+                                };
+                                _context.Users.Add(newUser);
+                            }
+                        }
                     }
                     await _context.SaveChangesAsync();
                 }
             }
-            return Ok(new { message = "Đã nhập dữ liệu nhân sự thành công!" });
+            return Ok(new { message = "Đã nhập dữ liệu nhân sự và tạo tài khoản thành công!" });
+        }
+
+        private async Task<string> GenerateNextEmployeeCode()
+        {
+            // Lấy mã NV lớn nhất (bắt đầu bằng NV và theo sau là số)
+            var lastStaff = await _context.Staffs
+                .Where(s => s.EmployeeCode.StartsWith("NV") && s.EmployeeCode.Length > 2)
+                .OrderByDescending(s => s.EmployeeCode)
+                .FirstOrDefaultAsync();
+
+            if (lastStaff == null) return "NV001";
+
+            // Thử lấy phần số từ NVxxx
+            var currentCode = lastStaff.EmployeeCode.Substring(2);
+            if (int.TryParse(currentCode, out int number))
+            {
+                return $"NV{(number + 1).ToString("D3")}";
+            }
+
+            // Nếu mã NV hiện tại không phải số (vd: NV_BACSI), đếm tổng số NV để fallback
+            var count = await _context.Staffs.CountAsync();
+            return $"NV{(count + 1).ToString("D3")}";
         }
 
         private bool StaffExists(int id)

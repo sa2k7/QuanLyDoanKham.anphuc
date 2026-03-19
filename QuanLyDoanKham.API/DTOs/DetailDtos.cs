@@ -21,7 +21,14 @@ namespace QuanLyDoanKham.API.DTOs
         public string BankName { get; set; }
         [RegularExpression(@"^0\d{9,10}$", ErrorMessage = "Số điện thoại không đúng định dạng (10-11 số, bắt đầu bằng 0)")]
         public string PhoneNumber { get; set; }
+        
+        [EmailAddress(ErrorMessage = "Địa chỉ Email không đúng định dạng")]
+        public string Email { get; set; }
+
         public string JobTitle { get; set; }
+        public string StaffType { get; set; } // BacSi, DieuDuong, KyThuatVien, NhanVienHoTro
+        public string Specialty { get; set; } // Chuyen khoa
+        public decimal DailyRate { get; set; } // Don gia thu lao ca ngay
         public string Department { get; set; }
         public string EmployeeType { get; set; }
         public string IDCardFrontPath { get; set; }
@@ -31,11 +38,9 @@ namespace QuanLyDoanKham.API.DTOs
         public decimal BaseSalary { get; set; }
         public bool IsActive { get; set; }
         
-        // Trạng thái vận hành hiện tại
+        // Trang thai van hanh
         public string CurrentGroupName { get; set; }
         public bool IsWorking { get; set; }
-
-        // Vai trò hệ thống được cấp (Manager, Staff, etc.)
         public string SystemRole { get; set; }
     }
 
@@ -75,10 +80,14 @@ namespace QuanLyDoanKham.API.DTOs
         public int StaffId { get; set; }
         public string FullName { get; set; }
         public string JobTitle { get; set; }
+        public string StaffType { get; set; } // BacSi, DieuDuong...
         public double ShiftType { get; set; }
-        public decimal CalculatedSalary { get; set; } // Kết quả tính "1 củ còn 500k"
+        public decimal CalculatedSalary { get; set; }
         public string WorkPosition { get; set; }
         public string WorkStatus { get; set; }
+        public DateTime? CheckInTime { get; set; } // Gio check-in thuc te
+        public DateTime? CheckOutTime { get; set; } // Gio check-out thuc te
+        public string Note { get; set; }
     }
 
     // === SUPPLY & WAREHOUSE ===
@@ -88,8 +97,15 @@ namespace QuanLyDoanKham.API.DTOs
         public string SupplyName { get; set; }
         public string Unit { get; set; }
         public bool IsFixedAsset { get; set; }
+        public string Category { get; set; } // Nhom vat tu
+        public string LotNumber { get; set; } // So lo
+        public DateTime? ExpirationDate { get; set; } // Han su dung
+        public DateTime? ManufactureDate { get; set; } // Ngay san xuat
+        public int MinStockLevel { get; set; } // Nguong canh bao het hang
         public decimal UnitPrice { get; set; }
         public int TotalStock { get; set; }
+        public bool IsExpiringSoon { get; set; } // True neu HSD < 30 ngay
+        public bool IsLowStock { get; set; } // True neu TotalStock <= MinStockLevel
     }
 
     public class SupplyInventoryVoucherDto
@@ -126,5 +142,12 @@ namespace QuanLyDoanKham.API.DTOs
     {
         public int SupplyId { get; set; }
         public int Quantity { get; set; }
+    }
+
+    // === DIEM DANH / CHECK-IN ===
+    public class UpdateWorkStatusDto
+    {
+        public string WorkStatus { get; set; } // "Đang chờ" / "Đã tham gia" / "Vắng mặt" / "Xin nghỉ"
+        public string Note { get; set; } // Ghi chu ly do nghi, v.v.
     }
 }

@@ -2,7 +2,7 @@
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="modelValue" class="fixed inset-0 z-[9998] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4" @click.self="cancel">
-        <div class="bg-white max-w-md w-full p-8 rounded-[2.5rem] shadow-2xl animate-pop-in">
+        <div class="bg-white max-w-md w-full p-8 rounded-[2.5rem] shadow-2xl animate-pop-in border-2 border-slate-900">
           <div class="flex items-center space-x-4 mb-6">
             <div :class="['p-4 rounded-2xl', iconBgClass]">
               <component :is="iconComponent" class="w-8 h-8" :class="iconColorClass" />
@@ -12,7 +12,7 @@
             </div>
           </div>
           
-          <p class="text-slate-600 font-bold mb-8 leading-relaxed">{{ message }}</p>
+          <p class="text-slate-600 font-black mb-8 leading-relaxed">{{ message }}</p>
           
           <div class="flex space-x-4">
             <button @click="cancel" class="flex-1 px-6 py-3 rounded-xl font-black text-slate-500 bg-slate-100 hover:bg-slate-200 transition-all border border-slate-200">
@@ -30,7 +30,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { AlertTriangle, Trash2, CheckCircle } from 'lucide-vue-next'
+import { AlertTriangle, Trash2, CheckCircle2 as CheckCircle } from 'lucide-vue-next'
 
 const props = defineProps({
   modelValue: Boolean,

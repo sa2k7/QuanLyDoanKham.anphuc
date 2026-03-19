@@ -35,7 +35,8 @@ namespace QuanLyDoanKham.API.Controllers
                     .Include(gsd => gsd.MedicalGroup)
                     .Where(gsd => gsd.StaffId == staff.StaffId && 
                                   gsd.MedicalGroup.ExamDate.Month == month && 
-                                  gsd.MedicalGroup.ExamDate.Year == year)
+                                  gsd.MedicalGroup.ExamDate.Year == year &&
+                                  gsd.WorkStatus == "Đã tham gia") // CHỈ TÍNH LƯƠNG NHỮNG NGƯỜI THỰC SỰ ĐI LÀM
                     .Select(gsd => new PayrollDetailDto
                     {
                         GroupId = gsd.GroupId,
@@ -150,7 +151,8 @@ namespace QuanLyDoanKham.API.Controllers
                     .Include(gsd => gsd.MedicalGroup)
                     .Where(gsd => gsd.StaffId == staff.StaffId && 
                                   gsd.MedicalGroup.ExamDate.Month == month && 
-                                  gsd.MedicalGroup.ExamDate.Year == year)
+                                  gsd.MedicalGroup.ExamDate.Year == year &&
+                                  gsd.WorkStatus == "Đã tham gia") // CHỈ XUẤT EXCEL CHO NHỮNG DÒNG HỢP LỆ
                     .Select(gsd => new PayrollDetailDto
                     {
                         GroupId = gsd.GroupId,

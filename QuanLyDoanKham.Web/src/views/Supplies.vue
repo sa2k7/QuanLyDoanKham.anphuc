@@ -1,269 +1,568 @@
 <template>
   <div class="space-y-6 animate-fade-in pb-20">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
-        <h2 class="text-3xl font-black tracking-tight text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+        <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
             <Package class="w-6 h-6" />
           </div>
-          Quản trị Kho & Vật tư
+          Hệ thống Vật tư & Kho
+          <span class="text-slate-200 ml-2 font-black">/</span>
+          <span class="text-violet-600 font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-[9px] mt-2">Nội bộ: Xuất/Nhập vật tư theo Phiếu Kho</p>
+        <div class="flex items-center gap-4 mt-2">
+            <button @click="activeTab = 'inventory'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'inventory' ? 'bg-violet-600 text-white shadow-lg shadow-violet-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
+                <span class="tracking-[0.3em]">Tồn kho hiện tại</span>
+            </button>
+            <button @click="activeTab = 'vouchers'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'vouchers' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
+                <span class="tracking-[0.3em]">Lịch sử Phiếu kho</span>
+            </button>
+        </div>
       </div>
-
-      <div class="flex items-center gap-4">
+      <div class="flex gap-3">
         <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
-                @click="openVoucherModal" 
-                class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl shadow-lg">
-            <ClipboardList class="w-5 h-5" />
-            <span>TẠO PHIẾU KHO</span>
+                @click="openVoucherModal()" 
+                class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50 transition-all">
+          <ClipboardList class="w-4 h-4 mr-2" />
+          <span class="text-[10px] uppercase tracking-widest font-black ">LẬP PHIẾU MỚI</span>
         </button>
-        <button v-if="authStore.role === 'Admin'" 
-                @click="showAddSupply = !showAddSupply" 
-                class="p-3 bg-white border-2 border-slate-50 text-slate-400 rounded-xl hover:text-emerald-600 transition-all">
-            <Plus class="w-5 h-5" />
+        <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+                @click="openModal()" 
+                class="btn-premium bg-slate-900 text-white px-8 py-3 shadow-lg transition-all">
+          <Plus class="w-5 h-5 mr-2" />
+          <span class="text-[10px] uppercase tracking-widest font-black ">THÊM VẬT TƯ</span>
         </button>
       </div>
     </div>
 
-    <!-- Form Khai báo vật tư mới (Chỉ Admin) -->
-    <div v-if="showAddSupply" class="premium-card p-6 bg-white border-4 border-emerald-50 animate-slide-up">
-        <h3 class="text-sm font-black text-slate-800 mb-4 uppercase">Khai báo Danh mục Vật tư</h3>
-        <form @submit.prevent="addSupply" class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <input v-model="newSupply.supplyName" placeholder="Tên vật tư..." class="input-premium" required />
-            <input v-model="newSupply.unit" placeholder="Đơn vị tính (VD: Cái, Hộp...)" class="input-premium" required />
-            <button type="submit" class="bg-emerald-600 text-white font-black text-xs uppercase rounded-xl">THÊM DANH MỤC</button>
-        </form>
-    </div>
+    <!-- Active View: INVENTORY -->
+    <div v-if="activeTab === 'inventory'" class="space-y-6 animate-fade-in">
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard 
+                title="Tổng danh mục mặt hàng"
+                :value="String(list.length).padStart(3, '0')"
+                :icon="Layers"
+                variant="indigo"
+                subtext="Danh mục kho"
+            />
+            <StatCard 
+                title="Cảnh báo tồn kho thấp"
+                :value="String(list.filter(s => s.isLowStock).length).padStart(3, '0')"
+                :icon="AlertCircle"
+                variant="rose"
+                trend="Cần nhập"
+                trendColor="rose"
+            />
+            <StatCard 
+                title="Vật tư sắp hết hạn"
+                :value="String(list.filter(s => s.isExpiringSoon).length).padStart(3, '0')"
+                :icon="Clock"
+                variant="amber"
+                trend="Cần xử lý"
+                trendColor="amber"
+            />
+        </div>
 
-    <!-- Tab Filter -->
-    <div class="flex items-center gap-4 mb-6">
-        <button @click="activeTab = 'inventory'" 
-                :class="['px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'inventory' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-slate-400 border-2 border-slate-50']">
-            Tồn kho hiện tại ({{ list.length }})
-        </button>
-        <button @click="activeTab = 'vouchers'" 
-                :class="['px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'vouchers' ? 'bg-slate-800 text-white shadow-lg' : 'bg-white text-slate-400 border-2 border-slate-50']">
-            Lịch sử Phiếu Kho ({{ vouchers.length }})
-        </button>
-    </div>
-
-    <!-- Inventory Tab -->
-    <div v-if="activeTab === 'inventory'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div v-for="item in list" :key="item.supplyId" class="premium-card p-6 bg-white border border-slate-50 group">
-            <div class="flex justify-between items-start mb-4">
-                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center">
-                    <Package class="w-6 h-6" />
-                </div>
-                <div class="text-right">
-                    <p class="text-[9px] font-black text-slate-300 uppercase">Tồn kho</p>
-                    <p class="text-2xl font-black text-slate-800 tracking-tighter">{{ item.totalStock }} <span class="text-[10px] text-slate-400">{{ item.unit }}</span></p>
+        <!-- Search & Table -->
+        <div class="premium-card bg-white border border-slate-100 overflow-hidden mt-8">
+            <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
+                <div class="relative group flex-1">
+                    <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                    <input v-model="searchQuery" placeholder="Tìm tên mặt hàng, phân loại, mã vật tư..." 
+                        class="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:border-violet-600/20 outline-none font-black text-xs text-slate-600 shadow-sm transition-all" />
                 </div>
             </div>
-            <h4 class="font-black text-slate-700 text-sm mb-4 leading-tight group-hover:text-emerald-600 transition-colors uppercase">{{ item.supplyName }}</h4>
-            <div class="pt-4 border-t border-slate-50 flex justify-end">
-                <button v-if="authStore.role === 'Admin'" @click="deleteSupply(item.supplyId)" class="text-slate-300 hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 class="w-4 h-4" /></button>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <tr>
+                            <th class="p-5 text-center w-20">STT</th>
+                            <th class="p-5">Mục vật tư</th>
+                            <th class="p-5">Phân loại</th>
+                            <th class="p-5 text-right">Đơn giá</th>
+                            <th class="p-5 text-center">Tồn kho hiện thời</th>
+                            <th class="p-5 text-center">Tác vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <tr v-for="(item, index) in filteredList" :key="item.supplyId" 
+                            class="text-xs hover:bg-slate-50/50 transition-all cursor-pointer group" @click="openModal(item)">
+                            <td class="p-5 text-center font-black text-slate-300 group-hover:text-violet-600 tabular-nums">{{ String(index + 1).padStart(3, '0') }}</td>
+                            <td class="p-5">
+                                <div class="flex items-center gap-4">
+                                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center font-black shadow-lg', 
+                                                item.isLowStock ? 'bg-rose-50 text-rose-600' : 'bg-violet-50 text-violet-600']">
+                                        {{ item.supplyName.charAt(0) }}
+                                    </div>
+                                    <div class="flex flex-col">
+                                        <span class="font-black text-slate-800 uppercase tracking-widest group-hover:text-violet-600">{{ item.supplyName }}</span>
+                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">VT{{ String(item.supplyId).padStart(4, '0') }}</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="p-5">
+                                <span class="px-3 py-1.5 bg-slate-100 rounded-lg font-black text-slate-500 uppercase tracking-widest text-[9px] ">{{ item.category || 'VTYT' }}</span>
+                            </td>
+                            <td class="p-5 text-right font-black text-slate-700 ">{{ formatCurrency(item.unitPrice) }}</td>
+                            <td class="p-5 text-center border-l border-slate-50">
+                                <div class="flex flex-col items-center">
+                                    <span :class="['text-sm font-black ', item.isLowStock ? 'text-rose-500' : 'text-slate-900']">{{ formatNumber(item.totalStock) }}</span>
+                                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ item.unit || 'Đơn vị' }}</span>
+                                </div>
+                            </td>
+                            <td class="p-5 text-center">
+                                <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+                                        @click.stop="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Sửa hàng">
+                                    <Edit3 class="w-5 h-5" />
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="filteredList.length === 0">
+                            <td colspan="6" class="py-24 text-center opacity-20">
+                                <PackageSearch class="w-16 h-16 mx-auto mb-4" />
+                                <p class="text-xs font-black uppercase tracking-[0.3em]">Kho dữ liệu trống</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Vouchers Tab -->
-    <div v-if="activeTab === 'vouchers'" class="premium-card overflow-hidden bg-white border border-slate-100">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase text-slate-400">
-                    <tr>
-                        <th class="p-4">Mã Phiếu</th>
-                        <th class="p-4">Ngày tạo</th>
-                        <th class="p-4">Loại phiếu</th>
-                        <th class="p-4">Đối tượng</th>
-                        <th class="p-4">Người lập</th>
-                        <th class="p-4 text-center">Tác vụ</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                    <tr v-for="v in vouchers" :key="v.voucherId" class="text-xs hover:bg-slate-50/50 transition-all">
-                        <td class="p-4 font-black text-slate-800">#{{ v.voucherCode }}</td>
-                        <td class="p-4 text-slate-500">{{ formatDate(v.createdAt) }}</td>
-                        <td class="p-4">
-                            <span :class="['px-3 py-1 rounded-full text-[9px] font-black uppercase', v.type === 'Import' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600']">
-                                {{ v.type === 'Import' ? 'NHẬP KHO' : 'XUẤT ĐOÀN' }}
-                            </span>
-                        </td>
-                        <td class="p-4 font-bold text-slate-600">{{ v.groupName || 'Hệ thống/NCC' }}</td>
-                        <td class="p-4 text-slate-500">{{ v.createdBy }}</td>
-                        <td class="p-4 text-center">
-                            <button @click="viewVoucher(v)" class="text-indigo-600 hover:underline font-black">XEM CHI TIẾT</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+    <!-- Active View: VOUCHERS -->
+    <div v-else class="space-y-6 animate-fade-in">
+        <div class="premium-card bg-white border border-slate-100 overflow-hidden">
+            <div class="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
+                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Lịch sử giao dịch kho</h3>
+                <div class="flex items-center gap-3">
+                    <button @click="fetchVouchers" class="p-2 text-slate-400 hover:text-violet-600"><RefreshCw class="w-4 h-4" /></button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                        <tr>
+                            <th class="p-5 w-32">Mã phiếu</th>
+                            <th class="p-5">Loại</th>
+                            <th class="p-5 text-center w-40">Ngày tạo</th>
+                            <th class="p-5">Đoàn khám / Đơn vị</th>
+                            <th class="p-5">Người lập</th>
+                            <th class="p-5">Ghi chú</th>
+                            <th class="p-5 text-center">Tác vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50 text-xs text-slate-600">
+                        <tr v-for="v in vouchers" :key="v.voucherId" class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="p-5 font-black text-slate-900">{{ v.voucherCode }}</td>
+                            <td class="p-5">
+                                <span :class="['px-3 py-1.5 rounded-lg font-black uppercase tracking-widest text-[9px] whitespace-nowrap inline-flex items-center gap-2', v.type === 'IMPORT' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600']">
+                                    <ArrowDownLeft v-if="v.type === 'IMPORT'" class="w-3 h-3" />
+                                    <ArrowUpRight v-else class="w-3 h-3" />
+                                    {{ v.type === 'IMPORT' ? 'Nhập kho' : 'Xuất kho' }}
+                                </span>
+                            </td>
+                            <td class="p-5 text-center font-black text-slate-400">{{ new Date(v.createDate).toLocaleString('vi-VN') }}</td>
+                            <td class="p-5">
+                                <span class="font-black text-slate-700 uppercase tracking-widest">{{ v.groupName || 'KHO TỔNG' }}</span>
+                            </td>
+                            <td class="p-5 font-black text-slate-500">{{ v.createdBy }}</td>
+                            <td class="p-5 text-slate-400 font-medium italic truncate max-w-[200px]">{{ v.note || '---' }}</td>
+                            <td class="p-5 text-center">
+                                <button v-if="authStore.role === 'Admin'" @click="deleteVoucher(v.voucherId)" class="p-2 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                                    <Trash2 class="w-4 h-4" />
+                                </button>
+                            </td>
+                        </tr>
+                        <tr v-if="vouchers.length === 0">
+                            <td colspan="6" class="py-24 text-center opacity-10 font-black uppercase tracking-widest ">Chưa có giao dịch phát sinh</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <!-- Voucher Creation Modal -->
-    <div v-if="modals.voucher.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-2xl p-8 rounded-[2rem] shadow-2xl animate-fade-in-up">
-            <h3 class="text-xl font-black text-slate-800 mb-6 uppercase">Lập Phiếu Kho Mới</h3>
-            <form @submit.prevent="createVoucher" class="space-y-6">
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Loại nghiệp vụ</label>
-                        <select v-model="modals.voucher.data.type" required class="input-premium">
-                            <option value="Import">Nhập kho từ NCC</option>
-                            <option value="Export">Xuất kho đi Đoàn</option>
+    <!-- Modal: Thêm/Sửa mặt hàng -->
+    <Teleport to="body">
+      <div v-if="showModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-6 animate-fade-in overflow-y-auto">
+          <div class="bg-white w-full max-w-xl rounded-[3.5rem] shadow-2xl animate-scale-up border-2 border-slate-900 relative overflow-hidden mt-auto mb-auto">
+              <!-- Border Overlay -->
+              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+              
+              <!-- Header Gradient -->
+              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+
+              <!-- Close Button -->
+              <button @click="showModal = false" class="absolute top-6 right-6 bg-white/20 p-2 rounded-full hover:bg-white/40 transition-all text-white z-10 flex items-center justify-center">
+                  <X class="w-6 h-6" />
+              </button>
+
+              <div class="mt-32 relative z-10 pt-4">
+                  <div class="p-12 pt-4 pb-0">
+                      <h3 class="text-2xl font-black text-slate-800 mb-10 uppercase tracking-widest flex items-center gap-4">
+                    <div class="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center shadow-lg border-2 border-teal-50">
+                      <Edit3 class="w-6 h-6" />
+                    </div>
+                    Thành phần Vật tư
+                  </h3>
+              
+              <form id="supplyForm" @submit.prevent="saveItem" class="space-y-8">
+                  <div class="grid grid-cols-2 gap-8">
+                    <div class="flex flex-col gap-2 col-span-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Tên định danh mặt hàng *</label>
+                        <input v-model="currentItem.supplyName" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full" placeholder="Ví dụ: Thuốc giảm đau..." />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Phân nhóm mục</label>
+                        <select v-model="currentItem.category" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black">
+                          <option value="VTYT">Vật tư y tế</option>
+                          <option value="Thuốc">Thuốc / Dược phẩm</option>
+                          <option value="CCDC">Công cụ dụng cụ</option>
+                          <option value="Khác">Phân loại khác</option>
                         </select>
                     </div>
-                    <div v-if="modals.voucher.data.type === 'Export'" class="space-y-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400">Đoàn khám nhận</label>
-                        <select v-model="modals.voucher.data.groupId" required class="input-premium">
-                            <option v-for="g in openGroups" :key="g.groupId" :value="g.groupId">{{ g.groupName }}</option>
-                        </select>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đơn vị tính</label>
+                        <input v-model="currentItem.unit" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black" placeholder="Lọ, Cái..." />
                     </div>
-                </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đơn giá niêm yết (VNĐ)</label>
+                        <input :value="formatInput(currentItem.unitPrice)" 
+                               @input="currentItem.unitPrice = parseInput($event.target.value)"
+                               required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="0" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ngưỡng tồn tối thiểu</label>
+                        <input :value="formatInput(currentItem.minStockLevel)" 
+                               @input="currentItem.minStockLevel = parseInput($event.target.value)"
+                               required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="5" />
+                    </div>
+                  </div>
 
-                <!-- Item Selector -->
-                <div class="space-y-4">
-                    <label class="text-[10px] font-black uppercase text-slate-400">Danh sách vật tư</label>
-                    <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                        <div v-for="(item, idx) in modals.voucher.data.details" :key="idx" class="flex gap-2 items-center">
-                            <select v-model="item.supplyId" required class="flex-1 input-premium">
-                                <option v-for="s in list" :key="s.supplyId" :value="s.supplyId">{{ s.supplyName }} (Tồn: {{ s.totalStock }})</option>
-                            </select>
-                            <input v-model="item.quantity" type="number" required placeholder="SL" class="w-24 input-premium text-center" />
-                            <button type="button" @click="removeItem(idx)" class="text-rose-400"><X class="w-4 h-4" /></button>
+                  </form>
+                  </div>
+
+                  <div class="px-12 pb-12 pt-4 bg-white relative z-20">
+                      <div class="flex gap-4">
+                          <button v-if="currentItem.supplyId && authStore.role === 'Admin'" type="button" @click="deleteItem" class="px-6 py-4 text-rose-500 font-black uppercase tracking-widest text-[10px] hover:bg-rose-50 rounded-2xl">Xóa</button>
+                          <div class="flex-1"></div>
+                          <button type="button" @click="showModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy</button>
+                          <button form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </Teleport>
+
+    <!-- Modal: Lập Phiếu Kho (Nghiệp vụ quan trọng) -->
+    <Teleport to="body">
+      <div v-if="showVoucherModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-xl p-6 animate-fade-in overflow-y-auto">
+          <div class="bg-white w-full max-w-4xl p-12 rounded-[3.5rem] shadow-2xl animate-scale-up border-2 border-slate-900 overflow-hidden relative mt-auto mb-auto">
+              <!-- Border Overlay -->
+              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+              
+              <!-- Header Gradient -->
+              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+
+              <!-- Close Button -->
+              <button @click="showVoucherModal = false" class="absolute top-6 right-6 bg-white/20 p-2 rounded-full hover:bg-white/40 transition-all text-white z-10 flex items-center justify-center">
+                  <X class="w-6 h-6" />
+              </button>
+
+              <div class="mt-32 relative z-10 pt-4">
+                  <div class="px-12">
+                      <div class="flex justify-between items-center mb-10">
+                      <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-4">
+                        <div class="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center shadow-lg border-2 border-teal-50">
+                          <ClipboardList class="w-6 h-6" />
                         </div>
-                    </div>
-                    <button type="button" @click="addItem" class="text-[10px] font-black text-emerald-600 uppercase">+ THÊM DÒNG</button>
-                </div>
+                        Lập Giao dịch Kho
+                      </h3>
+                  <div class="flex gap-2">
+                      <button @click="newVoucher.type = 'IMPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'IMPORT' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Nhập kho</button>
+                      <button @click="newVoucher.type = 'EXPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'EXPORT' ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Xuất kho</button>
+                  </div>
+              </div>
+              
+              <div class="pr-2 space-y-8 pb-4">
+                  <!-- Voucher Header Info -->
+                  <div class="grid grid-cols-2 gap-8">
+                      <div v-if="newVoucher.type === 'EXPORT'" class="flex flex-col gap-2">
+                          <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đoàn khám tiếp nhận *</label>
+                          <select v-model="newVoucher.groupId" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black">
+                              <option v-for="g in groups" :key="g.groupId" :value="g.groupId">[{{ g.groupCode }}] - {{ g.groupName }}</option>
+                          </select>
+                      </div>
+                      <div class="flex flex-col gap-2" :class="{'col-span-2': newVoucher.type === 'IMPORT'}">
+                          <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ghi chú nội dung phiếu</label>
+                          <input v-model="newVoucher.note" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black" placeholder="Lý do nhập/xuất, chứng từ đính kèm..." />
+                      </div>
+                  </div>
 
-                <div class="flex gap-3 pt-6">
-                    <button type="button" @click="modals.voucher.show = false" class="flex-1 py-3 text-slate-400 font-black text-xs uppercase underline">QUAY LẠI</button>
-                    <button type="submit" class="flex-[3] bg-emerald-600 text-white py-3 rounded-xl font-black text-xs uppercase shadow-lg">XÁC NHẬN LẬP PHIẾU</button>
-                </div>
-            </form>
-        </div>
-    </div>
+                  <!-- Voucher Details -->
+                  <div class="space-y-4">
+                      <div class="flex items-center justify-between">
+                          <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Danh mục hàng hóa chuyển kho</p>
+                          <button @click="addDetailRow" class="text-[9px] font-black text-violet-600 uppercase tracking-widest flex items-center gap-2 hover:bg-violet-50 px-3 py-1.5 rounded-lg transition-all">
+                              <PlusCircle class="w-4 h-4" /> Thêm dòng hàng
+                          </button>
+                      </div>
 
-    <!-- Voucher Detail Modal -->
-    <div v-if="viewingVoucher" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4">
-        <div class="bg-white w-full max-w-lg p-10 rounded-[2rem] shadow-2xl relative">
-            <button @click="viewingVoucher = null" class="absolute top-6 right-6 text-slate-300 hover:text-slate-600"><X class="w-6 h-6" /></button>
-            <div class="text-center mb-8">
-                <p class="text-[10px] font-black text-slate-300 uppercase">Chi tiết Phiếu Kho</p>
-                <h3 class="text-2xl font-black text-slate-800">#{{ viewingVoucher.voucherCode }}</h3>
-                <p class="text-xs font-bold text-emerald-600 uppercase mt-2">{{ viewingVoucher.type === 'Import' ? 'NHẬP KHO' : 'XUẤT ĐOÀN' }}</p>
-            </div>
-            
-            <div class="space-y-6">
-                <div class="grid grid-cols-2 gap-6 text-xs border-b border-slate-50 pb-6">
-                    <div>
-                        <p class="font-black text-slate-300 uppercase mb-1">Ngày tạo</p>
-                        <p class="font-bold">{{ formatDate(viewingVoucher.createdAt) }}</p>
-                    </div>
-                    <div>
-                        <p class="font-black text-slate-300 uppercase mb-1">Người lập</p>
-                        <p class="font-bold">{{ viewingVoucher.createdBy }}</p>
-                    </div>
-                </div>
+                      <div class="space-y-4">
+                          <div v-for="(row, idx) in newVoucher.details" :key="idx" class="grid grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-3xl border border-slate-100 animate-fade-in-up">
+                              <div class="col-span-6 flex flex-col gap-2">
+                                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Vật tư / Thuốc</label>
+                                  <select v-model="row.supplyId" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-xs">
+                                      <option v-for="s in list" :key="s.supplyId" :value="s.supplyId">{{ s.supplyName }} (Tồn: {{ s.totalStock }} {{ s.unit }})</option>
+                                  </select>
+                              </div>
+                              <div class="col-span-4 flex flex-col gap-2">
+                                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng {{ newVoucher.type === 'IMPORT' ? 'nhập' : 'xuất' }}</label>
+                                  <input :value="formatInput(row.quantity)" 
+                                         @input="row.quantity = parseInput($event.target.value)"
+                                         class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-right" placeholder="0" />
+                              </div>
+                              <div class="col-span-2 flex justify-center pb-1">
+                                  <button @click="removeDetailRow(idx)" class="p-4 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 class="w-5 h-5" /></button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
 
-                <div class="space-y-3">
-                    <p class="text-[9px] font-black text-slate-300 uppercase">Mặt hàng luân chuyển</p>
-                    <div class="space-y-2">
-                        <div v-for="d in viewingVoucher.details" :key="d.id" class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-                            <span class="font-bold text-slate-700">{{ d.supplyName }}</span>
-                            <span class="font-black text-slate-800">{{ d.quantity }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                  </div>
 
+                  <div class="px-12 pb-12 pt-4 bg-white relative z-20">
+                      <div class="flex gap-4">
+                          <button type="button" @click="showVoucherModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy bỏ</button>
+                          <div class="flex-1"></div>
+                          <button @click="saveVoucher" :disabled="!isVoucherValid" class="bg-slate-900 text-white px-14 py-4 rounded-2xl font-black shadow-2xl flex items-center gap-4 uppercase text-[10px] tracking-[0.3em] disabled:opacity-30 disabled:scale-100 transform hover:-translate-y-1 active:scale-95 transition-all">
+                              Xác nhận chốt phiếu
+                          </button>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
-import { Package, Plus, ClipboardList, Trash2, X, FileText } from 'lucide-vue-next'
+import { 
+    Package, Plus, Search, RefreshCw, Layers, AlertCircle, Clock, Edit3, 
+    PackageSearch, ClipboardList, PlusCircle, Trash2, ChevronRight,
+    ArrowDownLeft, ArrowUpRight, X
+} from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
+import StatCard from '../components/StatCard.vue'
 
 const authStore = useAuthStore()
 const toast = useToast()
+
+// -- STATE --
+const activeTab = ref('inventory')
 const list = ref([])
 const vouchers = ref([])
-const openGroups = ref([])
-const activeTab = ref('inventory')
-const showAddSupply = ref(false)
-const viewingVoucher = ref(null)
+const groups = ref([])
+const showModal = ref(false)
+const showVoucherModal = ref(false)
+const searchQuery = ref('')
+const currentItem = ref({})
 
-const newSupply = ref({ supplyName: '', unit: '' })
-const modals = ref({
-    voucher: { show: false, data: { type: 'Import', groupId: null, details: [{ supplyId: null, quantity: 1 }] } }
+const newVoucher = ref({
+    type: 'IMPORT',
+    groupId: null,
+    note: '',
+    details: [{ supplyId: null, quantity: 0 }]
 })
 
-const fetchData = async () => {
-    try {
-        const [sRes, vRes, gRes] = await Promise.all([
-            axios.get('http://localhost:5283/api/Supplies'),
-            axios.get('http://localhost:5283/api/Supplies/vouchers'),
-            axios.get('http://localhost:5283/api/MedicalGroups')
-        ]);
-        list.value = sRes.data
-        vouchers.value = vRes.data
-        openGroups.value = gRes.data.filter(g => g.status === 'Open')
-    } catch (e) { toast.error("Lỗi khi tải kho") }
+// -- UTILS: Number & Currency Formatting --
+const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num || 0)
+const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
+
+const formatInput = (val) => {
+    if (val === null || val === undefined || isNaN(val)) return ''
+    return new Intl.NumberFormat('vi-VN').format(val)
 }
 
-const addSupply = async () => {
-    try {
-        await axios.post('http://localhost:5283/api/Supplies', newSupply.value)
-        toast.success("Đã thêm vào danh mục!")
-        showAddSupply.value = false
-        newSupply.value = { supplyName: '', unit: '' }
-        fetchData()
-    } catch (e) { toast.error("Lỗi khi thêm danh mục") }
+const parseInput = (str) => {
+    if (!str) return 0
+    const clean = str.replace(/[^\d]/g, '')
+    return parseInt(clean) || 0
 }
 
-const deleteSupply = async (id) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa?")) return
+// -- COMPUTED --
+const filteredList = computed(() => {
+    if (!searchQuery.value) return list.value
+    const q = searchQuery.value.toLowerCase()
+    return list.value.filter(s => 
+        s.supplyName.toLowerCase().includes(q) || 
+        (s.category && s.category.toLowerCase().includes(q)) ||
+        String(s.supplyId).includes(q)
+    )
+})
+
+const isVoucherValid = computed(() => {
+    if (newVoucher.value.type === 'EXPORT' && !newVoucher.value.groupId) return false
+    return newVoucher.value.details.some(d => d.supplyId && d.quantity > 0)
+})
+
+// -- DATA FETCHING --
+const fetchList = async () => {
     try {
-        await axios.delete(`http://localhost:5283/api/Supplies/${id}`)
-        toast.success("Đã xóa!")
-        fetchData()
-    } catch (e) { toast.error("Không thể xóa vật tư này") }
+        const res = await axios.get('http://localhost:5283/api/Supplies')
+        list.value = res.data
+    } catch (e) { toast.error("Lỗi dữ liệu kho") }
 }
 
+const fetchVouchers = async () => {
+    try {
+        const res = await axios.get('http://localhost:5283/api/Supplies/vouchers')
+        vouchers.value = res.data
+    } catch (e) { toast.error("Lỗi dữ liệu phiếu") }
+}
+
+const fetchGroups = async () => {
+    try {
+        const res = await axios.get('http://localhost:5283/api/MedicalGroups')
+        // Lọc bỏ các đoàn khám đã hoàn tất (Completed) để không hiển thị trong danh sách chọn
+        groups.value = res.data.filter(g => {
+            const status = g.status || g.Status
+            return status !== 'Completed'
+        })
+    } catch (e) { console.warn("Could not fetch groups") }
+}
+
+// -- ACTIONS: SUPPLIES --
+const openModal = (item = null) => {
+    currentItem.value = item ? { ...item } : { supplyName: '', category: 'VTYT', unit: '', unitPrice: 0, minStockLevel: 5 }
+    showModal.value = true
+}
+
+const saveItem = async () => {
+    try {
+        if (currentItem.value.supplyId) {
+            await axios.put(`http://localhost:5283/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
+        } else {
+            await axios.post('http://localhost:5283/api/Supplies', currentItem.value)
+        }
+        toast.success("Hợp lệ: Dữ liệu đã được cập nhật!")
+        showModal.value = false
+        fetchList()
+    } catch (e) { 
+        toast.error(e.response?.data || "Lỗi lưu dữ liệu") 
+    }
+}
+
+const deleteItem = async () => {
+    if (!confirm("Xác nhận xóa mặt hàng này khỏi kho?")) return
+    try {
+        await axios.delete(`http://localhost:5283/api/Supplies/${currentItem.value.supplyId}`)
+        toast.success("Đã xóa khỏi danh mục!")
+        showModal.value = false
+        fetchList()
+    } catch (e) { 
+        toast.error(e.response?.data || "Không thể xóa hàng đang lưu kho") 
+    }
+}
+
+// -- ACTIONS: VOUCHERS --
 const openVoucherModal = () => {
-    modals.value.voucher.data = { type: 'Import', groupId: null, details: [{ supplyId: list.value[0]?.supplyId || null, quantity: 1 }] }
-    modals.value.voucher.show = true
+    newVoucher.value = {
+        type: 'IMPORT',
+        groupId: null,
+        note: '',
+        details: [{ supplyId: list.value[0]?.supplyId || null, quantity: 10 }]
+    }
+    showVoucherModal.value = true
 }
 
-const addItem = () => {
-    modals.value.voucher.data.details.push({ supplyId: list.value[0]?.supplyId || null, quantity: 1 })
+const addDetailRow = () => {
+    newVoucher.value.details.push({ supplyId: list.value[0]?.supplyId || null, quantity: 0 })
 }
 
-const removeItem = (idx) => {
-    modals.value.voucher.data.details.splice(idx, 1)
+const removeDetailRow = (idx) => {
+    if (newVoucher.value.details.length > 1) {
+        newVoucher.value.details.splice(idx, 1)
+    }
 }
 
-const createVoucher = async () => {
+const saveVoucher = async () => {
     try {
-        await axios.post('http://localhost:5283/api/Supplies/vouchers', modals.value.voucher.data)
-        toast.success("Đã lập phiếu kho thành công!")
-        modals.value.voucher.show = false
-        fetchData()
-    } catch (e) { toast.error(e.response?.data || "Lỗi khi lập phiếu") }
+        await axios.post('http://localhost:5283/api/Supplies/vouchers', newVoucher.value)
+        toast.success("Phiếu kho đã được chốt và cập nhật tồn kho!")
+        showVoucherModal.value = false
+        fetchList()
+        fetchVouchers()
+    } catch (e) {
+        toast.error(e.response?.data || "Lỗi lập phiếu")
+    }
 }
 
-const viewVoucher = (v) => { viewingVoucher.value = v }
-const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p)
+const deleteVoucher = async (id) => {
+    if (!confirm("Xác nhận xóa phiếu kho này? Tồn kho liên quan sẽ được tự động hoàn tác.")) return
+    try {
+        await axios.delete(`http://localhost:5283/api/Supplies/vouchers/${id}`)
+        toast.success("Đã xóa phiếu và hoàn tác tồn kho!")
+        fetchVouchers()
+        fetchList()
+    } catch (e) {
+        toast.error(e.response?.data || "Lỗi xóa phiếu")
+    }
+}
 
-onMounted(fetchData)
+// -- LIFECYCLE --
+onMounted(() => {
+    fetchList()
+    fetchVouchers()
+    fetchGroups()
+})
+
+// Watch for tab switching to refresh data
+watch(activeTab, (val) => {
+    if (val === 'vouchers') fetchVouchers()
+    else fetchList()
+})
 </script>
+
+<style scoped>
+.animate-scale-up {
+  animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.92) translateY(20px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.4s ease-out forwards;
+}
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.premium-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.premium-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);
+}
+</style>

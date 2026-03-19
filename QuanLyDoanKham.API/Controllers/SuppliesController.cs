@@ -23,6 +23,7 @@ namespace QuanLyDoanKham.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SupplyDto>>> GetSupplies()
         {
+            var today = DateTime.Today;
             return await _context.Supplies
                 .Select(s => new SupplyDto
                 {
@@ -30,10 +31,36 @@ namespace QuanLyDoanKham.API.Controllers
                     SupplyName = s.SupplyName,
                     Unit = s.Unit,
                     IsFixedAsset = s.IsFixedAsset,
+                    Category = s.Category,
+                    LotNumber = s.LotNumber,
+                    ExpirationDate = s.ExpirationDate,
+                    ManufactureDate = s.ManufactureDate,
+                    MinStockLevel = s.MinStockLevel,
                     UnitPrice = s.UnitPrice,
-                    TotalStock = s.TotalStock
+                    TotalStock = s.TotalStock,
+                    // Canh bao HSD con < 30 ngay
+                    IsExpiringSoon = s.ExpirationDate.HasValue && s.ExpirationDate.Value <= today.AddDays(30),
+                    // Canh bao ton kho duoi nguong toi thieu
+                    IsLowStock = s.TotalStock <= s.MinStockLevel
                 })
                 .ToListAsync();
+        }
+
+
+        // DELETE: api/Supplies/{id}
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
+        public async Task<IActionResult> DeleteSupply(int id)
+        {
+            var supply = await _context.Supplies.FindAsync(id);
+            if (supply == null) return NotFound("Không tìm thấy vật tư.");
+
+            var isUsed = await _context.SupplyInventoryDetails.AnyAsync(d => d.SupplyId == id);
+            if (isUsed) return BadRequest("Vật tư này đã phát sinh giao dịch phiếu kho, không thể xóa.");
+
+            _context.Supplies.Remove(supply);
+            await _context.SaveChangesAsync();
+            return Ok("Đã xóa vật tư thành công.");
         }
 
         // POST: api/Supplies (Tạo mới loại vật tư)
@@ -41,6 +68,9 @@ namespace QuanLyDoanKham.API.Controllers
         [Authorize(Roles = "Admin,WarehouseManager")]
         public async Task<ActionResult<Supply>> PostSupply(SupplyDto dto)
         {
+            if (await _context.Supplies.AnyAsync(s => s.SupplyName == dto.SupplyName))
+                return BadRequest($"Vật tư '{dto.SupplyName}' đã tồn tại trong danh mục.");
+
             var supply = new Supply
             {
                 SupplyName = dto.SupplyName,
@@ -111,14 +141,52 @@ namespace QuanLyDoanKham.API.Controllers
                 });
 
                 // Cập nhật tồn kho thực tế
-                if (dto.Type == "IMPORT") supply.TotalStock += item.Quantity;
-                else supply.TotalStock -= item.Quantity;
+                if (dto.Type.ToUpper() == "IMPORT") 
+                {
+                    supply.TotalStock += item.Quantity;
+                }
+                else if (dto.Type.ToUpper() == "EXPORT")
+                {
+                    supply.TotalStock -= item.Quantity;
+                }
             }
 
             _context.SupplyInventoryVouchers.Add(voucher);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Tạo phiếu thành công", voucherCode = voucher.VoucherCode });
+        }
+        // DELETE: api/Supplies/vouchers/{id}
+        [HttpDelete("vouchers/{id}")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
+        public async Task<IActionResult> DeleteVoucher(int id)
+        {
+            var voucher = await _context.SupplyInventoryVouchers
+                .Include(v => v.Details)
+                .FirstOrDefaultAsync(v => v.VoucherId == id);
+
+            if (voucher == null) return NotFound("Không tìm thấy phiếu kho.");
+
+            // Hoàn tác tồn kho
+            foreach (var detail in voucher.Details)
+            {
+                var supply = await _context.Supplies.FindAsync(detail.SupplyId);
+                if (supply != null)
+                {
+                    if (voucher.Type.ToUpper() == "IMPORT")
+                    {
+                        supply.TotalStock -= detail.Quantity;
+                    }
+                    else if (voucher.Type.ToUpper() == "EXPORT")
+                    {
+                        supply.TotalStock += detail.Quantity;
+                    }
+                }
+            }
+
+            _context.SupplyInventoryVouchers.Remove(voucher);
+            await _context.SaveChangesAsync();
+            return Ok("Đã xóa phiếu kho và hoàn tác tồn kho thành công.");
         }
     }
 }

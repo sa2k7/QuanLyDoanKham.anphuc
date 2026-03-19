@@ -9,13 +9,13 @@
         <div class="inline-flex items-center justify-center w-20 h-20 bg-primary text-white rounded-[1.8rem] mb-6 shadow-2xl shadow-primary/30 transform -rotate-3">
           <Stethoscope class="w-10 h-10" />
         </div>
-        <h2 class="text-4xl font-black text-slate-900 tracking-tighter">HealthCare</h2>
-        <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-[10px] mt-4">Hệ điều hành Quản lý Đoàn khám</p>
+        <h2 class="text-4xl font-black text-slate-900 ">HealthCare</h2>
+        <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] mt-4">Hệ điều hành Quản lý Đoàn khám</p>
       </div>
 
-      <form @submit.prevent="handleLogin" class="space-y-8">
-        <div class="space-y-3">
-          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh tài khoản</label>
+      <form @submit.prevent="handleLogin" autocomplete="off" class="space-y-8">
+        <div class="flex flex-col gap-3">
+          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Email hoặc Tên đăng nhập</label>
           <div class="relative group">
             <span class="absolute inset-y-0 left-0 pl-6 flex items-center text-slate-300 group-focus-within:text-primary transition-colors">
               <User class="w-5 h-5" />
@@ -23,14 +23,15 @@
             <input 
               v-model="username"
               type="text" 
+              autocomplete="off"
               class="w-full pl-14 pr-6 py-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none font-black text-slate-600 transition-all shadow-inner group-hover:bg-slate-100/50"
-              placeholder="Nhập tên đăng nhập..."
+              placeholder="vidu@gmail.com hoặc username..."
               required
             />
           </div>
         </div>
 
-        <div class="space-y-3">
+        <div class="flex flex-col gap-3">
           <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Mật khẩu bảo mật</label>
           <div class="relative group">
             <span class="absolute inset-y-0 left-0 pl-6 flex items-center text-slate-300 group-focus-within:text-primary transition-colors">
@@ -38,7 +39,9 @@
             </span>
             <input 
               v-model="password"
+              @input="password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
               :type="showPassword ? 'text' : 'password'" 
+              autocomplete="new-password"
               class="w-full pl-14 pr-14 py-5 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-primary/20 focus:bg-white outline-none font-black text-slate-600 transition-all shadow-inner group-hover:bg-slate-100/50"
               placeholder="••••••••"
               required
@@ -54,7 +57,21 @@
           </div>
         </div>
 
-        <div class="flex justify-end">
+        <div class="flex items-center justify-between px-1">
+          <label class="flex items-center gap-3 cursor-pointer group/check">
+            <div class="relative flex items-center justify-center w-5 h-5 rounded-lg border-2 border-slate-200 group-hover/check:border-primary/50 transition-all overflow-hidden bg-slate-50">
+              <input 
+                v-model="rememberMe"
+                type="checkbox" 
+                class="peer absolute inset-0 opacity-0 cursor-pointer z-10"
+              />
+              <div class="w-full h-full bg-primary transform scale-0 peer-checked:scale-100 transition-transform flex items-center justify-center">
+                <Check class="w-3 h-3 text-white" />
+              </div>
+            </div>
+            <span class="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover/check:text-slate-600 transition-colors">Ghi nhớ tôi</span>
+          </label>
+
           <button 
             type="button" 
             @click="showForgotModal = true"
@@ -83,31 +100,33 @@
       </form>
 
       <!-- Forgot Password Modal -->
-      <div v-if="showForgotModal" class="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
-        <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 border-2 border-slate-50 animate-scale-up text-center">
-            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
-                <ShieldAlert class="w-8 h-8" />
-            </div>
-            <h3 class="text-xl font-black text-slate-800 mb-2">Yêu cầu cấp lại mật khẩu</h3>
-            <p class="text-xs font-bold text-slate-400 leading-relaxed mb-8">
-                Hệ thống sẽ gửi thông báo đến **Admin**. Vui lòng nhập tên đăng nhập của bạn:
-            </p>
-            
-            <div class="space-y-4 mb-8">
-                <input v-model="resetUsername" type="text" class="input-premium text-center" placeholder="Username cần cấp lại..." />
-                <p v-if="resetMessage" :class="['text-[10px] font-black uppercase tracking-widest', resetSuccess ? 'text-emerald-500' : 'text-rose-500']">
-                  {{ resetMessage }}
-                </p>
-            </div>
+      <Teleport to="body">
+        <div v-if="showForgotModal" class="fixed inset-0 z-[1000] flex items-center justify-center p-6 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+          <div class="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl p-10 border-2 border-slate-50 animate-scale-up text-center">
+              <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <ShieldAlert class="w-8 h-8" />
+              </div>
+              <h3 class="text-xl font-black text-slate-800 mb-2">Yêu cầu cấp lại mật khẩu</h3>
+              <p class="text-xs font-black text-slate-400 leading-relaxed mb-8">
+                  Hệ thống sẽ gửi thông báo đến **Admin**. Vui lòng nhập thông tin tài khoản của bạn:
+              </p>
+              
+              <div class="flex flex-col gap-4 mb-8">
+                  <input v-model="resetUsername" type="text" class="input-premium w-full text-center" placeholder="Email hoặc Username..." />
+                  <p v-if="resetMessage" :class="['text-[10px] font-black uppercase tracking-widest ', resetSuccess ? 'text-emerald-500' : 'text-rose-500']">
+                    {{ resetMessage }}
+                  </p>
+              </div>
 
-            <div class="flex gap-4">
-                <button @click="showForgotModal = false; resetMessage = ''; resetUsername = ''" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest">Hủy</button>
-                <button @click="submitResetRequest" :disabled="isResetting" class="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl disabled:opacity-50">
-                  {{ isResetting ? 'ĐANG GỬI...' : 'GỬI YÊU CẦU' }}
-                </button>
-            </div>
+              <div class="flex gap-4">
+                  <button @click="showForgotModal = false; resetMessage = ''; resetUsername = ''" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest ">Hủy</button>
+                  <button @click="submitResetRequest" :disabled="isResetting" class="flex-[2] py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl disabled:opacity-50">
+                    {{ isResetting ? 'ĐANG GỬI...' : 'GỬI YÊU CẦU' }}
+                  </button>
+              </div>
+          </div>
         </div>
-      </div>
+      </Teleport>
 
       <div class="mt-12 text-center">
           <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]">© 2026 HealthCare System</p>
@@ -130,7 +149,8 @@ import {
   ArrowRight, 
   Loader2, 
   AlertCircle,
-  ShieldAlert
+  ShieldAlert,
+  Check
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -138,6 +158,7 @@ const authStore = useAuthStore()
 
 const username = ref('')
 const password = ref('')
+const rememberMe = ref(false)
 const showPassword = ref(false)
 const showForgotModal = ref(false)
 
@@ -175,7 +196,7 @@ const submitResetRequest = async () => {
 }
 
 const handleLogin = async () => {
-  const success = await authStore.login(username.value, password.value)
+  const success = await authStore.login(username.value, password.value, rememberMe.value)
   if (success) {
     router.push('/')
   }

@@ -3,67 +3,124 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10">
       <div>
-        <h2 class="text-4xl font-black tracking-tighter text-slate-800 flex items-center gap-4">
-          <div class="w-14 h-14 bg-indigo-600 text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl shadow-indigo-200">
-            <ShieldCheck class="w-8 h-8" />
+        <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <ShieldCheck class="w-6 h-6" />
           </div>
           {{ isAdmin ? 'Quản trị Hệ thống' : 'Thông tin Tài khoản' }}
+          <span v-if="isAdmin" class="text-slate-200 ml-2 font-black">/</span>
+          <span v-if="isAdmin" class="text-rose-600 font-black tabular-nums">{{ String(users.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-4 ml-1">{{ isAdmin ? 'Phân quyền & Kiểm soát truy cập tập trung' : 'Thông tin cá nhân & Nhật ký hoạt động' }}</p>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? 'Phân quyền & Kiểm soát truy cập tập trung' : 'Thông tin cá nhân & Nhật ký hoạt động' }}</p>
       </div>
       <button v-if="isAdmin" @click="openCreateModal" 
-              class="btn-premium bg-slate-900 text-white hover:bg-black shadow-2xl shadow-slate-200 px-10 py-4">
-        <UserPlus class="w-6 h-6" />
-        <span>CẤP TÀI KHOẢN MỚI</span>
+              class="btn-premium bg-slate-900 text-white px-8 py-3 shadow-lg">
+        <UserPlus class="w-5 h-5" />
+        <span class="">CẤP TÀI KHOẢN MỚI</span>
       </button>
     </div>
 
+    <!-- Admin Stats Section -->
+    <div v-if="isAdmin" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <StatCard 
+            title="Định danh hệ thống"
+            :value="String(users.length).padStart(3, '0')"
+            :icon="AtSign"
+            variant="slate"
+            subtext="Tổng tài khoản"
+        />
+        <StatCard 
+            title="Quản trị viên root"
+            :value="String(users.filter(u => u.roleName === 'Admin').length).padStart(3, '0')"
+            :icon="ShieldCheck"
+            variant="rose"
+            subtext="Quyền tối cao"
+        />
+        <StatCard 
+            title="Nhân sự y tế"
+            :value="String(users.filter(u => u.roleName === 'MedicalStaff').length).padStart(3, '0')"
+            :icon="Stethoscope"
+            variant="indigo"
+            subtext="Đi đoàn khám"
+        />
+    </div>
+
     <!-- ADMIN VIEW: USER LIST -->
-    <div v-if="isAdmin" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
-        <div v-for="u in users" :key="u.username" 
-             class="premium-card p-8 bg-white border-2 border-slate-50 hover:border-indigo-600/20 transition-all group relative overflow-hidden">
-            
-            <div class="absolute right-0 top-0 p-4">
-                <div :class="['w-2 h-2 rounded-full', u.username === 'admin' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-200']"></div>
-            </div>
-
-            <div class="flex items-center space-x-5 mb-8">
-                <div class="w-16 h-16 rounded-2xl bg-slate-50 border-2 border-slate-100 overflow-hidden flex-shrink-0 shadow-inner group-hover:scale-105 transition-transform">
-                    <img v-if="u.avatarPath" :src="`http://localhost:5283/${u.avatarPath}`" class="w-full h-full object-cover" />
-                    <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
-                </div>
-                <div>
-                    <h4 class="font-black text-slate-800 text-lg tracking-tight group-hover:text-indigo-600 transition-colors">{{ u.fullName || 'Chưa đặt tên' }}</h4>
-                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2 mt-1">
-                        <AtSign class="w-3 h-3 text-indigo-400" />
-                        {{ u.username }}
-                    </p>
-                </div>
-            </div>
-
-            <div class="mb-8 p-4 bg-slate-50 rounded-2xl border border-slate-100 group-hover:bg-indigo-50/30 group-hover:border-indigo-100 transition-colors">
-                <div class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Vai trò hệ thống</div>
-                <div class="text-xs font-black text-slate-700 tracking-tight">
-                    {{ u.roleName === 'PersonnelManager' ? 'Quản lý Nhân sự' :
-                       u.roleName === 'ContractManager' ? 'Quản lý Hợp đồng' :
-                       u.roleName === 'PayrollManager' ? 'Kế toán hệ thống' :
-                       u.roleName === 'MedicalGroupManager' ? 'Điều phối vận hành' :
-                       u.roleName === 'WarehouseManager' ? 'Quản lý hậu cần' :
-                       u.roleName === 'MedicalStaff' ? 'Bác sĩ/Kỹ thuật viên' : u.roleName === 'Admin' ? 'Quản trị viên' : u.roleName }}
-                </div>
-            </div>
-
-            <div class="pt-6 border-t border-slate-50 flex items-center justify-between">
-                <button @click="openEditModal(u)" class="text-[10px] font-black uppercase tracking-widest text-indigo-600 hover:text-slate-900 transition-all flex items-center gap-2">
-                    <Edit3 class="w-4 h-4" />
-                    HIỆU CHỈNH
-                </button>
-                <button v-if="u.username !== 'admin'" @click="handleDelete(u.username)" class="w-10 h-10 flex items-center justify-center bg-rose-50 text-rose-400 rounded-xl hover:bg-rose-500 hover:text-white transition-all">
-                    <Trash2 class="w-4 h-4" />
-                </button>
-            </div>
-            
-            <div class="absolute -bottom-4 -right-4 w-20 h-20 bg-indigo-50/50 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+    <div v-if="isAdmin" class="premium-card bg-white border border-slate-100 overflow-hidden mb-20">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    <tr>
+                        <th class="p-4 text-center w-16">STT</th>
+                        <th class="p-4">Tài khoản</th>
+                        <th class="p-4">Vai trò</th>
+                        <th class="p-4">Mật khẩu</th>
+                        <th class="p-4 text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="(u, index) in users" :key="u.username" class="text-xs hover:bg-slate-50/50 transition-all">
+                        <td class="p-4 text-center font-black text-slate-400 tabular-nums">
+                            {{ String(index + 1).padStart(3, '0') }}
+                        </td>
+                        <td class="p-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
+                                    <div v-if="u.username === 'admin'" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse z-10"></div>
+                                    <img v-if="u.avatarPath" :src="`http://localhost:5283/${u.avatarPath}`" class="w-full h-full object-cover" />
+                                    <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ u.fullName || 'Chưa đặt tên' }}</h4>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1 flex items-center gap-1">
+                                        <AtSign class="w-3 h-3 text-indigo-400" /> {{ u.username }}
+                                    </p>
+                                    <p v-if="u.email" class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.3em] flex items-center gap-1">
+                                        <Mail class="w-3 h-3" /> {{ u.email }}
+                                    </p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-4">
+                            <span class="inline-flex items-center px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-[0.3em]">
+                                {{ i18n.t('roles.' + u.roleName) }}
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <!-- Hiển thị mật khẩu reset nếu có -->
+                            <div v-if="getTempPass(u.username)" class="inline-flex items-center gap-3 px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-100 animate-pulse mb-1">
+                                <span class="text-[10px] font-black text-slate-800">{{ getTempPass(u.username) }}</span>
+                                <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Reset</span>
+                            </div>
+                            <!-- Hiển thị mật khẩu mặc định dự kiến cho nhân sự mới -->
+                            <div v-else class="flex flex-col gap-1">
+                                <span class="text-[10px] font-black text-slate-400 font-mono tracking-tighter">
+                                    {{ u.username === 'admin' ? '••••••••' : (u.username.startsWith('nv') ? 'Password@123' : 'HealthCare2026') }}
+                                </span>
+                                <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Mặc định</span>
+                            </div>
+                        </td>
+                        <td class="p-4 text-center">
+                            <div class="flex items-center justify-center gap-3">
+                                <button @click="openEditModal(u)" class="btn-action-premium variant-indigo text-slate-400" title="Hiệu chỉnh">
+                                    <Edit3 class="w-5 h-5" />
+                                </button>
+                                <button v-if="u.username !== 'admin'" @click="handleDelete(u.username)" class="btn-action-premium variant-rose text-slate-400" title="Xóa tài khoản">
+                                    <Trash2 class="w-5 h-5" />
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="users.length === 0">
+                        <td colspan="5" class="py-20 text-center">
+                            <div class="flex flex-col items-center justify-center gap-4">
+                                <ShieldCheck class="w-10 h-10 text-slate-200" />
+                                <p class="text-slate-300 font-black uppercase tracking-widest text-xs">Không có dữ liệu tài khoản</p>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
@@ -80,10 +137,10 @@
                         <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`" class="w-full h-full object-cover rounded-[2.5rem] bg-slate-50" />
                     </div>
                     <div class="mb-4">
-                        <h3 class="text-4xl font-black text-white tracking-tighter">{{ profile.fullName }}</h3>
+                        <h3 class="text-4xl font-black text-white ">{{ profile.fullName }}</h3>
                         <div class="flex items-center gap-3 mt-2">
                             <span class="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">{{ profile.roleName }}</span>
-                            <span class="text-white/60 text-xs font-bold uppercase tracking-widest">@{{ profile.username }}</span>
+                            <span class="text-white/60 text-xs font-black uppercase tracking-widest ">@{{ profile.username }}</span>
                         </div>
                     </div>
                 </div>
@@ -103,7 +160,7 @@
                             </div>
                             <div>
                                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Email Công vụ</p>
-                                <p class="font-black text-slate-900 text-lg">{{ profile.username }}@healthcare.vn</p>
+                                <p class="font-black text-slate-900 text-lg">{{ profile.email || profile.username + '@healthcare.vn' }}</p>
                             </div>
                         </div>
                         <div class="bg-slate-50/50 p-8 rounded-[2.5rem] border border-slate-100 flex items-center space-x-6 hover:bg-white hover:shadow-xl transition-all">
@@ -130,7 +187,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-black text-slate-700">Truy cập trạm điều phối {{ i === 1 ? 'Hôm nay' : i === 2 ? 'Hôm qua' : '2 ngày trước' }}</p>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">LÚC 09:15 AM • IP: 192.168.1.10{{ i }}</p>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">LÚC 09:15 AM • IP: 192.168.1.10{{ i }}</p>
                             </div>
                         </div>
                     </div>
@@ -140,80 +197,106 @@
     </div>
 
     <!-- MODAL: CREATE / EDIT USER -->
-    <div v-if="modal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-xl p-10 rounded-[3rem] shadow-2xl relative animate-fade-in-up mt-auto mb-auto">
-            <button @click="modal.show = false" class="absolute top-8 right-8 text-slate-300 hover:text-slate-800 transition-all">
-                <X class="w-8 h-8" />
-            </button>
-            
-            <h3 class="text-2xl font-black text-slate-800 flex items-center mb-8">
-                <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-200">
-                    <UserPlus v-if="!modal.isEdit" class="w-6 h-6" />
-                    <Edit3 v-else class="w-6 h-6" />
-                </div>
-                {{ modal.isEdit ? 'Cập nhật tài khoản' : 'Cấp tài khoản mới' }}
-            </h3>
+    <Teleport to="body">
+      <div v-if="modal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div class="bg-white w-full max-w-xl rounded-[3rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
+              <!-- Border Overlay -->
+              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+              
+              <!-- Header Gradient -->
+              <div class="absolute top-0 left-0 right-0 h-24 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+              
+              <button @click="modal.show = false" class="absolute top-6 right-6 text-white/80 hover:text-white transition-all z-10">
+                  <X class="w-8 h-8" />
+              </button>
+              
+              <div class="mt-20 relative z-10 pt-4">
+                  <div class="p-10 pt-4 pb-0">
+                  <h3 class="text-2xl font-black text-slate-800 flex items-center mb-8">
+                      <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-200 border-2 border-white">
+                          <UserPlus v-if="!modal.isEdit" class="w-6 h-6" />
+                          <Edit3 v-else class="w-6 h-6" />
+                      </div>
+                      {{ modal.isEdit ? 'Cập nhật tài khoản' : 'Cấp tài khoản mới' }}
+                  </h3>
 
-            <form @submit.prevent="handleSubmit" class="space-y-6">
-                <!-- Avatar Upload -->
-                <div class="flex flex-col items-center space-y-4 mb-6">
-                    <div class="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group">
-                        <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
-                        <Camera v-else class="w-8 h-8 text-slate-300" />
-                        <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                            <span class="text-white text-[10px] font-black uppercase tracking-widest">Thay ảnh</span>
-                            <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
-                        </label>
-                    </div>
-                </div>
+              <form id="userForm" @submit.prevent="handleSubmit" class="space-y-6">
+                  <!-- Avatar Upload -->
+                  <div class="flex flex-col items-center space-y-4 mb-6">
+                      <div class="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group">
+                          <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
+                          <Camera v-else class="w-8 h-8 text-slate-300" />
+                          <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
+                              <span class="text-white text-[10px] font-black uppercase tracking-widest ">Thay ảnh</span>
+                              <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
+                          </label>
+                      </div>
+                  </div>
 
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Tên định danh đăng nhập</label>
-                    <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium" placeholder="VD: bacsi_binh" />
-                </div>
-                
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ tài khoản</label>
-                    <input v-model="form.fullName" required class="input-premium" placeholder="Nhập họ và tên đầy đủ..." />
-                </div>
+                  <div class="flex flex-col gap-2">
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Tên định danh đăng nhập</label>
+                      <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium w-full" placeholder="VD: bacsi_binh" />
+                  </div>
+                  
+                  <div class="flex flex-col gap-2">
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ tài khoản</label>
+                      <input v-model="form.fullName" required class="input-premium w-full" placeholder="Nhập họ và tên đầy đủ..." />
+                  </div>
 
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="space-y-3">
-                        <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò</label>
-                        <select v-model="form.roleId" class="input-premium">
-                            <option :value="1">Admin (Quản trị tối cao)</option>
-                            <option :value="2">Quản lý Nhân sự</option>
-                            <option :value="3">Quản lý Công ty/Hợp đồng</option>
-                            <option :value="4">Kế toán (Quản lý lương)</option>
-                            <option :value="5">Quản lý Vận hành Đoàn</option>
-                            <option :value="6">Quản lý Vật tư/Kho</option>
-                            <option :value="7">Nhân viên Chuyên môn (Đi khám)</option>
-                            <option :value="8">Khách hàng (Xem kết quả)</option>
-                        </select>
-                    </div>
-                </div>
+                  <div class="flex flex-col gap-2">
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
+                      <input v-model="form.email" type="email" class="input-premium w-full" placeholder="vidu@gmail.com..." />
+                  </div>
 
-                <div v-show="form.roleId === 8" class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp</label>
-                    <select v-model="form.companyId" class="input-premium">
-                        <option :value="null">-- Hệ điều hành HealthCare --</option>
-                        <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
-                    </select>
-                </div>
+                  <div class="grid grid-cols-2 gap-6">
+                      <div class="space-y-3">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò</label>
+                          <select v-model="form.roleId" class="input-premium">
+                              <option :value="1">{{ i18n.t('roles.Admin') }}</option>
+                              <option :value="2">{{ i18n.t('roles.PersonnelManager') }}</option>
+                              <option :value="3">{{ i18n.t('roles.ContractManager') }}</option>
+                              <option :value="4">{{ i18n.t('roles.PayrollManager') }}</option>
+                              <option :value="5">{{ i18n.t('roles.MedicalGroupManager') }}</option>
+                              <option :value="6">{{ i18n.t('roles.WarehouseManager') }}</option>
+                              <option :value="7">{{ i18n.t('roles.MedicalStaff') }}</option>
+                              <option :value="8">{{ i18n.t('roles.Customer') }}</option>
+                          </select>
+                      </div>
+                  </div>
 
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                        {{ modal.isEdit ? 'Thay đổi mật khẩu hệ thống (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
-                    </label>
-                    <input v-model="form.password" :required="!modal.isEdit" type="password" class="input-premium" />
-                </div>
+                  <div v-show="form.roleId === 8" class="flex flex-col gap-2">
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp</label>
+                      <select v-model="form.companyId" class="input-premium w-full">
+                          <option :value="null">-- Hệ điều hành HealthCare --</option>
+                          <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
+                      </select>
+                  </div>
 
-                <button type="submit" class="w-full btn-premium bg-indigo-600 text-white shadow-indigo-600/20 py-6">
-                    {{ modal.isEdit ? 'LƯU THÔNG TIN TÀI KHOẢN' : 'KHOÁI TẠO TÀI KHOẢN TRUY CẬP' }}
-                </button>
-            </form>
-        </div>
-    </div>
+                  <div class="flex flex-col gap-2">
+                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                          {{ modal.isEdit ? 'Thay đổi mật khẩu hệ thống (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
+                      </label>
+                      <div class="relative">
+                          <input v-model="form.password" 
+                                 @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
+                                 :required="!modal.isEdit" type="text" class="input-premium w-full font-mono" />
+                          <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
+                      </div>
+                      <p v-if="!modal.isEdit" class="text-[9px] font-black text-slate-400 mt-1">💡 Mật khẩu mặc định đã được điền sẵn. Nhân viên có thể đổi sau khi đăng nhập.</p>
+                  </div>
+
+                  </form>
+                  </div>
+
+                  <div class="p-10 pt-0 bg-white border-t border-slate-50 relative z-20">
+                      <button form="userForm" type="submit" class="w-full btn-premium bg-indigo-600 text-white shadow-indigo-600/20 py-6">
+                          {{ modal.isEdit ? 'LƯU THÔNG TIN TÀI KHOẢN' : 'KHOÁI TẠO TÀI KHOẢN TRUY CẬP' }}
+                      </button>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </Teleport>
 
     <!-- Confirm Delete Dialog -->
     <ConfirmDialog 
@@ -231,19 +314,23 @@
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
 import { 
-    UserPlus, Edit3, Trash2, Shield, X, MapPin, Mail, Calendar, Camera, ShieldCheck, AtSign, Building2
+    UserPlus, Edit3, Trash2, Shield, X, MapPin, Mail, Calendar, Camera, ShieldCheck, AtSign, Building2, Stethoscope
 } from 'lucide-vue-next'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
+import StatCard from '../components/StatCard.vue'
 import { useAuthStore } from '../stores/auth'
+import { useI18nStore } from '../stores/i18n'
 
 const authStore = useAuthStore()
+const i18n = useI18nStore()
 const toast = useToast()
 const isAdmin = computed(() => authStore.role === 'Admin')
 const profile = computed(() => authStore.profile)
 
 const users = ref([])
 const companies = ref([])
+const resetRequests = ref([])
 const showDeleteConfirm = ref(false)
 const userToDelete = ref(null)
 const modal = ref({ show: false, isEdit: false })
@@ -251,10 +338,16 @@ const form = ref({
     username: '',
     password: '',
     fullName: '',
+    email: '',
     roleId: 2,
     companyId: null,
     avatarPath: ''
 })
+
+const getTempPass = (username) => {
+    const req = resetRequests.value.find(r => r.username === username && r.isProcessed)
+    return req ? req.newPassword : null
+}
 
 const selectedFile = ref(null)
 const avatarPreview = ref(null)
@@ -286,11 +379,24 @@ const fetchCompanies = async () => {
     }
 }
 
+const fetchResets = async () => {
+    if (!isAdmin.value) return
+    try {
+        const res = await axios.get('http://localhost:5283/api/Auth/reset-requests')
+        // Lấy cả những yêu cầu đã xử lý để xem mật khẩu mới
+        resetRequests.value = res.data 
+    } catch (e) {}
+}
+
+const DEFAULT_PASSWORD = 'HealthCare2026'
+const newlyCreatedUser = ref(null) // Track newly created user for password display
+
 const openCreateModal = () => {
     modal.value = { show: true, isEdit: false }
-    form.value = { username: '', password: '', fullName: '', roleId: 2, companyId: null, avatarPath: '' }
+    form.value = { username: '', password: DEFAULT_PASSWORD, fullName: '', email: '', roleId: 2, companyId: null, avatarPath: '' }
     selectedFile.value = null
     avatarPreview.value = null
+    newlyCreatedUser.value = null
 }
 
 const openEditModal = (u) => {
@@ -299,6 +405,7 @@ const openEditModal = (u) => {
         username: u.username, 
         password: '', 
         fullName: u.fullName || '', 
+        email: u.email || '',
         roleId: u.roleId, 
         companyId: u.companyId,
         avatarPath: u.avatarPath || ''
@@ -320,11 +427,17 @@ const handleSubmit = async () => {
         if (modal.value.isEdit) {
             await axios.put(`http://localhost:5283/api/Auth/users/${form.value.username}`, form.value)
             toast.success("Cập nhật thành công!")
+            modal.value.show = false
         } else {
             await axios.post('http://localhost:5283/api/Auth/register', form.value)
-            toast.success("Tạo tài khoản thành công!")
+            // Store newly created user info to display default password
+            newlyCreatedUser.value = {
+                username: form.value.username,
+                password: form.value.password || DEFAULT_PASSWORD
+            }
+            toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${newlyCreatedUser.value.password}`)
+            modal.value.show = false
         }
-        modal.value.show = false
         fetchUsers()
     } catch (e) {
         console.error(e)
@@ -351,6 +464,7 @@ onMounted(async () => {
     if (isAdmin.value) {
         await fetchUsers()
         await fetchCompanies()
+        await fetchResets()
     } else {
         await authStore.fetchProfile()
     }

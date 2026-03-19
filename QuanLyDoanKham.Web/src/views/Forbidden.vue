@@ -10,9 +10,9 @@
         <div class="bg-rose-500 p-6 rounded-[2rem] shadow-2xl shadow-rose-500/20 mb-8 rotate-3">
           <ShieldAlert class="text-white w-16 h-16" />
         </div>
-        <h1 class="text-7xl font-black text-slate-900 tracking-tighter mb-4 italic">403</h1>
-        <h2 class="text-3xl font-black text-rose-600 mb-6 tracking-tight uppercase">Truy cập bị hạn chế</h2>
-        <p class="text-slate-400 font-bold text-center max-w-sm leading-relaxed px-4">
+        <h1 class="text-7xl font-black text-slate-900 mb-4 italic">403</h1>
+        <h2 class="text-3xl font-black text-rose-600 mb-6 uppercase tracking-widest">Truy cập bị hạn chế</h2>
+        <p class="text-slate-400 font-black text-center max-w-sm leading-relaxed px-4">
           Phát hiện yêu cầu truy xuất trái phép hoặc thiếu đặc quyền thực thi. Vui lòng liên hệ trung tâm điều hành nếu bạn cho rằng đây là lỗi phân quyền.
         </p>
       </div>
@@ -26,7 +26,7 @@
           </div>
           <div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Mức độ định danh hiện tại</p>
-            <p class="text-lg font-black text-slate-900 uppercase">VAI TRÒ: <span class="text-indigo-600">{{ authStore.role || 'GUEST' }}</span></p>
+            <p class="text-lg font-black text-slate-900 uppercase tracking-widest">VAI TRÒ: <span class="text-indigo-600">{{ authStore.role || 'GUEST' }}</span></p>
           </div>
         </div>
       </div>

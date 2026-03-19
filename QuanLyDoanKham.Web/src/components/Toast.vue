@@ -1,13 +1,15 @@
 <template>
   <Transition name="toast">
     <div v-if="visible" 
-         :class="['fixed top-6 right-6 z-[9999] px-6 py-4 rounded-2xl shadow-2xl border-2 flex items-center space-x-4 max-w-md animate-slide-in', variantClasses]">
-      <component :is="icon" :class="['w-6 h-6', iconColorClass]" />
-      <div class="flex-1">
-        <p class="font-black text-sm">{{ message }}</p>
+         :class="['fixed bottom-10 right-10 z-[100000] px-8 py-5 rounded-[2.5rem] shadow-[0_25px_60px_rgba(0,0,0,0.15)] border-2 backdrop-blur-3xl flex items-center space-x-6 max-w-md animate-slide-up', variantClasses]">
+      <div :class="['p-3 rounded-2xl bg-white/50', iconColorClass.replace('text-', 'text-')]">
+        <component :is="icon" class="w-6 h-6" />
       </div>
-      <button @click="close" class="hover:opacity-70 transition-opacity">
-        <X class="w-5 h-5" />
+      <div class="flex-1">
+        <p class="font-black text-sm ">{{ message }}</p>
+      </div>
+      <button @click="close" class="p-2 hover:bg-black/5 rounded-xl transition-all">
+        <X class="w-5 h-5 opacity-40" />
       </button>
     </div>
   </Transition>
@@ -83,18 +85,18 @@ onMounted(() => {
   transform: translateX(100px);
 }
 
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out;
+.animate-slide-up {
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes slideIn {
+@keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateX(100px);
+    transform: translateY(50px) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateY(0) scale(1);
   }
 }
 </style>

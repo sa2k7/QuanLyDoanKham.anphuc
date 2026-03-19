@@ -1,4 +1,17 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap');
+
+/* === GLOBAL FONT RESET === */
+* {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  /* Reset letter-spacing về 0 cho tất cả text thông thường */
+  letter-spacing: 0;
+}
+
+/* Chỉ áp dụng letter-spacing cho label nhỏ và badge uppercase */
+.tracking-widest { letter-spacing: 0.1em !important; }
+[class*="tracking-[0."] { letter-spacing: inherit !important; }
+
 
 @theme {
   --color-primary-light: #eef2ff;
@@ -129,4 +142,34 @@
 
 .animate-fade-in {
   animation: fade-in 0.4s ease-out forwards;
+}
+
+/* Premium Action Buttons */
+.btn-action-premium {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.875rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.btn-action-premium:hover {
+  transform: scale(1.15) translateY(-2px);
+  background-color: white;
+  border-color: #f1f5f9;
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-action-premium.variant-indigo:hover {
+  color: #4f46e5;
+  box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.2);
+}
+
+.btn-action-premium.variant-rose:hover {
+  color: #e11d48;
+  box-shadow: 0 10px 20px -5px rgba(225, 29, 72, 0.2);
 }

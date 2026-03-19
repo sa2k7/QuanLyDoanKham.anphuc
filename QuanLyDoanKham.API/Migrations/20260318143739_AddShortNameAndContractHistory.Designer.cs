@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyDoanKham.API.Data;
 
@@ -11,9 +12,11 @@ using QuanLyDoanKham.API.Data;
 namespace QuanLyDoanKham.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260318143739_AddShortNameAndContractHistory")]
+    partial class AddShortNameAndContractHistory
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,9 +99,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int?>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FullName")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -134,7 +134,7 @@ namespace QuanLyDoanKham.API.Migrations
                         {
                             UserId = 1,
                             FullName = "System Administrator",
-                            PasswordHash = "$2a$11$4WF0NH/eKRnI.llEGuVI6Ozj3caSSdFbFw5jFtO0HyK0DL5/tnqXq",
+                            PasswordHash = "$2a$11$D..BJVphegfxzjK4Z.vldO6H.F0YhRodRPdgEhRTwLk6kA7KRkCXO",
                             RoleId = 1,
                             Username = "admin"
                         });

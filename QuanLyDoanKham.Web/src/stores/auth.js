@@ -4,10 +4,10 @@ import router from '../router'
 
 export const useAuthStore = defineStore('auth', {
     state: () => ({
-        user: JSON.parse(localStorage.getItem('user')) || null,
+        user: JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user')) || null,
         profile: null,
-        token: localStorage.getItem('token') || null,
-        refreshToken: localStorage.getItem('refreshToken') || null,
+        token: localStorage.getItem('token') || sessionStorage.getItem('token') || null,
+        refreshToken: localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken') || null,
         loading: false,
         error: null,
         isInitialized: false
@@ -31,7 +31,14 @@ export const useAuthStore = defineStore('auth', {
                         role: res.data.roleName,
                         companyId: res.data.companyId
                     }
-                    sessionStorage.setItem('user', JSON.stringify(this.user))
+                    
+                    // Cập nhật lại user info vào đúng bộ nhớ đang dùng
+                    if (localStorage.getItem('token')) {
+                        localStorage.setItem('user', JSON.stringify(this.user))
+                    } else {
+                        sessionStorage.setItem('user', JSON.stringify(this.user))
+                    }
+
                     this.isInitialized = true
                     return true
                 } catch (e) {
@@ -52,7 +59,7 @@ export const useAuthStore = defineStore('auth', {
                 console.error("Fetch profile failed", e)
             }
         },
-        async login(username, password) {
+        async login(username, password, rememberMe = false) {
             this.loading = true
             this.error = null
             try {
@@ -60,7 +67,7 @@ export const useAuthStore = defineStore('auth', {
                     username,
                     password
                 })
-                this.setData(response.data)
+                this.setData(response.data, rememberMe)
                 return true
             } catch (err) {
                 this.error = err.response?.data || "Đăng nhập thất bại"
@@ -69,7 +76,7 @@ export const useAuthStore = defineStore('auth', {
                 this.loading = false
             }
         },
-        setData(data) {
+        setData(data, rememberMe = false) {
             this.token = data.token
             this.refreshToken = data.refreshToken
             this.user = {
@@ -77,17 +84,34 @@ export const useAuthStore = defineStore('auth', {
                 role: data.role,
                 companyId: data.companyId
             }
-            localStorage.setItem('token', this.token)
-            localStorage.setItem('refreshToken', this.refreshToken)
-            localStorage.setItem('user', JSON.stringify(this.user))
+
+            const storage = rememberMe ? localStorage : sessionStorage
+            
+            // Xóa sạch ở cả 2 trước khi set mới để tránh xung đột
+            this.clearStorage()
+
+            storage.setItem('token', this.token)
+            storage.setItem('refreshToken', this.refreshToken)
+            storage.setItem('user', JSON.stringify(this.user))
+            
             axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
+        },
+        clearStorage() {
+            localStorage.removeItem('token')
+            localStorage.removeItem('refreshToken')
+            localStorage.removeItem('user')
+            sessionStorage.removeItem('token')
+            sessionStorage.removeItem('refreshToken')
+            sessionStorage.removeItem('user')
         },
         async refresh() {
             try {
                 const res = await axios.post('http://localhost:5283/api/auth/refresh-token', {
                     refreshToken: this.refreshToken
                 })
-                this.setData(res.data)
+                // Kiểm tra xem đang dùng storage nào để lưu tiếp vào đó
+                const isPersistent = !!localStorage.getItem('refreshToken')
+                this.setData(res.data, isPersistent)
                 return res.data.token
             } catch (e) {
                 this.logout()
@@ -99,9 +123,7 @@ export const useAuthStore = defineStore('auth', {
             this.token = null
             this.refreshToken = null
             this.profile = null
-            localStorage.removeItem('token')
-            localStorage.removeItem('refreshToken')
-            localStorage.removeItem('user')
+            this.clearStorage()
             delete axios.defaults.headers.common['Authorization']
             router.push('/login')
         }
@@ -139,7 +161,7 @@ axios.interceptors.response.use(
 )
 
 // Initial setup - Chạy khi file được nạp lần đầu
-const token = localStorage.getItem('token')
+const token = localStorage.getItem('token') || sessionStorage.getItem('token')
 if (token) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
 }

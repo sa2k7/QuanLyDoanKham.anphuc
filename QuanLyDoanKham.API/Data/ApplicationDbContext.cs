@@ -13,6 +13,7 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<AppRole> Roles { get; set; }
         public DbSet<Company> Companies { get; set; }
         public DbSet<HealthContract> Contracts { get; set; }
+        public DbSet<ContractStatusHistory> ContractStatusHistories { get; set; }
         public DbSet<MedicalGroup> MedicalGroups { get; set; }
         public DbSet<Staff> Staffs { get; set; }
         public DbSet<GroupStaffDetail> GroupStaffDetails { get; set; }
@@ -22,6 +23,7 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<PayrollRecord> PayrollRecords { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -34,7 +36,9 @@ namespace QuanLyDoanKham.API.Data
                 new AppRole { RoleId = 3, RoleName = "ContractManager" },    // Quản lý CÔNG TY, HỢP ĐỒNG (Đối tác)
                 new AppRole { RoleId = 4, RoleName = "PayrollManager" },     // Quản lý TÍNH LƯƠNG
                 new AppRole { RoleId = 5, RoleName = "MedicalGroupManager" },// Quản lý ĐOÀN KHÁM
-                new AppRole { RoleId = 6, RoleName = "WarehouseManager" }    // Quản lý VẬT TƯ
+                new AppRole { RoleId = 6, RoleName = "WarehouseManager" },   // Quản lý VẬT TƯ
+                new AppRole { RoleId = 7, RoleName = "MedicalStaff" },      // Nhân viên đi đoàn
+                new AppRole { RoleId = 8, RoleName = "Customer" }           // Đại diện doanh nghiệp (đối tác)
             );
 
             // Seed Admin User (Pass: admin123)

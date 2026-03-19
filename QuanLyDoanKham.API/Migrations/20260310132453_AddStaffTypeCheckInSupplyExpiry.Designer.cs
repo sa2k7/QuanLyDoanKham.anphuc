@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyDoanKham.API.Data;
 
@@ -11,9 +12,11 @@ using QuanLyDoanKham.API.Data;
 namespace QuanLyDoanKham.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260310132453_AddStaffTypeCheckInSupplyExpiry")]
+    partial class AddStaffTypeCheckInSupplyExpiry
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -96,9 +99,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int?>("CompanyId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("FullName")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -134,7 +134,7 @@ namespace QuanLyDoanKham.API.Migrations
                         {
                             UserId = 1,
                             FullName = "System Administrator",
-                            PasswordHash = "$2a$11$4WF0NH/eKRnI.llEGuVI6Ozj3caSSdFbFw5jFtO0HyK0DL5/tnqXq",
+                            PasswordHash = "$2a$11$3RW1XkmkofAMz5.rcvx.mOIW5UmU3J9DAi0GxTQPbdxsBrVBNdeI2",
                             RoleId = 1,
                             Username = "admin"
                         });
@@ -222,10 +222,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("ShortName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<string>("TaxCode")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -233,42 +229,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.HasKey("CompanyId");
 
                     b.ToTable("Companies");
-                });
-
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractStatusHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("ChangedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("ChangedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<int>("HealthContractId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("NewStatus")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Note")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("OldStatus")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HealthContractId");
-
-                    b.ToTable("ContractStatusHistories");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
@@ -400,37 +360,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("MedicalGroups");
                 });
 
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.Notification", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsRead")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Link")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Notifications");
-                });
-
             modelBuilder.Entity("QuanLyDoanKham.API.Models.PasswordResetRequest", b =>
                 {
                     b.Property<int>("Id")
@@ -531,10 +460,6 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("decimal(18, 2)");
 
                     b.Property<string>("Department")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Email")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -744,17 +669,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractStatusHistory", b =>
-                {
-                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
-                        .WithMany("StatusHistories")
-                        .HasForeignKey("HealthContractId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("HealthContract");
-                });
-
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
                 {
                     b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
@@ -794,17 +708,6 @@ namespace QuanLyDoanKham.API.Migrations
                         .IsRequired();
 
                     b.Navigation("HealthContract");
-                });
-
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.Notification", b =>
-                {
-                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.PayrollRecord", b =>
@@ -852,11 +755,6 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("MedicalGroup");
-                });
-
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.HealthContract", b =>
-                {
-                    b.Navigation("StatusHistories");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>

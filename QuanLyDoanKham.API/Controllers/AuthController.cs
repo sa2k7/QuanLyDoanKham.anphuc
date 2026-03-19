@@ -41,6 +41,7 @@ namespace QuanLyDoanKham.API.Controllers
                     RoleId = u.RoleId,
                     CompanyId = u.CompanyId,
                     CompanyName = u.Company != null ? u.Company.CompanyName : null,
+                    Email = u.Email,
                     AvatarPath = u.AvatarPath
                 })
                 .ToListAsync();
@@ -59,7 +60,7 @@ namespace QuanLyDoanKham.API.Controllers
             var user = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Company)
-                .FirstOrDefaultAsync(u => u.Username == username);
+                .FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
 
             if (user == null) return NotFound();
 
@@ -72,6 +73,7 @@ namespace QuanLyDoanKham.API.Controllers
                 RoleId = user.RoleId,
                 CompanyId = user.CompanyId,
                 CompanyName = user.Company != null ? user.Company.CompanyName : null,
+                Email = user.Email,
                 AvatarPath = user.AvatarPath
             });
         }
@@ -84,9 +86,11 @@ namespace QuanLyDoanKham.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
             if (user == null) return NotFound();
 
+            var oldRoleId = user.RoleId;
             user.FullName = dto.FullName;
             user.RoleId = dto.RoleId;
             user.CompanyId = dto.CompanyId;
+            user.Email = dto.Email;
             user.AvatarPath = dto.AvatarPath;
 
             if (!string.IsNullOrEmpty(dto.Password))
@@ -95,6 +99,30 @@ namespace QuanLyDoanKham.API.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            // TẠO THÔNG BÁO NẾU THAY ĐỔI VAI TRÒ
+            if (oldRoleId != dto.RoleId)
+            {
+                try
+                {
+                    var newRole = await _context.Roles.FindAsync(dto.RoleId);
+                    if (newRole != null)
+                    {
+                        var notification = new Notification
+                        {
+                            UserId = user.UserId,
+                            Message = $"Vai trò hệ thống của bạn đã được cập nhật thành: {newRole.RoleName}.",
+                            Link = "/profile",
+                            CreatedAt = DateTime.Now,
+                            IsRead = false
+                        };
+                        _context.Notifications.Add(notification);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+                catch (Exception) { /* Swallow notification error */ }
+            }
+
             return Ok(new { message = "Cập nhật tài khoản thành công" });
         }
 
@@ -118,9 +146,9 @@ namespace QuanLyDoanKham.API.Controllers
         {
             try
             {
-                // 1. Check User
+                // 1. Check User (Username or Email)
                 var user = await _context.Users.Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Username == request.Username);
+                    .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
 
                 if (user == null) return Unauthorized("Tài khoản không tồn tại.");
 
@@ -147,8 +175,12 @@ namespace QuanLyDoanKham.API.Controllers
 
                 if (!isValid) return Unauthorized("Mật khẩu không chính xác.");
 
-                // 3. Check Role validation early to avoid 500 later
-                if (user.Role == null) return BadRequest("Tài khoản chưa được phân quyền trong hệ thống. Vui lòng liên hệ Admin.");
+                if (user.Role == null && user.Username != "admin") return BadRequest("Tài khoản chưa được phân quyền trong hệ thống. Vui lòng liên hệ Admin.");
+                if (user.Role == null && user.Username == "admin") 
+                {
+                    // Tự phục hồi role Admin nếu Db bị lỗi liên kết
+                    user.Role = await _context.Roles.FindAsync(1);
+                }
 
                 // 4. Generate JWT Token and Refresh Token
                 var token = CreateToken(user);
@@ -196,6 +228,7 @@ namespace QuanLyDoanKham.API.Controllers
                 FullName = request.FullName,
                 RoleId = request.RoleId,
                 CompanyId = request.CompanyId,
+                Email = request.Email,
                 AvatarPath = request.AvatarPath
             };
 
@@ -210,6 +243,7 @@ namespace QuanLyDoanKham.API.Controllers
                 FullName = newUser.FullName,
                 RoleId = newUser.RoleId,
                 RoleName = (await _context.Roles.FindAsync(newUser.RoleId))?.RoleName,
+                Email = newUser.Email,
                 CompanyId = newUser.CompanyId
             });
         }
@@ -297,19 +331,21 @@ namespace QuanLyDoanKham.API.Controllers
                 return BadRequest("Vui lòng cung cấp tên đăng nhập.");
 
             var username = request.Username;
-            var user = await _context.Users.AnyAsync(u => u.Username == username);
-            if (!user) return NotFound("Tài khoản không tồn tại trong hệ thống.");
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
+            if (user == null) return NotFound("Tài khoản không tồn tại trong hệ thống.");
 
+            var finalUsername = user.Username; // Luôn dùng Username chính thức để lưu request
+            
             // Check if there's already a pending request
             var existing = await _context.PasswordResetRequests
-                .FirstOrDefaultAsync(r => r.Username == username && !r.IsProcessed);
+                .FirstOrDefaultAsync(r => r.Username == finalUsername && !r.IsProcessed);
             
             if (existing != null) 
                 return Ok(new { message = "Yêu cầu của bạn đã được gửi đi và đang chờ Admin xử lý." });
 
             var resetRequest = new PasswordResetRequest
             {
-                Username = username,
+                Username = finalUsername,
                 RequestedDate = DateTime.Now
             };
 
@@ -325,8 +361,8 @@ namespace QuanLyDoanKham.API.Controllers
         public async Task<IActionResult> GetResetRequests()
         {
             var list = await _context.PasswordResetRequests
-                .Where(r => !r.IsProcessed)
                 .OrderByDescending(r => r.RequestedDate)
+                .Take(50)
                 .ToListAsync();
             return Ok(list);
         }

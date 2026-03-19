@@ -34,6 +34,7 @@ namespace QuanLyDoanKham.API.Models
         public int? CompanyId { get; set; }
         public string RefreshToken { get; set; }
         public DateTime? RefreshTokenExpiry { get; set; }
+        public string Email { get; set; }
         public string AvatarPath { get; set; }
         [ForeignKey("CompanyId")]
         public Company Company { get; set; }
@@ -43,6 +44,8 @@ namespace QuanLyDoanKham.API.Models
     {
         [Key]
         public int CompanyId { get; set; }
+        [MaxLength(100)]
+        public string ShortName { get; set; } // Ten thuong goi (VinCom, Techcombank...)
         [Required]
         [MaxLength(200)]
         public string CompanyName { get; set; }
@@ -50,6 +53,15 @@ namespace QuanLyDoanKham.API.Models
         public string TaxCode { get; set; }
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
+        public string Email { get; set; }
+        [MaxLength(200)]
+        public string ContactPerson { get; set; } // Nguoi lien he
+        [MaxLength(15)]
+        public string ContactPhone { get; set; } // SDT nguoi lien he
+        public int? CompanySize { get; set; } // Quy mo nhan vien
+        [MaxLength(100)]
+        public string Industry { get; set; } // Nganh nghe
+        public string Notes { get; set; } // Ghi chu yeu cau dac biet
     }
 
     // === BUSINESS ===
@@ -75,8 +87,27 @@ namespace QuanLyDoanKham.API.Models
         public decimal TotalAmount { get; set; } // Tổng giá trị = UnitPrice * ExpectedQuantity
 
         [MaxLength(50)]
-        public string Status { get; set; } // Pending, Active, Finished, Locked
-        public string FilePath { get; set; } // Đường dẫn file HĐ (Excel/PDF)
+        public string Status { get; set; } // Pending (Cho phe duyet), Active (Da phe duyet), Finished, Locked
+        public string FilePath { get; set; } // Duong dan file HD (Excel/PDF)
+        public ICollection<ContractStatusHistory> StatusHistories { get; set; } = new List<ContractStatusHistory>();
+    }
+
+    // Luu lich su thay doi trang thai Hop Dong
+    public class ContractStatusHistory
+    {
+        [Key]
+        public int Id { get; set; }
+        public int HealthContractId { get; set; }
+        [ForeignKey("HealthContractId")]
+        public HealthContract HealthContract { get; set; }
+        [MaxLength(50)]
+        public string OldStatus { get; set; }
+        [MaxLength(50)]
+        public string NewStatus { get; set; }
+        public string Note { get; set; }
+        public DateTime ChangedAt { get; set; } = DateTime.Now;
+        [MaxLength(100)]
+        public string ChangedBy { get; set; } // Username
     }
 
     public class MedicalGroup
@@ -136,7 +167,19 @@ namespace QuanLyDoanKham.API.Models
         public string PhoneNumber { get; set; } // SoDienThoai
 
         [MaxLength(100)]
+        public string Email { get; set; } // Email nhan su
+        
+        [MaxLength(100)]
         public string JobTitle { get; set; } // ChucDanh
+
+        [MaxLength(50)]
+        public string StaffType { get; set; } // Phan loai: BacSi, DieuDuong, KyThuatVien, NhanVienHoTro
+
+        [MaxLength(100)]
+        public string Specialty { get; set; } // Chuyen khoa (Tim mach, Noi tiet...)
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal DailyRate { get; set; } // Don gia thu lao ca ngay (theo StaffType)
 
         [MaxLength(100)]
         public string Department { get; set; } // DonVi (Đơn vị/Phòng ban)
@@ -177,9 +220,12 @@ namespace QuanLyDoanKham.API.Models
         public DateTime ExamDate { get; set; } // Ngày đi khám cụ thể
 
         [MaxLength(100)]
-        public string WorkPosition { get; set; } // Tiếp nhận, Cân đo...
+        public string WorkPosition { get; set; } // Tiep nhan, Can do...
         [MaxLength(50)]
-        public string WorkStatus { get; set; } // Đang làm, Đang chờ...
+        public string WorkStatus { get; set; } // Dang cho, Da tham gia, Vang mat, Xin nghi
+        public DateTime? CheckInTime { get; set; } // Gio check-in thuc te
+        public DateTime? CheckOutTime { get; set; } // Gio check-out thuc te
+        public string Note { get; set; } // Ghi chu rieng cho buoi di doan nay
     }
 
     public class Supply
@@ -189,11 +235,18 @@ namespace QuanLyDoanKham.API.Models
         [Required]
         [MaxLength(200)]
         public string SupplyName { get; set; }
-        public string Unit { get; set; } // Đơn vị tính (Cái, Hộp, Túi...)
-        public bool IsFixedAsset { get; set; } // True = Có định, False = Tiêu hao
+        public string Unit { get; set; } // Don vi tinh (Cai, Hop, Tui...)
+        public bool IsFixedAsset { get; set; } // True = Co dinh (Thiet bi), False = Tieu hao (Bong, Kim...)
+        [MaxLength(100)]
+        public string Category { get; set; } // Nhom vat tu: ThuocTiem, VatTuTieuHao, ThietBi...
+        [MaxLength(50)]
+        public string LotNumber { get; set; } // So lo san xuat (de truy xuat nguon goc)
+        public DateTime? ExpirationDate { get; set; } // Han su dung (FEFO - xuat lo het han truoc)
+        public DateTime? ManufactureDate { get; set; } // Ngay san xuat
+        public int MinStockLevel { get; set; } = 10; // Nguong toi thieu - canh bao het hang
         [Column(TypeName = "decimal(18, 2)")]
         public decimal UnitPrice { get; set; }
-        public int TotalStock { get; set; } // Tổng tồn kho thực tế
+        public int TotalStock { get; set; } // Tong ton kho thuc te
     }
 
     public class SupplyInventoryVoucher
@@ -301,5 +354,25 @@ namespace QuanLyDoanKham.API.Models
         
         [MaxLength(100)]
         public string NewPassword { get; set; } 
+    }
+
+    // === NOTIFICATIONS ===
+    public class Notification
+    {
+        [Key]
+        public int Id { get; set; }
+        
+        public int UserId { get; set; }
+        [ForeignKey("UserId")]
+        public AppUser User { get; set; }
+        
+        [Required]
+        public string Message { get; set; }
+        
+        public bool IsRead { get; set; } = false;
+        
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        
+        public string Link { get; set; } // Link to specific resource (e.g. GroupId)
     }
 }
