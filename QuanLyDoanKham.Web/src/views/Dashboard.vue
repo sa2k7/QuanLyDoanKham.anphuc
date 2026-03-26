@@ -4,11 +4,11 @@
     <aside class="w-72 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 z-[60] shadow-sm flex-shrink-0">
       <!-- Logo Section -->
       <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group" @click="activeMenu = 'home'">
-        <div class="bg-primary p-2.5 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0">
-          <Stethoscope class="text-white w-7 h-7" />
+        <div class="bg-white p-1 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0 border border-slate-100">
+          <img :src="logo" class="w-10 h-10 object-contain" alt="Logo" />
         </div>
         <div>
-          <h1 class="font-black text-lg text-slate-900 leading-tight ">CÔNG TY <span class="text-primary italic">KHÁM SỨC KHỎE</span></h1>
+          <h1 class="font-black text-lg text-slate-900 leading-tight tracking-tight">ĐA KHOA <span class="text-primary italic">AN PHÚC</span></h1>
           <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Hệ thống Điều hành</p>
         </div>
       </div>
@@ -248,7 +248,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                   <div v-for="mod in activeModules" :key="mod.id" 
                        @click="activeMenu = mod.id"
-                       class="premium-card p-8 group cursor-pointer relative overflow-hidden">
+                       class="premium-card bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] p-8 group cursor-pointer relative overflow-hidden">
                       <div class="absolute -right-4 -bottom-4 w-24 h-24 rotate-12 opacity-[0.03] group-hover:opacity-10 transition-all group-hover:scale-125">
                           <component :is="mod.icon" class="w-full h-full" />
                       </div>
@@ -278,7 +278,7 @@
                       <Stethoscope class="absolute -right-20 -bottom-20 w-96 h-96 text-white/5 rotate-12" />
                   </div>
 
-                  <div class="premium-card p-10 flex flex-col h-full">
+                  <div class="premium-card bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2.5rem] p-10 flex flex-col h-full">
                       <div class="flex justify-between items-center mb-8">
                           <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Thông báo mới</h3>
                           <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
@@ -380,8 +380,8 @@ import { useAuthStore } from '../stores/auth'
 import { useI18nStore } from '../stores/i18n'
 import { useNotificationStore } from '../stores/notification'
 import axios from 'axios'
-import { 
-  Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
+import logo from '../assets/logo.png'
+import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
   User, KeyRound, X, ChevronDown, Bell, PlusCircle, Check, ShieldAlert, Inbox
 } from 'lucide-vue-next'
@@ -467,14 +467,16 @@ const activeModules = computed(() => {
     return menuItems.value.filter(i => {
         if (i.id === 'home') return false;
         if (!i.roles) return true;
-        return i.roles.includes(authStore.role);
+        const userRole = authStore.role?.toLowerCase();
+        return i.roles.some(r => r.toLowerCase() === userRole);
     });
 })
 
 const filteredMenuItems = computed(() => {
     return menuItems.value.filter(i => {
         if (!i.roles) return true;
-        return i.roles.includes(authStore.role);
+        const userRole = authStore.role?.toLowerCase();
+        return i.roles.some(r => r.toLowerCase() === userRole);
     });
 })
 
@@ -534,7 +536,8 @@ const fetchSearchData = async () => {
             { key: 'supplies', url: 'http://localhost:5283/api/Supplies', roles: ['Admin', 'WarehouseManager', 'MedicalStaff'] }
         ]
 
-        const endpoints = allEndpoints.filter(ep => ep.roles.includes(authStore.role))
+        const userRole = authStore.role?.toLowerCase()
+        const endpoints = allEndpoints.filter(ep => ep.roles.some(r => r.toLowerCase() === userRole))
 
         await Promise.all(endpoints.map(async (ep) => {
             try {

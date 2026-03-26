@@ -47,6 +47,39 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
 
+        // PUT: api/Supplies/{id}
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin,WarehouseManager")]
+        public async Task<IActionResult> PutSupply(int id, SupplyDto dto)
+        {
+            if (id != dto.SupplyId) return BadRequest("ID không khớp.");
+
+            var supply = await _context.Supplies.FindAsync(id);
+            if (supply == null) return NotFound("Không tìm thấy vật tư.");
+
+            supply.SupplyName = dto.SupplyName;
+            supply.Unit = dto.Unit;
+            supply.Category = dto.Category;
+            supply.IsFixedAsset = dto.IsFixedAsset;
+            supply.UnitPrice = dto.UnitPrice;
+            supply.MinStockLevel = dto.MinStockLevel;
+            // Lưu ý: Không cập nhật TotalStock tại đây để đảm bảo tính nhất quán (quản lý qua phiếu)
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!await _context.Supplies.AnyAsync(s => s.SupplyId == id))
+                    return NotFound();
+                else
+                    throw;
+            }
+
+            return Ok("Dữ liệu vật tư đã được cập nhật thành công.");
+        }
+
         // DELETE: api/Supplies/{id}
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin,WarehouseManager")]

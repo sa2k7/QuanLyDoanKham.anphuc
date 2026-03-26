@@ -15,7 +15,7 @@
       </div>
       <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'"
               @click="showForm = !showForm"
-              class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl shadow-lg">
+               class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">
         <Plus class="w-5 h-5" />
         <span>{{ showForm ? 'HỦY BỎ' : 'THÊM CÔNG TY' }}</span>
       </button>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Inline Add Form (like Contracts.vue) -->
-    <div v-if="showForm" class="premium-card p-10 bg-white border-2 border-slate-900 animate-slide-up">
+    <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 animate-slide-up">
         <div class="flex items-center gap-4 mb-8">
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
                 <Building2 class="w-6 h-6" />
@@ -65,7 +65,7 @@
                        placeholder="VD: VinCom, Techcombank..." />
             </div>
             <div class="flex flex-col gap-2">
-                <label class="text-[10px] font-black tracking-widest text-slate-400 ml-1 uppercase">Tên đại diện người sở hữu *</label>
+                <label class="text-[10px] font-black tracking-widest text-slate-400 ml-1 uppercase">Tên người đại diện *</label>
                 <input v-model="currentCompany.companyName" type="text" required
                        class="input-premium w-full"
                        placeholder="Họ và tên người đại diện pháp luật" />
@@ -75,21 +75,25 @@
                 <input v-model="currentCompany.taxCode" required class="input-premium w-full" placeholder="0101..." />
             </div>
             <div class="flex flex-col gap-2">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại liên hệ</label>
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại liên hệ công ty</label>
                 <input v-model="currentCompany.phoneNumber" class="input-premium w-full" placeholder="090..." />
+            </div>
+            <div class="flex flex-col gap-2">
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại người đại diện</label>
+                <input v-model="currentCompany.contactPhone" class="input-premium w-full" placeholder="09x - sđt trực tiếp đại diện" />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ trụ sở</label>
                 <input v-model="currentCompany.address" class="input-premium w-full" placeholder="Số nhà, đường, quận..." />
             </div>
             <div class="lg:col-span-3 flex justify-end pt-2">
-                <button type="submit" class="btn-premium bg-slate-900 text-white px-12">XÁC NHẬN KHAI BÁO</button>
+                 <button type="submit" class="btn-premium bg-slate-900 text-white px-12 border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">XÁC NHẬN KHAI BÁO</button>
             </div>
         </form>
     </div>
 
     <!-- Search & List -->
-    <div class="premium-card bg-white border border-slate-100 overflow-hidden mt-4">
+    <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mt-4">
         <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
             <div class="relative group flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
@@ -107,9 +111,10 @@
                     <tr>
                         <th class="p-4 text-center w-16">STT</th>
                         <th class="p-4">Tên công ty</th>
-                        <th class="p-4">Đại diện người sở hữu</th>
+                        <th class="p-4">Người đại diện</th>
                         <th class="p-4">Mã số thuế</th>
-                        <th class="p-4">Số điện thoại</th>
+                        <th class="p-4">SĐT Công ty</th>
+                        <th class="p-4">SĐT Đại diện</th>
                         <th class="p-4 text-center">Tác vụ</th>
                     </tr>
                 </thead>
@@ -128,6 +133,7 @@
                         <td class="p-4 text-slate-600">{{ item.companyName }}</td>
                         <td class="p-4 font-black text-slate-600 ">{{ item.taxCode }}</td>
                         <td class="p-4 font-black text-slate-500">{{ item.phoneNumber }}</td>
+                        <td class="p-4 font-black text-slate-500">{{ item.contactPhone || '—' }}</td>
                         <td class="p-4 text-center">
                             <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'" 
                                     @click="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Chỉnh sửa">
@@ -155,58 +161,65 @@
               <!-- Border Overlay -->
               <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
               
-              <!-- Header Gradient -->
-              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
-              
-              <!-- Floating Icon -->
-              <div class="absolute top-8 left-8 bg-white p-4 rounded-3xl shadow-lg z-10 border border-teal-50">
-                  <Building2 class="w-10 h-10 text-teal-600" />
-              </div>
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
 
               <!-- Close Button -->
-              <button @click="showModal = false" class="absolute top-6 right-6 bg-white/20 p-2 rounded-full hover:bg-white/40 transition-all text-white z-10 flex items-center justify-center">
-                  <X class="w-6 h-6" />
+              <button @click="showModal = false" class="absolute top-8 right-8 bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 z-[60] flex items-center justify-center border border-slate-200 shadow-sm">
+                  <X class="w-5 h-5" />
               </button>
 
-              <div class="mt-32 relative z-10 pt-4">
-                  <div class="p-10 pt-4">
-                      <h3 class="text-3xl font-black text-slate-800 mb-8 uppercase tracking-widest">Cập nhật công ty</h3>
-              <form id="companyForm" @submit.prevent="saveCompany" class="space-y-5">
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên Công Ty *</label>
-                      <input v-model="currentCompany.shortName" required class="input-premium w-full" placeholder="VD: VinCom..." />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đại diện người sở hữu *</label>
-                      <input v-model="currentCompany.companyName" required class="input-premium w-full" placeholder="Họ và tên người đại diện pháp luật" />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Mã số thuế *</label>
-                      <input v-model="currentCompany.taxCode" required class="input-premium w-full" placeholder="0101..." />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Địa chỉ trụ sở</label>
-                      <input v-model="currentCompany.address" class="input-premium w-full" placeholder="Số nhà, đường, quận..." />
-                  </div>
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400">Số điện thoại liên hệ</label>
-                      <input v-model="currentCompany.phoneNumber" class="input-premium w-full" placeholder="090..." />
-                  </div>
-
-                  </form>
+              <div class="relative z-10 pt-8">
+                  <div class="p-10 pb-6">
+                      <div class="flex items-center gap-4 mb-8">
+                          <div class="w-14 h-14 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center shadow-inner border border-teal-100">
+                              <Building2 class="w-7 h-7" />
+                          </div>
+                          <div>
+                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">Cập nhật công ty</h3>
+                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Chỉnh sửa thông tin hồ sơ đối tác</p>
+                          </div>
+                      </div>
+                      
+                      <form id="companyForm" @submit.prevent="saveCompany" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                          <div class="md:col-span-2 flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên Công Ty *</label>
+                              <input v-model="currentCompany.shortName" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="VD: VinCom..." />
+                          </div>
+                          <div class="flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên người đại diện *</label>
+                              <input v-model="currentCompany.companyName" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="Họ và tên đại diện" />
+                          </div>
+                          <div class="flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mã số thuế *</label>
+                              <input v-model="currentCompany.taxCode" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="0101..." />
+                          </div>
+                          <div class="flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT liên hệ công ty</label>
+                              <input v-model="currentCompany.phoneNumber" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
+                          </div>
+                          <div class="flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT người đại diện</label>
+                              <input v-model="currentCompany.contactPhone" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09x..." />
+                          </div>
+                          <div class="md:col-span-2 flex flex-col gap-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ trụ sở</label>
+                              <input v-model="currentCompany.address" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="Số nhà, đường, quận..." />
+                          </div>
+                      </form>
                   </div>
 
                   <div class="px-10 pb-10 pt-4 bg-white relative z-20">
-                      <div class="mt-4 flex flex-wrap items-center gap-4">
+                      <div class="flex flex-wrap items-center gap-4">
                           <button v-if="currentCompany.companyId && authStore.role === 'Admin'" type="button" @click="deleteCompany" 
-                                  class="bg-rose-50 text-rose-500 p-4 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm">
+                                  class="w-14 h-14 bg-rose-50 text-rose-500 rounded-2xl hover:bg-rose-500 hover:text-white transition-all shadow-sm flex items-center justify-center border border-rose-100">
                               <Trash2 class="w-6 h-6" />
                           </button>
                           <div class="flex-1"></div>
                           <button type="button" @click="showModal = false" 
                                   class="bg-white border-2 border-slate-100 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-xs">HỦY</button>
-                          <button form="companyForm" type="submit" 
-                                  class="flex-1 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-indigo-100 uppercase tracking-widest text-xs hover:bg-indigo-700 active:scale-95 transition-all">LƯU THÔNG TIN</button>
+                           <button form="companyForm" type="submit" 
+                                   class="flex-1 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] uppercase tracking-widest text-xs hover:bg-indigo-700 active:scale-95 transition-all">LƯU THÔNG TIN</button>
                       </div>
                   </div>
               </div>
@@ -219,7 +232,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { Building2, Plus, Search, MapPin, FileText, PlusCircle, X, Edit3 } from 'lucide-vue-next'
+import { Building2, Plus, Search, MapPin, FileText, PlusCircle, X, Edit3, Trash2 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import StatCard from '../components/StatCard.vue'

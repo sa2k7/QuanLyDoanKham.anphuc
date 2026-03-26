@@ -6,10 +6,10 @@
 
     <div class="w-full max-w-[28rem] bg-white rounded-[3rem] shadow-2xl p-12 border-2 border-slate-50 animate-slide-up relative z-10">
       <div class="text-center mb-12">
-        <div class="inline-flex items-center justify-center w-20 h-20 bg-primary text-white rounded-[1.8rem] mb-6 shadow-2xl shadow-primary/30 transform -rotate-3">
-          <Stethoscope class="w-10 h-10" />
+        <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-[1.8rem] mb-6 shadow-2xl shadow-primary/10 transform -rotate-3 p-2 border border-slate-100">
+          <img :src="logo" class="w-16 h-16 object-contain" alt="Logo" />
         </div>
-        <h2 class="text-4xl font-black text-slate-900 ">HealthCare</h2>
+        <h2 class="text-3xl font-black text-slate-900 uppercase">Đa Khoa An Phúc</h2>
         <p class="text-slate-400 font-black uppercase tracking-[0.2em] text-[10px] mt-4">Hệ điều hành Quản lý Đoàn khám</p>
       </div>
 
@@ -140,6 +140,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import axios from 'axios'
+import logo from '../assets/logo.png'
 import { 
   Stethoscope, 
   User, 
@@ -196,7 +197,13 @@ const submitResetRequest = async () => {
 }
 
 const handleLogin = async () => {
-  const success = await authStore.login(username.value, password.value, rememberMe.value)
+  // Làm sạch input: bỏ khoảng trắng và bỏ dấy @ nếu lỡ copy từ bảng
+  let cleanUsername = username.value.trim()
+  if (cleanUsername.startsWith('@')) {
+    cleanUsername = cleanUsername.substring(1)
+  }
+  
+  const success = await authStore.login(cleanUsername, password.value, rememberMe.value)
   if (success) {
     router.push('/')
   }

@@ -22,22 +22,25 @@
     </div>
 
     <!-- Stats Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div class="premium-card p-6 bg-white border border-slate-50">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        <div class="premium-card p-8 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] transition-all hover:-translate-y-1">
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng quỹ lương tháng</p>
-            <p class="text-2xl font-black text-slate-800 ">{{ formatPrice(totalPayroll) }}</p>
+            <p class="text-3xl font-black text-slate-800 ">{{ formatPrice(totalPayroll) }}</p>
+            <div class="mt-4 h-1 w-12 bg-emerald-500 rounded-full"></div>
         </div>
-        <div class="premium-card p-6 bg-white border border-slate-50">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Số lượng nhân sự hưởng lương</p>
-            <p class="text-2xl font-black text-slate-800 ">{{ payrollList.length }} <span class="text-xs text-slate-400">Thành viên</span></p>
+        <div class="premium-card p-8 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] transition-all hover:-translate-y-1">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nhân sự hưởng lương</p>
+            <p class="text-3xl font-black text-slate-800 ">{{ payrollList.length }} <span class="text-xs text-slate-400 uppercase">Thành viên</span></p>
+            <div class="mt-4 h-1 w-12 bg-indigo-500 rounded-full"></div>
         </div>
-        <button @click="exportExcel" class="p-6 bg-slate-900 mx-auto text-white rounded-[2.5rem] shadow-xl hover:-translate-y-1 hover:shadow-2xl hover:bg-slate-800 transition-all w-full flex items-center justify-center gap-3 font-black text-[11px] uppercase tracking-widest border border-slate-700">
-            <Download class="w-5 h-5 text-emerald-400" /> XUẤT FILE EXCEL
+        <button @click="exportExcel" class="p-8 bg-slate-900 text-white rounded-[2rem] shadow-[4px_4px_0px_#1e293b] border-2 border-slate-900 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-2 group">
+            <Download class="w-6 h-6 text-emerald-400 group-hover:scale-110 transition-transform" />
+            <span class="font-black text-[11px] uppercase tracking-[0.2em]">XUẤT BẢNG LƯƠNG (EXCEL)</span>
         </button>
     </div>
 
     <!-- Payroll List -->
-    <div class="premium-card bg-white border border-slate-100 overflow-hidden">
+    <div class="premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
         <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
             <div class="relative flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
@@ -84,11 +87,27 @@
 
     <!-- Detail Modal -->
     <Teleport to="body">
-      <div v-if="detailItem" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm">
-          <div class="bg-white w-full max-w-2xl rounded-[2rem] shadow-2xl overflow-hidden flex flex-col animate-fade-in-up">
-              <div class="p-8 border-b border-slate-100 flex justify-between items-center">
-                  <h3 class="text-xl font-black text-slate-800 uppercase tracking-widest">Cơ cấu lương: {{ detailItem.fullName }}</h3>
-                  <button @click="detailItem = null" class="text-slate-300 hover:text-slate-600"><X class="w-6 h-6" /></button>
+      <div v-if="detailItem" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+          <div class="bg-white w-full max-w-2xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl overflow-hidden flex flex-col animate-fade-in-up relative mt-auto mb-auto">
+              <!-- Border Overlay -->
+              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+              
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-emerald-400 to-emerald-600 z-0"></div>
+
+              <div class="p-10 pb-6 relative z-10 pt-12 flex justify-between items-center">
+                  <div class="flex items-center gap-4">
+                      <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner border border-emerald-100">
+                          <Wallet class="w-7 h-7" />
+                      </div>
+                      <div>
+                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest ">Cơ cấu lương</h3>
+                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ detailItem.fullName }} — {{ detailItem.employeeCode }}</p>
+                      </div>
+                  </div>
+                  <button @click="detailItem = null" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500">
+                      <X class="w-5 h-5" />
+                  </button>
               </div>
               
               <div class="p-8 space-y-6 overflow-y-auto max-h-[60vh]">
@@ -106,7 +125,7 @@
                   <div class="space-y-4">
                       <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi tiết các đoàn đã tham gia</p>
                       <div class="space-y-2">
-                          <div v-for="d in detailItem.details" :key="d.groupId" class="flex justify-between items-center p-4 bg-white border border-slate-50 rounded-xl">
+                          <div v-for="d in detailItem.details" :key="d.groupId" class="flex justify-between items-center p-4 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl">
                               <div>
                                   <p class="font-black text-slate-700 text-sm">{{ d.groupName }}</p>
                                   <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ formatDate(d.examDate) }} • Hệ số: {{ d.shiftType }}</p>

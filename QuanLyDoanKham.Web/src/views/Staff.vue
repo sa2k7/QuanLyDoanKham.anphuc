@@ -61,7 +61,7 @@
     </div>
 
     <!-- Search & List in Table Format -->
-    <div class="premium-card bg-white border border-slate-100 overflow-hidden">
+    <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
         <div class="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 bg-slate-50/30">
             <div class="relative group flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
@@ -149,67 +149,67 @@
             <!-- Border Overlay -->
             <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
             
-            <!-- Header Gradient -->
-            <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+            <!-- Header Accent Line -->
+            <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-sky-400 to-sky-600 z-0"></div>
             
-            <button @click="showModal = false" class="absolute top-6 right-6 p-2 bg-white/20 hover:bg-white/40 rounded-full transition-all text-white z-20 flex items-center justify-center">
-                <X class="w-6 h-6" />
+            <button @click="showModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                <X class="w-5 h-5" />
             </button>
 
-            <div class="p-8 pb-4 flex justify-between items-center bg-transparent relative z-10">
-                <div class="flex items-center gap-4 text-white">
-                    <div class="w-12 h-12 bg-white text-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <UsersIcon class="w-6 h-6" />
+            <div class="p-10 pb-6 relative z-10 pt-12">
+                <div class="flex items-center gap-4">
+                    <div class="w-14 h-14 bg-sky-50 text-sky-600 rounded-3xl flex items-center justify-center shadow-inner border border-sky-100">
+                        <UsersIcon class="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 class="text-xl font-black text-white">{{ currentStaff.staffId ? currentStaff.fullName : 'Thêm Nhân sự mới' }}</h3>
-                        <p class="text-[10px] font-black opacity-80 uppercase tracking-widest text-white">{{ currentStaff.employeeCode || 'TỰ ĐỘNG' }}</p>
+                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ currentStaff.staffId ? currentStaff.fullName : 'Thêm Nhân sự mới' }}</h3>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Mã NS: <span class="text-sky-600 font-bold">{{ currentStaff.employeeCode || 'TỰ ĐỘNG' }}</span></p>
                     </div>
                 </div>
             </div>
 
-            <div class="p-8 bg-slate-50/30">
+            <div class="px-10 pb-10">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Basic Info Form -->
                     <div class="lg:col-span-2 space-y-6">
                         <form id="staffForm" @submit.prevent="saveStaff" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Họ và Tên (Có dấu) *</label>
-                                <input v-model="currentStaff.fullName" required class="input-premium w-full" placeholder="VD: Nguyễn Văn A" />
+                                <input v-model="currentStaff.fullName" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="VD: Nguyễn Văn A" />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Giới tính</label>
-                                <select v-model="currentStaff.gender" class="input-premium w-full">
+                                <select v-model="currentStaff.gender" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
                                     <option value="Nam">Nam</option>
                                     <option value="Nữ">Nữ</option>
                                 </select>
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Chức danh</label>
-                                <select v-model="jobCategory" required class="input-premium w-full text-xs">
+                                <select v-model="jobCategory" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full text-xs">
                                     <option v-for="job in standardJobs" :key="job" :value="job">{{ job }}</option>
                                     <option value="Khác">Khác...</option>
                                 </select>
                             </div>
                             <div v-if="jobCategory === 'Khác'" class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-indigo-400 italic">Nhập chức danh cụ thể *</label>
-                                <input v-model="currentStaff.jobTitle" required class="input-premium w-full border-indigo-200" placeholder="VD: Lái xe, Tạp vụ..." />
+                                <input v-model="currentStaff.jobTitle" required class="input-premium bg-slate-50 focus:bg-white w-full border-indigo-200" placeholder="VD: Lái xe, Tạp vụ..." />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Lương / Ngày công *</label>
-                                <input v-model.number="currentStaff.baseSalary" type="number" required class="input-premium w-full" />
+                                <CurrencyInput v-model="currentStaff.baseSalary" required />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">CCCD / CMND</label>
-                                <input v-model="currentStaff.idCardNumber" class="input-premium w-full" placeholder="001..." />
+                                <input v-model="currentStaff.idCardNumber" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="001..." />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Địa chỉ Email (Nhận thông báo)</label>
-                                <input v-model="currentStaff.email" type="email" class="input-premium w-full" placeholder="VD: nhanvien@gmail.com" />
+                                <input v-model="currentStaff.email" type="email" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="VD: nhanvien@gmail.com" />
                             </div>
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Vai trò hệ thống</label>
-                                <select v-model="currentStaff.systemRole" class="input-premium w-full" required>
+                                <select v-model="currentStaff.systemRole" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" required>
                                     <option value="MedicalStaff">{{ i18n.t('roles.MedicalStaff') }}</option>
                                     <option value="PersonnelManager">{{ i18n.t('roles.PersonnelManager') }}</option>
                                     <option value="ContractManager">{{ i18n.t('roles.ContractManager') }}</option>
@@ -228,7 +228,7 @@
                                  <HistoryIcon class="w-4 h-4" /> Lịch sử đăng ký thực địa
                              </h4>
                              <div class="space-y-3">
-                                 <div v-for="(day, idx) in currentStaff.workdays" :key="idx" class="flex justify-between items-center p-4 bg-white rounded-2xl shadow-sm border border-slate-50">
+                                 <div v-for="(day, idx) in currentStaff.workdays" :key="idx" class="flex justify-between items-center p-4 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-2xl">
                                      <div>
                                          <p class="text-sm font-black text-slate-700">{{ formatDate(day.date) }}</p>
                                          <p class="text-[9px] font-black text-indigo-400 uppercase tracking-widest ">{{ day.workPosition || 'Vị trí: N/A' }}</p>
@@ -273,7 +273,9 @@
             </div>
 
             <div class="p-8 border-t border-slate-50 flex justify-between gap-4 bg-white">
-                <button v-if="currentStaff.staffId && authStore.role === 'Admin'" @click="deleteStaff" type="button" class="px-6 py-3 text-rose-500 font-black hover:bg-rose-50 rounded-xl transition-all">Gỡ bỏ</button>
+                <button v-if="currentStaff.staffId && authStore.role === 'Admin'" @click="deleteStaff" type="button" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
+                    <Trash2 class="w-5 h-5" />
+                </button>
                 <div class="flex-1"></div>
                 <button @click="showModal = false" class="px-8 py-3 text-slate-400 font-black">QUAY LẠI</button>
                 <button form="staffForm" type="submit" class="bg-slate-900 text-white px-10 py-3 rounded-xl font-black shadow-lg">LƯU THÔNG TIN</button>
@@ -299,6 +301,8 @@ import { useToast } from '../composables/useToast'
 import StatCard from '../components/StatCard.vue'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useI18nStore } from '../stores/i18n'
+
+import CurrencyInput from '../components/CurrencyInput.vue'
 
 const authStore = useAuthStore()
 const i18n = useI18nStore()

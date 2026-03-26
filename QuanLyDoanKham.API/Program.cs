@@ -11,7 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// 2. Controllers
+// 2. HTTP Client & AI Services
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.IGeminiService, QuanLyDoanKham.API.Services.GeminiService>();
+
+// 3. Controllers
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {

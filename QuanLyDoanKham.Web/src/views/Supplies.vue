@@ -66,7 +66,7 @@
         </div>
 
         <!-- Search & Table -->
-        <div class="premium-card bg-white border border-slate-100 overflow-hidden mt-8">
+        <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mt-8">
             <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
                 <div class="relative group flex-1">
                     <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
@@ -109,8 +109,12 @@
                             <td class="p-5 text-right font-black text-slate-700 ">{{ formatCurrency(item.unitPrice) }}</td>
                             <td class="p-5 text-center border-l border-slate-50">
                                 <div class="flex flex-col items-center">
-                                    <span :class="['text-sm font-black ', item.isLowStock ? 'text-rose-500' : 'text-slate-900']">{{ formatNumber(item.totalStock) }}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span :class="['text-sm font-black ', item.isLowStock ? 'text-rose-600' : 'text-slate-900']">{{ formatNumber(item.totalStock) }}</span>
+                                        <AlertCircle v-if="item.isLowStock" class="w-3 h-3 text-rose-500 animate-pulse" />
+                                    </div>
                                     <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ item.unit || 'Đơn vị' }}</span>
+                                    <span v-if="item.isLowStock" class="text-[7px] font-black text-rose-400 uppercase tracking-tighter mt-0.5 bg-rose-50 px-1 rounded">Sắp hết</span>
                                 </div>
                             </td>
                             <td class="p-5 text-center">
@@ -134,7 +138,7 @@
 
     <!-- Active View: VOUCHERS -->
     <div v-else class="space-y-6 animate-fade-in">
-        <div class="premium-card bg-white border border-slate-100 overflow-hidden">
+        <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
             <div class="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
                 <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Lịch sử giao dịch kho</h3>
                 <div class="flex items-center gap-3">
@@ -192,22 +196,25 @@
               <!-- Border Overlay -->
               <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
               
-              <!-- Header Gradient -->
-              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
-
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-violet-500 to-violet-700 z-0"></div>
+              
               <!-- Close Button -->
-              <button @click="showModal = false" class="absolute top-6 right-6 bg-white/20 p-2 rounded-full hover:bg-white/40 transition-all text-white z-10 flex items-center justify-center">
-                  <X class="w-6 h-6" />
+              <button @click="showModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                  <X class="w-5 h-5" />
               </button>
 
-              <div class="mt-32 relative z-10 pt-4">
-                  <div class="p-12 pt-4 pb-0">
-                      <h3 class="text-2xl font-black text-slate-800 mb-10 uppercase tracking-widest flex items-center gap-4">
-                    <div class="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center shadow-lg border-2 border-teal-50">
-                      <Edit3 class="w-6 h-6" />
-                    </div>
-                    Thành phần Vật tư
-                  </h3>
+              <div class="relative z-10 pt-12">
+                  <div class="p-12 pb-6">
+                      <div class="flex items-center gap-4 mb-8">
+                          <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-3xl flex items-center justify-center shadow-inner border border-violet-100">
+                              <Edit3 class="w-7 h-7" />
+                          </div>
+                          <div>
+                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">Thành phần Vật tư</h3>
+                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Hệ thống kho & điều phối</p>
+                          </div>
+                      </div>
               
               <form id="supplyForm" @submit.prevent="saveItem" class="space-y-8">
                   <div class="grid grid-cols-2 gap-8">
@@ -230,15 +237,11 @@
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đơn giá niêm yết (VNĐ)</label>
-                        <input :value="formatInput(currentItem.unitPrice)" 
-                               @input="currentItem.unitPrice = parseInput($event.target.value)"
-                               required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="0" />
+                        <CurrencyInput v-model="currentItem.unitPrice" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="0" />
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ngưỡng tồn tối thiểu</label>
-                        <input :value="formatInput(currentItem.minStockLevel)" 
-                               @input="currentItem.minStockLevel = parseInput($event.target.value)"
-                               required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="5" />
+                        <CurrencyInput v-model="currentItem.minStockLevel" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="5" />
                     </div>
                   </div>
 
@@ -247,7 +250,9 @@
 
                   <div class="px-12 pb-12 pt-4 bg-white relative z-20">
                       <div class="flex gap-4">
-                          <button v-if="currentItem.supplyId && authStore.role === 'Admin'" type="button" @click="deleteItem" class="px-6 py-4 text-rose-500 font-black uppercase tracking-widest text-[10px] hover:bg-rose-50 rounded-2xl">Xóa</button>
+                          <button v-if="currentItem.supplyId && authStore.role === 'Admin'" type="button" @click="deleteItem" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
+                              <Trash2 class="w-5 h-5" />
+                          </button>
                           <div class="flex-1"></div>
                           <button type="button" @click="showModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy</button>
                           <button form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
@@ -265,23 +270,26 @@
               <!-- Border Overlay -->
               <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
               
-              <!-- Header Gradient -->
-              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
-
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-violet-500 to-violet-700 z-0"></div>
+              
               <!-- Close Button -->
-              <button @click="showVoucherModal = false" class="absolute top-6 right-6 bg-white/20 p-2 rounded-full hover:bg-white/40 transition-all text-white z-10 flex items-center justify-center">
-                  <X class="w-6 h-6" />
+              <button @click="showVoucherModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                  <X class="w-5 h-5" />
               </button>
 
-              <div class="mt-32 relative z-10 pt-4">
-                  <div class="px-12">
-                      <div class="flex justify-between items-center mb-10">
-                      <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest flex items-center gap-4">
-                        <div class="w-12 h-12 bg-white text-teal-600 rounded-2xl flex items-center justify-center shadow-lg border-2 border-teal-50">
-                          <ClipboardList class="w-6 h-6" />
-                        </div>
-                        Lập Giao dịch Kho
-                      </h3>
+              <div class="relative z-10 pt-6">
+                  <div class="px-2">
+                      <div class="flex justify-between items-center mb-8">
+                          <div class="flex items-center gap-4">
+                              <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-3xl flex items-center justify-center shadow-inner border border-violet-100">
+                                  <ClipboardList class="w-7 h-7" />
+                              </div>
+                              <div>
+                                  <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">Lập Giao dịch Kho</h3>
+                                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phiếu xuất nhập điều phối vật tư</p>
+                              </div>
+                          </div>
                   <div class="flex gap-2">
                       <button @click="newVoucher.type = 'IMPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'IMPORT' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Nhập kho</button>
                       <button @click="newVoucher.type = 'EXPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'EXPORT' ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Xuất kho</button>
@@ -317,14 +325,25 @@
                               <div class="col-span-6 flex flex-col gap-2">
                                   <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Vật tư / Thuốc</label>
                                   <select v-model="row.supplyId" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-xs">
-                                      <option v-for="s in list" :key="s.supplyId" :value="s.supplyId">{{ s.supplyName }} (Tồn: {{ s.totalStock }} {{ s.unit }})</option>
+                                      <option :value="null" disabled>-- Chọn vật tư / thuốc --</option>
+                                      <option v-for="s in list" :key="s.supplyId" :value="s.supplyId">
+                                          [{{ s.category || 'VTYT' }}] {{ s.supplyName }} • Tồn: {{ formatNumber(s.totalStock) }} {{ s.unit }} {{ s.isLowStock ? '⚠️' : '' }}
+                                      </option>
                                   </select>
+                                  <!-- Info Badge when selected -->
+                                  <div v-if="row.supplyId && list.find(s => s.supplyId === row.supplyId)" class="mt-1 px-3 py-1.5 bg-violet-50 rounded-xl border border-violet-100 flex items-center justify-between animate-fade-in">
+                                      <div class="flex items-center gap-3">
+                                          <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
+                                          <span class="text-[9px] font-black text-violet-600 uppercase tracking-widest">
+                                              Đơn giá: {{ formatCurrency(list.find(s => s.supplyId === row.supplyId).unitPrice) }}
+                                          </span>
+                                      </div>
+                                      <span class="text-[8px] font-black text-violet-400 uppercase tracking-tighter italic">VT-{{ String(row.supplyId).padStart(4, '0') }}</span>
+                                  </div>
                               </div>
                               <div class="col-span-4 flex flex-col gap-2">
                                   <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng {{ newVoucher.type === 'IMPORT' ? 'nhập' : 'xuất' }}</label>
-                                  <input :value="formatInput(row.quantity)" 
-                                         @input="row.quantity = parseInput($event.target.value)"
-                                         class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-right" placeholder="0" />
+                                  <CurrencyInput v-model="row.quantity" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-right" placeholder="0" />
                               </div>
                               <div class="col-span-2 flex justify-center pb-1">
                                   <button @click="removeDetailRow(idx)" class="p-4 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 class="w-5 h-5" /></button>
@@ -364,6 +383,8 @@ import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import StatCard from '../components/StatCard.vue'
 
+import CurrencyInput from '../components/CurrencyInput.vue'
+
 const authStore = useAuthStore()
 const toast = useToast()
 
@@ -387,17 +408,6 @@ const newVoucher = ref({
 // -- UTILS: Number & Currency Formatting --
 const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num || 0)
 const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
-
-const formatInput = (val) => {
-    if (val === null || val === undefined || isNaN(val)) return ''
-    return new Intl.NumberFormat('vi-VN').format(val)
-}
-
-const parseInput = (str) => {
-    if (!str) return 0
-    const clean = str.replace(/[^\d]/g, '')
-    return parseInt(clean) || 0
-}
 
 // -- COMPUTED --
 const filteredList = computed(() => {
@@ -458,7 +468,9 @@ const saveItem = async () => {
         showModal.value = false
         fetchList()
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi lưu dữ liệu") 
+        console.error("Lỗi lưu vật tư:", e)
+        const errMsg = e.response?.data?.message || e.response?.data || e.message || "Lỗi lưu dữ liệu"
+        toast.error(typeof errMsg === 'string' ? errMsg : "Lỗi dữ liệu đầu vào (400)") 
     }
 }
 

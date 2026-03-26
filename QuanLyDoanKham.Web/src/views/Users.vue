@@ -46,7 +46,7 @@
     </div>
 
     <!-- ADMIN VIEW: USER LIST -->
-    <div v-if="isAdmin" class="premium-card bg-white border border-slate-100 overflow-hidden mb-20">
+    <div v-if="isAdmin" class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mb-20">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -91,6 +91,11 @@
                             <div v-if="getTempPass(u.username)" class="inline-flex items-center gap-3 px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-100 animate-pulse mb-1">
                                 <span class="text-[10px] font-black text-slate-800">{{ getTempPass(u.username) }}</span>
                                 <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Reset</span>
+                            </div>
+                            <!-- Mật khẩu vừa cập nhật trong phiên (Hiển thị trong 10 phút) -->
+                            <div v-else-if="sessionPasswords[u.username] && (Date.now() - (sessionPasswords[u.username].timestamp || 0) < 600000)" class="inline-flex items-center gap-3 px-3 py-1 bg-indigo-50 rounded-lg border border-indigo-100 mb-1">
+                                <span class="text-[10px] font-black text-indigo-600 font-mono tracking-tighter">{{ sessionPasswords[u.username].password || sessionPasswords[u.username] }}</span>
+                                <span class="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none">MỚI</span>
                             </div>
                             <!-- Hiển thị mật khẩu mặc định dự kiến cho nhân sự mới -->
                             <div v-else class="flex flex-col gap-1">
@@ -203,29 +208,32 @@
               <!-- Border Overlay -->
               <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
               
-              <!-- Header Gradient -->
-              <div class="absolute top-0 left-0 right-0 h-24 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
               
-              <button @click="modal.show = false" class="absolute top-6 right-6 text-white/80 hover:text-white transition-all z-10">
-                  <X class="w-8 h-8" />
+              <button @click="modal.show = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                  <X class="w-5 h-5" />
               </button>
               
-              <div class="mt-20 relative z-10 pt-4">
-                  <div class="p-10 pt-4 pb-0">
-                  <h3 class="text-2xl font-black text-slate-800 flex items-center mb-8">
-                      <div class="w-10 h-10 bg-indigo-600 text-white rounded-2xl flex items-center justify-center mr-4 shadow-lg shadow-indigo-200 border-2 border-white">
-                          <UserPlus v-if="!modal.isEdit" class="w-6 h-6" />
-                          <Edit3 v-else class="w-6 h-6" />
+              <div class="relative z-10 pt-12">
+                  <div class="p-10 pb-6">
+                      <div class="flex items-center gap-4 mb-8">
+                          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner border border-indigo-100">
+                              <UserPlus v-if="!modal.isEdit" class="w-7 h-7" />
+                              <Edit3 v-else class="w-7 h-7" />
+                          </div>
+                          <div>
+                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ modal.isEdit ? 'Cập nhật tài khoản' : 'Cấp tài khoản mới' }}</h3>
+                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Hệ thống phân quyền & Bảo mật</p>
+                          </div>
                       </div>
-                      {{ modal.isEdit ? 'Cập nhật tài khoản' : 'Cấp tài khoản mới' }}
-                  </h3>
 
               <form id="userForm" @submit.prevent="handleSubmit" class="space-y-6">
                   <!-- Avatar Upload -->
                   <div class="flex flex-col items-center space-y-4 mb-6">
-                      <div class="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group">
+                      <div class="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:border-indigo-400 transition-colors">
                           <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
-                          <Camera v-else class="w-8 h-8 text-slate-300" />
+                          <Camera v-else class="w-8 h-8 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                           <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
                               <span class="text-white text-[10px] font-black uppercase tracking-widest ">Thay ảnh</span>
                               <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
@@ -233,25 +241,26 @@
                       </div>
                   </div>
 
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Tên định danh đăng nhập</label>
-                      <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium w-full" placeholder="VD: bacsi_binh" />
-                  </div>
-                  
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ tài khoản</label>
-                      <input v-model="form.fullName" required class="input-premium w-full" placeholder="Nhập họ và tên đầy đủ..." />
-                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
+                      <div class="flex flex-col gap-2">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh đăng nhập</label>
+                          <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="VD: bacsi_binh" />
+                      </div>
+                      
+                      <div class="flex flex-col gap-2">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ khoản</label>
+                          <input v-model="form.fullName" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="Nhập họ tên đầy đủ..."
+                                 @input="generateUsername(form.fullName)" />
+                      </div>
 
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
-                      <input v-model="form.email" type="email" class="input-premium w-full" placeholder="vidu@gmail.com..." />
-                  </div>
+                      <div class="flex flex-col gap-2 md:col-span-2">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
+                          <input v-model="form.email" type="email" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="vidu@gmail.com..." />
+                      </div>
 
-                  <div class="grid grid-cols-2 gap-6">
-                      <div class="space-y-3">
+                      <div class="flex flex-col gap-2">
                           <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò</label>
-                          <select v-model="form.roleId" class="input-premium">
+                          <select v-model="form.roleId" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
                               <option :value="1">{{ i18n.t('roles.Admin') }}</option>
                               <option :value="2">{{ i18n.t('roles.PersonnelManager') }}</option>
                               <option :value="3">{{ i18n.t('roles.ContractManager') }}</option>
@@ -262,27 +271,26 @@
                               <option :value="8">{{ i18n.t('roles.Customer') }}</option>
                           </select>
                       </div>
-                  </div>
 
-                  <div v-show="form.roleId === 8" class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp</label>
-                      <select v-model="form.companyId" class="input-premium w-full">
-                          <option :value="null">-- Hệ điều hành HealthCare --</option>
-                          <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
-                      </select>
-                  </div>
-
-                  <div class="flex flex-col gap-2">
-                      <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                          {{ modal.isEdit ? 'Thay đổi mật khẩu hệ thống (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
-                      </label>
-                      <div class="relative">
-                          <input v-model="form.password" 
-                                 @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
-                                 :required="!modal.isEdit" type="text" class="input-premium w-full font-mono" />
-                          <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
+                      <div class="flex flex-col gap-2" :class="{ 'opacity-50 pointer-events-none': form.roleId !== 8 }">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp</label>
+                          <select v-model="form.companyId" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
+                              <option :value="null">-- Hệ điều hành HealthCare --</option>
+                              <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
+                          </select>
                       </div>
-                      <p v-if="!modal.isEdit" class="text-[9px] font-black text-slate-400 mt-1">💡 Mật khẩu mặc định đã được điền sẵn. Nhân viên có thể đổi sau khi đăng nhập.</p>
+
+                      <div class="flex flex-col gap-2 md:col-span-2">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                              {{ modal.isEdit ? 'Đổi mật khẩu (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
+                          </label>
+                          <div class="relative">
+                              <input v-model="form.password" 
+                                     @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
+                                     :required="!modal.isEdit" type="text" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full font-mono" />
+                              <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
+                          </div>
+                      </div>
                   </div>
 
                   </form>
@@ -390,6 +398,30 @@ const fetchResets = async () => {
 
 const DEFAULT_PASSWORD = 'HealthCare2026'
 const newlyCreatedUser = ref(null) // Track newly created user for password display
+// Khởi tạo từ localStorage để không bị mất khi F5
+const sessionPasswords = ref(JSON.parse(localStorage.getItem('user_session_passwords') || '{}')) 
+
+// Remove Vietnamese diacritics (e.g. 'Hoàng' -> 'Hoang')
+const removeDiacritics = (str) => str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+
+// Generate username: last word (first name) + initials of preceding words + 4-digit counter
+// E.g. "Nguyễn Huy Hoàng" → "hoangnh<count>"
+const generateUsername = async (fullName) => {
+    if (!fullName || modal.value.isEdit) return
+    const parts = fullName.trim().split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return
+    const firstName = parts[parts.length - 1]  // 'Hoàng'
+    const initials = parts.slice(0, -1).map(p => p[0]).join('') // 'NH'
+    const base = removeDiacritics(firstName + initials).toLowerCase().replace(/[^a-z]/g, '')
+    if (!base) return
+    // Count existing users with same base to generate 4-digit suffix
+    const count = users.value.filter(u => u.username.startsWith(base)).length
+    const suffix = String(count + 1).padStart(4, '0')
+    form.value.username = base + suffix
+}
 
 const openCreateModal = () => {
     modal.value = { show: true, isEdit: false }
@@ -426,10 +458,24 @@ const handleSubmit = async () => {
 
         if (modal.value.isEdit) {
             await axios.put(`http://localhost:5283/api/Auth/users/${form.value.username}`, form.value)
+            // Lưu vào cache & localStorage để hiển thị lại trên bảng (vì API không trả về Pass)
+            if (form.value.password) {
+                sessionPasswords.value[form.value.username] = { 
+                    password: form.value.password, 
+                    timestamp: Date.now() 
+                }
+                localStorage.setItem('user_session_passwords', JSON.stringify(sessionPasswords.value))
+            }
             toast.success("Cập nhật thành công!")
             modal.value.show = false
         } else {
             await axios.post('http://localhost:5283/api/Auth/register', form.value)
+            // Lưu vào cache & localStorage
+            sessionPasswords.value[form.value.username] = { 
+                password: form.value.password || DEFAULT_PASSWORD, 
+                timestamp: Date.now() 
+            }
+            localStorage.setItem('user_session_passwords', JSON.stringify(sessionPasswords.value))
             // Store newly created user info to display default password
             newlyCreatedUser.value = {
                 username: form.value.username,

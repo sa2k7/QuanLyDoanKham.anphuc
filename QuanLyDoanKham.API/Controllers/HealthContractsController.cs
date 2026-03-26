@@ -22,6 +22,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/HealthContracts
         [HttpGet]
+        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,Customer")]
         public async Task<ActionResult<IEnumerable<HealthContractDto>>> GetContracts()
         {
             return await _context.Contracts

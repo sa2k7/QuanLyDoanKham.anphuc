@@ -1,0 +1,37 @@
+﻿  Determining projects to restore...
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Azure.Identity' 1.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-5mfx-4wcx-rv27
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Microsoft.Data.SqlClient' 5.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+  All projects are up-to-date for restore.
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Azure.Identity' 1.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-5mfx-4wcx-rv27
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Microsoft.Data.SqlClient' 5.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\Controllers\MedicalGroupsController.cs(419,43): error CS1061: 'HealthContract' does not contain a definition for 'expectedQuantity' and no accessible extension method 'expectedQuantity' accepting a first argument of type 'HealthContract' could be found (are you missing a using directive or an assembly reference?) [D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj]
+D:\QuanLyDoanKham\QuanLyDoanKham.API\Controllers\MedicalGroupsController.cs(440,30): error CS0246: The type or namespace name 'StringBuilder' could not be found (are you missing a using directive or an assembly reference?) [D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj]
+
+Build FAILED.
+
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Azure.Identity' 1.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-5mfx-4wcx-rv27
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Microsoft.Data.SqlClient' 5.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Azure.Identity' 1.7.0 has a known high severity vulnerability, https://github.com/advisories/GHSA-5mfx-4wcx-rv27
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-m5vv-6r4h-3vj9
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Azure.Identity' 1.7.0 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-wvxc-855f-jvrv
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1903: Package 'Microsoft.Data.SqlClient' 5.1.1 has a known high severity vulnerability, https://github.com/advisories/GHSA-98g6-xh36-x2p7
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'Microsoft.IdentityModel.JsonWebTokens' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj : warning NU1902: Package 'System.IdentityModel.Tokens.Jwt' 7.0.3 has a known moderate severity vulnerability, https://github.com/advisories/GHSA-59j7-ghrg-fj52
+D:\QuanLyDoanKham\QuanLyDoanKham.API\Controllers\MedicalGroupsController.cs(419,43): error CS1061: 'HealthContract' does not contain a definition for 'expectedQuantity' and no accessible extension method 'expectedQuantity' accepting a first argument of type 'HealthContract' could be found (are you missing a using directive or an assembly reference?) [D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj]
+D:\QuanLyDoanKham\QuanLyDoanKham.API\Controllers\MedicalGroupsController.cs(440,30): error CS0246: The type or namespace name 'StringBuilder' could not be found (are you missing a using directive or an assembly reference?) [D:\QuanLyDoanKham\QuanLyDoanKham.API\QuanLyDoanKham.API.csproj]
+    12 Warning(s)
+    2 Error(s)
+
+Time Elapsed 00:00:04.76

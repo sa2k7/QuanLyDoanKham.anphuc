@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group transition-all hover:shadow-md"
+    class="bg-white p-8 rounded-[2.5rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] relative overflow-hidden group transition-all hover:shadow-[6px_6px_0px_#0f172a] hover:-translate-y-0.5"
     :class="containerClass"
   >
     <!-- Background Decor Icon -->

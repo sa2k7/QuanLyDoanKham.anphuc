@@ -36,7 +36,7 @@
       <!-- Main Visualizations (Dynamic based on Role) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Visualization 1: Main Chart Area -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div class="lg:col-span-2 bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
           <div class="flex items-center justify-between mb-6">
             <h3 class="font-bold text-slate-800">
               <span v-if="authStore.role === 'PersonnelManager'">Phân bổ Nhân sự theo Chuyên môn</span>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Visualization 2: Status / Progress -->
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex flex-col">
           <h3 class="font-bold text-slate-800 mb-6 italic">Sẵn sàng vận hành</h3>
           <div class="flex-grow flex flex-col justify-center space-y-6">
             <div v-for="(progress, name) in completionProgress" :key="name">
@@ -94,7 +94,7 @@
       <!-- MỤC BÁO CÁO MỚI: Revenue & Financial Performance -->
       <div v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager' || authStore.role === 'PayrollManager'" 
            class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-xl border-2 border-slate-100 shadow-lg relative overflow-hidden group">
+        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] relative overflow-hidden group">
           <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <DollarSign class="w-32 h-32 text-emerald-600" />
           </div>
@@ -129,7 +129,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
           <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-tighter italic">
              <LayoutGrid class="w-5 h-5 text-blue-600" /> Hiệu suất Phân bổ Nhân sự (Mới)
           </h3>
@@ -154,7 +154,7 @@
       <!-- 4. Secondary Analysis Grid -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <!-- 4.1 Role-Specific Data Lists -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 class="font-bold text-slate-800 italic">
                <span v-if="authStore.role === 'PersonnelManager'">Dương tính hiệu suất - Top Nhân viên</span>
@@ -263,7 +263,7 @@
         </div>
 
         <!-- 4.2 Ready Reports -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col">
+        <div class="bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex flex-col">
           <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 class="font-bold text-slate-800">Báo cáo sẵn sàng xuất file</h3>
             <button class="text-[9px] font-black uppercase tracking-widest text-blue-600">Xem tất cả</button>

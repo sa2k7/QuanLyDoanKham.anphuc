@@ -16,14 +16,12 @@
 
       <div class="flex items-center gap-4">
         <button v-if="authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager'" 
-                @click="exportGroups" 
-                class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 rounded-xl shadow-sm hover:bg-slate-50 transition-all">
+                @click="exportGroups"                 class="btn-premium bg-white border-2 border-slate-900 text-slate-800 px-6 py-3 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:bg-slate-50 transition-all font-black">
             <Download class="w-4 h-4 mr-2" />
             <span class="text-[10px] font-black uppercase tracking-widest">Xuất DS Đoàn</span>
         </button>
         <button v-if="authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager'" 
-                @click="showForm = !showForm" 
-                class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl shadow-xl hover:shadow-2xl transition-all">
+                @click="showForm = !showForm"                 class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">
             <Plus class="w-5 h-5 mr-2" />
             <span class="text-[10px] font-black uppercase tracking-widest ">Khởi tạo đoàn</span>
         </button>
@@ -56,7 +54,7 @@
     </div>
 
     <!-- Smart Create Form -->
-    <div v-if="showForm" class="premium-card p-10 bg-white border-4 border-indigo-50/50 mb-10 animate-slide-up relative overflow-hidden">
+    <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 mb-10 animate-slide-up relative overflow-hidden">
         <div class="absolute top-0 right-0 p-4">
             <button @click="showForm = false" class="p-2 hover:bg-slate-100 rounded-full transition-all">
                 <X class="w-5 h-5 text-slate-400" />
@@ -81,7 +79,7 @@
                     <select v-model="selectedContractForAuto" @change="onSmartContractSelect" class="w-full px-4 py-3 rounded-xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
                         <option :value="null" disabled>-- Chọn hợp đồng --</option>
                         <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                            {{ c.companyName }}
+                            [HĐ-{{ c.healthContractId }}] {{ c.shortName || c.companyName }} ({{ formatDate(c.signingDate) }})
                         </option>
                     </select>
                     <p v-if="approvedContracts.length === 0" class="text-[9px] font-black text-rose-400">Chưa có hợp đồng nào được phê duyệt.</p>
@@ -117,7 +115,7 @@
                         </div>
                     </div>
 
-                    <button @click="confirmSmartCreate" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-lg shadow-emerald-100 active:scale-95 transition-all flex items-center justify-center gap-2">
+                     <button @click="confirmSmartCreate" class="w-full bg-emerald-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] active:scale-95 transition-all flex items-center justify-center gap-2">
                         <Zap class="w-4 h-4" /> XÁC NHẬN TẠO NHANH
                     </button>
                 </div>
@@ -135,7 +133,9 @@
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Hợp đồng mục tiêu</label>
                 <select v-model="newGroup.healthContractId" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
                     <option :value="null" disabled>-- Chọn hợp đồng --</option>
-                    <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">{{ c.shortName || c.companyName }}</option>
+                    <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
+                        [HĐ-{{ c.healthContractId }}] {{ c.shortName || c.companyName }} ({{ formatDate(c.signingDate) }})
+                    </option>
                 </select>
             </div>
             <div class="space-y-3">
@@ -147,7 +147,7 @@
                 <input v-model="newGroup.examDate" type="date" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all" />
             </div>
             <div class="md:col-span-3 flex justify-end pt-4">
-                <button type="submit" class="btn-premium bg-indigo-600 text-white px-12 py-4 rounded-2xl shadow-xl shadow-indigo-100 hover:shadow-2xl transition-all active:scale-95 uppercase tracking-widest text-[11px] font-black ">KÍCH HOẠT ĐOÀN MỚI</button>
+                 <button type="submit" class="btn-premium bg-indigo-600 text-white px-12 py-4 rounded-2xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:bg-indigo-700 transition-all active:scale-95 uppercase tracking-widest text-[11px] font-black ">KÍCH HOẠT ĐOÀN MỚI</button>
             </div>
         </form>
     </div>
@@ -169,7 +169,7 @@
     <!-- Danh sách Đoàn -->
     <div class="space-y-6">
         <div v-for="group in filteredGroups" :key="group.groupId" 
-             class="premium-card bg-white border-2 border-slate-50 overflow-hidden group/card shadow-sm">
+             class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden group/card">
             
             <div class="p-8 bg-slate-900 text-white flex justify-between items-center">
                 <div class="flex items-center gap-6">
@@ -178,7 +178,9 @@
                     </div>
                     <div>
                         <h4 class="text-2xl font-black ">{{ group.groupName }}</h4>
-                        <p class="text-xs font-black text-indigo-300 uppercase tracking-widest ">{{ group.shortName || group.companyName }} • {{ formatDate(group.examDate) }}</p>
+                        <p class="text-xs font-black text-indigo-300 uppercase tracking-widest ">
+                            [HĐ-{{ group.healthContractId }}] • {{ group.shortName || group.companyName }} • {{ formatDate(group.examDate) }}
+                        </p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
@@ -196,6 +198,12 @@
                         </h5>
                         <div class="flex items-center gap-3">
                             <button v-if="group.status === 'Open'" @click="openStaffModal(group.groupId)" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ ĐIỀU ĐỘNG & GÁN VỊ TRÍ</button>
+                            <div class="w-px h-3 bg-slate-200"></div>
+                            <button v-if="group.status === 'Open'" @click="handleAiSuggest(group.groupId)" :disabled="isAiLoading" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                                <Sparkles class="w-3 h-3" v-if="!isAiLoading" />
+                                <RefreshCw class="w-3 h-3 animate-spin" v-else />
+                                {{ isAiLoading ? 'AI ĐANG TÍNH TOÁN...' : '✨ AI COPILOT GỢI Ý' }}
+                            </button>
                             <div class="w-px h-3 bg-slate-200"></div>
                             <button @click="exportGroupStaff(group.groupId, group.groupName)" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">XUẤT DS ĐI ĐOÀN (EXCEL)</button>
                         </div>
@@ -282,86 +290,88 @@
 
     <!-- Staff Selection Modal -->
     <Teleport to="body">
-      <div v-if="modals.staff.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-4 overflow-y-auto">
-          <div class="bg-white w-full max-w-xl rounded-[3.5rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
+      <div v-if="modals.staff.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div class="bg-white w-full max-w-xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
               <!-- Border Overlay -->
               <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
               
-              <!-- Header Gradient -->
-              <div class="absolute top-0 left-0 right-0 h-32 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+              <!-- Header Accent Line -->
+              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
 
-              <button @click="modals.staff.show = false" class="absolute top-6 right-6 p-3 hover:bg-white/20 rounded-full transition-all text-white z-10">
-                  <X class="w-6 h-6" />
+              <button @click="modals.staff.show = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                  <X class="w-5 h-5" />
               </button>
 
-              <div class="mt-32 relative z-10 pt-4">
-                  <div class="p-12 pt-4 pb-0">
-                  <div class="flex items-center gap-5 mb-10">
-                      <div class="w-16 h-16 bg-white rounded-[1.5rem] flex items-center justify-center text-teal-600 shadow-lg border-2 border-teal-50">
-                          <UsersIcon class="w-8 h-8" />
+              <div class="relative z-10 pt-12">
+                  <div class="p-10 pb-6">
+                      <div class="flex items-center gap-4 mb-8">
+                          <div class="w-14 h-14 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center shadow-inner border border-teal-100">
+                              <UsersIcon class="w-7 h-7" />
+                          </div>
+                          <div>
+                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest ">Điều động nhân sự</h3>
+                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phân bổ vị trí & Ca làm tại đoàn khám</p>
+                          </div>
                       </div>
-                      <div>
-                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest ">Điều động nhân sự</h3>
-                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phân bổ vị trí & Ca làm tại đoàn khám</p>
-                      </div>
+
+                      <form id="staffForm" @submit.prevent="addStaff" class="space-y-6">
+                          <div class="space-y-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                  <CheckCircle2 class="w-3 h-3 text-indigo-400" /> Chọn nhân viên (Đảm bảo không trùng lịch)
+                              </label>
+                              <select v-model="modals.staff.data.staffId" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all appearance-none">
+                                  <option :value="null" disabled>-- Chọn nhân sự từ danh sách --</option>
+                                  <option v-for="s in staffList" :key="s.staffId" :value="s.staffId">{{ s.fullName }} — {{ s.jobTitle }}</option>
+                              </select>
+                          </div>
+                          
+                          <div class="grid grid-cols-2 gap-4">
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                      <Clock class="w-3 h-3 text-indigo-400" /> Loại ca làm
+                                  </label>
+                                  <select v-model="modals.staff.data.shiftType" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
+                                      <option :value="1.0">Cả ngày (1.0)</option>
+                                      <option :value="0.5">Nửa ngày (0.5)</option>
+                                  </select>
+                              </div>
+                              <div class="space-y-2">
+                                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                      <RefreshCw class="w-3 h-3 text-indigo-400" /> Trạng thái
+                                  </label>
+                                  <select v-model="modals.staff.data.workStatus" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
+                                      <option value="Đang chờ">Đang chờ</option>
+                                      <option value="Đã tham gia">Đã tham gia</option>
+                                  </select>
+                              </div>
+                          </div>
+
+                          <div class="space-y-2">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                  <Stethoscope class="w-3 h-3 text-indigo-400" /> Vị trí làm việc
+                              </label>
+                              <div v-if="selectedStaffType === 'BacSi'" class="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-100 mb-2">
+                                  <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">⚠️ Bác sĩ chỉ được phân vào vị trí khám bệnh</span>
+                              </div>
+                              <select v-model="modals.staff.data.workPosition" required @change="onStaffSelect" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
+                                  <option value="Tiếp nhận" :disabled="selectedStaffType === 'BacSi'">Trạm 01: Tiếp nhận &amp; Phân loại</option>
+                                  <option value="Cân đo huyết áp" :disabled="selectedStaffType === 'BacSi'">Trạm 02: Cân đo &amp; Huyết áp</option>
+                                  <option value="Khám nội">Trạm 03: Khám Nội tổng quát</option>
+                                  <option value="Khám ngoại">Trạm 04: Khám Ngoại / Da liễu</option>
+                                  <option value="Lấy máu" :disabled="selectedStaffType === 'BacSi'">Trạm 05: Lấy máu (Cận lâm sàng)</option>
+                                  <option value="Siêu âm">Trạm 06: Siêu âm tổng quát</option>
+                                  <option value="Khám sản phụ khoa">Trạm 07: Sản phụ khoa</option>
+                                  <option value="Hậu cần" :disabled="selectedStaffType === 'BacSi'">Trạm 08: Hậu cần &amp; Trả kết quả</option>
+                                  <option value="Khác" :disabled="selectedStaffType === 'BacSi'">Phụ trợ / Khác</option>
+                              </select>
+                          </div>
+                      </form>
                   </div>
 
-              <form id="staffForm" @submit.prevent="addStaff" class="space-y-8">
-                  <div class="space-y-3">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                          <CheckCircle2 class="w-3 h-3 text-indigo-400" /> Chọn nhân viên (Đảm bảo không trùng lịch)
-                      </label>
-                      <select v-model="modals.staff.data.staffId" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all appearance-none">
-                          <option :value="null" disabled>-- Chọn nhân sự từ danh sách --</option>
-                          <option v-for="s in staffList" :key="s.staffId" :value="s.staffId">{{ s.fullName }} — {{ s.jobTitle }}</option>
-                      </select>
-                  </div>
-                  
-                  <div class="grid grid-cols-2 gap-6">
-                      <div class="space-y-3">
-                          <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                              <Clock class="w-3 h-3 text-indigo-400" /> Loại ca làm
-                          </label>
-                          <select v-model="modals.staff.data.shiftType" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                              <option :value="1.0">Cả ngày (Hệ số 1.0)</option>
-                              <option :value="0.5">Nửa ngày (Hệ số 0.5)</option>
-                          </select>
-                      </div>
-                      <div class="space-y-3">
-                          <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                              <RefreshCw class="w-3 h-3 text-indigo-400" /> Trạng thái ban đầu
-                          </label>
-                          <select v-model="modals.staff.data.workStatus" class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                              <option value="Đang chờ">Đang chờ (Pending)</option>
-                              <option value="Đã tham gia">Đã tham gia (Active)</option>
-                          </select>
-                      </div>
-                  </div>
-
-                  <div class="space-y-3">
-                      <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                          <Stethoscope class="w-3 h-3 text-indigo-400" /> Vị trí làm việc tại đoàn
-                      </label>
-                      <select v-model="modals.staff.data.workPosition" required class="w-full px-6 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                          <option value="Tiếp nhận">Trạm 01: Tiếp nhận & Phân loại</option>
-                          <option value="Cân đo huyết áp">Trạm 02: Cân đo & Huyết áp</option>
-                          <option value="Khám nội">Trạm 03: Khám Nội tổng quát</option>
-                          <option value="Khám ngoại">Trạm 04: Khám Ngoại / Da liễu</option>
-                          <option value="Lấy máu">Trạm 05: Lấy máu (Cận lâm sàng)</option>
-                          <option value="Siêu âm">Trạm 06: Siêu âm tổng quát</option>
-                          <option value="Khám sản phụ khoa">Trạm 07: Sản phụ khoa</option>
-                          <option value="Hậu cần">Trạm 08: Hậu cần & Trả kết quả</option>
-                          <option value="Khác">Phụ trợ / Khác</option>
-                      </select>
-                  </div>
-
-                  </form>
-                  </div>
-
-                  <div class="px-12 pb-12 pt-4 bg-white relative z-20">
+                  <div class="px-10 pb-10 pt-2 bg-white relative z-20">
                       <div class="flex gap-4 pt-4">
-                          <button type="button" @click="modals.staff.show = false" class="flex-1 py-5 text-slate-400 font-black text-xs uppercase tracking-widest hover:text-slate-600 transition-all underline decoration-2 underline-offset-8">Hủy bỏ</button>
-                          <button form="staffForm" type="submit" class="flex-[2] bg-indigo-600 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl shadow-indigo-100 transition-all active:scale-95 hover:bg-slate-900">XÁC NHẬN ĐIỀU ĐỘNG</button>
+                          <button type="button" @click="modals.staff.show = false" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest hover:text-slate-600 transition-all underline decoration-2 underline-offset-8">Hủy bỏ</button>
+                           <button form="staffForm" type="submit" class="flex-[2] bg-slate-900 text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] transition-all active:scale-95 hover:bg-teal-600">XÁC NHẬN ĐIỀU ĐỘNG</button>
                       </div>
                   </div>
               </div>
@@ -373,6 +383,71 @@
     <input type="file" ref="importInput" class="hidden" @change="handleImportFile" />
 
     <ConfirmDialog v-model="confirmData.show" :title="confirmData.title" :message="confirmData.message" :variant="confirmData.variant" @confirm="confirmData.onConfirm" />
+
+    <!-- AI Suggestion Modal -->
+    <Teleport to="body">
+         <div v-if="showAiModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4">
+            <div class="bg-white w-full max-w-4xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up overflow-hidden relative">
+                <!-- Header Accent Line -->
+                <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-indigo-500 to-purple-600 z-0"></div>
+                
+                <button @click="showAiModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                    <X class="w-5 h-5" />
+                </button>
+
+                <div class="relative z-10 p-10 pt-12">
+                    <div class="flex items-center gap-4 mb-10">
+                        <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner border border-indigo-100">
+                            <Brain class="w-8 h-8" />
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">AI Suggestion Result</h3>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-1">Phân bổ nhân sự tối ưu bởi Gemini AI</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-[2rem] border border-slate-100 p-8 mb-8">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="text-[10px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
+                                    <tr>
+                                        <th class="pb-4">Nhân sự</th>
+                                        <th class="pb-4">Vị trí gợi ý</th>
+                                        <th class="pb-4">Lý do điều động</th>
+                                        <th class="pb-4 text-center">Ca làm</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100">
+                                    <tr v-for="s in aiSuggestions" :key="s.staffId" class="text-xs">
+                                        <td class="py-4 font-black text-slate-700">
+                                            {{ staffList.find(st => st.staffId === s.staffId)?.fullName || 'Không xác định' }}
+                                        </td>
+                                        <td class="py-4">
+                                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-black uppercase tracking-widest text-[9px]">
+                                                {{ s.workPosition }}
+                                            </span>
+                                        </td>
+                                        <td class="py-4 text-slate-500 italic">"{{ s.reason }}"</td>
+                                        <td class="py-4 text-center font-black">{{ s.shiftType === 1 ? 'Cả ngày' : 'Nửa ngày' }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                         <button @click="applyAiSuggestions" class="flex-1 bg-indigo-600 text-white py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center justify-center gap-2">
+                            <Sparkles class="w-5 h-5" />
+                            ÁP DỤNG TOÀN BỘ GỢI Ý
+                        </button>
+                        <button @click="showAiModal = false" class="px-8 py-4 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-400 hover:bg-slate-50 transition-all">
+                            HỦY BỎ
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Teleport>
   </div>
 </template>
 
@@ -380,8 +455,8 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { 
-    Stethoscope, Plus, Building2, Calendar, Users as UsersIcon, FileText, Trash2, 
-    FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, CheckCircle2, Clock, Zap
+    Stethoscope, Plus, Building2, Calendar, Users as UsersIcon, FileText, Trash2, Sparkles, Brain, 
+    FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, CheckCircle2, Clock, Zap, RefreshCw
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
@@ -400,11 +475,64 @@ const importInput = ref(null)
 const currentGroupId = ref(null)
 const selectedContractForAuto = ref(null)
 
+// Track the selected staff's type to enforce doctor restrictions
+const selectedStaffType = computed(() => {
+    const sid = modals.value.staff.data.staffId
+    if (!sid) return null
+    return staffList.value.find(s => s.staffId === sid)?.staffType || null
+})
+
+// Auto-adjust workPosition when staff changes: if doctor, default to 'Khám nội'
+const onStaffSelect = () => {
+    const forbidden = ['Tiếp nhận', 'Cân đo huyết áp', 'Lấy máu', 'Hậu cần', 'Khác']
+    if (selectedStaffType.value === 'BacSi' && forbidden.includes(modals.value.staff.data.workPosition)) {
+        modals.value.staff.data.workPosition = 'Khám nội'
+    }
+}
+
 const newGroup = ref({ healthContractId: null, groupName: '', examDate: new Date().toISOString().split('T')[0] })
 const modals = ref({
-    staff: { show: false, groupId: null, data: { staffId: null, shiftType: 1.0, workPosition: 'Tiếp nhận', workStatus: 'Đang chờ' } }
+    staff: { show: false, groupId: null, data: { staffId: null, shiftType: 1.0, workPosition: 'Tiếp nhận', workStatus: 'Đã tham gia' } }
 })
 const confirmData = ref({ show: false, title: '', message: '', variant: 'warning', onConfirm: () => {} })
+
+const isAiLoading = ref(false)
+const aiSuggestions = ref([])
+const showAiModal = ref(false)
+const currentAiGroupId = ref(null)
+
+const handleAiSuggest = async (groupId) => {
+    try {
+        isAiLoading.value = true
+        currentAiGroupId.value = groupId
+        const res = await axios.post(`http://localhost:5283/api/MedicalGroups/${groupId}/ai-suggest-staff`)
+        aiSuggestions.value = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
+        showAiModal.value = true
+    } catch (e) {
+        toast.error("Lỗi khi gọi AI gợi ý: " + e.message)
+    } finally {
+        isAiLoading.value = false
+    }
+}
+
+const applyAiSuggestions = async () => {
+    try {
+        const groupId = currentAiGroupId.value
+        for (const s of aiSuggestions.value) {
+            await axios.post(`http://localhost:5283/api/MedicalGroups/${groupId}/staffs`, {
+                staffId: s.staffId,
+                workPosition: s.workPosition,
+                shiftType: s.shiftType,
+                workStatus: 'Đã tham gia'
+            })
+        }
+        toast.success("Đã áp dụng toàn bộ gợi ý từ AI!")
+        showAiModal.value = false
+        fetchGroupStaff(groupId)
+    } catch (e) {
+        toast.error("Lỗi khi áp dụng gợi ý: " + e.message)
+    }
+}
 
 const openGroups = computed(() => groups.value.filter(g => g.status === 'Open'))
 const closedGroups = computed(() => groups.value.filter(g => g.status !== 'Open'))
@@ -412,8 +540,7 @@ const filteredGroups = computed(() => activeTab.value === 'Open' ? openGroups.va
 
 // Only show approved contracts for group creation
 const approvedContracts = computed(() => contracts.value.filter(c => 
-    c.status === 'Approved' || c.status === 'Active' || c.status === 'InProgress' ||
-    !['Pending', 'Draft'].includes(c.status)
+    c.status === 'Approved'
 ))
 
 const getStatusClass = (status) => {
@@ -460,6 +587,8 @@ const addGroup = async () => {
         await axios.post('http://localhost:5283/api/MedicalGroups', newGroup.value)
         toast.success("Khởi tạo đoàn thành công!")
         showForm.value = false
+        // Reset form
+        newGroup.value = { healthContractId: null, groupName: '', examDate: new Date().toISOString().split('T')[0] }
         fetchData()
     } catch (e) { toast.error("Lỗi khi tạo đoàn khám") }
 }
@@ -485,18 +614,24 @@ const onSmartContractSelect = async () => {
     const contract = contracts.value.find(c => c.healthContractId === selectedContractForAuto.value)
     if (!contract) return
 
+    // Find groups for this contract to determine sequence number
+    const contractGroups = groups.value.filter(g => g.healthContractId === selectedContractForAuto.value)
+    const nextSequence = contractGroups.length + 1
+    const sequenceStr = String(nextSequence).padStart(2, '0')
+
     // Auto-fill group name and date
     const now = new Date()
     const month = String(now.getMonth() + 1).padStart(2, '0')
     const year = now.getFullYear()
+    
+    const displayName = contract.shortName || contract.companyName
     smartPreview.value = {
-        groupName: `Đoàn khám - ${contract.companyName} - ${month}/${year}`,
+        groupName: `Đoàn ${sequenceStr} - ${displayName} - ${month}/${year}`,
         examDate: contract.examDate ? contract.examDate.split('T')[0] : 
                   new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
     }
 
     // Find last group for this contract to offer clone
-    const contractGroups = groups.value.filter(g => g.healthContractId === selectedContractForAuto.value)
     lastGroupOfContract.value = contractGroups.length > 0 ? contractGroups[contractGroups.length - 1] : null
     doCloneStaff.value = false
     conflictWarnings.value = []
@@ -547,11 +682,32 @@ const confirmSmartCreate = async () => {
         }
         showForm.value = false
         smartPreview.value = null
+        selectedContractForAuto.value = null // Reset selection
         fetchData()
     } catch (e) { toast.error(e.response?.data || 'Lỗi tạo nhanh đoàn') }
 }
 
 const updateStatus = async (id, status) => {
+    if (status === 'Finished') {
+        confirmData.value = {
+            show: true,
+            title: 'Hoàn tất đoàn khám',
+            message: 'Bạn có chắc chắn muốn kết thúc đoàn khám này? Sau khi hoàn tất, đoàn sẽ chuyển sang trạng thái lưu trữ.',
+            variant: 'warning',
+            onConfirm: async () => {
+                try {
+                    await axios.put(`http://localhost:5283/api/MedicalGroups/${id}/status`, { status: status })
+                    toast.success(`Đã hoàn tất đoàn khám!`)
+                    fetchData()
+                } catch (e) { 
+                    const msg = e.response?.data?.message || e.response?.data || "Lỗi cập nhật trạng thái"
+                    toast.error(msg) 
+                }
+            }
+        }
+        return
+    }
+
     try {
         await axios.put(`http://localhost:5283/api/MedicalGroups/${id}/status`, { status: status })
         toast.success(`Đã cập nhật trạng thái: ${getStatusLabel(status)}`)
@@ -565,7 +721,7 @@ const updateStatus = async (id, status) => {
 const openStaffModal = (gid) => {
     modals.value.staff.groupId = gid
     modals.value.staff.show = true
-    modals.value.staff.data = { staffId: null, shiftType: 1.0, workPosition: 'Tiếp nhận', workStatus: 'Đang chờ' }
+    modals.value.staff.data = { staffId: null, shiftType: 1.0, workPosition: 'Tiếp nhận', workStatus: 'Đã tham gia' }
 }
 
 const addStaff = async () => {

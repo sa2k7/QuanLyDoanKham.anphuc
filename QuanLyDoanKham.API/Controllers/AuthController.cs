@@ -146,9 +146,10 @@ namespace QuanLyDoanKham.API.Controllers
         {
             try
             {
-                // 1. Check User (Username or Email)
+                // 1. Check User (Username or Email) - Trim input for robustness
+                var loginId = request.Username?.Trim();
                 var user = await _context.Users.Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Username == request.Username || u.Email == request.Username);
+                    .FirstOrDefaultAsync(u => u.Username == loginId || u.Email == loginId);
 
                 if (user == null) return Unauthorized("Tài khoản không tồn tại.");
 

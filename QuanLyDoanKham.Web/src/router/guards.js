@@ -21,8 +21,10 @@ export function setupRouterGuards(router) {
 
         // Check if route requires specific role
         if (to.meta.roles && to.meta.roles.length > 0) {
-            const userRole = authStore.role
-            if (!to.meta.roles.includes(userRole)) {
+            const userRole = authStore.role?.toLowerCase()
+            const allowedRoles = to.meta.roles.map(r => r.toLowerCase())
+            
+            if (!userRole || !allowedRoles.includes(userRole)) {
                 // Redirect to forbidden page if user doesn't have required role
                 return next('/forbidden')
             }

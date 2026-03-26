@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using System.Text;
 
 namespace QuanLyDoanKham.API.Controllers
 {
@@ -13,19 +14,23 @@ namespace QuanLyDoanKham.API.Controllers
     public class MedicalGroupsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly Services.IGeminiService _geminiService;
 
-        public MedicalGroupsController(ApplicationDbContext context)
+        public MedicalGroupsController(ApplicationDbContext context, Services.IGeminiService geminiService)
         {
             _context = context;
+            _geminiService = geminiService;
         }
 
         // GET: api/MedicalGroups
         [HttpGet]
         public async Task<ActionResult<IEnumerable<MedicalGroupDto>>> GetMedicalGroups()
         {
+            var today = DateTime.Today;
             return await _context.MedicalGroups
                 .Include(g => g.HealthContract)
                 .ThenInclude(c => c.Company)
+                .OrderByDescending(g => g.GroupId)
                 .Select(g => new MedicalGroupDto
                 {
                     GroupId = g.GroupId,
@@ -134,6 +139,11 @@ namespace QuanLyDoanKham.API.Controllers
 
             var staff = await _context.Staffs.FindAsync(dto.StaffId);
             if (staff == null) return NotFound("Nhân viên không tồn tại.");
+
+            // RULE: Bác sĩ không được phân vào vị trí đơn giản
+            var forbiddenPositionsForDoctor = new[] { "Tiếp nhận", "Cân đo huyết áp", "Lấy máu", "Hậu cần", "Khác" };
+            if (staff.StaffType == "BacSi" && forbiddenPositionsForDoctor.Contains(dto.WorkPosition))
+                return BadRequest($"Bác sĩ không được phân công vào vị trí '{dto.WorkPosition}'. Chỉ được phân vị trí khám bệnh (Khám nội, Khám ngoại, Siêu âm, Sản phụ khoa).");
 
             // KIỂM TRA TRÙNG LỊCH: Nhân viên không được tham gia đoàn khác vào cùng ngày ExamDate
             var examDate = group.ExamDate.Date;
@@ -393,6 +403,88 @@ namespace QuanLyDoanKham.API.Controllers
                     return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"NhanSu_{group.GroupName}.xlsx");
                 }
             }
+        }
+
+        // POST: api/MedicalGroups/{id}/ai-suggest-staff
+        [HttpPost("{id}/ai-suggest-staff")]
+        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        public async Task<IActionResult> AiSuggestStaff(int id)
+        {
+            var group = await _context.MedicalGroups
+                .Include(g => g.HealthContract)
+                .ThenInclude(c => c.Company)
+                .FirstOrDefaultAsync(g => g.GroupId == id);
+
+            if (group == null) return NotFound("Đoàn khám không tồn tại.");
+
+            // 1. Thu thập dữ liệu ngữ cảnh
+            var contract = group.HealthContract;
+            var expectedPeople = contract.ExpectedQuantity;
+            
+            // Lấy danh sách nhân sự rảnh trong ngày hôm đó (hoặc tất cả nhân sự để AI chọn)
+            var allStaff = await _context.Staffs.ToListAsync();
+            var busyStaffIds = await _context.GroupStaffDetails
+                .Include(gsd => gsd.MedicalGroup)
+                .Where(gsd => gsd.MedicalGroup.ExamDate.Date == group.ExamDate.Date && gsd.GroupId != id)
+                .Select(gsd => gsd.StaffId)
+                .ToListAsync();
+
+            var availableStaff = allStaff
+                .Select(s => new {
+                    s.StaffId,
+                    s.FullName,
+                    s.StaffType, // BacSi, DieuDuong, KyThuatVien, Khac
+                    s.JobTitle,
+                    IsBusy = busyStaffIds.Contains(s.StaffId)
+                })
+                .ToList();
+
+            // 2. Xây dựng Prompt cho Gemini
+            var prompt = new StringBuilder();
+            prompt.AppendLine("Bạn là một chuyên gia điều phối nhân sự y tế. Hãy phân bổ nhân sự cho đoàn khám sau:");
+            prompt.AppendLine($"- Tên đoàn: {group.GroupName}");
+            prompt.AppendLine($"- Quy mô: {expectedPeople} người khám");
+            prompt.AppendLine($"- Ngày khám: {group.ExamDate:dd/MM/yyyy}");
+            prompt.AppendLine("\nDanh sách nhân sự khả dụng (StaffType: BacSi, DieuDuong, KyThuatVien, Khac):");
+            foreach (var s in availableStaff) {
+                prompt.AppendLine($"- ID: {s.StaffId}, Tên: {s.FullName}, Loại: {s.StaffType}, Chức vụ: {s.JobTitle} {(s.IsBusy ? "[ĐÃ CÓ LỊCH]" : "")}");
+            }
+
+            prompt.AppendLine("\nYêu cầu phân bổ:");
+            prompt.AppendLine("1. MUST: Tổng số nhân sự khoảng 1:15 hoặc 1:20 so với quy mô người khám.");
+            prompt.AppendLine("2. MUST: Phải có ít nhất 2 BacSi (vị trí: Khám nội, Khám ngoại, Siêu âm, Sản phụ khoa). Bác sĩ CẤM làm Tiếp nhận/Hậu cần.");
+            prompt.AppendLine("3. Vị trí Tiếp nhận & Phân loại: Thường là DieuDuong hoặc Khac.");
+            prompt.AppendLine("4. Vị trí Cân đo & Huyết áp: DieuDuong.");
+            prompt.AppendLine("5. Vị trí Lấy máu: DieuDuong hoặc KyThuatVien.");
+            prompt.AppendLine("6. Vị trí Hậu cần: DieuDuong hoặc Khac.");
+            prompt.AppendLine("\nKết quả trả về DUY NHẤT một mảng JSON format: [{\"staffId\": int, \"workPosition\": string, \"shiftType\": float, \"reason\": string}]");
+            prompt.AppendLine("Vị trí (workPosition) phải là một trong: Tiếp nhận, Cân đo huyết áp, Khám nội, Khám ngoại, Lấy máu, Siêu âm, Khám sản phụ khoa, Hậu cần, Khác.");
+
+            try {
+                var aiResponse = await _geminiService.GetStaffSuggestionAsync(prompt.ToString());
+                // Làm sạch response (Gemini đôi khi bọc trong ```json ... ```)
+                var jsonStart = aiResponse.IndexOf('[');
+                var jsonEnd = aiResponse.LastIndexOf(']');
+                if (jsonStart >= 0 && jsonEnd > jsonStart) {
+                    aiResponse = aiResponse.Substring(jsonStart, jsonEnd - jsonStart + 1);
+                }
+                
+                return Ok(aiResponse);
+            } catch (Exception ex) {
+                return BadRequest("Lỗi khi gọi AI: " + ex.Message);
+            }
+        }
+
+        // TEST: api/MedicalGroups/{id}/ai-suggest-staff (GET)
+        [HttpGet("{id}/ai-suggest-staff")]
+        [AllowAnonymous] // Cho phép test trực tiếp bằng browser
+        public IActionResult TestAiRoute(int id)
+        {
+            return Ok(new { 
+                message = "Kết nối Backend OK! Route AI đã sẵn sàng.", 
+                groupId = id,
+                timestamp = DateTime.Now 
+            });
         }
     }
 }

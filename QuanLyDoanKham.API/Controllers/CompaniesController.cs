@@ -21,7 +21,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Companies — Admin, ContractManager và MedicalStaff được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,ContractManager,MedicalStaff")] // Cho phép MedicalStaff xem để thống kê
+        [Authorize(Roles = "Admin,ContractManager,MedicalStaff,MedicalGroupManager")] // Cho phép MedicalGroupManager xem để điều phối đoàn
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             return await _context.Companies.ToListAsync();
