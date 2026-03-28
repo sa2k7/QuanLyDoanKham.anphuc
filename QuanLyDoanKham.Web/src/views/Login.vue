@@ -17,80 +17,69 @@
         <p class="text-slate-500 font-medium uppercase tracking-widest text-[10px] mt-2">Quản lý Đoàn khám</p>
       </div>
 
-      <form @submit.prevent="handleLogin" autocomplete="off" class="space-y-6">
-        <!-- Username Focus Input -->
-        <div class="flex flex-col gap-2 relative">
-          <label class="text-[11px] font-semibold text-slate-500 ml-1">Email / Tài khoản</label>
-          <div class="relative group">
-            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-              <User class="w-4 h-4" />
-            </span>
-            <input 
-              v-model="username"
-              type="text" 
-              autocomplete="off"
-              class="w-full pl-11 pr-4 py-3.5 rounded-xl bg-white/60 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-medium text-slate-700 transition-all placeholder:text-slate-300 placeholder:font-normal text-sm"
-              placeholder="Nhập vidu@gmail.com..."
-              required
-            />
+      <form @submit.prevent="handleLogin" autocomplete="off" class="space-y-5">
+        <!-- iOS-style Input: Email / Username -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300">
+            <User class="w-[18px] h-[18px]" />
           </div>
+          <input 
+            v-model="username"
+            type="text" 
+            autocomplete="off"
+            class="w-full h-[54px] pl-12 pr-4 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-emerald-300/50 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
+            placeholder="Email hoặc Tên đăng nhập"
+            required
+          />
         </div>
 
-        <!-- Password Input -->
-        <div class="flex flex-col gap-2 relative">
-          <label class="text-[11px] font-semibold text-slate-500 ml-1">Mật khẩu</label>
-          <div class="relative group">
-            <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400 group-focus-within:text-emerald-500 transition-colors">
-              <Lock class="w-4 h-4" />
-            </span>
-            <input 
-              v-model="password"
-              @input="password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
-              :type="showPassword ? 'text' : 'password'" 
-              autocomplete="new-password"
-              class="w-full pl-11 pr-12 py-3.5 rounded-xl bg-white/60 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-medium text-slate-700 transition-all placeholder:text-slate-300 placeholder:font-normal text-sm"
-              placeholder="••••••••"
-              required
-            />
-            <button 
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-emerald-500 transition-colors"
-            >
-              <Eye v-if="!showPassword" class="w-4 h-4" />
-              <EyeOff v-else class="w-4 h-4" />
-            </button>
+        <!-- iOS-style Input: Password -->
+        <div class="relative group">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300">
+            <Lock class="w-[18px] h-[18px]" />
           </div>
+          <input 
+            v-model="password"
+            @input="password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
+            :type="showPassword ? 'text' : 'password'" 
+            autocomplete="new-password"
+            class="w-full h-[54px] pl-12 pr-12 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-emerald-300/50 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
+            placeholder="Mật khẩu bảo mật"
+            required
+          />
+          <button 
+            type="button"
+            @click="showPassword = !showPassword"
+            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-emerald-600 transition-colors duration-300 outline-none"
+          >
+            <Eye v-if="!showPassword" class="w-[18px] h-[18px]" />
+            <EyeOff v-else class="w-[18px] h-[18px]" />
+          </button>
         </div>
 
-        <!-- Settings Options -->
-        <div class="flex items-center justify-between px-1 mt-2">
-          <label class="flex items-center gap-2 cursor-pointer group/check">
-            <div class="relative flex items-center justify-center w-4 h-4 rounded border border-slate-300 group-hover/check:border-emerald-500 transition-colors bg-white">
-              <input 
-                v-model="rememberMe"
-                type="checkbox" 
-                class="peer absolute inset-0 opacity-0 cursor-pointer z-10"
-              />
-              <div class="w-full h-full bg-emerald-500 transform scale-0 peer-checked:scale-100 transition-transform flex items-center justify-center">
-                <Check class="w-3 h-3 text-white" />
-              </div>
+        <!-- Settings Options: iOS Toggle & Forgot Password -->
+        <div class="flex items-center justify-between px-1 pt-1 pb-2">
+          <!-- iOS Toggle Switch for Remember Me -->
+          <label class="flex items-center cursor-pointer group/toggle gap-3">
+            <div class="relative">
+              <input v-model="rememberMe" type="checkbox" class="sr-only peer">
+              <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500 shadow-inner"></div>
             </div>
-            <span class="text-[12px] font-medium text-slate-500 group-hover/check:text-slate-700 transition-colors">Ghi nhớ tôi</span>
+            <span class="text-[13px] font-medium text-slate-500 group-hover/toggle:text-slate-700 transition-colors select-none">Lưu đăng nhập</span>
           </label>
 
           <button 
             type="button" 
             @click="showForgotModal = true"
-            class="text-[12px] font-semibold text-emerald-600 hover:text-emerald-500 hover:underline underline-offset-2 transition-all"
+            class="text-[13px] font-semibold text-slate-500 hover:text-emerald-600 transition-colors duration-300"
           >
             Quên mật khẩu?
           </button>
         </div>
 
         <transition name="fade">
-          <div v-if="authStore.error" class="bg-rose-50/80 backdrop-blur-sm text-rose-600 p-4 rounded-xl text-[12px] font-medium flex items-center gap-3 border border-rose-100 mt-4">
-              <AlertCircle class="w-4 h-4 flex-shrink-0" />
+          <div v-if="authStore.error" class="bg-rose-50/80 backdrop-blur-sm text-rose-600 p-4 rounded-xl text-[13px] font-medium flex items-center gap-3 border border-rose-100/50 shadow-sm animate-shake">
+              <AlertCircle class="w-[18px] h-[18px] flex-shrink-0" />
               <span>{{ authStore.error }}</span>
           </div>
         </transition>
@@ -99,13 +88,13 @@
         <button 
           :disabled="authStore.loading"
           type="submit" 
-          class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-400 py-4 rounded-xl shadow-[0_8px_16px_rgb(16,185,129,0.25)] hover:shadow-[0_12px_24px_rgb(16,185,129,0.35)] hover:-translate-y-0.5 transition-all duration-300 mt-6 relative overflow-hidden group"
+          class="w-full bg-gradient-to-r from-emerald-600 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-400 h-[56px] rounded-2xl shadow-[0_8px_20px_rgb(20,184,166,0.25)] hover:shadow-[0_12px_25px_rgb(20,184,166,0.4)] hover:-translate-y-0.5 transition-all duration-300 mt-2 relative overflow-hidden group"
         >
-          <div class="absolute inset-0 bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></div>
+          <div class="absolute w-[200%] h-full bg-white/20 transform -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out -skew-x-12 disabled:hidden"></div>
           <div class="relative flex items-center justify-center gap-2">
-            <span v-if="!authStore.loading" class="tracking-wide text-[13px] font-semibold uppercase">Đăng nhập hệ thống</span>
+            <span v-if="!authStore.loading" class="tracking-wide text-[14px] font-bold uppercase">Đăng nhập hệ thống</span>
             <Loader2 v-else class="w-5 h-5 animate-spin" />
-            <ArrowRight v-if="!authStore.loading" class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight v-if="!authStore.loading" class="w-[18px] h-[18px] group-hover:translate-x-1 transition-transform" />
           </div>
         </button>
       </form>
