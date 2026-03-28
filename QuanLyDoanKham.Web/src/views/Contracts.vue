@@ -276,7 +276,7 @@
                             <p class="text-[10px] font-black uppercase tracking-widest text-indigo-400">File đính kèm</p>
                             <p class="text-xs font-black text-slate-700 truncate">{{ detailsModal.data.filePath.split('\\').pop() }}</p>
                         </div>
-                        <a :href="'http://localhost:5283/' + detailsModal.data.filePath" target="_blank" class="px-4 py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black shadow-sm">XEM FILE</a>
+                        <a :href="'/' + detailsModal.data.filePath" target="_blank" class="px-4 py-2 bg-white text-indigo-600 rounded-xl text-[10px] font-black shadow-sm">XEM FILE</a>
                     </div>
                 </div>
 
@@ -439,14 +439,14 @@ const getStatusLabel = (status) => {
 
 const fetchList = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/HealthContracts')
+        const res = await axios.get('/api/HealthContracts')
         list.value = res.data
     } catch (e) { toast.error("Lỗi khi tải danh sách hợp đồng") }
 }
 
 const fetchCompanies = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Companies')
+        const res = await axios.get('/api/Companies')
         companies.value = res.data
     } catch (e) { console.error(e) }
 }
@@ -466,7 +466,7 @@ const addContract = async () => {
         }
 
         const payload = { ...newContract.value, totalAmount: newContract.value.unitPrice * newContract.value.expectedQuantity };
-        await axios.post('http://localhost:5283/api/HealthContracts', payload)
+        await axios.post('/api/HealthContracts', payload)
         toast.success("Tạo hợp đồng thành công!")
         fetchList()
         showForm.value = false
@@ -497,7 +497,7 @@ const openModal = (contract) => {
 
 const handleUpdateContract = async () => {
     try {
-        await axios.put(`http://localhost:5283/api/HealthContracts/${detailsModal.value.data.healthContractId}`, detailsModal.value.data)
+        await axios.put(`/api/HealthContracts/${detailsModal.value.data.healthContractId}`, detailsModal.value.data)
         toast.success("Đã cập nhật hợp đồng!")
         fetchList()
         detailsModal.value.show = false
@@ -517,7 +517,7 @@ const handleFileUpload = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        await axios.post(`http://localhost:5283/api/HealthContracts/${currentUploadId.value}/upload`, formData)
+        await axios.post(`/api/HealthContracts/${currentUploadId.value}/upload`, formData)
         toast.success("Đã tải lên văn bản hợp đồng!")
         fetchList()
     } catch (err) { 
@@ -533,7 +533,7 @@ const handleLockContract = (id) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await axios.put(`http://localhost:5283/api/HealthContracts/${id}/lock`)
+                await axios.put(`/api/HealthContracts/${id}/lock`)
                 toast.success("Hợp đồng đã được khóa an toàn")
                 fetchList()
                 detailsModal.value.show = false
@@ -552,7 +552,7 @@ const handleUnlockContract = (id) => {
         variant: 'warning',
         onConfirm: async () => {
             try {
-                await axios.put(`http://localhost:5283/api/HealthContracts/${id}/unlock`)
+                await axios.put(`/api/HealthContracts/${id}/unlock`)
                 toast.success("Đã mở khóa hợp đồng")
                 fetchList()
                 detailsModal.value.show = false
@@ -571,7 +571,7 @@ const handleDeleteContract = (id) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await axios.delete(`http://localhost:5283/api/HealthContracts/${id}`)
+                await axios.delete(`/api/HealthContracts/${id}`)
                 toast.success("Đã xóa hợp đồng thành công")
                 fetchList()
                 detailsModal.value.show = false
@@ -585,7 +585,7 @@ const handleDeleteContract = (id) => {
 const handleApproveContract = async (id) => {
     try {
         // BUG FIX: Pending → Approved (not Active). Approved is a separate state before Active.
-        await axios.patch(`http://localhost:5283/api/HealthContracts/${id}/status`, { status: 'Approved', note: 'Phê duyệt hợp đồng' })
+        await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Approved', note: 'Phê duyệt hợp đồng' })
         toast.success("Hợp đồng đã được phê duyệt! Bấm 'Kích hoạt' để bắt đầu thực hiện.")
         fetchList()
         detailsModal.value.show = false
@@ -595,7 +595,7 @@ const handleApproveContract = async (id) => {
 const handleActivateContract = async (id) => {
     try {
         // Approved → Active (Đang thực hiện)
-        await axios.patch(`http://localhost:5283/api/HealthContracts/${id}/status`, { status: 'Active', note: 'Kích hoạt hợp đồng để triển khai' })
+        await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Active', note: 'Kích hoạt hợp đồng để triển khai' })
         toast.success("Hợp đồng đã được kích hoạt! Bắt đầu triển khai.")
         fetchList()
         detailsModal.value.show = false
@@ -610,7 +610,7 @@ const handleFinishContract = async (id) => {
         variant: 'info',
         onConfirm: async () => {
             try {
-                await axios.patch(`http://localhost:5283/api/HealthContracts/${id}/status`, { status: 'Finished', note: 'Nghiệm thu kết thúc hợp đồng' })
+                await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Finished', note: 'Nghiệm thu kết thúc hợp đồng' })
                 toast.success("Đã kết thúc hợp đồng!")
                 fetchList()
                 detailsModal.value.show = false

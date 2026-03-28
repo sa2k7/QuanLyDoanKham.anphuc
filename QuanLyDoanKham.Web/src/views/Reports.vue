@@ -166,9 +166,9 @@ const fetchStats = async () => {
     isRefreshing.value = true
     try {
         // Fetch Contracts for Revenue and Stats
-        const reqContracts = axios.get('http://localhost:5283/api/HealthContracts')
-        const reqGroups = axios.get('http://localhost:5283/api/MedicalGroups')
-        const reqSupplies = axios.get('http://localhost:5283/api/Supplies')
+        const reqContracts = axios.get('/api/HealthContracts')
+        const reqGroups = axios.get('/api/MedicalGroups')
+        const reqSupplies = axios.get('/api/Supplies')
 
         const [resContracts, resGroups, resSupplies] = await Promise.all([reqContracts, reqGroups, reqSupplies])
 

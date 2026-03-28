@@ -96,7 +96,7 @@
                         <td class="p-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
-                                    <img v-if="item.avatarPath" :src="`http://localhost:5283/${item.avatarPath}`" class="w-full h-full object-cover" />
+                                    <img v-if="item.avatarPath" :src="`/${item.avatarPath}`" class="w-full h-full object-cover" />
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.fullName}`" class="w-full h-full" />
                                 </div>
                                 <div>
@@ -244,7 +244,7 @@
                     <div class="space-y-6">
                         <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
                             <div @click="triggerAvatarUpload" class="w-32 h-32 mx-auto rounded-[2rem] overflow-hidden bg-slate-50 border-4 border-slate-50 shadow-inner group cursor-pointer relative mb-4">
-                                <img v-if="currentStaff.avatarPath" :src="`http://localhost:5283/${currentStaff.avatarPath}`" class="w-full h-full object-cover" />
+                                <img v-if="currentStaff.avatarPath" :src="`/${currentStaff.avatarPath}`" class="w-full h-full object-cover" />
                                 <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300">
                                     <Camera class="w-8 h-8 mb-1" />
                                     <span class="text-[8px] font-black uppercase tracking-widest">Click Tải lên</span>
@@ -333,7 +333,7 @@ const filteredList = computed(() => {
 
 const fetchList = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Staffs')
+        const res = await axios.get('/api/Staffs')
         list.value = res.data
     } catch (e) { toast.error("Lỗi dữ liệu nhân viên") }
 }
@@ -341,7 +341,7 @@ const fetchList = async () => {
 const openModal = async (staff = null) => {
     if (staff) {
         try {
-            const res = await axios.get(`http://localhost:5283/api/Staffs/${staff.staffId}`)
+            const res = await axios.get(`/api/Staffs/${staff.staffId}`)
             // Đảm bảo systemRole luôn tồn tại và map đúng kể cả nếu backend trả PascalCase
             const data = res.data
             currentStaff.value = {
@@ -380,9 +380,9 @@ watch(jobCategory, (newVal) => {
 const saveStaff = async () => {
     try {
         if (currentStaff.value.staffId) {
-            await axios.put(`http://localhost:5283/api/Staffs/${currentStaff.value.staffId}`, currentStaff.value)
+            await axios.put(`/api/Staffs/${currentStaff.value.staffId}`, currentStaff.value)
         } else {
-            await axios.post('http://localhost:5283/api/Staffs', currentStaff.value)
+            await axios.post('/api/Staffs', currentStaff.value)
         }
         toast.success("Đã ghi nhận dữ liệu nhân sự!")
         showModal.value = false
@@ -395,7 +395,7 @@ const saveStaff = async () => {
 const deleteStaff = async () => {
     if (!confirm("Xóa nhân viên này?")) return
     try {
-        await axios.delete(`http://localhost:5283/api/Staffs/${currentStaff.value.staffId}`)
+        await axios.delete(`/api/Staffs/${currentStaff.value.staffId}`)
         toast.success("Đã gỡ bỏ!")
         showModal.value = false
         fetchList()
@@ -411,7 +411,7 @@ const onAvatarChange = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        const res = await axios.post('http://localhost:5283/api/Staffs/upload-avatar', formData)
+        const res = await axios.post('/api/Staffs/upload-avatar', formData)
         currentStaff.value.avatarPath = res.data.path
     } catch (e) { 
         toast.error(e.response?.data || "Lỗi tải ảnh") 
@@ -420,7 +420,7 @@ const onAvatarChange = async (e) => {
 
 const exportStaff = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Staffs/export', { responseType: 'blob' })
+        const res = await axios.get('/api/Staffs/export', { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -438,7 +438,7 @@ const handleImportFile = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        await axios.post('http://localhost:5283/api/Staffs/import', formData)
+        await axios.post('/api/Staffs/import', formData)
         toast.success("Đã nhập dữ liệu nhân sự thành công!")
         fetchList()
     } catch (e) { toast.error("Lỗi nhập dữ liệu từ Excel") }

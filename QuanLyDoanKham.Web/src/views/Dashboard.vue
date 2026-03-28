@@ -437,7 +437,7 @@ const handleChangePassword = async () => {
 
     isChangingPass.value = true
     try {
-        const res = await axios.post('http://localhost:5283/api/Auth/change-password', {
+        const res = await axios.post('/api/Auth/change-password', {
             currentPassword: passForm.value.currentPassword,
             newPassword: passForm.value.newPassword
         })
@@ -504,7 +504,7 @@ const newPasswordForReset = ref('HealthCare2026')
 const fetchResetRequests = async () => {
     if (authStore.role !== 'Admin') return
     try {
-        const res = await axios.get('http://localhost:5283/api/Auth/reset-requests')
+        const res = await axios.get('/api/Auth/reset-requests')
         resetRequests.value = res.data
     } catch (err) {
         console.warn("Failed to fetch reset requests", err)
@@ -513,7 +513,7 @@ const fetchResetRequests = async () => {
 
 const handleProcessReset = async (id) => {
     try {
-        await axios.post('http://localhost:5283/api/Auth/process-reset', {
+        await axios.post('/api/Auth/process-reset', {
             id: id,
             newPassword: newPasswordForReset.value
         })
@@ -529,11 +529,11 @@ const fetchSearchData = async () => {
     isDataSyncing.value = true
     try {
         const allEndpoints = [
-            { key: 'companies', url: 'http://localhost:5283/api/Companies', roles: ['Admin', 'ContractManager', 'MedicalStaff'] },
-            { key: 'contracts', url: 'http://localhost:5283/api/HealthContracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
-            { key: 'staff', url: 'http://localhost:5283/api/Staffs', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager', 'MedicalStaff'] },
-            { key: 'groups', url: 'http://localhost:5283/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
-            { key: 'supplies', url: 'http://localhost:5283/api/Supplies', roles: ['Admin', 'WarehouseManager', 'MedicalStaff'] }
+            { key: 'companies', url: '/api/Companies', roles: ['Admin', 'ContractManager', 'MedicalStaff'] },
+            { key: 'contracts', url: '/api/HealthContracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
+            { key: 'staff', url: '/api/Staffs', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager', 'MedicalStaff'] },
+            { key: 'groups', url: '/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
+            { key: 'supplies', url: '/api/Supplies', roles: ['Admin', 'WarehouseManager', 'MedicalStaff'] }
         ]
 
         const userRole = authStore.role?.toLowerCase()

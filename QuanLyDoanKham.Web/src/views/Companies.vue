@@ -257,7 +257,7 @@ const filteredList = computed(() => {
 
 const fetchList = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Companies')
+        const res = await axios.get('/api/Companies')
         list.value = res.data
     } catch (e) { toast.error("Lỗi dữ liệu đối tác") }
 }
@@ -284,9 +284,9 @@ const saveCompany = async () => {
 
     try {
         if (currentCompany.value.companyId) {
-            await axios.put(`http://localhost:5283/api/Companies/${currentCompany.value.companyId}`, currentCompany.value)
+            await axios.put(`/api/Companies/${currentCompany.value.companyId}`, currentCompany.value)
         } else {
-            await axios.post('http://localhost:5283/api/Companies', currentCompany.value)
+            await axios.post('/api/Companies', currentCompany.value)
         }
         toast.success("Đã ghi nhận dữ liệu đối tác!")
         showModal.value = false
@@ -301,7 +301,7 @@ const saveCompany = async () => {
 const deleteCompany = async () => {
     if (!confirm("Bạn có chắc chắn muốn xóa đối tác này?")) return
     try {
-        await axios.delete(`http://localhost:5283/api/Companies/${currentCompany.value.companyId}`)
+        await axios.delete(`/api/Companies/${currentCompany.value.companyId}`)
         toast.success("Đã xóa!")
         showModal.value = false
         fetchList()

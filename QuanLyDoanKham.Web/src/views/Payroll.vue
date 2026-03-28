@@ -178,7 +178,7 @@ const filteredList = computed(() => {
 const fetchPayroll = async () => {
     loading.value = true
     try {
-        const res = await axios.get(`http://localhost:5283/api/Payroll/monthly`, {
+        const res = await axios.get(`/api/Payroll/monthly`, {
             params: { month: selectedMonth.value, year: selectedYear.value }
         })
         payrollList.value = res.data
@@ -188,7 +188,7 @@ const fetchPayroll = async () => {
 
 const exportExcel = async () => {
     try {
-        const res = await axios.get(`http://localhost:5283/api/Payroll/export-monthly`, {
+        const res = await axios.get(`/api/Payroll/export-monthly`, {
             params: { month: selectedMonth.value, year: selectedYear.value },
             responseType: 'blob'
         })

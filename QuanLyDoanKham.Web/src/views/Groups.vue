@@ -277,7 +277,7 @@
                         <div v-if="group.importFilePath" class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
                              <FileIcon class="w-4 h-4 text-emerald-500" />
                              <span class="text-[10px] font-black text-slate-600 truncate max-w-[150px]">{{ group.importFilePath.split('/').pop() }}</span>
-                             <a :href="'http://localhost:5283/' + group.importFilePath" target="_blank" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest underline ml-2">Tải về</a>
+                             <a :href="'/' + group.importFilePath" target="_blank" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest underline ml-2">Tải về</a>
                         </div>
                         <button v-if="group.status === 'Open'" @click="triggerImport(group.groupId)" class="btn-premium bg-white border border-slate-200 text-slate-600 text-[10px] px-6">
                            IMPORT KẾT QUẢ
@@ -505,7 +505,7 @@ const handleAiSuggest = async (groupId) => {
     try {
         isAiLoading.value = true
         currentAiGroupId.value = groupId
-        const res = await axios.post(`http://localhost:5283/api/MedicalGroups/${groupId}/ai-suggest-staff`)
+        const res = await axios.post(`/api/MedicalGroups/${groupId}/ai-suggest-staff`)
         aiSuggestions.value = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
         showAiModal.value = true
     } catch (e) {
@@ -519,7 +519,7 @@ const applyAiSuggestions = async () => {
     try {
         const groupId = currentAiGroupId.value
         for (const s of aiSuggestions.value) {
-            await axios.post(`http://localhost:5283/api/MedicalGroups/${groupId}/staffs`, {
+            await axios.post(`/api/MedicalGroups/${groupId}/staffs`, {
                 staffId: s.staffId,
                 workPosition: s.workPosition,
                 shiftType: s.shiftType,
@@ -564,9 +564,9 @@ const getStatusLabel = (status) => {
 const fetchData = async () => {
     try {
         const [gRes, cRes, sRes] = await Promise.all([
-            axios.get('http://localhost:5283/api/MedicalGroups'),
-            axios.get('http://localhost:5283/api/HealthContracts'),
-            axios.get('http://localhost:5283/api/Staffs')
+            axios.get('/api/MedicalGroups'),
+            axios.get('/api/HealthContracts'),
+            axios.get('/api/Staffs')
         ]);
         groups.value = gRes.data
         contracts.value = cRes.data
@@ -577,14 +577,14 @@ const fetchData = async () => {
 
 const fetchGroupStaff = async (id) => {
     try {
-        const res = await axios.get(`http://localhost:5283/api/MedicalGroups/${id}/staffs`)
+        const res = await axios.get(`/api/MedicalGroups/${id}/staffs`)
         staffDetails.value[id] = res.data
     } catch (e) { console.error(e) }
 }
 
 const addGroup = async () => {
     try {
-        await axios.post('http://localhost:5283/api/MedicalGroups', newGroup.value)
+        await axios.post('/api/MedicalGroups', newGroup.value)
         toast.success("Khởi tạo đoàn thành công!")
         showForm.value = false
         // Reset form
@@ -596,7 +596,7 @@ const addGroup = async () => {
 const autoCreateGroup = async () => {
     if (!selectedContractForAuto.value) return
     try {
-        await axios.post(`http://localhost:5283/api/MedicalGroups/auto-create/${selectedContractForAuto.value}`)
+        await axios.post(`/api/MedicalGroups/auto-create/${selectedContractForAuto.value}`)
         toast.success("Đã tạo đoàn khám tự động từ hợp đồng!")
         showForm.value = false
         fetchData()
@@ -641,7 +641,7 @@ const confirmSmartCreate = async () => {
     if (!smartPreview.value || !selectedContractForAuto.value) return
     try {
         // Create the group
-        const res = await axios.post('http://localhost:5283/api/MedicalGroups', {
+        const res = await axios.post('/api/MedicalGroups', {
             healthContractId: selectedContractForAuto.value,
             groupName: smartPreview.value.groupName,
             examDate: smartPreview.value.examDate
@@ -664,7 +664,7 @@ const confirmSmartCreate = async () => {
                     conflictWarnings.value.push({ staffId: s.staffId, fullName: s.fullName })
                 } else {
                     try {
-                        await axios.post(`http://localhost:5283/api/MedicalGroups/${newGroupId}/staffs`, {
+                        await axios.post(`/api/MedicalGroups/${newGroupId}/staffs`, {
                             staffId: s.staffId,
                             shiftType: s.shiftType,
                             workPosition: s.workPosition,
@@ -696,7 +696,7 @@ const updateStatus = async (id, status) => {
             variant: 'warning',
             onConfirm: async () => {
                 try {
-                    await axios.put(`http://localhost:5283/api/MedicalGroups/${id}/status`, { status: status })
+                    await axios.put(`/api/MedicalGroups/${id}/status`, { status: status })
                     toast.success(`Đã hoàn tất đoàn khám!`)
                     fetchData()
                 } catch (e) { 
@@ -709,7 +709,7 @@ const updateStatus = async (id, status) => {
     }
 
     try {
-        await axios.put(`http://localhost:5283/api/MedicalGroups/${id}/status`, { status: status })
+        await axios.put(`/api/MedicalGroups/${id}/status`, { status: status })
         toast.success(`Đã cập nhật trạng thái: ${getStatusLabel(status)}`)
         fetchData()
     } catch (e) { 
@@ -727,7 +727,7 @@ const openStaffModal = (gid) => {
 const addStaff = async () => {
     try {
         const gid = modals.value.staff.groupId
-        await axios.post(`http://localhost:5283/api/MedicalGroups/${gid}/staffs`, modals.value.staff.data)
+        await axios.post(`/api/MedicalGroups/${gid}/staffs`, modals.value.staff.data)
         toast.success("Đã phân công nhân sự!")
         modals.value.staff.show = false
         fetchGroupStaff(gid)
@@ -738,7 +738,7 @@ const addStaff = async () => {
 
 const exportGroups = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/MedicalGroups/export', { responseType: 'blob' })
+        const res = await axios.get('/api/MedicalGroups/export', { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -751,7 +751,7 @@ const exportGroups = async () => {
 
 const exportGroupStaff = async (id, name) => {
     try {
-        const res = await axios.get(`http://localhost:5283/api/MedicalGroups/${id}/export-staff`, { responseType: 'blob' })
+        const res = await axios.get(`/api/MedicalGroups/${id}/export-staff`, { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -764,7 +764,7 @@ const exportGroupStaff = async (id, name) => {
 
 const removeStaff = async (detailId, gid) => {
     try {
-        await axios.delete(`http://localhost:5283/api/MedicalGroups/staffs/${detailId}`)
+        await axios.delete(`/api/MedicalGroups/staffs/${detailId}`)
         toast.success("Đã gỡ nhân sự")
         fetchGroupStaff(gid)
     } catch (e) { toast.error("Lỗi khi gỡ nhân sự") }
@@ -777,7 +777,7 @@ const triggerImport = (id) => {
 
 const checkIn = async (detailId, gid) => {
     try {
-        await axios.post(`http://localhost:5283/api/MedicalGroups/staffs/${detailId}/checkin`)
+        await axios.post(`/api/MedicalGroups/staffs/${detailId}/checkin`)
         toast.success("Đã ghi nhận giờ vào đoàn!")
         fetchGroupStaff(gid)
     } catch (e) { toast.error(e.response?.data || "Lỗi Check-in") }
@@ -785,7 +785,7 @@ const checkIn = async (detailId, gid) => {
 
 const checkOut = async (detailId, gid) => {
     try {
-        const res = await axios.post(`http://localhost:5283/api/MedicalGroups/staffs/${detailId}/checkout`)
+        const res = await axios.post(`/api/MedicalGroups/staffs/${detailId}/checkout`)
         toast.success(`Check-out thành công! Tổng giờ: ${res.data.totalHours}h`)
         fetchGroupStaff(gid)
     } catch (e) { toast.error(e.response?.data || "Lỗi Check-out") }
@@ -797,8 +797,8 @@ const handleImportFile = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        const res = await axios.post(`http://localhost:5283/api/MedicalGroups/upload-data`, formData)
-        await axios.put(`http://localhost:5283/api/MedicalGroups/${currentGroupId.value}`, { importFilePath: res.data.path })
+        const res = await axios.post(`/api/MedicalGroups/upload-data`, formData)
+        await axios.put(`/api/MedicalGroups/${currentGroupId.value}`, { importFilePath: res.data.path })
         toast.success("Đã Import dữ liệu đoàn khám!")
         fetchData()
     } catch (e) { toast.error("Lỗi Import file") }

@@ -24,7 +24,7 @@ export const useAuthStore = defineStore('auth', {
                 try {
                     // Xác thực token với Backend
                     axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-                    const res = await axios.get('http://localhost:5283/api/auth/profile')
+                    const res = await axios.get('/api/auth/profile')
                     this.profile = res.data
                     this.user = {
                         username: res.data.username,
@@ -52,7 +52,7 @@ export const useAuthStore = defineStore('auth', {
         },
         async fetchProfile() {
             try {
-                const res = await axios.get('http://localhost:5283/api/auth/profile')
+                const res = await axios.get('/api/auth/profile')
                 this.profile = res.data
                 return res.data
             } catch (e) {
@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', {
             this.loading = true
             this.error = null
             try {
-                const response = await axios.post('http://localhost:5283/api/auth/login', {
+                const response = await axios.post('/api/auth/login', {
                     username,
                     password
                 })
@@ -106,7 +106,7 @@ export const useAuthStore = defineStore('auth', {
         },
         async refresh() {
             try {
-                const res = await axios.post('http://localhost:5283/api/auth/refresh-token', {
+                const res = await axios.post('/api/auth/refresh-token', {
                     refreshToken: this.refreshToken
                 })
                 // Kiểm tra xem đang dùng storage nào để lưu tiếp vào đó

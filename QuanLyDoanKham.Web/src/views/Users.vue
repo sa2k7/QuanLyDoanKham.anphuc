@@ -66,7 +66,7 @@
                             <div class="flex items-center gap-4">
                                 <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
                                     <div v-if="u.username === 'admin'" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse z-10"></div>
-                                    <img v-if="u.avatarPath" :src="`http://localhost:5283/${u.avatarPath}`" class="w-full h-full object-cover" />
+                                    <img v-if="u.avatarPath" :src="`/${u.avatarPath}`" class="w-full h-full object-cover" />
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
                                 </div>
                                 <div>
@@ -118,7 +118,7 @@
                 <div class="absolute top-[-50%] left-[-10%] w-[120%] h-[120%] opacity-20" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;"></div>
                 <div class="absolute bottom-10 left-12 flex items-center gap-6">
                     <div class="w-40 h-40 rounded-[3rem] bg-white p-2 shadow-2xl border-4 border-white group-hover/profile:scale-105 transition-transform duration-500">
-                        <img v-if="profile.avatarPath" :src="`http://localhost:5283/${profile.avatarPath}`" class="w-full h-full object-cover rounded-[2.5rem] bg-slate-50" />
+                        <img v-if="profile.avatarPath" :src="`/${profile.avatarPath}`" class="w-full h-full object-cover rounded-[2.5rem] bg-slate-50" />
                         <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`" class="w-full h-full object-cover rounded-[2.5rem] bg-slate-50" />
                     </div>
                     <div class="mb-4">
@@ -369,7 +369,7 @@ const fetchCompanies = async () => {
 const fetchResets = async () => {
     if (!isAdmin.value) return
     try {
-        const res = await axios.get('http://localhost:5283/api/Auth/reset-requests')
+        const res = await axios.get('/api/Auth/reset-requests')
         resetRequests.value = res.data 
     } catch (e) {}
 }
@@ -420,7 +420,7 @@ const openEditModal = (u) => {
         avatarPath: u.avatarPath || ''
     }
     selectedFile.value = null
-    avatarPreview.value = u.avatarPath ? `http://localhost:5283/${u.avatarPath}` : null
+    avatarPreview.value = u.avatarPath ? `/${u.avatarPath}` : null
 }
 
 const handleSubmit = async () => {
@@ -436,12 +436,12 @@ const handleSubmit = async () => {
         }
 
         if (modal.value.isEdit) {
-            await axios.put(`http://localhost:5283/api/Auth/users/${form.value.username}`, form.value)
+            await axios.put(`/api/Auth/users/${form.value.username}`, form.value)
             toast.success("Cập nhật thành công!")
             modal.value.show = false
         } else {
             const createdPassword = form.value.password || DEFAULT_PASSWORD
-            await axios.post('http://localhost:5283/api/Auth/register', form.value)
+            await axios.post('/api/Auth/register', form.value)
             // Chỉ hiển thị 1 lần qua toast, KHÔNG lưu vào memory hay localStorage
             toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${createdPassword} (Copy ngay, chỉ hiển thị 1 lần!)`)
             modal.value.show = false

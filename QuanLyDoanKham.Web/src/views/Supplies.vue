@@ -428,21 +428,21 @@ const isVoucherValid = computed(() => {
 // -- DATA FETCHING --
 const fetchList = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Supplies')
+        const res = await axios.get('/api/Supplies')
         list.value = res.data
     } catch (e) { toast.error("Lỗi dữ liệu kho") }
 }
 
 const fetchVouchers = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/Supplies/vouchers')
+        const res = await axios.get('/api/Supplies/vouchers')
         vouchers.value = res.data
     } catch (e) { toast.error("Lỗi dữ liệu phiếu") }
 }
 
 const fetchGroups = async () => {
     try {
-        const res = await axios.get('http://localhost:5283/api/MedicalGroups')
+        const res = await axios.get('/api/MedicalGroups')
         // Lọc bỏ các đoàn khám đã hoàn tất (Completed) để không hiển thị trong danh sách chọn
         groups.value = res.data.filter(g => {
             const status = g.status || g.Status
@@ -460,9 +460,9 @@ const openModal = (item = null) => {
 const saveItem = async () => {
     try {
         if (currentItem.value.supplyId) {
-            await axios.put(`http://localhost:5283/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
+            await axios.put(`/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
         } else {
-            await axios.post('http://localhost:5283/api/Supplies', currentItem.value)
+            await axios.post('/api/Supplies', currentItem.value)
         }
         toast.success("Hợp lệ: Dữ liệu đã được cập nhật!")
         showModal.value = false
@@ -477,7 +477,7 @@ const saveItem = async () => {
 const deleteItem = async () => {
     if (!confirm("Xác nhận xóa mặt hàng này khỏi kho?")) return
     try {
-        await axios.delete(`http://localhost:5283/api/Supplies/${currentItem.value.supplyId}`)
+        await axios.delete(`/api/Supplies/${currentItem.value.supplyId}`)
         toast.success("Đã xóa khỏi danh mục!")
         showModal.value = false
         fetchList()
@@ -509,7 +509,7 @@ const removeDetailRow = (idx) => {
 
 const saveVoucher = async () => {
     try {
-        await axios.post('http://localhost:5283/api/Supplies/vouchers', newVoucher.value)
+        await axios.post('/api/Supplies/vouchers', newVoucher.value)
         toast.success("Phiếu kho đã được chốt và cập nhật tồn kho!")
         showVoucherModal.value = false
         fetchList()
@@ -522,7 +522,7 @@ const saveVoucher = async () => {
 const deleteVoucher = async (id) => {
     if (!confirm("Xác nhận xóa phiếu kho này? Tồn kho liên quan sẽ được tự động hoàn tác.")) return
     try {
-        await axios.delete(`http://localhost:5283/api/Supplies/vouchers/${id}`)
+        await axios.delete(`/api/Supplies/vouchers/${id}`)
         toast.success("Đã xóa phiếu và hoàn tác tồn kho!")
         fetchVouchers()
         fetchList()

@@ -422,11 +422,11 @@ const formatCurrency = (val) => {
 const fetchData = async () => {
   try {
     const endpoints = [
-      { key: 'contracts', url: 'http://localhost:5283/api/HealthContracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
-      { key: 'groups', url: 'http://localhost:5283/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
-      { key: 'staff', url: 'http://localhost:5283/api/Staffs', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager', 'MedicalStaff'] },
-      { key: 'companies', url: 'http://localhost:5283/api/Companies', roles: ['Admin', 'ContractManager', 'MedicalStaff'] },
-      { key: 'supplies', url: 'http://localhost:5283/api/Supplies', roles: ['Admin', 'WarehouseManager'] }
+      { key: 'contracts', url: '/api/HealthContracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
+      { key: 'groups', url: '/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
+      { key: 'staff', url: '/api/Staffs', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager', 'MedicalStaff'] },
+      { key: 'companies', url: '/api/Companies', roles: ['Admin', 'ContractManager', 'MedicalStaff'] },
+      { key: 'supplies', url: '/api/Supplies', roles: ['Admin', 'WarehouseManager'] }
     ]
 
     const allowed = endpoints.filter(ep => ep.roles.includes(authStore.role))

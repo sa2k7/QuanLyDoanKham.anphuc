@@ -180,7 +180,7 @@ const submitResetRequest = async () => {
   resetMessage.value = ''
   
   try {
-    const res = await axios.post('http://localhost:5283/api/Auth/request-reset', { username: resetUsername.value })
+    const res = await axios.post('/api/Auth/request-reset', { username: resetUsername.value })
     resetMessage.value = res.data.message
     resetSuccess.value = true
     setTimeout(() => {
