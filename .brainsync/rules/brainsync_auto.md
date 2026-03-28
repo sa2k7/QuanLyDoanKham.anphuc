@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 178 notes | Score threshold: >40
+> 308 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,29 +20,40 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **BUG: FIX: Pending → Approved (not Active). Approved is a separate state before Active.** — Found in QuanLyDoanKham.Web\src\views\Contracts.vue
+- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QuanLyDo
+- **gotcha in appsettings.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/appsetti
+- **gotcha in rjsmrazor.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmrazo
+- **gotcha in rjsmcshtml.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmcsht
+- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
+- **gotcha in QuanLyDoanKham.API.sourcelink.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
 
 ## Project Standards
 
-- Fixed null crash in Input — prevents null/undefined runtime crashes — confirmed 3x
-- what-changed in VERSION — confirmed 3x
-- [.windsurfrules] Use template literals for string interpolation, not concatenation
-- [.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops
-- [.windsurfrules] Enable strict mode in tsconfig.json
-- [.windsurfrules] Use Composition API (setup) for new components
-- [.windsurfrules] Use computed properties for derived state
-- [.windsurfrules] Don't use arbitrary values when a utility class exists
+- Added JWT tokens authentication — hardens HTTP security headers — confirmed 4x
+- Optimized GlobalPropertiesHash — confirmed 4x
+- what-changed in Contracts.vue — confirmed 3x
+- Optimized GlobalPropertiesHash — confirmed 8x
+- Fixed null crash in QuanLyDoanKham — hardens HTTP security headers — confirmed 3x
+- what-changed in QuanLyDoanKham.API.pdb — confirmed 3x
+- Replaced auth Hash — ensures atomic multi-step database operations — confirmed 3x
+- Fixed null crash in Calendar — prevents null/undefined runtime crashes — confirmed 8x
+
+## Known Fixes
+
+- ❌ - - `[ ]` Ghi nhật ký vào ERRORS.md và học tập kinh nghiệm → ✅ problem-fix in task.md
 
 ## Recent Decisions
 
-- decision in task.md
-- decision in ERRORS.md
+- decision in ApplicationDbContext.cs
+- decision in Contracts.vue
+- decision in Contracts.vue
+- decision in Contracts.vue
 
 ## Learned Patterns
 
-- Always: [CLAUDE.md] **NEVER** run `git clean -fd` or `git reset --hard` without checking `git log` and verifying commits exist. (seen 2x)
-- Always: [CLAUDE.md] **NEVER** delete untracked files or folders blindly. Always backup or stash before bulk edits. (seen 2x)
-- Always: [CLAUDE.md] **Don't mix Tailwind with inline styles** — Don't mix Tailwind with inline styles (seen 2x)
+- Avoid: gotcha in QuanLyDoanKham.API.pdb (seen 2x)
+- Always: Optimized BSJB — uses a proper password hashing algorithm — confirmed 5x (seen 2x)
+- Always: Optimized GlobalPropertiesHash — confirmed 4x (seen 2x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

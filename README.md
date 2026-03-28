@@ -16,33 +16,16 @@ Dự án này cung cấp một nền tảng Web-based quản trị tập trung g
 
 ---
 
-## 🛠 Công nghệ sử dụng (Tech Stack)
+## 🛠 Công nghệ sử dụng (Tech Stack - Current v4.0)
 
-Hệ thống được phát triển theo mô hình **Client-Server**, sử dụng các công nghệ hiện đại:
+Hệ thống đã được nâng cấp lên kiến trúc Enterprise:
 
 ### Backend
-- **Node.js & Express.js:** Xây dựng máy chủ API mạnh mẽ, tốc độ cao.
-- **MongoDB:** Hệ quản trị cơ sở dữ liệu NoSQL linh hoạt, lưu trữ thông tin không cấu trúc.
+- **ASP.NET Core 10.0 (Web API):** Hiệu suất cao, bảo mật chặt chẽ.
+- **Entity Framework Core:** Quản lý CSDL SQL Server chuyên nghiệp.
+- **SQL Server (Local/SmarterASP):** Lưu trữ dữ liệu quan hệ tối ưu.
 
 ### Frontend
-- **HTML5, CSS3, JavaScript:** Nền tảng giao diện cơ bản.
-- **Thư viện UI/UX:** Hỗ trợ render linh hoạt, thiết kế theo hướng tiện dụng (Responsive Design).
-
----
-
-## 📦 Thiết lập & Triển khai (Installation & Deployment)
-
-Hệ thống được phân chia để triển khai trên các nền tảng đám mây khác nhau, đảm bảo hiệu năng và khả năng mở rộng.
-
-### 1. Triển khai Backend (Trên Render)
-Máy chủ API được lưu trữ trên Render. 
-- Môi trường môi trường (Environment Variables) cần thiết lập trên Render:
-  - `PORT`: Cộng dịch vụ (VD: `3000`)
-  - `MONGO_URI`: Chuỗi kết nối tới cơ sở dữ liệu MongoDB.
-- Quá trình deploy sẽ tự động chạy lệnh cài đặt package (`npm install`) và khởi động máy chủ (`npm start`).
-- Sau khi deploy thành công, Render cung cấp một Domain API public.
-
-### 2. Triển khai Frontend (Trên InterData - Plesk Control Panel)
 Giao diện người dùng được lưu trữ trên InterData thông qua Plesk.
 - Chỉ định đường dẫn API từ Backend trong mã nguồn Frontend trước khi đóng gói:
 ```javascript

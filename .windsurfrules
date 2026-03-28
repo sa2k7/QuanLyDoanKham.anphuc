@@ -1,5 +1,5 @@
 # QuanLyDoanKham.anphuc — Project Memory
-# Auto-synced | 178 observations
+# Auto-synced | 320 observations
 
 **Stack:** JavaScript/Python/TypeScript · Express + React + Tailwind + Vue · DB: SQLite
 
@@ -30,13 +30,6 @@
 - Use helmet for security headers
 - Use computed properties for derived state
 - Use Composition API (setup) for new components
-
-# ✨ UI/UX PRO MAX & NUMBER FORMATTING RULES
-- **Glassmorphism**: Replace Brutalism (`border-2 border-slate-900`) with glass effects (`bg-white/95 backdrop-blur-md border border-slate-100/slate-200 shadow-xl`).
-- **Input Fields**: DO NOT use thick borders for `.input-premium`. Use 1px slate borders, soft shadows, and blue/teal outline on focus.
-- **Floating Cards (StatCard)**: Ensure cards do not "blend" (hòa) into the background. Use subtle top-borders (`border-t-4`) grouping with colors (indigo/emerald) and deep shadows (`shadow-xl`) to increase contrast.
-- **Numbers (Counts/Totals)**: ALWAYS zero-pad small counts to 3 digits using `.padStart(3, '0')` (e.g. `001`, `003`) to maintain high aesthetics.
-- **Numbers (Currency/Financials)**: Always use the `<CurrencyInput>` component or `.toLocaleString('vi-VN')` for displaying money.
 
 # ⚡ Available Tools (ON-DEMAND only)
 - `save(title, content, category)` — Save a note + auto-detect conflicts

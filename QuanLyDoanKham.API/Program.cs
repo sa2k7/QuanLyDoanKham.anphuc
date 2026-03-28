@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuanLyDoanKham.API.Data;
+using QuanLyDoanKham.API.Models;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);

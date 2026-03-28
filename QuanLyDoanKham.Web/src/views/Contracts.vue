@@ -8,7 +8,7 @@
           </div>
           Hệ thống Hợp đồng
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-blue-600 font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
+          <span class="text-blue-600 font-black tabular-nums">{{ String(list?.length || 0).padStart(3, '0') }}</span>
         </h2>
         <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">Quản lý pháp lý và giá trị hợp đồng</p>
       </div>
@@ -24,26 +24,26 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <StatCard 
             title="Tổng giá trị HĐ (Dự kiến)"
-            :value="formatPrice(list.reduce((sum, c) => sum + c.totalAmount, 0))"
+            :value="formatPrice(list?.reduce((sum, c) => sum + (c.totalAmount || 0), 0) || 0)"
             :icon="DollarSign"
             variant="default"
         />
         <StatCard 
             title="Giá trị nghiệm thu"
-            :value="formatPrice(list.filter(c => ['Finished', 'Locked'].includes(c.status)).reduce((sum, c) => sum + c.totalAmount, 0))"
+            :value="formatPrice(list?.filter(c => ['Finished', 'Locked'].includes(c.status)).reduce((sum, c) => sum + (c.totalAmount || 0), 0) || 0)"
             :icon="Sparkles"
             variant="emerald"
         />
         <StatCard 
             title="HĐ Đang thực hiện"
-            :value="String(list.filter(c => ['Active', 'Pending'].includes(c.status)).length).padStart(3, '0')"
+            :value="String(list?.filter(c => ['Active', 'Pending'].includes(c.status)).length || 0).padStart(3, '0')"
             :icon="Clock"
             variant="indigo"
             subtext="Dự án đang vận hành"
         />
         <StatCard 
             title="Tổng quy mô khám"
-            :value="String(list.reduce((sum, c) => sum + (c.expectedQuantity || 0), 0)).padStart(3, '0')"
+            :value="String(list?.reduce((sum, c) => sum + (c.expectedQuantity || 0), 0) || 0).padStart(3, '0')"
             :icon="Users"
             variant="sky"
             subtext="Số lượng người (Dự kiến)"
@@ -152,7 +152,7 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    <tr v-for="(contract, index) in filteredList[activeTab]" :key="contract.id" 
+                    <tr v-for="(contract, index) in filteredList[activeTab]" :key="contract.healthContractId" 
                         class="group hover:bg-slate-50/50 transition-all duration-300">
                         <td class="px-8 py-6 text-center">
                             <span :class="['text-xs font-black tabular-nums transition-colors duration-500', 
@@ -177,7 +177,7 @@
                                     </span>
                                     <div class="flex items-center gap-2">
                                         <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">
-                                            Mã HĐ: {{ contract.contractId }}
+                                            Mã HĐ: {{ contract.healthContractId }}
                                         </span>
                                         <span class="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
                                             <Calendar class="w-3 h-3" />
@@ -208,7 +208,7 @@
                                             contract.status === 'Pending' ? 'bg-amber-500' : 
                                             contract.status === 'Approved' ? 'bg-blue-500' : 
                                             contract.status === 'Active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
-                                {{ getStatusText(contract.status) }}
+                                {{ getStatusLabel(contract.status) }}
                             </div>
                         </td>
                         <td class="px-4 py-6 text-center">
@@ -222,7 +222,7 @@
                                         class="p-2.5 bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all border border-slate-100 hover:border-blue-100 shadow-sm group/btn">
                                     <Eye class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform" />
                                 </button>
-                                <button @click="editContract(contract)" 
+                                <button @click="openModal(contract)" 
                                         class="p-2.5 bg-slate-50 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all border border-slate-100 hover:border-indigo-100 shadow-sm group/btn">
                                     <Edit3 class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform" />
                                 </button>
