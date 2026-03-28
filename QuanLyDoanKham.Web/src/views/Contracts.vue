@@ -202,7 +202,7 @@
 
     <!-- Contract Detail Modal -->
     <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-start justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto scrollbar-hide py-10">
-        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden my-auto shrink-0">
+        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden shrink-0 mt-0">
             
             <!-- Header Accent Line -->
             <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500 to-blue-700 z-0"></div>
@@ -229,14 +229,14 @@
                         </span>
                     </div>
 
-                <div v-if="!isEditing" class="grid grid-cols-2 gap-8 mb-8">
-                    <div class="bg-slate-50 p-6 rounded-[2rem]">
-                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Tổng giá trị</p>
-                        <p class="text-2xl font-black text-primary">{{ formatPrice(detailsModal.data.totalAmount) }}</p>
+                <div v-if="!isEditing" class="grid grid-cols-2 gap-8 mb-8 pb-8 border-b border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">TỔNG GIÁ TRỊ</p>
+                        <p class="text-3xl font-black text-blue-600">{{ formatPrice(detailsModal.data.totalAmount) }}</p>
                     </div>
-                    <div class="bg-slate-50 p-6 rounded-[2rem]">
-                        <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Quy mô (Dự kiến)</p>
-                        <p class="text-2xl font-black text-slate-700">{{ detailsModal.data.expectedQuantity }} {{ detailsModal.data.unitName }}</p>
+                    <div>
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">QUY MÔ DỰ KIẾN</p>
+                        <p class="text-3xl font-black text-slate-700">{{ detailsModal.data.expectedQuantity }} <span class="text-base text-slate-400">{{ detailsModal.data.unitName }}</span></p>
                     </div>
                 </div>
 
