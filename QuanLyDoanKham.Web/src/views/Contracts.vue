@@ -123,62 +123,61 @@
         </button>
     </div>
 
-    <!-- Contract Table -->
-    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden mt-4">
+    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden mt-6">
         <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-4 text-center w-16">STT</th>
-                        <th class="p-4">Dự án / Đối tác</th>
-                        <th class="p-4">Giá trị Hợp đồng</th>
-                        <th class="p-4">Quy mô</th>
-                        <th class="p-4 text-center">Trạng thái</th>
-                        <th class="p-4">Hạn Hợp đồng</th>
-                        <th class="p-4 text-center">Tác vụ</th>
+                        <th class="p-5 text-center w-20">STT</th>
+                        <th class="p-5">Hợp đồng / Đối tác</th>
+                        <th class="p-5">Giá trị quyết toán</th>
+                        <th class="p-5">Quy mô</th>
+                        <th class="p-5 text-center">Trạng thái</th>
+                        <th class="p-5">Hạn Hiệu lực</th>
+                        <th class="p-5 text-center">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-50">
+                <tbody class="divide-y divide-slate-50/50">
                     <tr v-for="(item, index) in filteredList[activeTab]" :key="item.healthContractId" 
-                        class="text-xs hover:bg-slate-50/50 transition-all cursor-pointer" @click="openDetails(item)">
-                        <td class="p-4 text-center font-black text-slate-400 tabular-nums">{{ String(index + 1).padStart(3, '0') }}</td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                    <FileText class="w-4 h-4 shadow-sm" />
+                        class="group text-xs hover:bg-white hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer relative z-10" @click="openDetails(item)">
+                        <td class="p-5 text-center font-black text-slate-300 tabular-nums text-[11px]">{{ String(index + 1).padStart(3, '0') }}</td>
+                        <td class="p-5">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center transition-colors border border-slate-100 group-hover:border-indigo-100 shadow-sm">
+                                    <FileText class="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-primary transition-colors">
-                                        [HĐ-{{ item.healthContractId }}] {{ item.shortName || item.companyName }}
+                                    <h4 class="font-black text-slate-700 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
+                                        {{ item.shortName || item.companyName }}
                                     </h4>
-                                    <p class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1">
-                                        HĐ-{{ item.healthContractId }} <Calendar class="w-3 h-3 ml-2" /> {{ formatDate(item.signingDate) }}
+                                    <p class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1 opacity-70">
+                                        Mã HĐ: [HĐ-{{ item.healthContractId }}] <span class="mx-1">•</span> <Calendar class="w-3 h-3" /> {{ formatDate(item.signingDate) }}
                                     </p>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-4 font-black text-indigo-600">
-                            {{ formatPrice(item.totalAmount) }}
+                        <td class="p-5">
+                            <span class="font-black text-indigo-600 tabular-nums text-sm tracking-tight">{{ formatPrice(item.totalAmount) }}</span>
                         </td>
-                        <td class="p-4 text-slate-700 font-black">
-                            {{ item.expectedQuantity }} <span class="text-[9px] text-slate-400 uppercase tracking-widest ">{{ item.unitName }}</span>
+                        <td class="p-5 font-black text-slate-600">
+                            {{ item.expectedQuantity }} <span class="text-[9px] text-slate-300 uppercase tracking-widest ">{{ item.unitName }}</span>
                         </td>
-                        <td class="p-4 text-center">
-                            <span :class="['px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest border', getStatusClass(item.status)]">
+                        <td class="p-5 text-center">
+                            <span :class="['px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm', getStatusClass(item.status)]">
                                 {{ getStatusLabel(item.status) }}
                             </span>
                         </td>
-                        <td class="p-4 text-slate-500 font-black uppercase tracking-widest text-[10px]">
+                        <td class="p-5 text-slate-400 font-black uppercase tracking-widest text-[10px] tabular-nums">
                             {{ formatDate(item.endDate) }}
                         </td>
-                        <td class="p-4 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button @click.stop="openDetails(item)" class="btn-action-premium variant-indigo text-slate-400" title="Chi tiết">
+                        <td class="p-5 text-center">
+                            <div class="flex items-center justify-center gap-3">
+                                <button @click.stop="openDetails(item)" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all border border-slate-100" title="Chi tiết">
                                     <Eye class="w-5 h-5" />
                                 </button>
                                 <button v-if="(authStore.role === 'Admin' || authStore.role === 'ContractManager') && item.status === 'Pending'" 
                                         @click.stop="openModal(item)"
-                                        class="btn-action-premium variant-indigo text-slate-400" title="Sửa">
+                                        class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-indigo-500 hover:text-white hover:shadow-lg hover:shadow-indigo-500/30 transition-all border border-slate-100" title="Sửa">
                                     <Edit3 class="w-5 h-5" />
                                 </button>
                             </div>
