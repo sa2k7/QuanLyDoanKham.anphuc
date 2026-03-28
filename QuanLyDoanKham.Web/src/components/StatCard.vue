@@ -1,7 +1,7 @@
 <template>
   <div 
-    class="bg-white/95 backdrop-blur-md p-8 rounded-[2.5rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden group transition-all hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-1"
-    :class="containerClass"
+    class="bg-white/95 backdrop-blur-md p-8 rounded-[2.5rem] shadow-xl border border-slate-200/80 ring-1 ring-slate-900/5 relative overflow-hidden group transition-all hover:shadow-2xl hover:-translate-y-1"
+    :class="[containerClass, topBorderClass]"
   >
     <!-- Background Decor Icon -->
     <div 
@@ -105,7 +105,17 @@ const progressClass = computed(() => {
 })
 
 const containerClass = computed(() => {
-  // Can add conditional borders or shadows if needed
   return ''
+})
+
+const topBorderClass = computed(() => {
+  switch(props.variant) {
+    case 'indigo': return 'border-t-4 border-t-indigo-500'
+    case 'emerald': return 'border-t-4 border-t-emerald-500'
+    case 'rose': return 'border-t-4 border-t-rose-500'
+    case 'sky': return 'border-t-4 border-t-sky-500'
+    case 'amber': return 'border-t-4 border-t-amber-500'
+    default: return 'border-t-4 border-t-slate-500'
+  }
 })
 </script>
