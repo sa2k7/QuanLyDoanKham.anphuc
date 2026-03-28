@@ -71,11 +71,11 @@
                     </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá (VNĐ/Người)</label>
-                <CurrencyInput v-model="newContract.unitPrice" required placeholder="0" />
+                <CurrencyInput v-model="newContract.unitPrice" :required="true" placeholder="0" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng dự kiến</label>
-                <CurrencyInput v-model="newContract.expectedQuantity" required placeholder="0" />
+                <CurrencyInput v-model="newContract.expectedQuantity" :required="true" placeholder="0" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày ký</label>
@@ -251,11 +251,11 @@
                 <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-8">
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá niêm *</label>
-                        <CurrencyInput v-model="detailsModal.data.unitPrice" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
+                        <CurrencyInput v-model="detailsModal.data.unitPrice" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng / Quy mô *</label>
-                        <CurrencyInput v-model="detailsModal.data.expectedQuantity" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
+                        <CurrencyInput v-model="detailsModal.data.expectedQuantity" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
                     </div>
                     <div class="flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày bắt đầu</label>
@@ -361,10 +361,10 @@
                             <Save class="w-5 h-5 mr-2" />
                             LƯU THAY ĐỔI
                         </button>
-                        <button @click="isEditing = false" 
-                                class="bg-slate-50 text-slate-500 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all border border-slate-200 shadow-sm">
-                            HỦY
-                        </button>
+                        <button @click="detailsModal.show = false" 
+                                 class="bg-slate-50 text-slate-500 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all border border-slate-200 shadow-sm uppercase tracking-widest text-xs">
+                             HỦY
+                         </button>
                     </template>
                     <button v-if="!isEditing" @click="detailsModal.show = false" 
                             class="bg-slate-50 border border-slate-200 text-slate-500 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all shadow-sm">
