@@ -15,7 +15,7 @@
       </div>
       <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'"
               @click="showForm = !showForm"
-               class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">
+               class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all font-black">
         <Plus class="w-5 h-5" />
         <span>{{ showForm ? 'HỦY BỎ' : 'THÊM CÔNG TY' }}</span>
       </button>
@@ -47,7 +47,7 @@
     </div>
 
     <!-- Inline Add Form (like Contracts.vue) -->
-    <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 animate-slide-up">
+    <div v-if="showForm" class="premium-card p-10 bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 animate-slide-up">
         <div class="flex items-center gap-4 mb-8">
             <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
                 <Building2 class="w-6 h-6" />
@@ -87,14 +87,14 @@
                 <input v-model="currentCompany.address" class="input-premium w-full" placeholder="Số nhà, đường, quận..." />
             </div>
             <div class="lg:col-span-3 flex justify-end pt-2">
-                 <button type="submit" class="btn-premium bg-slate-900 text-white px-12 border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">XÁC NHẬN KHAI BÁO</button>
+                 <button type="submit" class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-12 py-4 rounded-xl shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all font-black">XÁC NHẬN KHAI BÁO</button>
             </div>
         </form>
     </div>
 
     <!-- Search & List -->
-    <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mt-4">
-        <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
+    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden mt-4">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-4 bg-white/50">
             <div class="relative group flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
                 <input v-model="searchQuery" placeholder="Tìm tên công ty, mã số thuế..."
@@ -156,10 +156,9 @@
 
     <!-- Modal Form (for UPDATE only) -->
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div class="bg-white w-full max-w-2xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
-              <!-- Border Overlay -->
-              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+      <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto">
+          <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
+              <!-- No Border Overlay for Glassmorphism -->
               
               <!-- Header Accent Line -->
               <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
@@ -219,7 +218,7 @@
                           <button type="button" @click="showModal = false" 
                                   class="bg-white border-2 border-slate-100 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-xs">HỦY</button>
                            <button form="companyForm" type="submit" 
-                                   class="flex-1 bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] uppercase tracking-widest text-xs hover:bg-indigo-700 active:scale-95 transition-all">LƯU THÔNG TIN</button>
+                                   class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-indigo-500/30 uppercase tracking-widest text-xs hover:shadow-indigo-500/50 hover:-translate-y-1 active:scale-95 transition-all">LƯU THÔNG TIN</button>
                       </div>
                   </div>
               </div>
