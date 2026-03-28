@@ -140,59 +140,91 @@
                       activeTab === 'active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
-                <thead class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <thead class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-5 text-center w-20">STT</th>
-                        <th class="p-5">Hợp đồng / Đối tác</th>
-                        <th class="p-5">Giá trị quyết toán</th>
-                        <th class="p-5">Quy mô</th>
-                        <th class="p-5 text-center">Trạng thái</th>
-                        <th class="p-5">Hạn Hiệu lực</th>
-                        <th class="p-5 text-center">Thao tác</th>
+                        <th class="px-8 py-5 text-center">STT</th>
+                        <th class="px-4 py-5">Hợp đồng / Đối tác</th>
+                        <th class="px-4 py-5">Giá trị quyết toán</th>
+                        <th class="px-4 py-5 text-center">Quy mô</th>
+                        <th class="px-4 py-5 text-center">Trạng thái</th>
+                        <th class="px-4 py-5 text-center">Hạn hiệu lực</th>
+                        <th class="px-8 py-5 text-right">Thao tác</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-slate-50/50">
-                    <tr v-for="(item, index) in filteredList[activeTab]" :key="item.healthContractId" 
-                        class="group text-xs hover:bg-white hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-300 cursor-pointer relative z-10" @click="openDetails(item)">
-                        <td class="p-5 text-center font-black text-slate-300 tabular-nums text-[11px]">{{ String(index + 1).padStart(3, '0') }}</td>
-                        <td class="p-5">
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="(contract, index) in filteredList[activeTab]" :key="contract.id" 
+                        class="group hover:bg-slate-50/50 transition-all duration-300">
+                        <td class="px-8 py-6 text-center">
+                            <span :class="['text-xs font-black tabular-nums transition-colors duration-500', 
+                                         activeTab === 'pending' ? 'text-amber-500' : 
+                                         activeTab === 'approved' ? 'text-blue-500' : 
+                                         activeTab === 'active' ? 'text-violet-500' : 'text-emerald-500']">
+                                {{ String(index + 1).padStart(3, '0') }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-6">
                             <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-2xl bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 flex items-center justify-center transition-colors border border-slate-100 group-hover:border-indigo-100 shadow-sm">
+                                <div :class="['w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm transition-all duration-500',
+                                             activeTab === 'pending' ? 'bg-amber-50 border-amber-100 text-amber-500' : 
+                                             activeTab === 'approved' ? 'bg-blue-50 border-blue-100 text-blue-500' : 
+                                             activeTab === 'active' ? 'bg-violet-50 border-violet-100 text-violet-500' : 
+                                             'bg-emerald-50 border-emerald-100 text-emerald-500']">
                                     <FileText class="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <h4 class="font-black text-slate-700 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">
-                                        {{ item.shortName || item.companyName }}
-                                    </h4>
-                                    <p class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest flex items-center gap-1 opacity-70">
-                                        Mã HĐ: [HĐ-{{ item.healthContractId }}] <span class="mx-1">•</span> <Calendar class="w-3 h-3" /> {{ formatDate(item.signingDate) }}
-                                    </p>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-black text-slate-800 uppercase tracking-tight group-hover:text-blue-600 transition-colors leading-tight mb-1">
+                                        {{ contract.companyName }}
+                                    </span>
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-100 px-1.5 py-0.5 rounded">
+                                            Mã HĐ: {{ contract.contractId }}
+                                        </span>
+                                        <span class="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                                            <Calendar class="w-3 h-3" />
+                                            {{ new Date(contract.startDate).toLocaleDateString('vi-VN') }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-5">
-                            <span class="font-black text-indigo-600 tabular-nums text-sm tracking-tight">{{ formatPrice(item.totalAmount) }}</span>
+                        <td class="px-4 py-6">
+                            <div class="flex flex-col">
+                                <span class="text-sm font-bold text-slate-700 tabular-nums">
+                                    {{ Number(contract.finalSettlementValue || 0).toLocaleString('vi-VN') }}
+                                    <span class="text-[10px] font-black text-slate-400 ml-0.5 uppercase">đ</span>
+                                </span>
+                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest mt-0.5">Giá trị hợp đồng</span>
+                            </div>
                         </td>
-                        <td class="p-5 font-black text-slate-600">
-                            {{ item.expectedQuantity }} <span class="text-[9px] text-slate-300 uppercase tracking-widest ">{{ item.unitName }}</span>
+                        <td class="px-4 py-6 text-center">
+                            <div class="inline-flex flex-col items-center">
+                                <span class="text-sm font-bold text-slate-700 tabular-nums">{{ contract.expectedQuantity }}</span>
+                                <span class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Người</span>
+                            </div>
                         </td>
-                        <td class="p-5 text-center">
-                            <span :class="['px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border shadow-sm', getStatusClass(item.status)]">
-                                {{ getStatusLabel(item.status) }}
+                        <td class="px-4 py-6 text-center">
+                            <div :class="[getStatusClass(contract.status), 'mx-auto']">
+                                <div :class="['w-2 h-2 rounded-full mr-2 animate-pulse', 
+                                            contract.status === 'Pending' ? 'bg-amber-500' : 
+                                            contract.status === 'Approved' ? 'bg-blue-500' : 
+                                            contract.status === 'Active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
+                                {{ getStatusText(contract.status) }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-6 text-center">
+                            <span class="text-[11px] font-bold text-slate-500 tabular-nums bg-slate-100/50 px-2 py-1 rounded-lg border border-slate-100">
+                                {{ new Date(contract.endDate).toLocaleDateString('vi-VN') }}
                             </span>
                         </td>
-                        <td class="p-5 text-slate-400 font-black uppercase tracking-widest text-[10px] tabular-nums">
-                            {{ formatDate(item.endDate) }}
-                        </td>
-                        <td class="p-5 text-center">
-                            <div class="flex items-center justify-center gap-3">
-                                <button @click.stop="openDetails(item)" class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-blue-500 hover:text-white hover:shadow-lg hover:shadow-blue-500/30 transition-all border border-slate-100" title="Chi tiết">
-                                    <Eye class="w-5 h-5" />
+                        <td class="px-8 py-6 text-right">
+                            <div class="flex items-center justify-end gap-2">
+                                <button @click="openDetails(contract)" 
+                                        class="p-2.5 bg-slate-50 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded-xl transition-all border border-slate-100 hover:border-blue-100 shadow-sm group/btn">
+                                    <Eye class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform" />
                                 </button>
-                                <button v-if="(authStore.role === 'Admin' || authStore.role === 'ContractManager') && item.status === 'Pending'" 
-                                        @click.stop="openModal(item)"
-                                        class="w-10 h-10 flex items-center justify-center bg-slate-50 text-slate-400 rounded-xl hover:bg-indigo-500 hover:text-white hover:shadow-lg hover:shadow-indigo-500/30 transition-all border border-slate-100" title="Sửa">
-                                    <Edit3 class="w-5 h-5" />
+                                <button @click="editContract(contract)" 
+                                        class="p-2.5 bg-slate-50 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 rounded-xl transition-all border border-slate-100 hover:border-indigo-100 shadow-sm group/btn">
+                                    <Edit3 class="w-4.5 h-4.5 group-hover/btn:scale-110 transition-transform" />
                                 </button>
                             </div>
                         </td>
