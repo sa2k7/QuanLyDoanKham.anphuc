@@ -113,7 +113,7 @@
         </button>
         <button @click="activeTab = 'active'" 
                 :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
-                         activeTab === 'active' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
+                         activeTab === 'active' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-violet-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
             Đang thực hiện ({{ String(filteredList.active.length).padStart(3, '0') }})
         </button>
         <button @click="activeTab = 'finished'" 
@@ -201,8 +201,8 @@
     <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" accept=".pdf,.doc,.docx,.xlsx" />
 
     <!-- Contract Detail Modal -->
-    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto">
-        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
+    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex flex-col items-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto scrollbar-hide py-10">
+        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden my-auto shrink-0">
             
             <!-- Header Accent Line -->
             <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500 to-blue-700 z-0"></div>
@@ -619,7 +619,7 @@ const handleFinishContract = async (id) => {
     }
 }
 
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p)
+const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + ' đ'
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '---'
 
 onMounted(() => {

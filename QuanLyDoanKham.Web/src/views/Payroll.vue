@@ -204,7 +204,7 @@ const exportExcel = async () => {
 
 const showDetails = (item) => { detailItem.value = item }
 const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p)
+const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + ' đ'
 
 onMounted(fetchPayroll)
 watch([selectedMonth, selectedYear], fetchPayroll)
