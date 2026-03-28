@@ -380,7 +380,7 @@ import { useAuthStore } from '../stores/auth'
 import { useI18nStore } from '../stores/i18n'
 import { useNotificationStore } from '../stores/notification'
 import axios from 'axios'
-import logo from '../assets/logo.png'
+import logo from '../assets/logo.svg'
 import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
   User, KeyRound, X, ChevronDown, Bell, PlusCircle, Check, ShieldAlert, Inbox
