@@ -14,7 +14,7 @@
       </div>
       <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'" 
               @click="showForm = !showForm" 
-              class="btn-premium bg-blue-600 text-white px-8 py-3 shadow-lg shadow-blue-200">
+              class="btn-premium bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all">
         <Plus class="w-5 h-5" />
         <span>{{ showForm ? 'HỦY BỎ' : 'TẠO HỢP ĐỒNG' }}</span>
       </button>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Creation Area -->
-    <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 mb-12 animate-slide-up relative overflow-hidden">
+    <div v-if="showForm" class="premium-card p-10 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 mb-12 animate-slide-up relative overflow-hidden">
         <div class="flex items-center gap-4 mb-10">
             <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                 <PlusCircle class="w-7 h-7" />
@@ -89,12 +89,12 @@
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày kết thúc</label>
                 <input v-model="newContract.endDate" type="date" required class="input-premium w-full" />
             </div>
-            <div class="lg:col-span-3 flex justify-between items-center bg-slate-50 p-6 rounded-2xl border-2 border-slate-100">
+            <div class="lg:col-span-3 flex justify-between items-center bg-slate-50 p-6 rounded-2xl border border-slate-100 shadow-inner mt-4">
                 <div>
                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng giá trị dự kiến</p>
                    <p class="text-2xl font-black text-primary">{{ formatPrice(newContract.unitPrice * newContract.expectedQuantity) }}</p>
                 </div>
-                <button type="submit" class="btn-premium bg-slate-900 text-white px-10">XÁC NHẬN KÝ KẾT</button>
+                <button type="submit" class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-10 py-3 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all">XÁC NHẬN KÝ KẾT</button>
             </div>
         </form>
     </div>
@@ -102,29 +102,29 @@
     <!-- Tab Filter -->
     <div class="flex items-center gap-4 mb-8">
         <button @click="activeTab = 'pending'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'pending' ? 'bg-amber-500 text-white shadow-lg shadow-amber-200' : 'bg-white text-slate-400 border-2 border-slate-50 hover:bg-slate-50']">
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
+                         activeTab === 'pending' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
             Chờ duyệt ({{ String(filteredList.pending.length).padStart(3, '0') }})
         </button>
         <button @click="activeTab = 'approved'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'approved' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-400 border-2 border-slate-50 hover:bg-slate-50']">
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
+                         activeTab === 'approved' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
             Đã phê duyệt ({{ String(filteredList.approved.length).padStart(3, '0') }})
         </button>
         <button @click="activeTab = 'active'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'active' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white text-slate-400 border-2 border-slate-50 hover:bg-slate-50']">
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
+                         activeTab === 'active' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
             Đang thực hiện ({{ String(filteredList.active.length).padStart(3, '0') }})
         </button>
         <button @click="activeTab = 'finished'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all', 
-                         activeTab === 'finished' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' : 'bg-white text-slate-400 border-2 border-slate-50 hover:bg-slate-50']">
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
+                         activeTab === 'finished' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
             Đã kết thúc ({{ String(filteredList.finished.length).padStart(3, '0') }})
         </button>
     </div>
 
     <!-- Contract Table -->
-    <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
+    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden mt-4">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -201,16 +201,14 @@
     <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" accept=".pdf,.doc,.docx,.xlsx" />
 
     <!-- Contract Detail Modal -->
-    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 overflow-y-auto">
-        <div class="bg-white w-full max-w-2xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
-            <!-- Border Overlay (Fix for gradient overlapping border radius) -->
-            <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
+    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto">
+        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
             
             <!-- Header Accent Line -->
             <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500 to-blue-700 z-0"></div>
             
             <!-- Close Button -->
-            <button @click="detailsModal.show = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+            <button @click="detailsModal.show = false" class="absolute top-8 right-8 bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 z-[60] flex items-center justify-center border border-slate-100 shadow-sm">
                 <X class="w-5 h-5" />
             </button>
 
@@ -263,8 +261,10 @@
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Trạng thái vận hành</label>
                         <select v-model="detailsModal.data.status" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm cursor-pointer font-black text-xs uppercase tracking-widest">
                             <option value="Pending">{{ getStatusLabel('Pending') }}</option>
+                            <option value="Approved">{{ getStatusLabel('Approved') }}</option>
                             <option value="Active">{{ getStatusLabel('Active') }}</option>
                             <option value="Finished">{{ getStatusLabel('Finished') }}</option>
+                            <option value="Locked">{{ getStatusLabel('Locked') }}</option>
                         </select>
                     </div>
                 </div>
@@ -307,59 +307,59 @@
                     <template v-if="!isEditing">
                         <button v-if="detailsModal.data.status === 'Pending' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
                                 @click="handleApproveContract(detailsModal.data.healthContractId)"
-                                 class="flex-1 bg-emerald-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[-2px] hover:translate-y-[-2px]">
+                                 class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-1">
                             <Sparkles class="w-5 h-5" />
                             <span>PHÊ DUYỆT HĐ</span>
                         </button>
                         <button v-if="detailsModal.data.status === 'Approved' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
                                 @click="handleActivateContract(detailsModal.data.healthContractId)"
-                                 class="flex-1 bg-blue-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:translate-x-[-2px] hover:translate-y-[-2px]">
+                                 class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1">
                             <Clock class="w-5 h-5" />
                             <span>KÍCH HOẠT HĐ</span>
                         </button>
                         <button v-if="detailsModal.data.status === 'Active' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
                                 @click="handleFinishContract(detailsModal.data.healthContractId)"
-                                class="flex-1 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2">
+                                class="flex-1 bg-gradient-to-r from-slate-700 to-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-1">
                             <Lock class="w-5 h-5" />
                             <span>KẾT THÚC HĐ</span>
                         </button>
                         <button v-if="detailsModal.data.status === 'Finished' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
                                 @click="handleLockContract(detailsModal.data.healthContractId)" 
-                                class="flex-1 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2">
+                                class="flex-1 bg-gradient-to-r from-slate-700 to-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-1">
                             <Lock class="w-5 h-5" />
                             <span>KHÓA TÀI CHÍNH</span>
                         </button>
                         <button v-if="detailsModal.data.status === 'Locked' && authStore.role === 'Admin'" 
                                 @click="handleUnlockContract(detailsModal.data.healthContractId)" 
-                                class="flex-1 bg-amber-500 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2">
+                                class="flex-1 bg-gradient-to-r from-amber-400 to-amber-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-1">
                             <Unlock class="w-5 h-5" />
                             <span>MỞ KHÓA</span>
                         </button>
                         <button v-if="detailsModal.data.status === 'Pending' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
                                 @click="isEditing = true" 
-                                 class="bg-indigo-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-indigo-700 transition-all flex items-center justify-center border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
+                                 class="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-black hover:bg-indigo-50 transition-all flex items-center justify-center border border-indigo-100 shadow-sm hover:shadow-md hover:-translate-y-1">
                             <Edit3 class="w-5 h-5 mr-2" />
                             CHỈNH SỬA
                         </button>
                         <button v-if="authStore.role === 'Admin'" 
                                 @click="handleDeleteContract(detailsModal.data.healthContractId)" 
-                                class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
+                                class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-100 hover:border-rose-500 hover:shadow-lg shadow-sm">
                             <Trash2 class="w-5 h-5" />
                         </button>
                     </template>
                     <template v-else>
                         <button @click="handleUpdateContract" 
-                                class="flex-1 bg-primary text-white px-8 py-4 rounded-2xl font-black transition-all hover:bg-primary-dark shadow-lg shadow-primary/20 active:scale-95 flex items-center justify-center">
+                                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 active:scale-95 flex items-center justify-center">
                             <Save class="w-5 h-5 mr-2" />
                             LƯU THAY ĐỔI
                         </button>
                         <button @click="isEditing = false" 
-                                class="bg-slate-50 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all border-2 border-slate-100/50">
+                                class="bg-slate-50 text-slate-500 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all border border-slate-200 shadow-sm">
                             HỦY
                         </button>
                     </template>
                     <button v-if="!isEditing" @click="detailsModal.show = false" 
-                            class="bg-white border-2 border-slate-100 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-50 transition-all">
+                            class="bg-slate-50 border border-slate-200 text-slate-500 px-8 py-4 rounded-2xl font-black hover:bg-slate-100 transition-all shadow-sm">
                         ĐÓNG
                     </button>
                 </div>
