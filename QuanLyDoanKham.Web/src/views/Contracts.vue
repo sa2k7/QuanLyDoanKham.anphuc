@@ -201,8 +201,9 @@
     <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" accept=".pdf,.doc,.docx,.xlsx" />
 
     <!-- Contract Detail Modal -->
-    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-start justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto scrollbar-hide py-10">
-        <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden shrink-0 mt-0">
+    <Teleport to="body">
+      <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto">
+          <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
             
             <!-- Header Accent Line -->
             <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500 to-blue-700 z-0"></div>
@@ -229,39 +230,45 @@
                         </span>
                     </div>
 
-                <div v-if="!isEditing" class="grid grid-cols-2 gap-8 mb-8 pb-8 border-b border-slate-100">
-                    <div>
-                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">TỔNG GIÁ TRỊ</p>
-                        <p class="text-3xl font-black text-blue-600">{{ formatPrice(detailsModal.data.totalAmount) }}</p>
+                <div v-if="!isEditing" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 mb-8 pb-8 border-b border-slate-100">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">TỔNG GIÁ TRỊ HỢP ĐỒNG</p>
+                        <p class="text-3xl font-black text-blue-600 tracking-tight">{{ formatPrice(detailsModal.data.totalAmount) }}</p>
                     </div>
-                    <div>
-                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase mb-2">QUY MÔ DỰ KIẾN</p>
-                        <p class="text-3xl font-black text-slate-700">{{ detailsModal.data.expectedQuantity }} <span class="text-base text-slate-400">{{ detailsModal.data.unitName }}</span></p>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">QUY MÔ DỰ KIẾN</p>
+                        <p class="text-3xl font-black text-slate-700 tracking-tight">{{ detailsModal.data.expectedQuantity }} <span class="text-base text-slate-400 font-medium lowercase">{{ detailsModal.data.unitName }}</span></p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">NGÀY BẮT ĐẦU</p>
+                        <p class="text-lg font-black text-slate-600">{{ formatDate(detailsModal.data.startDate) }}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] font-black tracking-widest text-slate-400 uppercase">NGÀY KẾT THÚC</p>
+                        <p class="text-lg font-black text-slate-600">{{ formatDate(detailsModal.data.endDate) }}</p>
                     </div>
                 </div>
 
-                <div v-else class="space-y-4 mb-8">
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá niêm</label>
-                            <CurrencyInput v-model="detailsModal.data.unitPrice" class="input-premium bg-white !p-2 mt-2 w-full" />
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng / Quy mô</label>
-                            <CurrencyInput v-model="detailsModal.data.expectedQuantity" class="input-premium bg-white !p-2 mt-2 w-full" />
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày bắt đầu</label>
-                            <input type="date" v-model="detailsModal.data.startDate" class="input-premium bg-white !p-3 mt-2 w-full" />
-                        </div>
-                        <div>
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày kết thúc</label>
-                            <input type="date" v-model="detailsModal.data.endDate" class="input-premium bg-white !p-3 mt-2 w-full" />
-                        </div>
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5 mb-8">
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá niêm *</label>
+                        <CurrencyInput v-model="detailsModal.data.unitPrice" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
                     </div>
-                    <div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng / Quy mô *</label>
+                        <CurrencyInput v-model="detailsModal.data.expectedQuantity" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày bắt đầu</label>
+                        <input type="date" v-model="detailsModal.data.startDate" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày kết thúc</label>
+                        <input type="date" v-model="detailsModal.data.endDate" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" />
+                    </div>
+                    <div class="md:col-span-2 flex flex-col gap-2">
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Trạng thái vận hành</label>
-                        <select v-model="detailsModal.data.status" class="input-premium bg-white !p-3 mt-2 w-full cursor-pointer font-black text-xs uppercase tracking-widest">
+                        <select v-model="detailsModal.data.status" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full cursor-pointer font-black text-xs uppercase tracking-widest">
                             <option value="Pending">{{ getStatusLabel('Pending') }}</option>
                             <option value="Approved">{{ getStatusLabel('Approved') }}</option>
                             <option value="Active">{{ getStatusLabel('Active') }}</option>
@@ -367,7 +374,9 @@
                 </div>
             </div>
         </div>
-    </div>
+      </div>
+    </Teleport>
+
     
     <!-- Confirm Dialog -->
     <ConfirmDialog v-model="confirmData.show" :title="confirmData.title" :message="confirmData.message" :variant="confirmData.variant" @confirm="confirmData.onConfirm" />
@@ -421,7 +430,7 @@ const filteredList = computed(() => {
 const getStatusClass = (status) => {
     switch(status) {
         case 'Approved': return 'bg-blue-50 text-blue-600 border-blue-100'
-        case 'Active': return 'bg-sky-50 text-sky-600 border-sky-100'
+        case 'Active': return 'bg-violet-50 text-violet-600 border-violet-100'
         case 'Finished': return 'bg-emerald-50 text-emerald-600 border-emerald-100'
         case 'Locked': return 'bg-slate-50 text-slate-500 border-slate-200'
         default: return 'bg-amber-50 text-amber-600 border-amber-100'
