@@ -1,7 +1,7 @@
 
 
-# Project Memory — Quanlydoankham
-> 346 notes | Score threshold: >40
+# Project Memory — QuanLyDoanKham.anphuc
+> 140 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,34 +20,24 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QuanLyDo
-- **gotcha in rjsmrazor.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmrazo
-- **gotcha in rjsmcshtml.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmcsht
-- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
+- **BUG: FIX: Pending → Approved (not Active). Approved is a separate state before Active.** — Found in QuanLyDoanKham.Web\src\views\Contracts.vue
 
 ## Project Standards
 
-- what-changed in task.md.resolved — confirmed 3x
-- Fixed null crash in ShieldCheck — prevents null/undefined runtime crashes — confirmed 3x
-- convention in GEMINI.md
-- what-changed in task.md — confirmed 3x
-- Optimized GlobalPropertiesHash — confirmed 6x
-- convention in QuanLyDoanKham.API.csproj.AssemblyReference.cache
-- Added JWT tokens authentication — confirmed 3x
-- what-changed in task.md — confirmed 3x
-
-## Recent Decisions
-
-- decision in README.md
-- decision in GEMINI.md
-- decision in GEMINI.md
-- decision in Users.vue
+- [.windsurfrules] Use template literals for string interpolation, not concatenation
+- [.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops
+- [.windsurfrules] Enable strict mode in tsconfig.json
+- [.windsurfrules] Use Composition API (setup) for new components
+- [.windsurfrules] Use computed properties for derived state
+- [.windsurfrules] Don't use arbitrary values when a utility class exists
+- [.windsurfrules] Use responsive prefixes consistently (sm:, md:, lg:, xl:)
+- [.windsurfrules] Extract repeated class patterns into components
 
 ## Learned Patterns
 
-- Avoid: gotcha in QuanLyDoanKham.API.pdb (seen 2x)
-- Avoid: gotcha in rpswa.dswa.cache.json (seen 2x)
-- Avoid: gotcha in QuanLyDoanKham.API.GeneratedMSBuildEditorConfig.editorconfig (seen 2x)
+- Always: [CLAUDE.md] **NEVER** run `git clean -fd` or `git reset --hard` without checking `git log` and verifying commits exist. (seen 2x)
+- Always: [CLAUDE.md] **NEVER** delete untracked files or folders blindly. Always backup or stash before bulk edits. (seen 2x)
+- Always: [CLAUDE.md] **Don't mix Tailwind with inline styles** — Don't mix Tailwind with inline styles (seen 2x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 
