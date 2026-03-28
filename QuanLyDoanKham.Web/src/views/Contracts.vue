@@ -102,28 +102,42 @@
     <!-- Tab Filter -->
     <div class="flex items-center gap-4 mb-8">
         <button @click="activeTab = 'pending'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
-                         activeTab === 'pending' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
-            Chờ duyệt ({{ String(filteredList.pending.length).padStart(3, '0') }})
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'pending' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30' : 'bg-amber-50/30 text-amber-600 border border-amber-100/50 hover:bg-amber-50']">
+            <Clock class="w-4 h-4" />
+            <span>Chờ duyệt ({{ String(filteredList.pending.length).padStart(3, '0') }})</span>
         </button>
         <button @click="activeTab = 'approved'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
-                         activeTab === 'approved' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
-            Đã phê duyệt ({{ String(filteredList.approved.length).padStart(3, '0') }})
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'approved' ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-blue-500/30' : 'bg-blue-50/30 text-blue-600 border border-blue-100/50 hover:bg-blue-50']">
+            <CheckCircle class="w-4 h-4" />
+            <span>Đã phê duyệt ({{ String(filteredList.approved.length).padStart(3, '0') }})</span>
         </button>
         <button @click="activeTab = 'active'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
-                         activeTab === 'active' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-violet-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
-            Đang thực hiện ({{ String(filteredList.active.length).padStart(3, '0') }})
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'active' ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white shadow-violet-500/30' : 'bg-violet-50/30 text-violet-600 border border-violet-100/50 hover:bg-violet-50']">
+            <Activity class="w-4 h-4" />
+            <span>Đang thực hiện ({{ String(filteredList.active.length).padStart(3, '0') }})</span>
         </button>
         <button @click="activeTab = 'finished'" 
-                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm', 
-                         activeTab === 'finished' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30' : 'bg-white/80 text-slate-400 border border-slate-100/50 hover:bg-slate-50']">
-            Đã kết thúc ({{ String(filteredList.finished.length).padStart(3, '0') }})
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'finished' ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-500/30' : 'bg-emerald-50/30 text-emerald-600 border border-emerald-100/50 hover:bg-emerald-50']">
+            <FileCheck class="w-4 h-4" />
+            <span>Đã kết thúc ({{ String(filteredList.finished.length).padStart(3, '0') }})</span>
         </button>
     </div>
 
-    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden mt-6">
+    <!-- Contract Table With Color Indicator -->
+    <div :class="['premium-card bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border overflow-hidden mt-6 transition-all duration-500', 
+                 activeTab === 'pending' ? 'border-amber-200/50 shadow-amber-500/5' : 
+                 activeTab === 'approved' ? 'border-blue-200/50 shadow-blue-500/5' :
+                 activeTab === 'active' ? 'border-violet-200/50 shadow-violet-500/5' :
+                 'border-emerald-200/50 shadow-emerald-500/5']">
+        <!-- Tab accent line -->
+        <div :class="['h-2 w-full transition-all duration-500', 
+                      activeTab === 'pending' ? 'bg-amber-400' : 
+                      activeTab === 'approved' ? 'bg-blue-500' : 
+                      activeTab === 'active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -385,7 +399,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { Plus, FileText, Calendar, ArrowRight, Trash2, Save, PlusCircle, History, Sparkles, Clock, Lock, Upload, X, DollarSign, Users, Eye, Edit3, Unlock } from 'lucide-vue-next'
+import { Plus, FileText, Calendar, ArrowRight, Trash2, Save, PlusCircle, History, Sparkles, Clock, Lock, Upload, X, DollarSign, Users, Eye, Edit3, Unlock, CheckCircle, Activity, FileCheck } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
