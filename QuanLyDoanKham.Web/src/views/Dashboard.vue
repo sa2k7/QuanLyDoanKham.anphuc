@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex bg-slate-50 font-sans overflow-hidden">
     <!-- Sidebar Navigation -->
-    <aside class="w-72 bg-white border-r border-slate-200 flex flex-col h-screen sticky top-0 z-[60] shadow-sm flex-shrink-0">
+    <aside class="w-72 bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0">
       <!-- Logo Section -->
       <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group" @click="activeMenu = 'home'">
         <div class="bg-white p-1 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0 border border-slate-100">
@@ -59,7 +59,7 @@
     <!-- Main Content Area -->
     <main class="flex-1 h-screen overflow-y-auto bg-slate-50 relative custom-scrollbar">
       <!-- Top Header / Global Search -->
-      <header class="h-24 bg-white/80 backdrop-blur-xl border-b border-slate-200 flex items-center px-10 sticky top-0 z-50">
+      <header class="h-24 bg-white/70 backdrop-blur-3xl border-b border-white/50 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] flex items-center px-10 sticky top-0 z-50">
         <div class="flex-1 flex items-center gap-8">
           <div class="flex items-center gap-2">
             <h2 class="text-xl font-black text-slate-800 uppercase tracking-widest whitespace-nowrap ">{{ activeMenuName }}</h2>
@@ -75,7 +75,7 @@
                    @input="handleSearch"
                    @focus="isSearchFocused = true"
                    :placeholder="i18n.t('common.searchPlaceholder')"
-                   class="w-full pl-14 pr-20 py-4 bg-slate-100/50 border-2 border-transparent focus:border-primary/20 focus:bg-white rounded-2xl outline-none font-black text-slate-800 transition-all shadow-inner" />
+                   class="w-full pl-14 pr-20 py-4 bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/30 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-2xl outline-none font-black text-slate-800 transition-all shadow-inner" />
             <div class="absolute right-6 top-1/2 -translate-y-1/2 flex gap-1">
               <span class="px-2 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-400 shadow-sm">CTRL</span>
               <span class="px-2 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-400 shadow-sm">K</span>
@@ -248,7 +248,7 @@
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                   <div v-for="mod in activeModules" :key="mod.id" 
                        @click="activeMenu = mod.id"
-                       class="premium-card bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] p-8 group cursor-pointer relative overflow-hidden">
+                       class="premium-card bg-white/95 backdrop-blur-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.15)] transition-all duration-300 rounded-[2rem] p-8 group cursor-pointer relative overflow-hidden">
                       <div class="absolute -right-4 -bottom-4 w-24 h-24 rotate-12 opacity-[0.03] group-hover:opacity-10 transition-all group-hover:scale-125">
                           <component :is="mod.icon" class="w-full h-full" />
                       </div>
@@ -262,23 +262,23 @@
 
               <!-- Welcome & Recent Activity -->
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                  <div class="lg:col-span-2 bg-indigo-600 rounded-[3rem] p-16 text-white relative overflow-hidden shadow-2xl shadow-indigo-200 min-h-[400px]">
+                  <div class="lg:col-span-2 bg-gradient-to-br from-teal-500 to-primary rounded-[3rem] p-16 text-white relative overflow-hidden shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] min-h-[400px]">
                       <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/10 to-transparent"></div>
                       <div class="relative z-10 max-w-2xl">
                         <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8">
                            <Sparkles class="w-3 h-3" /> Digital Healthcare Platform
                         </div>
                         <h2 class="text-5xl font-black mb-6 leading-none text-white">Vận hành đoàn khám<br/>với tiêu chuẩn số hóa 100%</h2>
-                        <p class="text-indigo-100 text-lg font-medium leading-relaxed mb-10">Tối ưu quy trình điều động nhân sự, quản lý vật tư và kiểm soát dòng tiền chuyên nghiệp hàng đầu.</p>
+                        <p class="text-emerald-50 text-lg font-medium leading-relaxed mb-10">Tối ưu quy trình điều động nhân sự, quản lý vật tư và kiểm soát dòng tiền chuyên nghiệp hàng đầu.</p>
                         <div class="flex gap-4">
-                            <button @click="activeMenu = 'groups'" class="px-10 py-5 bg-white text-indigo-600 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">Triển khai đoàn</button>
-                            <button @click="activeMenu = 'staff'" class="px-10 py-5 bg-indigo-500 text-white border border-indigo-400 rounded-2xl font-black uppercase tracking-widest hover:bg-indigo-400 transition-all">Đội ngũ y tế</button>
+                            <button @click="activeMenu = 'groups'" class="px-10 py-5 bg-white text-emerald-700 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">Triển khai đoàn</button>
+                            <button @click="activeMenu = 'staff'" class="px-10 py-5 bg-white/20 border border-white/30 backdrop-blur-md text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/30 transition-all shadow-lg">Đội ngũ y tế</button>
                         </div>
                       </div>
                       <Stethoscope class="absolute -right-20 -bottom-20 w-96 h-96 text-white/5 rotate-12" />
                   </div>
 
-                  <div class="premium-card bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2.5rem] p-10 flex flex-col h-full">
+                  <div class="premium-card bg-white/95 backdrop-blur-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.04)] transition-all duration-300 rounded-[2.5rem] p-10 flex flex-col h-full">
                       <div class="flex justify-between items-center mb-8">
                           <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Thông báo mới</h3>
                           <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">

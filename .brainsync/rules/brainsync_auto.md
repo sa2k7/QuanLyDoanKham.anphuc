@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 143 notes | Score threshold: >40
+> 163 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -22,8 +22,17 @@
 
 - **BUG: FIX: Pending → Approved (not Active). Approved is a separate state before Active.** — Found in QuanLyDoanKham.Web\src\views\Contracts.vue
 
+## Active: `.`
+
+- **[.windsurfrules] Use template literals for string interpolation, not concatenation**
+- **[.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops**
+- **[.windsurfrules] Enable strict mode in tsconfig.json**
+- **[.windsurfrules] Use Composition API (setup) for new components**
+- **[.windsurfrules] Use computed properties for derived state**
+
 ## Project Standards
 
+- what-changed in VERSION — confirmed 3x
 - [.windsurfrules] Use template literals for string interpolation, not concatenation
 - [.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops
 - [.windsurfrules] Enable strict mode in tsconfig.json
@@ -31,7 +40,11 @@
 - [.windsurfrules] Use computed properties for derived state
 - [.windsurfrules] Don't use arbitrary values when a utility class exists
 - [.windsurfrules] Use responsive prefixes consistently (sm:, md:, lg:, xl:)
-- [.windsurfrules] Extract repeated class patterns into components
+
+## Recent Decisions
+
+- decision in ERRORS.md
+- decision in task.md
 
 ## Learned Patterns
 

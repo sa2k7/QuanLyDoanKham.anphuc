@@ -1,7 +1,7 @@
 <template>
   <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in-up pb-12 pr-4">
     <!-- Page Header (In-Module) -->
-    <div class="flex-shrink-0 mb-8 p-10 bg-white rounded-[3rem] shadow-sm border-2 border-slate-50 flex items-center justify-between">
+    <div class="flex-shrink-0 mb-8 p-10 bg-white/95 backdrop-blur-md rounded-[3rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 flex items-center justify-between">
       <div>
         <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-2">Báo Cáo Phân Tích</h2>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest ">Hệ thống phân tích sức khỏe & vận hành thông minh</p>
@@ -10,7 +10,7 @@
         <button class="px-6 py-4 bg-primary/10 text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2">
           <FileDown class="w-4 h-4" /> Xuất PDF
         </button>
-        <button class="px-6 py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 transition-all flex items-center gap-2">
+        <button class="px-6 py-4 bg-slate-900/90 backdrop-blur md text-white rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-slate-800 shadow-xl shadow-slate-900/20 transition-all flex items-center gap-2 hover:-translate-y-0.5">
           <Download class="w-4 h-4" /> Tải Excel
         </button>
       </div>
@@ -36,7 +36,7 @@
       <!-- Main Visualizations (Dynamic based on Role) -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Visualization 1: Main Chart Area -->
-        <div class="lg:col-span-2 bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
+        <div class="lg:col-span-2 bg-white/95 backdrop-blur-sm p-6 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300">
           <div class="flex items-center justify-between mb-6">
             <h3 class="font-bold text-slate-800">
               <span v-if="authStore.role === 'PersonnelManager'">Phân bổ Nhân sự theo Chuyên môn</span>
@@ -74,7 +74,7 @@
         </div>
 
         <!-- Visualization 2: Status / Progress -->
-        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex flex-col">
+        <div class="bg-white/95 backdrop-blur-sm p-6 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col">
           <h3 class="font-bold text-slate-800 mb-6 italic">Sẵn sàng vận hành</h3>
           <div class="flex-grow flex flex-col justify-center space-y-6">
             <div v-for="(progress, name) in completionProgress" :key="name">
@@ -94,7 +94,7 @@
       <!-- MỤC BÁO CÁO MỚI: Revenue & Financial Performance -->
       <div v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager' || authStore.role === 'PayrollManager'" 
            class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] relative overflow-hidden group">
+        <div class="bg-white/95 backdrop-blur-sm p-6 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 relative overflow-hidden group">
           <div class="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
             <DollarSign class="w-32 h-32 text-emerald-600" />
           </div>
@@ -129,7 +129,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a]">
+        <div class="bg-white/95 backdrop-blur-sm p-6 rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300">
           <h3 class="font-black text-slate-800 mb-6 flex items-center gap-3 uppercase tracking-tighter italic">
              <LayoutGrid class="w-5 h-5 text-blue-600" /> Hiệu suất Phân bổ Nhân sự (Mới)
           </h3>
@@ -154,7 +154,7 @@
       <!-- 4. Secondary Analysis Grid -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <!-- 4.1 Role-Specific Data Lists -->
-        <div class="bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
+        <div class="bg-white/95 backdrop-blur-sm rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 class="font-bold text-slate-800 italic">
                <span v-if="authStore.role === 'PersonnelManager'">Dương tính hiệu suất - Top Nhân viên</span>
@@ -263,7 +263,7 @@
         </div>
 
         <!-- 4.2 Ready Reports -->
-        <div class="bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex flex-col">
+        <div class="bg-white/95 backdrop-blur-sm rounded-[2rem] border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_15px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-300 flex flex-col">
           <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
             <h3 class="font-bold text-slate-800">Báo cáo sẵn sàng xuất file</h3>
             <button class="text-[9px] font-black uppercase tracking-widest text-blue-600">Xem tất cả</button>
