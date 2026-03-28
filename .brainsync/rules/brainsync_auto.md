@@ -1,7 +1,7 @@
 
 
 # Project Memory — Quanlydoankham
-> 320 notes | Score threshold: >40
+> 343 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -16,33 +16,32 @@
 - **ALWAYS** ask the user before running commands that modify system state, install packages, or make network requests.
 - When in doubt, **show the command first** and wait for approval.
 
-**Stack:** JavaScript · Tailwind + Vue
+**Stack:** JavaScript/Python/TypeScript · Express + React + Tailwind + Vue · DB: SQLite
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in QuanLyDoanKham.API.csproj.FileListAbsolute.txt** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
-- **gotcha in QuanLyDoanKham.API.runtimeconfig.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QuanLyDo
-- **gotcha in QuanLyDoanKham.API.deps.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QuanLyDo
-- **gotcha in QuanLyDo.64B0EAB0.Up2Date** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
-- **gotcha in QuanLyDoanKham.API.MvcApplicationPartsAssemblyInfo.cs** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
-- **gotcha in QuanLyDoanKham.API.MvcApplicationPartsAssemblyInfo.cache** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
+- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QuanLyDo
+- **gotcha in rjsmrazor.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmrazo
+- **gotcha in rjsmcshtml.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmcsht
+- **gotcha in QuanLyDoanKham.API.pdb** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
 
 ## Project Standards
 
+- what-changed in task.md.resolved — confirmed 3x
+- Fixed null crash in ShieldCheck — prevents null/undefined runtime crashes — confirmed 3x
 - convention in GEMINI.md
 - what-changed in task.md — confirmed 3x
 - Optimized GlobalPropertiesHash — confirmed 6x
 - convention in QuanLyDoanKham.API.csproj.AssemblyReference.cache
 - Added JWT tokens authentication — confirmed 3x
 - what-changed in task.md — confirmed 3x
-- Updated API endpoint MedicalGroupsController — confirmed 4x
-- Replaced auth Truy — confirmed 3x
 
 ## Recent Decisions
 
+- decision in README.md
+- decision in GEMINI.md
+- decision in GEMINI.md
 - decision in Users.vue
-- decision in Contracts.vue
-- decision in Groups.vue
 
 ## Learned Patterns
 
@@ -52,229 +51,263 @@
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 
-### 📚 Core Framework Rules: [expo/expo-tailwind-setup]
-# Tailwind CSS Setup for Expo with react-native-css
-
-This guide covers setting up Tailwind CSS v4 in Expo using react-native-css and NativeWind v5 for universal styling across iOS, Android, and Web.
+### 📚 Core Framework Rules: [callstackincubator/react-native-best-practices]
+# React Native Best Practices
 
 ## Overview
 
-This setup uses:
+Performance optimization guide for React Native applications, covering JavaScript/React, Native (iOS/Android), and bundling optimizations. Based on Callstack's "Ultimate Guide to React Native Optimization".
 
-- **Tailwind CSS v4** - Modern CSS-first configuration
-- **react-native-css** - CSS runtime for React Native
-- **NativeWind v5** - Metro transformer for Tailwind in React Native
-- **@tailwindcss/postcss** - PostCSS plugin for Tailwind v4
+## Skill Format
 
-## Installation
+Each reference file follows a hybrid format for fast lookup and deep understanding:
 
+- **Quick Pattern**: Incorrect/Correct code snippets for immediate pattern matching
+- **Quick Command**: Shell commands for process/measurement skills
+- **Quick Config**: Configuration snippets for setup-focused skills
+- **Quick Reference**: Summary tables for conceptual skills
+- **Deep Dive**: Full context with When to Use, Prerequisites, Step-by-Step, Common Pitfalls
 
+**Impact ratings**: CRITICAL (fix immediately), HIGH (significant improvement), MEDIUM (worthwhile optimization)
 
-Add resolutions for lightningcss compatibility:
+## When to Apply
 
+Reference these guidelines when:
+- Debugging slow/janky UI or animations
+- Investigating memory leaks (JS or native)
+- Optimizing app startup time (TTI)
+- Reducing bundle or app size
+- Writing native modules (Turbo Modules)
+- Profiling React Native performance
+- Reviewing React Native code for performance
 
+## Security Notes
 
-- autoprefixer is not needed in Expo because of lightningcss
-- postcss is included in expo by default
+- Treat shell commands in these references as local developer operations. Review them before running, prefer version-pinned tooling, and avoid piping remote scripts directly to a shell.
+- Treat third-party libraries and plugins as dependencies that still require normal supply-chain controls: pin versions, verify provenance, and update through your standard review process.
+- Treat Re.Pack code splitting as first-party artifact delivery only. Remote chunks must come from trusted HTTPS origins you control and be pinned to the current app release.
 
-## Configuration Files
+## Priority-Ordered Guidelines
 
-### Metro Config
+| Priority | Category | Impact | Prefix |
+|----------|----------|--------|--------|
+| 1 | FPS & Re-renders | CRITICAL | `js-*` |
+| 2 | Bundle Size | CRITICAL | `bundle-*` |
+| 3 | TTI Optimization | HIGH | `native-*`, `bundle-*` |
+| 4 | Native Performance | HIGH | `native-*` |
+| 5 | Memory Management | MEDIUM-HIGH | `js-*`, `native-*` |
+| 6 | Animations | MEDIUM | `js-*` |
 
-Create or update `metro.config.js`:
+## Quick Reference
 
+### Optimization Workflow
 
+Follow this cycle for any performance issue: **Measure → Optimize → Re-measure → Validate**
 
-### PostCSS Config
-
-Create `postcss.config.mjs`:
-
-
-
-### Global CSS
-
-Create `src/global.css`:
-
-
-
-## IMPORTANT: No Babel Config Needed
-
-With Tailwind v4 and NativeWind v5, you do NOT need a babel.config.js for Tailwind. Remove any NativeWind babel presets if present:
-
-
-
-## CSS Component Wrappers
-
-Since react-native-css requires explicit CSS element wrapping, create reusable components:
-
-### Main Components (`src/tw/index.tsx`)
-
-
-
-### Image Component (`src/tw/image.tsx`)
-
-
-
-### Animated Components (`src/tw/animated.tsx`)
-
-
-
-## Usage
-
-Import CSS-wrapped components from your tw directory:
-
-
-
-## Custom Theme Variables
-
-Add custom theme variables in your global.css using `@theme`:
-
-
-
-## Platform-Specific Styles
-
-Use platform media queries for platform-specific styling:
-
-
-
-## Apple System Colors with CSS Variables
-
-Create a CSS file for Apple semantic colors:
-
-
-
-Then use in components:
-
-
-
-## Using CSS Variables in JavaScript
-
-Use the `useCSSVariable` hook:
-
-
-
-## Key Differences from NativeWind v4 / Tailwind v3
-
-1. **No babel.config.js** - Configuration is now CSS-first
-2. **PostCSS plugin** - Uses `@tailwindcss/postcss` instead of `tailwindcss`
-3. **CSS imports** - Use `@import "tailwindcss/..."` instead of `@tailwind` directives
-4. **Theme config** - Use `@theme` in CSS instead of `tailwind.config.js`
-5. **Component wrappers** - Must wrap components with `useCssElement` for className support
-6. **Metro config** - Use `withNativewind` with different options (`inlineVariables: false`)
-
-## Troubleshooting
-
-### Styles not applying
-
-1. Ensure you have the CSS file imported in your app entry
-2. Check that components are wrapped with `useCssElement`
-3. Verify Metro config has `withNativewind` applied
-
-### Platform colors not working
-
-1. Use `platformColor()` i...
+1. **Measure**: Capture baseline metrics (FPS, TTI, bundle size) before changes
+2. **Optimize**: Apply the targeted fix from the relevant reference
+3. **Re-measure**: Run the same measurement to get updated metrics
+...
 (truncated)
 
 
-### 📚 Core Framework Rules: [czlonkowski/n8n-code-javascript]
-# JavaScript Code Node
+### 📚 Core Framework Rules: [callstackincubator/upgrading-react-native]
+# Upgrading React Native
 
-Expert guidance for writing JavaScript code in n8n Code nodes.
+## Overview
 
----
+Covers the full React Native upgrade workflow: template diffs via Upgrade Helper, dependency updates, Expo SDK steps, and common pitfalls.
 
-## Quick Start
+## Typical Upgrade Sequence
 
-
-
-### Essential Rules
-
-1. **Choose "Run Once for All Items" mode** (recommended for most use cases)
-2. **Access data**: `$input.all()`, `$input.first()`, or `$input.item`
-3. **CRITICAL**: Must return `[{json: {...}}]` format
-4. **CRITICAL**: Webhook data is under `$json.body` (not `$json` directly)
-5. **Built-ins available**: $helpers.httpRequest(), DateTime (Luxon), $jmespath()
-
----
-
-## Mode Selection Guide
-
-The Code node offers two execution modes. Choose based on your use case:
-
-### Run Once for All Items (Recommended - Default)
-
-**Use this mode for:** 95% of use cases
-
-- **How it works**: Code executes **once** regardless of input count
-- **Data access**: `$input.all()` or `items` array
-- **Best for**: Aggregation, filtering, batch processing, transformations, API calls with all data
-- **Performance**: Faster for multiple items (single execution)
+1. **Route**: Choose the right upgrade path via [upgrading-react-native.md][upgrading-react-native]
+2. **Diff**: Fetch the canonical template diff using Upgrade Helper via [upgrade-helper-core.md][upgrade-helper-core]
+3. **Dependencies**: Assess and update third-party packages via [upgrading-dependencies.md][upgrading-dependencies]
+4. **React**: Align React version if upgraded via [react.md][react]
+5. **Expo** (if applicable): Apply Expo SDK layer via [expo-sdk-upgrade.md][expo-sdk-upgrade]
+6. **Verify**: Run post-upgrade checks via [upgrade-verification.md][upgrade-verification]
 
 
 
-**When to use:**
-- ✅ Comparing items across the dataset
-- ✅ Calculating totals, averages, or statistics
-- ✅ Sorting or ranking items
-- ✅ Deduplication
-- ✅ Building aggregated reports
-- ✅ Combining data from multiple items
+## When to Apply
 
-### Run Once for Each Item
+Reference these guidelines when:
+- Moving a React Native app to a newer version
+- Reconciling native config changes from Upgrade Helper
+- Validating release notes for breaking changes
 
-**Use this mode for:** Specialized cases only
+## Quick Reference
 
-- **How it works**: Code executes **separately** for each input item
-- **Data access**: `$input.item` or `$item`
-- **Best for**: Item-specific logic, independent operations, per-item validation
-- **Performance**: Slower for large datasets (multiple executions)
+| File | Description |
+|------|-------------|
+| [upgrading-react-native.md][upgrading-react-native] | Router: choose the right upgrade path |
+| [upgrade-helper-core.md][upgrade-helper-core] | Core Upgrade Helper workflow and reliability gates |
+| [upgrading-dependencies.md][upgrading-dependencies] | Dependency compatibility checks and migration planning |
+| [react.md][react] | React and React 19 upgrade alignment rules |
+| [expo-sdk-upgrade.md][expo-sdk-upgrade] | Expo SDK-specific upgrade layer (conditional) |
+| [upgrade-verification.md][upgrade-verification] | Manual post-upgrade verification checklist |
+| [monorepo-singlerepo-targeting.md][monorepo-singlerepo-targeting] | Monorepo and single-repo app targeting and command scoping |
 
+## Problem → Skill Mapping
 
+| Problem | Start With |
+|---------|------------|
+| Need to upgrade React Native | [upgrade-helper-core.md][upgrade-helper-core] |
+| Need dependency risk triage and migration options | [upgrading-dependencies.md][upgrading-dependencies] |
+| Need React/React 19 package alignment | [react.md][react] |
+| Need workflow routing first | [upgrading-react-native.md][upgrading-react-native] |
+| Need Expo SDK-specific steps | [expo-sdk-upgrade.md][expo-sdk-upgrade] |
+| Need manual regression validation | [upgrade-verification.md][upgrade-verification] |
+| Need repo/app command scoping | [monorepo-singlerepo-targeting.md][monorepo-singlerepo-targeting] |
 
-**When to use:**
-- ✅ Each item needs independent API call
-- ✅ Per-item validation with different error handling
-- ✅ Item-specific transformations based on item properties
-- ✅ When items must be processed separately for business logic
-
-**Decision Shortcut:**
-- **Need to look at multiple items?** → Use "All Items" mode
-- **Each item completely independent?** → Use "Each Item" mode
-- **Not sure?** → Use "All Items" mode (you can always loop inside)
-
----
-
-## Data Access Patterns
-
-### Pattern 1: $input.all() - Most Common
-
-**Use when**: Processing arrays, batch operations, aggregations
-
-
-
-### Pattern 2: $input.first() - Very Common
-
-**Use when**: Working with single objects, API responses, first-in-first-out
-
-
-
-### Pattern 3: $input.item - Each Item Mode Only
-
-**Use when**: In "Run Once for Each Item" mode
-
-
-
-### Pattern 4: $node - Reference Other Nodes
-
-**Use when**: Need data from specific nodes in workflow
-
-
-
-**See**: [DATA_ACCESS.md](DATA_ACCESS.md) ...
+[upgrading-react-native]: references/upgrading-react...
 (truncated)
 
-- [JavaScript/TypeScript] Use === not == (strict equality prevents type coercion bugs)
-- [JavaScript/TypeScript] Use const by default, let when reassignment needed, never var
+
+### 📚 Core Framework Rules: [tinybirdco/tinybird-typescript-sdk-guidelines]
+# Tinybird TypeScript SDK Guidelines
+
+Guidance for using the `@tinybirdco/sdk` package to define Tinybird resources in TypeScript with complete type inference.
+
+## When to Apply
+
+- Installing or configuring @tinybirdco/sdk
+- Defining datasources or pipes in TypeScript
+- Creating typed Tinybird clients
+- Using type-safe ingestion or queries
+- Running tinybird dev/build/deploy commands for TypeScript projects
+- Migrating from legacy .datasource/.pipe files to TypeScript
+- Defining connections (Kafka, S3, GCS)
+- Creating materialized views, copy pipes, or sink pipes
+
+## Rule Files
+
+- `rules/getting-started.md`
+- `rules/configuration.md`
+- `rules/defining-datasources.md`
+- `rules/defining-endpoints.md`
+- `rules/typed-client.md`
+- `rules/low-level-api.md`
+- `rules/cli-commands.md`
+- `rules/connections.md`
+- `rules/materialized-views.md`
+- `rules/copy-sink-pipes.md`
+- `rules/tokens.md`
+
+## Quick Reference
+
+- Install: `npm install @tinybirdco/sdk`
+- Initialize: `npx tinybird init`
+- Dev mode: `tinybird dev` (uses configured `devMode`, typically branch)
+- Build: `tinybird build` (builds against configured dev target)
+- Deploy: `tinybird deploy` (deploys to main/production)
+- Preview in CI: `tinybird preview`
+- Server-side only; never expose tokens in browsers
+
+
+### 📚 Core Framework Rules: [tinybirdco/tinybird-python-sdk-guidelines]
+# Tinybird Python SDK Guidelines
+
+Guidance for using the `tinybird-sdk` package to define Tinybird resources in Python.
+
+## When to Apply
+
+- Installing or configuring tinybird-sdk
+- Defining datasources, pipes, or endpoints in Python
+- Creating Tinybird clients in Python
+- Using data ingestion or queries in Python
+- Running tinybird dev/build/deploy commands for Python projects
+- Migrating from legacy .datasource/.pipe files to Python
+- Defining connections (Kafka, S3, GCS)
+- Creating materialized views, copy pipes, or sink pipes
+
+## Rule Files
+
+- `rules/getting-started.md`
+- `rules/configuration.md`
+- `rules/defining-datasources.md`
+- `rules/defining-endpoints.md`
+- `rules/client.md`
+- `rules/low-level-api.md`
+- `rules/cli-commands.md`
+- `rules/connections.md`
+- `rules/materialized-views.md`
+- `rules/copy-sink-pipes.md`
+- `rules/tokens.md`
+
+## Quick Reference
+
+- Install: `pip install tinybird-sdk`
+- Initialize: `tinybird init`
+- Dev mode: `tinybird dev` (uses configured `dev_mode`, typically branch)
+- Build: `tinybird build` (builds against configured dev target)
+- Deploy: `tinybird deploy` (deploys to main/production)
+- Preview in CI: `tinybird preview`
+- Migrate: `tinybird migrate` (convert .datasource/.pipe files to Python)
+- Server-side only; never expose tokens in browsers
+
+
+### 📚 Core Framework Rules: [vercel-labs/react-best-practices]
+# Vercel React Best Practices
+
+Comprehensive performance optimization guide for React and Next.js applications, maintained by Vercel. Contains 64 rules across 8 categories, prioritized by impact to guide automated refactoring and code generation.
+
+## When to Apply
+
+Reference these guidelines when:
+- Writing new React components or Next.js pages
+- Implementing data fetching (client or server-side)
+- Reviewing code for performance issues
+- Refactoring existing React/Next.js code
+- Optimizing bundle size or load times
+
+## Rule Categories by Priority
+
+| Priority | Category | Impact | Prefix |
+|----------|----------|--------|--------|
+| 1 | Eliminating Waterfalls | CRITICAL | `async-` |
+| 2 | Bundle Size Optimization | CRITICAL | `bundle-` |
+| 3 | Server-Side Performance | HIGH | `server-` |
+| 4 | Client-Side Data Fetching | MEDIUM-HIGH | `client-` |
+| 5 | Re-render Optimization | MEDIUM | `rerender-` |
+| 6 | Rendering Performance | MEDIUM | `rendering-` |
+| 7 | JavaScript Performance | LOW-MEDIUM | `js-` |
+| 8 | Advanced Patterns | LOW | `advanced-` |
+
+## Quick Reference
+
+### 1. Eliminating Waterfalls (CRITICAL)
+
+- `async-defer-await` - Move await into branches where actually used
+- `async-parallel` - Use Promise.all() for independent operations
+- `async-dependencies` - Use better-all for partial dependencies
+- `async-api-routes` - Start promises early, await late in API routes
+- `async-suspense-boundaries` - Use Suspense to stream content
+
+### 2. Bundle Size Optimization (CRITICAL)
+
+- `bundle-barrel-imports` - Import directly, avoid barrel files
+- `bundle-dynamic-imports` - Use next/dynamic for heavy components
+- `bundle-defer-third-party` - Load analytics/logging after hydration
+- `bundle-conditional` - Load modules only when feature is activated
+- `bundle-preload` - Preload on hover/focus for perceived speed
+
+### 3. Server-Side Performance (HIGH)
+
+- `server-auth-actions` - Authenticate server actions like API routes
+- `server-cache-react` - Use React.cache() for per-request deduplication
+- `server-cache-lru` - Use LRU cache for cross-request caching
+- `server-dedup-props` - Avoid duplicate serialization in RSC props
+- `server-hoist-static-io` - Hoist static I/O (fonts, logos) to module level
+- `server-serialization` - Minimize data passed to client components
+- `server-parallel-fetching` - Restructure components to parallelize fetches
+- `server-after-nonblocking` - Use after() for non-blocking operations
+
+### 4. Client-Side Data Fetching (MEDIUM-HIGH)
+
+- `c...
+(truncated)
+
 
 ## Available Tools (ON-DEMAND only)
 - `query(q)` — Deep search when stuck

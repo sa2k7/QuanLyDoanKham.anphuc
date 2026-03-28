@@ -54,7 +54,6 @@
                         <th class="p-4 text-center w-16">STT</th>
                         <th class="p-4">Tài khoản</th>
                         <th class="p-4">Vai trò</th>
-                        <th class="p-4">Mật khẩu</th>
                         <th class="p-4 text-center">Thao tác</th>
                     </tr>
                 </thead>
@@ -86,25 +85,6 @@
                                 {{ i18n.t('roles.' + u.roleName) }}
                             </span>
                         </td>
-                        <td class="p-4">
-                            <!-- Hiển thị mật khẩu reset nếu có -->
-                            <div v-if="getTempPass(u.username)" class="inline-flex items-center gap-3 px-3 py-1 bg-emerald-50 rounded-lg border border-emerald-100 animate-pulse mb-1">
-                                <span class="text-[10px] font-black text-slate-800">{{ getTempPass(u.username) }}</span>
-                                <span class="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Reset</span>
-                            </div>
-                            <!-- Mật khẩu vừa cập nhật trong phiên (Hiển thị trong 10 phút) -->
-                            <div v-else-if="sessionPasswords[u.username] && (Date.now() - (sessionPasswords[u.username].timestamp || 0) < 600000)" class="inline-flex items-center gap-3 px-3 py-1 bg-indigo-50 rounded-lg border border-indigo-100 mb-1">
-                                <span class="text-[10px] font-black text-indigo-600 font-mono tracking-tighter">{{ sessionPasswords[u.username].password || sessionPasswords[u.username] }}</span>
-                                <span class="text-[8px] font-black text-indigo-400 uppercase tracking-widest leading-none">MỚI</span>
-                            </div>
-                            <!-- Hiển thị mật khẩu mặc định dự kiến cho nhân sự mới -->
-                            <div v-else class="flex flex-col gap-1">
-                                <span class="text-[10px] font-black text-slate-400 font-mono tracking-tighter">
-                                    {{ u.username === 'admin' ? '••••••••' : (u.username.startsWith('nv') ? 'Password@123' : 'HealthCare2026') }}
-                                </span>
-                                <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest leading-none">Mặc định</span>
-                            </div>
-                        </td>
                         <td class="p-4 text-center">
                             <div class="flex items-center justify-center gap-3">
                                 <button @click="openEditModal(u)" class="btn-action-premium variant-indigo text-slate-400" title="Hiệu chỉnh">
@@ -117,7 +97,7 @@
                         </td>
                     </tr>
                     <tr v-if="users.length === 0">
-                        <td colspan="5" class="py-20 text-center">
+                        <td colspan="4" class="py-20 text-center">
                             <div class="flex flex-col items-center justify-center gap-4">
                                 <ShieldCheck class="w-10 h-10 text-slate-200" />
                                 <p class="text-slate-300 font-black uppercase tracking-widest text-xs">Không có dữ liệu tài khoản</p>
@@ -320,7 +300,7 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 import { 
     UserPlus, Edit3, Trash2, Shield, X, MapPin, Mail, Calendar, Camera, ShieldCheck, AtSign, Building2, Stethoscope
 } from 'lucide-vue-next'
@@ -352,10 +332,9 @@ const form = ref({
     avatarPath: ''
 })
 
-const getTempPass = (username) => {
-    const req = resetRequests.value.find(r => r.username === username && r.isProcessed)
-    return req ? req.newPassword : null
-}
+// SECURITY: getTempPass đã bị xóa - không hiển thị mật khẩu plaintext từ DB
+// Yêu cầu reset mật khẩu được Admin xử lý mà không lộ mật khẩu
+
 
 const selectedFile = ref(null)
 const avatarPreview = ref(null)
@@ -370,7 +349,7 @@ const onFileChange = (e) => {
 const fetchUsers = async () => {
     if (!isAdmin.value) return
     try {
-        const res = await axios.get('http://localhost:5283/api/Auth/users')
+        const res = await apiClient.get('/api/Auth/users')
         users.value = res.data
     } catch (e) {
         console.error("Lỗi lấy danh sách user:", e)
@@ -380,7 +359,7 @@ const fetchUsers = async () => {
 const fetchCompanies = async () => {
     if (!isAdmin.value) return
     try {
-        const res = await axios.get('http://localhost:5283/api/Companies')
+        const res = await apiClient.get('/api/Companies')
         companies.value = res.data
     } catch (e) {
         console.error("Lỗi lấy danh sách công ty:", e)
@@ -391,15 +370,13 @@ const fetchResets = async () => {
     if (!isAdmin.value) return
     try {
         const res = await axios.get('http://localhost:5283/api/Auth/reset-requests')
-        // Lấy cả những yêu cầu đã xử lý để xem mật khẩu mới
         resetRequests.value = res.data 
     } catch (e) {}
 }
 
 const DEFAULT_PASSWORD = 'HealthCare2026'
-const newlyCreatedUser = ref(null) // Track newly created user for password display
-// Khởi tạo từ localStorage để không bị mất khi F5
-const sessionPasswords = ref(JSON.parse(localStorage.getItem('user_session_passwords') || '{}')) 
+// SECURITY: Không lưu mật khẩu vào memory hay localStorage
+// Chỉ hiển thị 1 lần trong toast sau khi tạo tài khoản
 
 // Remove Vietnamese diacritics (e.g. 'Hoàng' -> 'Hoang')
 const removeDiacritics = (str) => str
@@ -452,36 +429,21 @@ const handleSubmit = async () => {
         if (selectedFile.value) {
             const formData = new FormData()
             formData.append('file', selectedFile.value)
-            const uploadRes = await axios.post('http://localhost:5283/api/Auth/upload-avatar', formData)
+            const uploadRes = await apiClient.post('/api/Auth/upload-avatar', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            })
             form.value.avatarPath = uploadRes.data.path
         }
 
         if (modal.value.isEdit) {
             await axios.put(`http://localhost:5283/api/Auth/users/${form.value.username}`, form.value)
-            // Lưu vào cache & localStorage để hiển thị lại trên bảng (vì API không trả về Pass)
-            if (form.value.password) {
-                sessionPasswords.value[form.value.username] = { 
-                    password: form.value.password, 
-                    timestamp: Date.now() 
-                }
-                localStorage.setItem('user_session_passwords', JSON.stringify(sessionPasswords.value))
-            }
             toast.success("Cập nhật thành công!")
             modal.value.show = false
         } else {
+            const createdPassword = form.value.password || DEFAULT_PASSWORD
             await axios.post('http://localhost:5283/api/Auth/register', form.value)
-            // Lưu vào cache & localStorage
-            sessionPasswords.value[form.value.username] = { 
-                password: form.value.password || DEFAULT_PASSWORD, 
-                timestamp: Date.now() 
-            }
-            localStorage.setItem('user_session_passwords', JSON.stringify(sessionPasswords.value))
-            // Store newly created user info to display default password
-            newlyCreatedUser.value = {
-                username: form.value.username,
-                password: form.value.password || DEFAULT_PASSWORD
-            }
-            toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${newlyCreatedUser.value.password}`)
+            // Chỉ hiển thị 1 lần qua toast, KHÔNG lưu vào memory hay localStorage
+            toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${createdPassword} (Copy ngay, chỉ hiển thị 1 lần!)`)
             modal.value.show = false
         }
         fetchUsers()
@@ -498,7 +460,7 @@ const handleDelete = (username) => {
 
 const deleteUser = async () => {
     try {
-        await axios.delete(`http://localhost:5283/api/Auth/users/${userToDelete.value}`)
+        await apiClient.delete(`/api/Auth/users/${userToDelete.value}`)
         toast.success("Đã xóa tài khoản!")
         fetchUsers()
     } catch (e) {

@@ -120,7 +120,11 @@ namespace QuanLyDoanKham.API.Controllers
                         await _context.SaveChangesAsync();
                     }
                 }
-                catch (Exception) { /* Swallow notification error */ }
+                catch (Exception ex)
+                {
+                    // Log lỗi thông báo, không chặn luồng chính
+                    Console.Error.WriteLine($"[Notification Error] UpdateUser: {ex.Message}");
+                }
             }
 
             return Ok(new { message = "Cập nhật tài khoản thành công" });
@@ -157,21 +161,11 @@ namespace QuanLyDoanKham.API.Controllers
                 bool isValid = false;
                 try
                 {
-                    // Thử verify bằng BCrypt trước
                     isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
                 }
                 catch
                 {
-                    // Fallback nếu hash bị lỗi (định dạng sai)
                     isValid = false;
-                }
-
-                // Fallback đặc biệt cho môi trường Development hoặc dữ liệu mẫu
-                if (!isValid)
-                {
-                    if (request.Username == "admin" && request.Password == "admin123") isValid = true;
-                    if (request.Username == "vingroup" && request.Password == "vingroup123") isValid = true;
-                    if (request.Username == "fpt" && request.Password == "fpt123") isValid = true;
                 }
 
                 if (!isValid) return Unauthorized("Mật khẩu không chính xác.");
@@ -202,8 +196,8 @@ namespace QuanLyDoanKham.API.Controllers
             }
             catch (Exception ex)
             {
-                // Log exception here if logging is implemented
-                return StatusCode(500, new { message = "Lỗi hệ thống", detail = ex.Message });
+                Console.Error.WriteLine($"[Login Error] {ex.Message}");
+                return StatusCode(500, new { message = "Lỗi hệ thống. Vui lòng thử lại sau." });
             }
         }
 
@@ -217,6 +211,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         [HttpPost("register")]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<UserProfileDto>> Register(RegisterDto request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
@@ -379,12 +374,12 @@ namespace QuanLyDoanKham.API.Controllers
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user == null) return NotFound("Không tìm thấy User tương ứng.");
 
-            // Update Password
+            // Update Password - chỉ lưu hash, KHÔNG lưu plaintext
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
             
-            // Mark as processed
+            // Mark as processed - KHÔNG ghi lại NewPassword thô
             request.IsProcessed = true;
-            request.NewPassword = dto.NewPassword;
+            request.NewPassword = null; // Xóa sạch mật khẩu thô khỏi DB
 
             await _context.SaveChangesAsync();
             return Ok(new { message = $"Đã cấp lại mật khẩu cho {request.Username} thành công!" });
