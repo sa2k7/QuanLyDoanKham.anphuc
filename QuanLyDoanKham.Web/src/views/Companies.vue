@@ -72,15 +72,15 @@
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mã số thuế *</label>
-                <input v-model="currentCompany.taxCode" required class="input-premium w-full" placeholder="0101..." />
+                <CodeInput v-model="currentCompany.taxCode" :required="true" customClass="input-premium w-full" placeholder="0101..." />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại liên hệ công ty</label>
-                <input v-model="currentCompany.phoneNumber" class="input-premium w-full" placeholder="090..." />
+                <CodeInput v-model="currentCompany.phoneNumber" customClass="input-premium w-full" placeholder="090..." />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số điện thoại người đại diện</label>
-                <input v-model="currentCompany.contactPhone" class="input-premium w-full" placeholder="09x - sđt trực tiếp đại diện" />
+                <CodeInput v-model="currentCompany.contactPhone" customClass="input-premium w-full" placeholder="09x - sđt trực tiếp đại diện" />
             </div>
             <div class="flex flex-col gap-2">
                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ trụ sở</label>
@@ -191,15 +191,15 @@
                           </div>
                           <div class="flex flex-col gap-2">
                               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Mã số thuế *</label>
-                              <input v-model="currentCompany.taxCode" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="0101..." />
+                              <CodeInput v-model="currentCompany.taxCode" :required="true" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="0101..." />
                           </div>
                           <div class="flex flex-col gap-2">
                               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT liên hệ công ty</label>
-                              <input v-model="currentCompany.phoneNumber" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
+                              <CodeInput v-model="currentCompany.phoneNumber" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
                           </div>
                           <div class="flex flex-col gap-2">
                               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT người đại diện</label>
-                              <input v-model="currentCompany.contactPhone" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09x..." />
+                              <CodeInput v-model="currentCompany.contactPhone" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09x..." />
                           </div>
                           <div class="md:col-span-2 flex flex-col gap-2">
                               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ trụ sở</label>
@@ -235,6 +235,7 @@ import { Building2, Plus, Search, MapPin, FileText, PlusCircle, X, Edit3, Trash2
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import StatCard from '../components/StatCard.vue'
+import CodeInput from '../components/CodeInput.vue'
 
 const authStore = useAuthStore()
 const toast = useToast()
