@@ -47,7 +47,7 @@ namespace QuanLyDoanKham.API.Data
                 { 
                     UserId = 1, 
                     Username = "admin", 
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), 
+                    PasswordHash = "$2a$11$azxY7U9nnOEV4xF4Cto.gOLsbvUKtALtNoqMjMFRhVfP/45V1BrJ.", 
                     FullName = "System Administrator", 
                     RoleId = 1 
                 }

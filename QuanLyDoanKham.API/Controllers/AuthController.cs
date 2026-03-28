@@ -145,6 +145,20 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Xóa tài khoản thành công" });
         }
 
+        // POST: api/Auth/reset-admin-fix-emergency
+        // CHỈ DÙNG TRONG TRƯỜNG HỢP KHẨN CẤP. XÓA SAU KHI DÙNG.
+        [HttpPost("reset-admin-fix-emergency")]
+        public async Task<IActionResult> ResetAdminFixEmergency()
+        {
+            var admin = await _context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
+            if (admin == null) return NotFound("Không tìm thấy Admin.");
+
+            // Ép hash về "admin123" chuẩn
+            admin.PasswordHash = "$2a$11$azxY7U9nnOEV4xF4Cto.gOLsbvUKtALtNoqMjMFRhVfP/45V1BrJ."; 
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã khôi phục mật khẩu Admin thành 'admin123' thành công! Hãy đăng nhập lại ngay." });
+        }
+
         [HttpPost("login")]
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto request)
         {
