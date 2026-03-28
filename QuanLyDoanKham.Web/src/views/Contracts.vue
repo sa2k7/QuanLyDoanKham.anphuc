@@ -219,7 +219,11 @@
           <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
             
             <!-- Header Accent Line -->
-            <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-blue-500 to-blue-700 z-0"></div>
+            <div :class="['absolute top-0 left-0 right-0 h-4 bg-gradient-to-r transition-all duration-500 z-0', 
+                         detailsModal.data.status === 'Pending' ? 'from-amber-400 to-amber-600' : 
+                         detailsModal.data.status === 'Approved' ? 'from-blue-500 to-indigo-600' :
+                         detailsModal.data.status === 'Active' ? 'from-violet-500 to-purple-600' :
+                         'from-emerald-500 to-teal-600']"></div>
             
             <!-- Close Button -->
             <button @click="detailsModal.show = false" class="absolute top-8 right-8 bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500 z-[60] flex items-center justify-center border border-slate-100 shadow-sm">
@@ -230,7 +234,11 @@
                 <div class="p-10 pb-4">
                     <div class="flex justify-between items-start mb-8">
                         <div class="flex items-center gap-4">
-                            <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center shadow-inner border border-blue-100 shrink-0">
+                        <div :class="['w-14 h-14 rounded-3xl flex items-center justify-center shadow-inner border shrink-0 transition-all duration-500', 
+                                     detailsModal.data.status === 'Pending' ? 'bg-amber-50 text-amber-600 border-amber-100' : 
+                                     detailsModal.data.status === 'Approved' ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                                     detailsModal.data.status === 'Active' ? 'bg-violet-50 text-violet-600 border-violet-100' :
+                                     'bg-emerald-50 text-emerald-600 border-emerald-100']">
                                 <FileText class="w-7 h-7" />
                             </div>
                             <div>
@@ -371,7 +379,11 @@
                     </template>
                     <template v-else>
                         <button @click="handleUpdateContract" 
-                                class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1 active:scale-95 flex items-center justify-center">
+                                :class="['flex-1 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-lg hover:-translate-y-1 active:scale-95 flex items-center justify-center bg-gradient-to-r duration-500',
+                                         detailsModal.data.status === 'Pending' ? 'from-amber-400 to-amber-600 shadow-amber-500/30 hover:shadow-amber-500/50' : 
+                                         detailsModal.data.status === 'Approved' ? 'from-blue-500 to-indigo-600 shadow-blue-500/30 hover:shadow-blue-500/50' :
+                                         detailsModal.data.status === 'Active' ? 'from-violet-500 to-purple-600 shadow-violet-500/30 hover:shadow-violet-500/50' :
+                                         'from-emerald-500 to-teal-600 shadow-emerald-500/30 hover:shadow-emerald-500/50']">
                             <Save class="w-5 h-5 mr-2" />
                             LƯU THAY ĐỔI
                         </button>
