@@ -5,8 +5,8 @@
     <div class="absolute bottom-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 rounded-full blur-[100px] pointer-events-none"></div>
     <div class="absolute top-[20%] left-[-20%] w-[30%] h-[30%] bg-teal-300/10 rounded-full blur-[100px] pointer-events-none"></div>
 
-    <!-- Authentic Glassmorphism Main Card -->
-    <div class="w-full max-w-[28rem] bg-white/70 backdrop-blur-xl border border-white shadow-[0_8px_32px_0_rgba(31,38,135,0.05)] rounded-[2.5rem] p-12 relative z-10 mx-4 animate-slide-up">
+    <!-- Authentic Glassmorphism Main Card (Enhanced Border & Shadow for popup effect) -->
+    <div class="w-full max-w-[28rem] bg-white/95 backdrop-blur-2xl border border-slate-300 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] rounded-[2.5rem] p-12 relative z-10 mx-4 animate-slide-up">
       <!-- Header -->
       <div class="text-center mb-10">
         <!-- Softer Logo Box -->
