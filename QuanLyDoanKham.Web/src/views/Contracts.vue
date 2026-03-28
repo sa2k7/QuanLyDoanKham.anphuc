@@ -201,7 +201,7 @@
     <input type="file" ref="fileInput" class="hidden" @change="handleFileUpload" accept=".pdf,.doc,.docx,.xlsx" />
 
     <!-- Contract Detail Modal -->
-    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex flex-col items-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto scrollbar-hide py-10">
+    <div v-if="detailsModal.show" class="fixed inset-0 z-[100] flex items-start justify-center bg-slate-900/60 backdrop-blur-md p-4 overflow-y-auto scrollbar-hide py-10">
         <div class="bg-white/95 backdrop-blur-3xl w-full max-w-2xl rounded-[2.5rem] border border-slate-100 shadow-2xl animate-fade-in-up relative overflow-hidden my-auto shrink-0">
             
             <!-- Header Accent Line -->
@@ -240,26 +240,28 @@
                     </div>
                 </div>
 
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100/50 shadow-sm">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá niêm</label>
-                        <CurrencyInput v-model="detailsModal.data.unitPrice" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm" />
+                <div v-else class="space-y-4 mb-8">
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn giá niêm</label>
+                            <CurrencyInput v-model="detailsModal.data.unitPrice" class="input-premium bg-white !p-2 mt-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng / Quy mô</label>
+                            <CurrencyInput v-model="detailsModal.data.expectedQuantity" class="input-premium bg-white !p-2 mt-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày bắt đầu</label>
+                            <input type="date" v-model="detailsModal.data.startDate" class="input-premium bg-white !p-3 mt-2 w-full" />
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày kết thúc</label>
+                            <input type="date" v-model="detailsModal.data.endDate" class="input-premium bg-white !p-3 mt-2 w-full" />
+                        </div>
                     </div>
-                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100/50 shadow-sm">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Số lượng / Quy mô</label>
-                        <CurrencyInput v-model="detailsModal.data.expectedQuantity" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm" />
-                    </div>
-                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100/50 shadow-sm">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày bắt đầu</label>
-                        <input type="date" v-model="detailsModal.data.startDate" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm" />
-                    </div>
-                    <div class="bg-slate-50 p-6 rounded-[2rem] border border-slate-100/50 shadow-sm">
-                        <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày kết thúc</label>
-                        <input type="date" v-model="detailsModal.data.endDate" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm" />
-                    </div>
-                    <div class="md:col-span-2 bg-slate-50 p-6 rounded-[2rem] border border-slate-100/50 shadow-sm">
+                    <div>
                         <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Trạng thái vận hành</label>
-                        <select v-model="detailsModal.data.status" class="input-premium bg-white !p-2 mt-2 border-slate-200 focus:border-indigo-500 w-full shadow-sm cursor-pointer font-black text-xs uppercase tracking-widest">
+                        <select v-model="detailsModal.data.status" class="input-premium bg-white !p-3 mt-2 w-full cursor-pointer font-black text-xs uppercase tracking-widest">
                             <option value="Pending">{{ getStatusLabel('Pending') }}</option>
                             <option value="Approved">{{ getStatusLabel('Approved') }}</option>
                             <option value="Active">{{ getStatusLabel('Active') }}</option>
