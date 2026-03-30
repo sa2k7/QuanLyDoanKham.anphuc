@@ -42,7 +42,14 @@ Quy trình sử dụng cơ bản dành cho Quản trị viên (Admin) và Nhân 
 
 1. **Đăng nhập Hệ thống:** Truy cập vào Domain Frontend đã cấu hình. Nhập thông tin tài khoản được cấp.
 2. **Quản lý User nhân sự:** Điều hướng đến mục quản lý để thêm hồ sơ bác sĩ/nhân viên, gán vai trò tương ứng.
-3. **Phân công lịch khám:** Lên danh sách các bệnh viện/cơ sở khám tuyến dưới, chọn thời gian bắt đầu/kết thúc và gán nhân sự phù hợp từ danh sách.
+3. **Phân công lịch khám:** Lên danh sách các bệnh viện/cơ sở khám tuyến dưới, chọn thời gian bắt đầu/kết thúc
+
+## 🛡️ Giao thức Vận hành (Komi Protocol)
+
+- **Local-First:** Tất cả tính năng PHẢI được chạy và test ổn định 100% tại máy Sếp (`localhost`) trước khi nghĩ đến chuyện đẩy lên mạng.
+- **Hạn chế Vercel/ASP:** Theo lệnh Sếp, tuyệt đối KHÔNG tự ý đụng vào Vercel hay SmarterASP trừ khi Sếp ra lệnh hoặc tôi xác nhận hệ thống đã cực kỳ ổn định.
+- **Ghi nhớ lỗi:** Mọi lỗi logic phát hiện được phải được lưu vào `ERRORS.md` để "Komi" không bao giờ lặp lại lỗi cũ.
+
 4. **Theo dõi tiến độ:** Các thành viên trong đoàn có thể xem chi tiết lịch trình của mình để chuẩn bị. Admin có cái nhìn tổng quan về tất cả các đoàn khám đang diễn ra.
 
 ---

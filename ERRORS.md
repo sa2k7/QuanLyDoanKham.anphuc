@@ -15,6 +15,19 @@
 
 ---
 
+-# ERROR LOG - QuanLyDoanKham System
+## [2026-03-29 04:30] - Lỗi Vercel Crash (Mục Hợp đồng)
+
+- **Type**: Agent Execution / Logic
+- **Severity**: High (Trắng màn hình live)
+- **File**: `Contracts.vue`
+- **Root Cause**: Tên hàm gọi trong `Template` (`getStatusText`) không khớp với tên hàm định nghĩa trong `Script setup` (`getStatusLabel`). Khi chạy Prod (Vercel), JS bị crash ngay khi render.
+- **Fix Applied**: Đồng bộ toàn bộ tên hàm thành `getStatusLabel` và sửa typo `editContract` thành `openModal`.
+- **Prevention**: Luôn kiểm tra ánh xạ (mapping) giữa template và script trước khi deploy. **QUY TẮC: TUYỆT ĐỐI KHÔNG DEPLOY KHI CHƯA STABLE 100% LOCAL.**
+- **Status**: Fixed
+
+---
+
 ## [2026-03-29 01:42] - Lỗi Hành Vi: Phán đoán sai Phong cách Giao diện Hệ thống
 
 - **Type**: Agent (Hiểu sai / Misinterpretation)

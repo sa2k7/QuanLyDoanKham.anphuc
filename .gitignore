@@ -1,6 +1,8 @@
 # .gitignore for QuanLyDoanKham (Fullstack)
 
+# ======================
 # .NET (Backend)
+# ======================
 [Bb]in/
 [Oo]bj/
 .vs/
@@ -10,7 +12,13 @@
 *.userosscache
 *.sln.docstates
 
+# Publish output
+publish_backend/
+publish/
+
+# ======================
 # Node.js (Frontend)
+# ======================
 node_modules/
 dist/
 dist-ssr/
@@ -20,24 +28,46 @@ dist-ssr/
 .stylelintcache
 node_modules.zip
 
+# Test / Playwright
+playwright-report/
+test-results/
+*.spec.js.snap
+
+# ======================
 # System / OS
+# ======================
 .DS_Store
 Thumbs.db
+*.tmp
+*.temp
 
-# Project specific
+# ======================
+# AI Agent / IDE
+# ======================
 .gemini/
 .agent/
 .agents/
+.agent-mem/
+.brainsync/
+.cursor/
 *.log
+AGENT.md
+CLAUDE.md
+
+# ======================
+# Project specific
+# ======================
 wwwroot/uploads/
 *.xlsx
 *.pdf
 .env*
-! .env.example
+!.env.example
 
-AGENT.md
-CLAUDE.md
-.agent-mem/
-
-# Auto-generated agent rules (personalized per developer)
-.brainsync/agent-rules.md
+# ======================
+# File tạm / báo cáo tự sinh
+# ======================
+tmp_*.md
+tmp_*.txt
+tmp_*.csv
+bao_cao_phan_*.md
+BAO_CAO_*.csv
