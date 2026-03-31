@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 728 notes | Score threshold: >40
+> 793 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -18,36 +18,44 @@
 
 **Stack:** JavaScript/Python/TypeScript · Express + React + Tailwind + Vue · DB: SQLite
 
-## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Active: `.`
+## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **[.windsurfrules] Use template literals for string interpolation, not concatenation**
-- **[.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops**
-- **[.windsurfrules] Enable strict mode in tsconfig.json**
-- **[.windsurfrules] Use Composition API (setup) for new components**
-- **[.windsurfrules] Use computed properties for derived state**
+- **gotcha in build_errors.txt** — File updated (external): QuanLyDoanKham.API/build_errors.txt
+
+Content 
+- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
++ ��B
+- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
++ ��B
+- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
++ ��B
+- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
++ ��B
+- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
++ ��B
 
 ## Project Standards
 
-- what-changed in VERSION — confirmed 3x
-- [.windsurfrules] Use template literals for string interpolation, not concatenation
-- [.windsurfrules] Prefer Array methods (map, filter, reduce) over manual loops
-- [.windsurfrules] Enable strict mode in tsconfig.json
-- [.windsurfrules] Use Composition API (setup) for new components
-- [.windsurfrules] Use computed properties for derived state
-- [.windsurfrules] Don't use arbitrary values when a utility class exists
-- [.windsurfrules] Use responsive prefixes consistently (sm:, md:, lg:, xl:)
+- Optimized GlobalPropertiesHash — confirmed 6x
+- Added JWT tokens authentication — uses a proper password hashing algorithm — confirmed 9x
+- convention in QuanLyDoanKham.API.csproj.AssemblyReference.cache
+- convention in .gitignore
+- Replaced auth Admin — confirmed 3x
+- Updated tbody database schema — confirmed 3x
+- what-changed in BAO_CAO_KIEM_THU.csv — confirmed 6x
+- what-changed in index.html — confirmed 3x
 
 ## Known Fixes
 
+- ❌ -          Failed to load prune package data from PrunePackageData folder, loading from targeting pa → ✅ problem-fix in build_log.txt
 - ❌ {"version":8,"type":"context-options","origin":"library","browserName":"chromium","playwrightVersion → ✅ problem-fix in 9e156dadfc5dbd714a5e-41326303dd4643921436-retry1.trace
 - ❌ + {"type":"after","callId":"call@16","endTime":145700.018,"error":{"name":"Expect","message":"Expect → ✅ problem-fix in 9e156dadfc5dbd714a5e-c74fbf5bd2ac87f0a2b3-retry1.trace
 - ❌ + {"type":"after","callId":"call@22","endTime":41871.907,"error":{"name":"Expect","message":"Expect  → ✅ problem-fix in d5ed79a6b333c2ba7209-c897fa090adae5556b28-retry1.trace
 - ❌ - - `[ ]` Ghi nhật ký vào ERRORS.md và học tập kinh nghiệm → ✅ problem-fix in task.md
-- ❌ + 1.  **Lỗi Gọi hàm sai (Vercel Crash):** Trong file `Contracts.vue`, giao diện đang gọi hàm `getSta → ✅ Fixed null crash in Vercel — externalizes configuration for environment flexi...
 
 ## Recent Decisions
 
-- decision in ERRORS.md
+- decision in Program.cs
 - decision in ApplicationDbContext.cs
 - decision in Contracts.vue
 - decision in Contracts.vue

@@ -71,3 +71,6 @@ tmp_*.txt
 tmp_*.csv
 bao_cao_phan_*.md
 BAO_CAO_*.csv
+
+# Auto-generated agent rules (personalized per developer)
+.brainsync/agent-rules.md

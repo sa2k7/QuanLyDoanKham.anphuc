@@ -4,6 +4,9 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Services.Auth;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +18,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // 2. HTTP Client & AI Services
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.IGeminiService, QuanLyDoanKham.API.Services.GeminiService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+// 2.1 Rate Limiting Configuration
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("LoginPolicy", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 // 3. Controllers
 builder.Services.AddControllers()
@@ -60,8 +77,12 @@ builder.Services.AddSwaggerGen(c =>
 // 4. Cấu hình CORS (Cho phép Vue.js gọi API)
 builder.Services.AddCors(options =>
 {
+    // Tighten CORS: Thay vì AllowAnyOrigin, chỉ định đích danh nguồn gốc (CORS Allowlist)
     options.AddPolicy("AllowVueApp",
-        policy => policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+        policy => policy.WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
+                        .AllowAnyMethod()
+                        .AllowAnyHeader()
+                        .AllowCredentials());
 });
 
 // 5. Cấu hình JWT Authentication
@@ -72,7 +93,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                builder.Configuration.GetSection("AppSettings:Token").Value ?? "MySuperSecretKeyForGraduationProject2026!")),
+                builder.Configuration.GetSection("AppSettings:Token").Value ?? throw new InvalidOperationException("CRITICAL: JWT Secret key is missing."))),
             ValidateIssuer = true,
             ValidIssuer = builder.Configuration.GetSection("AppSettings:Issuer").Value ?? "QuanLyDoanKham",
             ValidateAudience = true,
@@ -97,6 +118,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseStaticFiles();
+
+// Phải đặt UseRateLimiter trước UseAuthentication
+app.UseRateLimiter(); 
+
 app.UseCors("AllowVueApp"); // Bật CORS
 app.UseAuthentication();
 app.UseAuthorization();

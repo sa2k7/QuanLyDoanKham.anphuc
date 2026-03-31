@@ -1,0 +1,3163 @@
+﻿
+         C:\Program Files\dotnet\s
+dk\10.0.103\Roslyn\bincore\csc.exe
+ /noconfig /unsafe- /checked- 
+/nowarn:1701,1702,1701,1702 
+/fullpaths /nostdlib+ 
+/errorreport:prompt /warn:10 /defi
+ne:TRACE;DEBUG;NET;NET10_0;NETCORE
+APP;NET5_0_OR_GREATER;NET6_0_OR_GR
+EATER;NET7_0_OR_GREATER;NET8_0_OR_
+GREATER;NET9_0_OR_GREATER;NET10_0_
+OR_GREATER;NETCOREAPP1_0_OR_GREATE
+R;NETCOREAPP1_1_OR_GREATER;NETCORE
+APP2_0_OR_GREATER;NETCOREAPP2_1_OR
+_GREATER;NETCOREAPP2_2_OR_GREATER;
+NETCOREAPP3_0_OR_GREATER;NETCOREAP
+P3_1_OR_GREATER /highentropyva+ 
+/nullable:disable /reference:C:\Us
+ers\SANG\.nuget\packages\azure.cor
+e\1.38.0\lib\net6.0\Azure.Core.dll
+ /reference:C:\Users\SANG\.nuget\p
+ackages\azure.identity\1.11.4\lib\
+netstandard2.0\Azure.Identity.dll 
+/reference:C:\Users\SANG\.nuget\pa
+ckages\bcrypt.net-next\4.0.3\lib\n
+et6.0\BCrypt.Net-Next.dll /referen
+ce:C:\Users\SANG\.nuget\packages\c
+losedxml\0.105.0\lib\netstandard2.
+1\ClosedXML.dll /reference:C:\User
+s\SANG\.nuget\packages\closedxml.p
+arser\2.0.0\lib\netstandard2.1\Clo
+sedXML.Parser.dll /reference:C:\Us
+ers\SANG\.nuget\packages\documentf
+ormat.openxml\3.1.1\lib\net8.0\Doc
+umentFormat.OpenXml.dll /reference
+:C:\Users\SANG\.nuget\packages\doc
+umentformat.openxml.framework\3.1.
+1\lib\net8.0\DocumentFormat.OpenXm
+l.Framework.dll /reference:C:\User
+s\SANG\.nuget\packages\excelnumber
+format\1.1.0\lib\netstandard2.0\Ex
+celNumberFormat.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Antiforgery.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.Abstractio
+ns.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Authentication.Be
+arerToken.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.Cookies.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Authentication.Core.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Authentication.dll" /r
+eference:C:\Users\SANG\.nuget\pack
+ages\microsoft.aspnetcore.authenti
+cation.jwtbearer\8.0.0\lib\net8.0\
+Microsoft.AspNetCore.Authenticatio
+n.JwtBearer.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.OAuth.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Authorization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authorization.Policy.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Components.Authorization
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Components.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Endpoints.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Components.Forms.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Server.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Connections.Abstractions.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.AspNetCore.CookiePolicy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Cors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Cryptography.Internal.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Cryptography.KeyDerivat
+ion.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.AspNetC
+ore.App.Ref\10.0.3\ref\net10.0\Mic
+rosoft.AspNetCore.DataProtection.A
+bstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.DataProtection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.DataProtection.Extensions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Diagnostics.Abstrac
+tions.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.AspNetCore.Diagnostics.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Diagnostics.HealthChec
+ks.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HostFiltering.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Hosting.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Hosting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Hosting.Server.Abstractio
+ns.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Html.Abstractions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Http.Abstractions.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\ref\net10.0\Microsof
+t.AspNetCore.Http.Connections.Comm
+on.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Http.Connections.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.AspNetCore.Http.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Features.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Results.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpLogging.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpOverrides.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpsPolicy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Identity.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Localization.Routing.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Metadata.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Abstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.ApiExplorer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Cors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.DataAnnotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Formatters.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Formatters.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Razor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.RazorPages.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.TagHelpers.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.ViewFeatures.dll" /re
+ference:C:\Users\SANG\.nuget\packa
+ges\microsoft.aspnetcore.openapi\8
+.0.0\lib\net8.0\Microsoft.AspNetCo
+re.OpenApi.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.OutputCaching.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.RateLimiting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Razor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Razor.Runtime.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.RequestDecompression.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.ResponseCaching.Abstract
+ions.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Mi
+crosoft.AspNetCore.ResponseCaching
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.ResponseCompression
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Rewrite.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Routing.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Routing.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.HttpSys.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.IIS.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.IISIntegration.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Server.Kestrel.Core.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Server.Kestrel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.Kestrel.Transport.
+NamedPipes.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.Kestrel.Transport.
+Quic.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Mi
+crosoft.AspNetCore.Server.Kestrel.
+Transport.Sockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Session.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Common.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Protocols.Json.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.StaticAssets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.StaticFiles.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.WebSockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.WebUtilities.dll" /refere
+nce:C:\Users\SANG\.nuget\packages\
+microsoft.bcl.asyncinterfaces\6.0.
+0\lib\netstandard2.1\Microsoft.Bcl
+.AsyncInterfaces.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.CShar
+p.dll" /reference:C:\Users\SANG\.n
+uget\packages\microsoft.data.sqlcl
+ient\5.1.6\ref\net6.0\Microsoft.Da
+ta.SqlClient.dll /reference:C:\Use
+rs\SANG\.nuget\packages\microsoft.
+entityframeworkcore.abstractions\8
+.0.0\lib\net8.0\Microsoft.EntityFr
+ameworkCore.Abstractions.dll /refe
+rence:C:\Users\SANG\.nuget\package
+s\microsoft.entityframeworkcore\8.
+0.0\lib\net8.0\Microsoft.EntityFra
+meworkCore.dll /reference:C:\Users
+\SANG\.nuget\packages\microsoft.en
+tityframeworkcore.relational\8.0.0
+\lib\net8.0\Microsoft.EntityFramew
+orkCore.Relational.dll /reference:
+C:\Users\SANG\.nuget\packages\micr
+osoft.entityframeworkcore.sqlserve
+r\8.0.0\lib\net8.0\Microsoft.Entit
+yFrameworkCore.SqlServer.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Caching.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.E
+xtensions.Caching.Memory.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Abstraction
+s.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.Configuration.Bind
+er.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.Extensions.Configuration.Com
+mandLine.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Environment
+Variables.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.FileExtensi
+ons.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.AspNetC
+ore.App.Ref\10.0.3\ref\net10.0\Mic
+rosoft.Extensions.Configuration.In
+i.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.Configuration.Json
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.Extensions.Configuration.KeyPe
+rFile.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.Extensions.Configuration.
+UserSecrets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.DependencyInjection.Abstr
+actions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.DependencyInjection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.Abstractions.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.Extensions.Diagnostics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.HealthChecks.
+Abstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.HealthChecks.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.Extensions.Features.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.FileProviders.Abstraction
+s.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.FileProviders.Comp
+osite.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.Extensions.FileProviders.
+Embedded.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.FileProviders.Physical.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.FileSystemGlobbing.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+Extensions.Hosting.Abstractions.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.Hosting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Http.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Identity.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Identity.Stores.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Localization.Abstractions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.Extensions.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.E
+xtensions.Logging.Configuration.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.Logging.Console.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.Debug.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.EventLog.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.EventSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.TraceSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.ObjectPool.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Options.ConfigurationExte
+nsions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Options.DataAnnotations.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\ref\net10.0\Microsof
+t.Extensions.Options.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Validation.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.WebEncoders.dll" /referen
+ce:C:\Users\SANG\.nuget\packages\m
+icrosoft.identity.client\4.61.3\li
+b\net6.0\Microsoft.Identity.Client
+.dll /reference:C:\Users\SANG\.nug
+et\packages\microsoft.identity.cli
+ent.extensions.msal\4.61.3\lib\net
+6.0\Microsoft.Identity.Client.Exte
+nsions.Msal.dll /reference:C:\User
+s\SANG\.nuget\packages\microsoft.i
+dentitymodel.abstractions\7.6.2\li
+b\net8.0\Microsoft.IdentityModel.A
+bstractions.dll /reference:C:\User
+s\SANG\.nuget\packages\microsoft.i
+dentitymodel.jsonwebtokens\7.6.2\l
+ib\net8.0\Microsoft.IdentityModel.
+JsonWebTokens.dll /reference:C:\Us
+ers\SANG\.nuget\packages\microsoft
+.identitymodel.logging\7.6.2\lib\n
+et8.0\Microsoft.IdentityModel.Logg
+ing.dll /reference:C:\Users\SANG\.
+nuget\packages\microsoft.identitym
+odel.protocols\7.0.3\lib\net8.0\Mi
+crosoft.IdentityModel.Protocols.dl
+l /reference:C:\Users\SANG\.nuget\
+packages\microsoft.identitymodel.p
+rotocols.openidconnect\7.0.3\lib\n
+et8.0\Microsoft.IdentityModel.Prot
+ocols.OpenIdConnect.dll /reference
+:C:\Users\SANG\.nuget\packages\mic
+rosoft.identitymodel.tokens\7.6.2\
+lib\net8.0\Microsoft.IdentityModel
+.Tokens.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.JS
+Interop.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ne
+t.Http.Headers.dll" /reference:C:\
+Users\SANG\.nuget\packages\microso
+ft.openapi\1.4.3\lib\netstandard2.
+0\Microsoft.OpenApi.dll /reference
+:C:\Users\SANG\.nuget\packages\mic
+rosoft.sqlserver.server\1.0.0\lib\
+netstandard2.0\Microsoft.SqlServer
+.Server.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Visua
+lBasic.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Visua
+lBasic.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Win32
+.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Win32
+.Registry.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\mscorlib.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\netstandard.dll
+" /reference:C:\Users\SANG\.nuget\
+packages\rbush.signed\4.0.0\lib\ne
+t8.0\RBush.dll /reference:C:\Users
+\SANG\.nuget\packages\sixlabors.fo
+nts\1.0.0\lib\netcoreapp3.1\SixLab
+ors.Fonts.dll /reference:C:\Users\
+SANG\.nuget\packages\swashbuckle.a
+spnetcore.swagger\6.5.0\lib\net7.0
+\Swashbuckle.AspNetCore.Swagger.dl
+l /reference:C:\Users\SANG\.nuget\
+packages\swashbuckle.aspnetcore.sw
+aggergen\6.5.0\lib\net7.0\Swashbuc
+kle.AspNetCore.SwaggerGen.dll /ref
+erence:C:\Users\SANG\.nuget\packag
+es\swashbuckle.aspnetcore.swaggeru
+i\6.5.0\lib\net7.0\Swashbuckle.Asp
+NetCore.SwaggerUI.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.AppConte
+xt.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Buffers.dll" /reference:C:\Users\S
+ANG\.nuget\packages\system.clientm
+odel\1.0.0\lib\net6.0\System.Clien
+tModel.dll /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Collections.Concurrent.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Collections.Immutable.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.NonGeneric.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.Specialized.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.Annotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.DataAnnotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.EventBasedAsync.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.TypeConverter.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Configur
+ation.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Console.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Core.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Data.C
+ommon.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Data.DataSetExtensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Data.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Diagno
+stics.Contracts.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Debug.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.DiagnosticSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\System.Diagn
+ostics.EventLog.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.FileVersionInfo.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Process.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.StackTrace.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.TextWriterTraceListener.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Tools.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.TraceSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Tracing.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Drawing.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Dra
+wing.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Dynamic.
+Runtime.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Formats.
+Asn1.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Sy
+stem.Formats.Cbor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Formats.
+Tar.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Globalization.Calendars.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Globaliz
+ation.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Globalization.Extensions.dll" /
+reference:C:\Users\SANG\.nuget\pac
+kages\system.identitymodel.tokens.
+jwt\7.6.2\lib\net8.0\System.Identi
+tyModel.Tokens.Jwt.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.Brotli.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.FileSystem.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.ZipFile.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.IO.FileSystem.DriveInfo.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.Watcher.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Isola
+tedStorage.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Memor
+yMappedFiles.dll" /reference:C:\Us
+ers\SANG\.nuget\packages\system.io
+.packaging\8.0.1\lib\net8.0\System
+.IO.Packaging.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Pipel
+ines.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.IO.Pipes.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Pipes
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.IO
+.UnmanagedMemoryStream.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.Asy
+ncEnumerable.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Linq.E
+xpressions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.Par
+allel.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Linq.Queryable.dll" /reference:
+C:\Users\SANG\.nuget\packages\syst
+em.memory.data\1.0.2\lib\netstanda
+rd2.0\System.Memory.Data.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Memory.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.NETCore.App.
+Ref\10.0.3\ref\net10.0\System.Net.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Net
+.Http.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Net.Http.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Http
+Listener.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Mail
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.NameResolution.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Netw
+orkInformation.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Ping
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Quic
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.Requests.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Secu
+rity.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Net.ServerSentEvents.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Serv
+icePoint.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Sock
+ets.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Net.WebClient.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebH
+eaderCollection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebP
+roxy.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Net.WebSockets.Client.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebS
+ockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Numerics
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Nu
+merics.Vectors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ObjectMo
+del.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Reflection.DispatchProxy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Reflection.Emit.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Emit.ILGeneration.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Emit.Lightweight.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Metadata.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.TypeExtensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.Reader.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.ResourceManager.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.Writer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+CompilerServices.Unsafe.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+CompilerServices.VisualC.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Run
+time.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Handles.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.JavaScript.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.RuntimeInformation
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ru
+ntime.Intrinsics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Loader.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Numerics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Formatters.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Claims.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Algorithms.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Cng.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Csp.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Encoding.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.OpenSsl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Primitives.dll" /ref
+erence:C:\Users\SANG\.nuget\packag
+es\system.security.cryptography.pr
+otecteddata\6.0.0\lib\net6.0\Syste
+m.Security.Cryptography.ProtectedD
+ata.dll /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Security.Cryptography.X509Certific
+ates.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Sy
+stem.Security.Cryptography.Xml.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Securi
+ty.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Security.Principal.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Principal.Windows.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.SecureString.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ServiceM
+odel.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ServiceP
+rocess.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+oding.CodePages.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+oding.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Text.Encoding.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+odings.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Jso
+n.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.T
+ext.RegularExpressions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Channels.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.T
+hreading.Overlapped.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\System.Threa
+ding.RateLimiting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Dataflow.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Parallel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Thread.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.ThreadPool.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Timer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Transact
+ions.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Transactions.Local.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ValueTup
+le.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Web.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Web.HttpUtility.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Windows.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Xml
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Xm
+l.Linq.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.Read
+erWriter.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.Seri
+alization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XDoc
+ument.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Xml.XmlDocument.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XmlS
+erializer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XPat
+h.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.X
+ml.XPath.XDocument.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\WindowsBase.dll
+" /features:"InterceptorsNamespace
+s=;Microsoft.Extensions.Validation
+.Generated" /debug+ 
+/debug:portable /filealign:512 
+/optimize- /out:obj\Debug\net10.0\
+QuanLyDoanKham.API.dll /refout:obj
+\Debug\net10.0\refint\QuanLyDoanKh
+am.API.dll /target:exe 
+/warnaserror- /utf8output 
+/deterministic+ /sourcelink:obj\De
+bug\net10.0\QuanLyDoanKham.API.sou
+rcelink.json /langversion:14.0 /fe
+atures:use-roslyn-tokenizer=true /
+embed:obj\Debug\net10.0\QuanLyDoan
+Kham.API.GlobalUsings.g.cs /embed:
+"obj\Debug\net10.0\.NETCoreApp,Ver
+sion=v10.0.AssemblyAttributes.cs" 
+/embed:obj\Debug\net10.0\QuanLyDoa
+nKham.API.AssemblyInfo.cs /embed:o
+bj\Debug\net10.0\QuanLyDoanKham.AP
+I.MvcApplicationPartsAssemblyInfo.
+cs /analyzerconfig:obj\Debug\net10
+.0\QuanLyDoanKham.API.GeneratedMSB
+uildEditorConfig.editorconfig 
+/analyzerconfig:"C:\Program Files\
+dotnet\sdk\10.0.103\Sdks\Microsoft
+.NET.Sdk\analyzers\build\config\an
+alysislevel_10_default.globalconfi
+g" /analyzer:"C:\Program Files\dot
+net\sdk\10.0.103\Sdks\Microsoft.NE
+T.Sdk.Web\analyzers\cs\Microsoft.A
+spNetCore.Analyzers.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Web\analyzers\cs\Microsoft.AspN
+etCore.Mvc.Analyzers.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk\targets\..\analyzers\Microsoft.
+CodeAnalysis.CSharp.NetAnalyzers.d
+ll" /analyzer:"C:\Program Files\do
+tnet\sdk\10.0.103\Sdks\Microsoft.N
+ET.Sdk\targets\..\analyzers\Micros
+oft.CodeAnalysis.NetAnalyzers.dll"
+ /analyzer:C:\Users\SANG\.nuget\pa
+ckages\microsoft.codeanalysis.anal
+yzers\3.3.3\analyzers\dotnet\cs\Mi
+crosoft.CodeAnalysis.Analyzers.dll
+ /analyzer:C:\Users\SANG\.nuget\pa
+ckages\microsoft.codeanalysis.anal
+yzers\3.3.3\analyzers\dotnet\cs\Mi
+crosoft.CodeAnalysis.CSharp.Analyz
+ers.dll /analyzer:C:\Users\SANG\.n
+uget\packages\microsoft.entityfram
+eworkcore.analyzers\8.0.0\analyzer
+s\dotnet\cs\Microsoft.EntityFramew
+orkCore.Analyzers.dll 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/Microsof
+t.Interop.ComInterfaceGenerator.dl
+l" /analyzer:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.Interop.JavaScript.JSImportGe
+nerator.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/Microsof
+t.Interop.LibraryImportGenerator.d
+ll" /analyzer:"C:\Program Files\do
+tnet\packs\Microsoft.NETCore.App.R
+ef\10.0.3\analyzers/dotnet/cs/Micr
+osoft.Interop.SourceGeneration.dll
+" /analyzer:"C:\Program Files\dotn
+et\packs\Microsoft.NETCore.App.Ref
+\10.0.3\analyzers/dotnet/cs/System
+.Text.Json.SourceGeneration.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/System.T
+ext.RegularExpressions.Generator.d
+ll" /analyzer:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\analyzers/dotnet/cs/M
+icrosoft.AspNetCore.App.Analyzers.
+dll" /analyzer:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\analyzers/dotnet/cs/
+Microsoft.AspNetCore.App.CodeFixes
+.dll" /analyzer:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\analyzers/dotnet/cs
+/Microsoft.AspNetCore.App.SourceGe
+nerators.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.AspNetCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.AspNetCore.Components.Analyze
+rs.dll" /analyzer:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\analyzers/dotnet/
+cs/Microsoft.Extensions.Validation
+.ValidationsGenerator.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.AspNetCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.Extensions.Logging.Generators
+.dll" /analyzer:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\analyzers/dotnet/cs
+/Microsoft.Extensions.Options.Sour
+ceGeneration.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.AspNetCore.Razor.Uti
+lities.Shared.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.CodeAnalysis.Razor.C
+ompiler.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.Extensions.ObjectPoo
+l.dll" 
+Controllers\AuthController.cs Cont
+rollers\CompaniesController.cs Con
+trollers\HealthContractsController
+.cs Controllers\MedicalGroupsContr
+oller.cs Controllers\Notifications
+Controller.cs 
+Controllers\PayrollController.cs 
+Controllers\StaffsController.cs 
+Controllers\SuppliesController.cs 
+Data\ApplicationDbContext.cs 
+DTOs\AuthDtos.cs 
+DTOs\DetailDtos.cs 
+DTOs\MasterDataDtos.cs 
+DTOs\PayrollDtos.cs 
+Helpers\EmailHelper.cs 
+Helpers\StringHelper.cs Migrations
+\20260126184210_InitialCreate.cs M
+igrations\20260126184210_InitialCr
+eate.Designer.cs Migrations\202601
+26185230_AddAdminSeed.cs Migration
+s\20260126185230_AddAdminSeed.Desi
+gner.cs Migrations\20260211152255_
+UpdateStaffFields.cs Migrations\20
+260211152255_UpdateStaffFields.Des
+igner.cs Migrations\20260211154912
+_AddRefreshTokenToUser.cs Migratio
+ns\20260211154912_AddRefreshTokenT
+oUser.Designer.cs Migrations\20260
+211155038_AddPatientAndExamResult.
+cs Migrations\20260211155038_AddPa
+tientAndExamResult.Designer.cs Mig
+rations\20260211155318_AddPayrollA
+ndAuditLog.cs Migrations\202602111
+55318_AddPayrollAndAuditLog.Design
+er.cs Migrations\20260223145939_Ad
+dAvatarPathToUserAndStaff.cs Migra
+tions\20260223145939_AddAvatarPath
+ToUserAndStaff.Designer.cs Migrati
+ons\20260302012838_AddIsFinishedTo
+MedicalGroup.cs Migrations\2026030
+2012838_AddIsFinishedToMedicalGrou
+p.Designer.cs Migrations\202603030
+22001_AddPasswordResetRequest.cs M
+igrations\20260303022001_AddPasswo
+rdResetRequest.Designer.cs Migrati
+ons\20260306163510_UpdateSchemaV2.
+cs Migrations\20260306163510_Updat
+eSchemaV2.Designer.cs Migrations\2
+0260306164806_UpdateStaffPositionS
+tatus.cs Migrations\20260306164806
+_UpdateStaffPositionStatus.Designe
+r.cs Migrations\20260310132453_Add
+StaffTypeCheckInSupplyExpiry.cs Mi
+grations\20260310132453_AddStaffTy
+peCheckInSupplyExpiry.Designer.cs 
+Migrations\20260312014428_AddEmail
+ToStaff.cs Migrations\202603120144
+28_AddEmailToStaff.Designer.cs Mig
+rations\20260312024036_AddNotifica
+tionsTable.cs Migrations\202603120
+24036_AddNotificationsTable.Design
+er.cs Migrations\20260318143739_Ad
+dShortNameAndContractHistory.cs Mi
+grations\20260318143739_AddShortNa
+meAndContractHistory.Designer.cs M
+igrations\20260318151545_AddEmailT
+oAppUser.cs Migrations\20260318151
+545_AddEmailToAppUser.Designer.cs 
+Migrations\ApplicationDbContextMod
+elSnapshot.cs Models\Entities.cs 
+Program.cs 
+Services\Auth\AuthService.cs 
+Services\Auth\IAuthService.cs 
+Services\GeminiService.cs obj\Debu
+g\net10.0\QuanLyDoanKham.API.Globa
+lUsings.g.cs "obj\Debug\net10.0\.N
+ETCoreApp,Version=v10.0.AssemblyAt
+tributes.cs" obj\Debug\net10.0\Qua
+nLyDoanKham.API.AssemblyInfo.cs ob
+j\Debug\net10.0\QuanLyDoanKham.API
+.MvcApplicationPartsAssemblyInfo.c
+s /warnaserror+:NU1605,SYSLIB0011
+         BuildResponseFile = 
+'/unsafe- /checked- 
+/nowarn:1701,1702,1701,1702 
+/fullpaths /nostdlib+ 
+/errorreport:prompt /warn:10 /defi
+ne:TRACE;DEBUG;NET;NET10_0;NETCORE
+APP;NET5_0_OR_GREATER;NET6_0_OR_GR
+EATER;NET7_0_OR_GREATER;NET8_0_OR_
+GREATER;NET9_0_OR_GREATER;NET10_0_
+OR_GREATER;NETCOREAPP1_0_OR_GREATE
+R;NETCOREAPP1_1_OR_GREATER;NETCORE
+APP2_0_OR_GREATER;NETCOREAPP2_1_OR
+_GREATER;NETCOREAPP2_2_OR_GREATER;
+NETCOREAPP3_0_OR_GREATER;NETCOREAP
+P3_1_OR_GREATER /highentropyva+ 
+/nullable:disable /reference:C:\Us
+ers\SANG\.nuget\packages\azure.cor
+e\1.38.0\lib\net6.0\Azure.Core.dll
+ /reference:C:\Users\SANG\.nuget\p
+ackages\azure.identity\1.11.4\lib\
+netstandard2.0\Azure.Identity.dll 
+/reference:C:\Users\SANG\.nuget\pa
+ckages\bcrypt.net-next\4.0.3\lib\n
+et6.0\BCrypt.Net-Next.dll /referen
+ce:C:\Users\SANG\.nuget\packages\c
+losedxml\0.105.0\lib\netstandard2.
+1\ClosedXML.dll /reference:C:\User
+s\SANG\.nuget\packages\closedxml.p
+arser\2.0.0\lib\netstandard2.1\Clo
+sedXML.Parser.dll /reference:C:\Us
+ers\SANG\.nuget\packages\documentf
+ormat.openxml\3.1.1\lib\net8.0\Doc
+umentFormat.OpenXml.dll /reference
+:C:\Users\SANG\.nuget\packages\doc
+umentformat.openxml.framework\3.1.
+1\lib\net8.0\DocumentFormat.OpenXm
+l.Framework.dll /reference:C:\User
+s\SANG\.nuget\packages\excelnumber
+format\1.1.0\lib\netstandard2.0\Ex
+celNumberFormat.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Antiforgery.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.Abstractio
+ns.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Authentication.Be
+arerToken.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.Cookies.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Authentication.Core.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Authentication.dll" /r
+eference:C:\Users\SANG\.nuget\pack
+ages\microsoft.aspnetcore.authenti
+cation.jwtbearer\8.0.0\lib\net8.0\
+Microsoft.AspNetCore.Authenticatio
+n.JwtBearer.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authentication.OAuth.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Authorization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Authorization.Policy.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Components.Authorization
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Components.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Endpoints.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Components.Forms.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Server.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Components.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Connections.Abstractions.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.AspNetCore.CookiePolicy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Cors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Cryptography.Internal.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Cryptography.KeyDerivat
+ion.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.AspNetC
+ore.App.Ref\10.0.3\ref\net10.0\Mic
+rosoft.AspNetCore.DataProtection.A
+bstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.DataProtection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.DataProtection.Extensions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Diagnostics.Abstrac
+tions.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.AspNetCore.Diagnostics.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.Diagnostics.HealthChec
+ks.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HostFiltering.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Hosting.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Hosting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Hosting.Server.Abstractio
+ns.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Html.Abstractions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Http.Abstractions.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\ref\net10.0\Microsof
+t.AspNetCore.Http.Connections.Comm
+on.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.AspNetCore.Http.Connections.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.AspNetCore.Http.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Features.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Http.Results.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpLogging.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpOverrides.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.HttpsPolicy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Identity.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Localization.Routing.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Metadata.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Abstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.ApiExplorer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Cors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.DataAnnotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Formatters.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Formatters.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.Razor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.RazorPages.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.TagHelpers.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Mvc.ViewFeatures.dll" /re
+ference:C:\Users\SANG\.nuget\packa
+ges\microsoft.aspnetcore.openapi\8
+.0.0\lib\net8.0\Microsoft.AspNetCo
+re.OpenApi.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.OutputCaching.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.RateLimiting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Razor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Razor.Runtime.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.RequestDecompression.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.ResponseCaching.Abstract
+ions.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Mi
+crosoft.AspNetCore.ResponseCaching
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.ResponseCompression
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.AspNetCore.Rewrite.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Routing.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.A
+spNetCore.Routing.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.HttpSys.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.IIS.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.IISIntegration.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Server.Kestrel.Core.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+AspNetCore.Server.Kestrel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.Kestrel.Transport.
+NamedPipes.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Server.Kestrel.Transport.
+Quic.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Mi
+crosoft.AspNetCore.Server.Kestrel.
+Transport.Sockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.Session.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Common.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.SignalR.Protocols.Json.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.AspNetCore.StaticAssets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.StaticFiles.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.WebSockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.As
+pNetCore.WebUtilities.dll" /refere
+nce:C:\Users\SANG\.nuget\packages\
+microsoft.bcl.asyncinterfaces\6.0.
+0\lib\netstandard2.1\Microsoft.Bcl
+.AsyncInterfaces.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.CShar
+p.dll" /reference:C:\Users\SANG\.n
+uget\packages\microsoft.data.sqlcl
+ient\5.1.6\ref\net6.0\Microsoft.Da
+ta.SqlClient.dll /reference:C:\Use
+rs\SANG\.nuget\packages\microsoft.
+entityframeworkcore.abstractions\8
+.0.0\lib\net8.0\Microsoft.EntityFr
+ameworkCore.Abstractions.dll /refe
+rence:C:\Users\SANG\.nuget\package
+s\microsoft.entityframeworkcore\8.
+0.0\lib\net8.0\Microsoft.EntityFra
+meworkCore.dll /reference:C:\Users
+\SANG\.nuget\packages\microsoft.en
+tityframeworkcore.relational\8.0.0
+\lib\net8.0\Microsoft.EntityFramew
+orkCore.Relational.dll /reference:
+C:\Users\SANG\.nuget\packages\micr
+osoft.entityframeworkcore.sqlserve
+r\8.0.0\lib\net8.0\Microsoft.Entit
+yFrameworkCore.SqlServer.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Caching.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.E
+xtensions.Caching.Memory.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Abstraction
+s.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.Configuration.Bind
+er.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.AspNetCo
+re.App.Ref\10.0.3\ref\net10.0\Micr
+osoft.Extensions.Configuration.Com
+mandLine.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Environment
+Variables.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.FileExtensi
+ons.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.AspNetC
+ore.App.Ref\10.0.3\ref\net10.0\Mic
+rosoft.Extensions.Configuration.In
+i.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.Configuration.Json
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.Extensions.Configuration.KeyPe
+rFile.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.Extensions.Configuration.
+UserSecrets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Configuration.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.DependencyInjection.Abstr
+actions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.DependencyInjection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.Abstractions.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.Extensions.Diagnostics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.HealthChecks.
+Abstractions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Diagnostics.HealthChecks.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\ref\net10.0\Microso
+ft.Extensions.Features.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.FileProviders.Abstraction
+s.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\ref\net10.0\Micro
+soft.Extensions.FileProviders.Comp
+osite.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.AspNe
+tCore.App.Ref\10.0.3\ref\net10.0\M
+icrosoft.Extensions.FileProviders.
+Embedded.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.FileProviders.Physical.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.FileSystemGlobbing.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.AspNetCore.App
+.Ref\10.0.3\ref\net10.0\Microsoft.
+Extensions.Hosting.Abstractions.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.Hosting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Http.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Identity.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Identity.Stores.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Localization.Abstractions
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.AspNetCore
+.App.Ref\10.0.3\ref\net10.0\Micros
+oft.Extensions.Localization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.Abstractions.dll"
+ /reference:"C:\Program Files\dotn
+et\packs\Microsoft.AspNetCore.App.
+Ref\10.0.3\ref\net10.0\Microsoft.E
+xtensions.Logging.Configuration.dl
+l" /reference:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\ref\net10.0\Microsoft
+.Extensions.Logging.Console.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.Debug.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.EventLog.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.EventSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Logging.TraceSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.ObjectPool.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Options.ConfigurationExte
+nsions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Options.DataAnnotations.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\ref\net10.0\Microsof
+t.Extensions.Options.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.Validation.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ex
+tensions.WebEncoders.dll" /referen
+ce:C:\Users\SANG\.nuget\packages\m
+icrosoft.identity.client\4.61.3\li
+b\net6.0\Microsoft.Identity.Client
+.dll /reference:C:\Users\SANG\.nug
+et\packages\microsoft.identity.cli
+ent.extensions.msal\4.61.3\lib\net
+6.0\Microsoft.Identity.Client.Exte
+nsions.Msal.dll /reference:C:\User
+s\SANG\.nuget\packages\microsoft.i
+dentitymodel.abstractions\7.6.2\li
+b\net8.0\Microsoft.IdentityModel.A
+bstractions.dll /reference:C:\User
+s\SANG\.nuget\packages\microsoft.i
+dentitymodel.jsonwebtokens\7.6.2\l
+ib\net8.0\Microsoft.IdentityModel.
+JsonWebTokens.dll /reference:C:\Us
+ers\SANG\.nuget\packages\microsoft
+.identitymodel.logging\7.6.2\lib\n
+et8.0\Microsoft.IdentityModel.Logg
+ing.dll /reference:C:\Users\SANG\.
+nuget\packages\microsoft.identitym
+odel.protocols\7.0.3\lib\net8.0\Mi
+crosoft.IdentityModel.Protocols.dl
+l /reference:C:\Users\SANG\.nuget\
+packages\microsoft.identitymodel.p
+rotocols.openidconnect\7.0.3\lib\n
+et8.0\Microsoft.IdentityModel.Prot
+ocols.OpenIdConnect.dll /reference
+:C:\Users\SANG\.nuget\packages\mic
+rosoft.identitymodel.tokens\7.6.2\
+lib\net8.0\Microsoft.IdentityModel
+.Tokens.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.JS
+Interop.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\Microsoft.Ne
+t.Http.Headers.dll" /reference:C:\
+Users\SANG\.nuget\packages\microso
+ft.openapi\1.4.3\lib\netstandard2.
+0\Microsoft.OpenApi.dll /reference
+:C:\Users\SANG\.nuget\packages\mic
+rosoft.sqlserver.server\1.0.0\lib\
+netstandard2.0\Microsoft.SqlServer
+.Server.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Visua
+lBasic.Core.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Visua
+lBasic.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Win32
+.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\Microsoft.Win32
+.Registry.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\mscorlib.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\netstandard.dll
+" /reference:C:\Users\SANG\.nuget\
+packages\rbush.signed\4.0.0\lib\ne
+t8.0\RBush.dll /reference:C:\Users
+\SANG\.nuget\packages\sixlabors.fo
+nts\1.0.0\lib\netcoreapp3.1\SixLab
+ors.Fonts.dll /reference:C:\Users\
+SANG\.nuget\packages\swashbuckle.a
+spnetcore.swagger\6.5.0\lib\net7.0
+\Swashbuckle.AspNetCore.Swagger.dl
+l /reference:C:\Users\SANG\.nuget\
+packages\swashbuckle.aspnetcore.sw
+aggergen\6.5.0\lib\net7.0\Swashbuc
+kle.AspNetCore.SwaggerGen.dll /ref
+erence:C:\Users\SANG\.nuget\packag
+es\swashbuckle.aspnetcore.swaggeru
+i\6.5.0\lib\net7.0\Swashbuckle.Asp
+NetCore.SwaggerUI.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.AppConte
+xt.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Buffers.dll" /reference:C:\Users\S
+ANG\.nuget\packages\system.clientm
+odel\1.0.0\lib\net6.0\System.Clien
+tModel.dll /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Collections.Concurrent.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Collections.Immutable.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.NonGeneric.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Collecti
+ons.Specialized.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.Annotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.DataAnnotations.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.EventBasedAsync.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Componen
+tModel.TypeConverter.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Configur
+ation.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Console.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Core.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Data.C
+ommon.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Data.DataSetExtensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Data.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Diagno
+stics.Contracts.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Debug.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.DiagnosticSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\System.Diagn
+ostics.EventLog.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.FileVersionInfo.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Process.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.StackTrace.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.TextWriterTraceListener.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Tools.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.TraceSource.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Diagnost
+ics.Tracing.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Drawing.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Dra
+wing.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Dynamic.
+Runtime.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Formats.
+Asn1.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Sy
+stem.Formats.Cbor.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Formats.
+Tar.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Globalization.Calendars.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Globaliz
+ation.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Globalization.Extensions.dll" /
+reference:C:\Users\SANG\.nuget\pac
+kages\system.identitymodel.tokens.
+jwt\7.6.2\lib\net8.0\System.Identi
+tyModel.Tokens.Jwt.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.Brotli.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.FileSystem.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Compr
+ession.ZipFile.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.IO.FileSystem.DriveInfo.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.FileS
+ystem.Watcher.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Isola
+tedStorage.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Memor
+yMappedFiles.dll" /reference:C:\Us
+ers\SANG\.nuget\packages\system.io
+.packaging\8.0.1\lib\net8.0\System
+.IO.Packaging.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Pipel
+ines.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.IO.Pipes.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.IO.Pipes
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.IO
+.UnmanagedMemoryStream.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.Asy
+ncEnumerable.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Linq.E
+xpressions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Linq.Par
+allel.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Linq.Queryable.dll" /reference:
+C:\Users\SANG\.nuget\packages\syst
+em.memory.data\1.0.2\lib\netstanda
+rd2.0\System.Memory.Data.dll 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Memory.d
+ll" /reference:"C:\Program Files\d
+otnet\packs\Microsoft.NETCore.App.
+Ref\10.0.3\ref\net10.0\System.Net.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Net
+.Http.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Net.Http.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Http
+Listener.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Mail
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.NameResolution.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Netw
+orkInformation.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Ping
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Quic
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ne
+t.Requests.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Secu
+rity.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Net.ServerSentEvents.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Serv
+icePoint.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.Sock
+ets.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Net.WebClient.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebH
+eaderCollection.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebP
+roxy.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Net.WebSockets.Client.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Net.WebS
+ockets.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Numerics
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Nu
+merics.Vectors.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ObjectMo
+del.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Reflection.DispatchProxy.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Reflection.Emit.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Emit.ILGeneration.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Emit.Lightweight.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Metadata.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Reflecti
+on.TypeExtensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.Reader.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.ResourceManager.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Resource
+s.Writer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+CompilerServices.Unsafe.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+CompilerServices.VisualC.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Run
+time.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Handles.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.JavaScript.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+InteropServices.RuntimeInformation
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Ru
+ntime.Intrinsics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Loader.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Numerics.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Formatters.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Json.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Primitives.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Runtime.
+Serialization.Xml.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Claims.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Algorithms.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Cng.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Csp.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Encoding.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.OpenSsl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Cryptography.Primitives.dll" /ref
+erence:C:\Users\SANG\.nuget\packag
+es\system.security.cryptography.pr
+otecteddata\6.0.0\lib\net6.0\Syste
+m.Security.Cryptography.ProtectedD
+ata.dll /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Security.Cryptography.X509Certific
+ates.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.AspNet
+Core.App.Ref\10.0.3\ref\net10.0\Sy
+stem.Security.Cryptography.Xml.dll
+" /reference:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\ref\net10.0\System.Securi
+ty.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Security.Principal.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.Principal.Windows.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Security
+.SecureString.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ServiceM
+odel.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ServiceP
+rocess.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+oding.CodePages.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+oding.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Text.Encoding.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Enc
+odings.Web.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Text.Jso
+n.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.T
+ext.RegularExpressions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.AccessControl.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Channels.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.T
+hreading.Overlapped.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.AspNetCore.App.R
+ef\10.0.3\ref\net10.0\System.Threa
+ding.RateLimiting.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Dataflow.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Extensions.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Tasks.Parallel.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Thread.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.ThreadPool.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Threadin
+g.Timer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Transact
+ions.dll" /reference:"C:\Program F
+iles\dotnet\packs\Microsoft.NETCor
+e.App.Ref\10.0.3\ref\net10.0\Syste
+m.Transactions.Local.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.ValueTup
+le.dll" /reference:"C:\Program Fil
+es\dotnet\packs\Microsoft.NETCore.
+App.Ref\10.0.3\ref\net10.0\System.
+Web.dll" /reference:"C:\Program Fi
+les\dotnet\packs\Microsoft.NETCore
+.App.Ref\10.0.3\ref\net10.0\System
+.Web.HttpUtility.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Windows.
+dll" /reference:"C:\Program Files\
+dotnet\packs\Microsoft.NETCore.App
+.Ref\10.0.3\ref\net10.0\System.Xml
+.dll" /reference:"C:\Program Files
+\dotnet\packs\Microsoft.NETCore.Ap
+p.Ref\10.0.3\ref\net10.0\System.Xm
+l.Linq.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.Read
+erWriter.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.Seri
+alization.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XDoc
+ument.dll" /reference:"C:\Program 
+Files\dotnet\packs\Microsoft.NETCo
+re.App.Ref\10.0.3\ref\net10.0\Syst
+em.Xml.XmlDocument.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XmlS
+erializer.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\System.Xml.XPat
+h.dll" /reference:"C:\Program File
+s\dotnet\packs\Microsoft.NETCore.A
+pp.Ref\10.0.3\ref\net10.0\System.X
+ml.XPath.XDocument.dll" 
+/reference:"C:\Program Files\dotne
+t\packs\Microsoft.NETCore.App.Ref\
+10.0.3\ref\net10.0\WindowsBase.dll
+" /features:"InterceptorsNamespace
+s=;Microsoft.Extensions.Validation
+.Generated" /debug+ 
+/debug:portable /filealign:512 
+/optimize- /out:obj\Debug\net10.0\
+QuanLyDoanKham.API.dll /refout:obj
+\Debug\net10.0\refint\QuanLyDoanKh
+am.API.dll /target:exe 
+/warnaserror- /utf8output 
+/deterministic+ /sourcelink:obj\De
+bug\net10.0\QuanLyDoanKham.API.sou
+rcelink.json /langversion:14.0 /fe
+atures:use-roslyn-tokenizer=true /
+embed:obj\Debug\net10.0\QuanLyDoan
+Kham.API.GlobalUsings.g.cs /embed:
+"obj\Debug\net10.0\.NETCoreApp,Ver
+sion=v10.0.AssemblyAttributes.cs" 
+/embed:obj\Debug\net10.0\QuanLyDoa
+nKham.API.AssemblyInfo.cs /embed:o
+bj\Debug\net10.0\QuanLyDoanKham.AP
+I.MvcApplicationPartsAssemblyInfo.
+cs /analyzerconfig:obj\Debug\net10
+.0\QuanLyDoanKham.API.GeneratedMSB
+uildEditorConfig.editorconfig 
+/analyzerconfig:"C:\Program Files\
+dotnet\sdk\10.0.103\Sdks\Microsoft
+.NET.Sdk\analyzers\build\config\an
+alysislevel_10_default.globalconfi
+g" /analyzer:"C:\Program Files\dot
+net\sdk\10.0.103\Sdks\Microsoft.NE
+T.Sdk.Web\analyzers\cs\Microsoft.A
+spNetCore.Analyzers.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Web\analyzers\cs\Microsoft.AspN
+etCore.Mvc.Analyzers.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk\targets\..\analyzers\Microsoft.
+CodeAnalysis.CSharp.NetAnalyzers.d
+ll" /analyzer:"C:\Program Files\do
+tnet\sdk\10.0.103\Sdks\Microsoft.N
+ET.Sdk\targets\..\analyzers\Micros
+oft.CodeAnalysis.NetAnalyzers.dll"
+ /analyzer:C:\Users\SANG\.nuget\pa
+ckages\microsoft.codeanalysis.anal
+yzers\3.3.3\analyzers\dotnet\cs\Mi
+crosoft.CodeAnalysis.Analyzers.dll
+ /analyzer:C:\Users\SANG\.nuget\pa
+ckages\microsoft.codeanalysis.anal
+yzers\3.3.3\analyzers\dotnet\cs\Mi
+crosoft.CodeAnalysis.CSharp.Analyz
+ers.dll /analyzer:C:\Users\SANG\.n
+uget\packages\microsoft.entityfram
+eworkcore.analyzers\8.0.0\analyzer
+s\dotnet\cs\Microsoft.EntityFramew
+orkCore.Analyzers.dll 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/Microsof
+t.Interop.ComInterfaceGenerator.dl
+l" /analyzer:"C:\Program Files\dot
+net\packs\Microsoft.NETCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.Interop.JavaScript.JSImportGe
+nerator.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/Microsof
+t.Interop.LibraryImportGenerator.d
+ll" /analyzer:"C:\Program Files\do
+tnet\packs\Microsoft.NETCore.App.R
+ef\10.0.3\analyzers/dotnet/cs/Micr
+osoft.Interop.SourceGeneration.dll
+" /analyzer:"C:\Program Files\dotn
+et\packs\Microsoft.NETCore.App.Ref
+\10.0.3\analyzers/dotnet/cs/System
+.Text.Json.SourceGeneration.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.NETCore.App.Ref\1
+0.0.3\analyzers/dotnet/cs/System.T
+ext.RegularExpressions.Generator.d
+ll" /analyzer:"C:\Program Files\do
+tnet\packs\Microsoft.AspNetCore.Ap
+p.Ref\10.0.3\analyzers/dotnet/cs/M
+icrosoft.AspNetCore.App.Analyzers.
+dll" /analyzer:"C:\Program Files\d
+otnet\packs\Microsoft.AspNetCore.A
+pp.Ref\10.0.3\analyzers/dotnet/cs/
+Microsoft.AspNetCore.App.CodeFixes
+.dll" /analyzer:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\analyzers/dotnet/cs
+/Microsoft.AspNetCore.App.SourceGe
+nerators.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.AspNetCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.AspNetCore.Components.Analyze
+rs.dll" /analyzer:"C:\Program File
+s\dotnet\packs\Microsoft.AspNetCor
+e.App.Ref\10.0.3\analyzers/dotnet/
+cs/Microsoft.Extensions.Validation
+.ValidationsGenerator.dll" 
+/analyzer:"C:\Program Files\dotnet
+\packs\Microsoft.AspNetCore.App.Re
+f\10.0.3\analyzers/dotnet/cs/Micro
+soft.Extensions.Logging.Generators
+.dll" /analyzer:"C:\Program Files\
+dotnet\packs\Microsoft.AspNetCore.
+App.Ref\10.0.3\analyzers/dotnet/cs
+/Microsoft.Extensions.Options.Sour
+ceGeneration.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.AspNetCore.Razor.Uti
+lities.Shared.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.CodeAnalysis.Razor.C
+ompiler.dll" 
+/analyzer:"C:\Program Files\dotnet
+\sdk\10.0.103\Sdks\Microsoft.NET.S
+dk.Razor\targets\..\source-generat
+ors\Microsoft.Extensions.ObjectPoo
+l.dll" 
+Controllers\AuthController.cs Cont
+rollers\CompaniesController.cs Con
+trollers\HealthContractsController
+.cs Controllers\MedicalGroupsContr
+oller.cs Controllers\Notifications
+Controller.cs 
+Controllers\PayrollController.cs 
+Controllers\StaffsController.cs 
+Controllers\SuppliesController.cs 
+Data\ApplicationDbContext.cs 
+DTOs\AuthDtos.cs 
+DTOs\DetailDtos.cs 
+DTOs\MasterDataDtos.cs 
+DTOs\PayrollDtos.cs 
+Helpers\EmailHelper.cs 
+Helpers\StringHelper.cs Migrations
+\20260126184210_InitialCreate.cs M
+igrations\20260126184210_InitialCr
+eate.Designer.cs Migrations\202601
+26185230_AddAdminSeed.cs Migration
+s\20260126185230_AddAdminSeed.Desi
+gner.cs Migrations\20260211152255_
+UpdateStaffFields.cs Migrations\20
+260211152255_UpdateStaffFields.Des
+igner.cs Migrations\20260211154912
+_AddRefreshTokenToUser.cs Migratio
+ns\20260211154912_AddRefreshTokenT
+oUser.Designer.cs Migrations\20260
+211155038_AddPatientAndExamResult.
+cs Migrations\20260211155038_AddPa
+tientAndExamResult.Designer.cs Mig
+rations\20260211155318_AddPayrollA
+ndAuditLog.cs Migrations\202602111
+55318_AddPayrollAndAuditLog.Design
+er.cs Migrations\20260223145939_Ad
+dAvatarPathToUserAndStaff.cs Migra
+tions\20260223145939_AddAvatarPath
+ToUserAndStaff.Designer.cs Migrati
+ons\20260302012838_AddIsFinishedTo
+MedicalGroup.cs Migrations\2026030
+2012838_AddIsFinishedToMedicalGrou
+p.Designer.cs Migrations\202603030
+22001_AddPasswordResetRequest.cs M
+igrations\20260303022001_AddPasswo
+rdResetRequest.Designer.cs Migrati
+ons\20260306163510_UpdateSchemaV2.
+cs Migrations\20260306163510_Updat
+eSchemaV2.Designer.cs Migrations\2
+0260306164806_UpdateStaffPositionS
+tatus.cs Migrations\20260306164806
+_UpdateStaffPositionStatus.Designe
+r.cs Migrations\20260310132453_Add
+StaffTypeCheckInSupplyExpiry.cs Mi
+grations\20260310132453_AddStaffTy
+peCheckInSupplyExpiry.Designer.cs 
+Migrations\20260312014428_AddEmail
+ToStaff.cs Migrations\202603120144
+28_AddEmailToStaff.Designer.cs Mig
+rations\20260312024036_AddNotifica
+tionsTable.cs Migrations\202603120
+24036_AddNotificationsTable.Design
+er.cs Migrations\20260318143739_Ad
+dShortNameAndContractHistory.cs Mi
+grations\20260318143739_AddShortNa
+meAndContractHistory.Designer.cs M
+igrations\20260318151545_AddEmailT
+oAppUser.cs Migrations\20260318151
+545_AddEmailToAppUser.Designer.cs 
+Migrations\ApplicationDbContextMod
+elSnapshot.cs Models\Entities.cs 
+Program.cs 
+Services\Auth\AuthService.cs 
+Services\Auth\IAuthService.cs 
+Services\GeminiService.cs obj\Debu
+g\net10.0\QuanLyDoanKham.API.Globa
+lUsings.g.cs "obj\Debug\net10.0\.N
+ETCoreApp,Version=v10.0.AssemblyAt
+tributes.cs" obj\Debug\net10.0\Qua
+nLyDoanKham.API.AssemblyInfo.cs ob
+j\Debug\net10.0\QuanLyDoanKham.API
+.MvcApplicationPartsAssemblyInfo.c
+s /warnaserror+:NU1605,SYSLIB0011'
+     1>C:\Program Files\dotnet\sdk
+\10.0.103\Microsoft.Common.Current
+Version.targets(5381,5): error 
+MSB3027: Could not copy "C:\Users\
+SANG\Desktop\QuanLyDoanKham\QuanLy
+DoanKham.API\obj\Debug\net10.0\app
+host.exe" to "bin\Debug\net10.0\Qu
+anLyDoanKham.API.exe". Exceeded 
+retry count of 10. Failed. The 
+file is locked by: 
+"QuanLyDoanKham.API (2708)" [C:\Us
+ers\SANG\Desktop\QuanLyDoanKham\Qu
+anLyDoanKham.API\QuanLyDoanKham.AP
+I.csproj]
+     1>C:\Program Files\dotnet\sdk
+\10.0.103\Microsoft.Common.Current
+Version.targets(5381,5): error 
+MSB3021: Unable to copy file "C:\U
+sers\SANG\Desktop\QuanLyDoanKham\Q
+uanLyDoanKham.API\obj\Debug\net10.
+0\apphost.exe" to "bin\Debug\net10
+.0\QuanLyDoanKham.API.exe". The 
+process cannot access the file 'C:
+\Users\SANG\Desktop\QuanLyDoanKham
+\QuanLyDoanKham.API\bin\Debug\net1
+0.0\QuanLyDoanKham.API.exe' 
+because it is being used by 
+another process. [C:\Users\SANG\De
+sktop\QuanLyDoanKham\QuanLyDoanKha
+m.API\QuanLyDoanKham.API.csproj]
+         C:\Program Files\dotnet\s
+dk\10.0.103\Microsoft.Common.Curre
+ntVersion.targets(5381,5): error 
+MSB3027: Could not copy "C:\Users\
+SANG\Desktop\QuanLyDoanKham\QuanLy
+DoanKham.API\obj\Debug\net10.0\app
+host.exe" to "bin\Debug\net10.0\Qu
+anLyDoanKham.API.exe". Exceeded 
+retry count of 10. Failed. The 
+file is locked by: 
+"QuanLyDoanKham.API (2708)" [C:\Us
+ers\SANG\Desktop\QuanLyDoanKham\Qu
+anLyDoanKham.API\QuanLyDoanKham.AP
+I.csproj]
+         C:\Program Files\dotnet\s
+dk\10.0.103\Microsoft.Common.Curre
+ntVersion.targets(5381,5): error 
+MSB3021: Unable to copy file "C:\U
+sers\SANG\Desktop\QuanLyDoanKham\Q
+uanLyDoanKham.API\obj\Debug\net10.
+0\apphost.exe" to "bin\Debug\net10
+.0\QuanLyDoanKham.API.exe". The 
+process cannot access the file 'C:
+\Users\SANG\Desktop\QuanLyDoanKham
+\QuanLyDoanKham.API\bin\Debug\net1
+0.0\QuanLyDoanKham.API.exe' 
+because it is being used by 
+another process. [C:\Users\SANG\De
+sktop\QuanLyDoanKham\QuanLyDoanKha
+m.API\QuanLyDoanKham.API.csproj]
+    2 Error(s)
+
+

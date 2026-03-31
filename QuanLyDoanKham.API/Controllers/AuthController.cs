@@ -1,13 +1,12 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
-using System.IdentityModel.Tokens.Jwt;
+using QuanLyDoanKham.API.Services.Auth;
 using System.Security.Claims;
-using System.Text;
 
 namespace QuanLyDoanKham.API.Controllers
 {
@@ -17,11 +16,13 @@ namespace QuanLyDoanKham.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IAuthService _authService;
 
-        public AuthController(ApplicationDbContext context, IConfiguration configuration)
+        public AuthController(ApplicationDbContext context, IConfiguration configuration, IAuthService authService)
         {
             _context = context;
             _configuration = configuration;
+            _authService = authService;
         }
 
         // GET: api/Auth/users
@@ -145,74 +146,15 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Xóa tài khoản thành công" });
         }
 
-        // POST: api/Auth/reset-admin-fix-emergency
-        // CHỈ DÙNG TRONG TRƯỜNG HỢP KHẨN CẤP. XÓA SAU KHI DÙNG.
-        [HttpPost("reset-admin-fix-emergency")]
-        public async Task<IActionResult> ResetAdminFixEmergency()
-        {
-            var admin = await _context.Users.FirstOrDefaultAsync(u => u.Username == "admin");
-            if (admin == null) return NotFound("Không tìm thấy Admin.");
-
-            // Ép hash về "admin123" chuẩn
-            admin.PasswordHash = "$2a$11$azxY7U9nnOEV4xF4Cto.gOLsbvUKtALtNoqMjMFRhVfP/45V1BrJ."; 
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Đã khôi phục mật khẩu Admin thành 'admin123' thành công! Hãy đăng nhập lại ngay." });
-        }
-
         [HttpPost("login")]
+        [EnableRateLimiting("LoginPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto request)
         {
-            try
-            {
-                // 1. Check User (Username or Email) - Trim input for robustness
-                var loginId = request.Username?.Trim();
-                var user = await _context.Users.Include(u => u.Role)
-                    .FirstOrDefaultAsync(u => u.Username == loginId || u.Email == loginId);
+            var result = await _authService.LoginAsync(request);
+            if (!result.IsSuccess)
+                return Unauthorized(new { message = result.Message });
 
-                if (user == null) return Unauthorized("Tài khoản không tồn tại.");
-
-                // 2. Check Password
-                bool isValid = false;
-                try
-                {
-                    isValid = BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash);
-                }
-                catch
-                {
-                    isValid = false;
-                }
-
-                if (!isValid) return Unauthorized("Mật khẩu không chính xác.");
-
-                if (user.Role == null && user.Username != "admin") return BadRequest("Tài khoản chưa được phân quyền trong hệ thống. Vui lòng liên hệ Admin.");
-                if (user.Role == null && user.Username == "admin") 
-                {
-                    // Tự phục hồi role Admin nếu Db bị lỗi liên kết
-                    user.Role = await _context.Roles.FindAsync(1);
-                }
-
-                // 4. Generate JWT Token and Refresh Token
-                var token = CreateToken(user);
-                var refreshToken = GenerateRefreshToken();
-
-                user.RefreshToken = refreshToken;
-                user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
-                await _context.SaveChangesAsync();
-
-                return Ok(new AuthResponseDto
-                {
-                    Token = token,
-                    RefreshToken = refreshToken,
-                    Username = user.Username,
-                    Role = user.Role.RoleName,
-                    CompanyId = user.CompanyId
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"[Login Error] {ex.Message}");
-                return StatusCode(500, new { message = "Lỗi hệ thống. Vui lòng thử lại sau." });
-            }
+            return Ok(result.Data);
         }
 
         // GET: api/Auth/verify-token
@@ -285,30 +227,11 @@ namespace QuanLyDoanKham.API.Controllers
         [HttpPost("refresh-token")]
         public async Task<ActionResult<AuthResponseDto>> RefreshToken(RefreshTokenDto request)
         {
-            var user = await _context.Users.Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.RefreshToken == request.RefreshToken);
+            var result = await _authService.RefreshTokenAsync(request);
+            if (!result.IsSuccess)
+                return Unauthorized(new { message = result.Message });
 
-            if (user == null || user.RefreshTokenExpiry < DateTime.Now)
-                return Unauthorized("Invalid or expired refresh token.");
-
-            // BUG FIX: Check Role BEFORE SaveChanges to avoid race condition (DB sync with invalid role)
-            if (user.Role == null) return Unauthorized("Tài khoản chưa được phân quyền.");
-
-            var newToken = CreateToken(user);
-            var newRefreshToken = GenerateRefreshToken();
-
-            user.RefreshToken = newRefreshToken;
-            user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
-            await _context.SaveChangesAsync();
-
-            return Ok(new AuthResponseDto
-            {
-                Token = newToken,
-                RefreshToken = newRefreshToken,
-                Username = user.Username,
-                Role = user.Role.RoleName,
-                CompanyId = user.CompanyId
-            });
+            return Ok(result.Data);
         }
 
         // POST: api/Auth/change-password
@@ -319,18 +242,11 @@ namespace QuanLyDoanKham.API.Controllers
             var username = User.FindFirst(ClaimTypes.Name)?.Value;
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-            if (user == null) return NotFound();
+            var result = await _authService.ChangePasswordAsync(username, request);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
 
-            if (!BCrypt.Net.BCrypt.Verify(request.CurrentPassword, user.PasswordHash))
-            {
-                return BadRequest("Mật khẩu hiện tại không chính xác.");
-            }
-
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Đổi mật khẩu thành công!" });
+            return Ok(new { message = result.Message });
         }
 
         // POST: api/Auth/request-reset
@@ -340,29 +256,11 @@ namespace QuanLyDoanKham.API.Controllers
             if (request == null || string.IsNullOrEmpty(request.Username)) 
                 return BadRequest("Vui lòng cung cấp tên đăng nhập.");
 
-            var username = request.Username;
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
-            if (user == null) return NotFound("Tài khoản không tồn tại trong hệ thống.");
+            var result = await _authService.RequestResetAsync(request);
+            if (!result.IsSuccess)
+                return NotFound(new { message = result.Message });
 
-            var finalUsername = user.Username; // Luôn dùng Username chính thức để lưu request
-            
-            // Check if there's already a pending request
-            var existing = await _context.PasswordResetRequests
-                .FirstOrDefaultAsync(r => r.Username == finalUsername && !r.IsProcessed);
-            
-            if (existing != null) 
-                return Ok(new { message = "Yêu cầu của bạn đã được gửi đi và đang chờ Admin xử lý." });
-
-            var resetRequest = new PasswordResetRequest
-            {
-                Username = finalUsername,
-                RequestedDate = DateTime.Now
-            };
-
-            _context.PasswordResetRequests.Add(resetRequest);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Gửi yêu cầu thành công! Admin sẽ sớm phản hồi." });
+            return Ok(new { message = result.Message });
         }
 
         // GET: api/Auth/reset-requests
@@ -382,61 +280,11 @@ namespace QuanLyDoanKham.API.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ProcessReset([FromBody] ProcessResetDto dto)
         {
-            var request = await _context.PasswordResetRequests.FindAsync(dto.Id);
-            if (request == null) return NotFound();
+            var result = await _authService.ProcessResetAsync(dto);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
 
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
-            if (user == null) return NotFound("Không tìm thấy User tương ứng.");
-
-            // Update Password - chỉ lưu hash, KHÔNG lưu plaintext
-            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
-            
-            // Mark as processed - KHÔNG ghi lại NewPassword thô
-            request.IsProcessed = true;
-            request.NewPassword = null; // Xóa sạch mật khẩu thô khỏi DB
-
-            await _context.SaveChangesAsync();
-            return Ok(new { message = $"Đã cấp lại mật khẩu cho {request.Username} thành công!" });
-        }
-
-        private string CreateToken(AppUser user)
-        {
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username ?? ""),
-                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "Guest"),
-                new Claim("FullName", user.FullName ?? user.Username ?? "User"),
-                new Claim("UserId", user.UserId.ToString())
-            };
-            
-            // Nếu là customer thì thêm CompanyId vào claim để filter dữ liệu
-            if (user.CompanyId.HasValue)
-            {
-                claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
-            }
-
-            // Key từ appsettings (hoặc hardcode cho demo)
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
-                _configuration.GetSection("AppSettings:Token").Value ?? "MySuperSecretKeyForGraduationProject2026!"));
-
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration.GetSection("AppSettings:Issuer").Value ?? "QuanLyDoanKham",
-                audience: _configuration.GetSection("AppSettings:Audience").Value ?? "QuanLyDoanKham",
-                claims: claims,
-                expires: DateTime.Now.AddHours(1),
-                signingCredentials: creds
-            );
-
-            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
-            return jwt;
-        }
-
-        private string GenerateRefreshToken()
-        {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray()) + 
-                   Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+            return Ok(new { message = result.Message });
         }
     }
 }
