@@ -1,35 +1,44 @@
-import { useAuthStore } from '../stores/auth'
+import { useAuthStore } from '@/stores/auth'
 
 export function setupRouterGuards(router) {
-    router.beforeEach(async (to, from, next) => {
-        const authStore = useAuthStore()
+    router.beforeEach((to, from, next) => {
+        const auth = useAuthStore()
 
-        // Đảm bảo trạng thái xác thực được kiểm tra với Backend ít nhất một lần khi khởi động
-        if (!authStore.isInitialized && authStore.token) {
-            await authStore.checkAuth()
+        // 1. Route cho guest (login page) — đã đăng nhập thì về Dashboard
+        if (to.meta.guest) {
+            if (auth.isLoggedIn) return next({ name: 'Dashboard' })
+            return next()
         }
 
-        // If already logged in and trying to access login page, redirect to dashboard
-        if (to.path === '/login' && authStore.isAuthenticated) {
-            return next('/')
-        }
-
-        // Check if route requires authentication
-        if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-            return next('/login')
-        }
-
-        // Check if route requires specific role
-        if (to.meta.roles && to.meta.roles.length > 0) {
-            const userRole = authStore.role?.toLowerCase()
-            const allowedRoles = to.meta.roles.map(r => r.toLowerCase())
-            
-            if (!userRole || !allowedRoles.includes(userRole)) {
-                // Redirect to forbidden page if user doesn't have required role
-                return next('/forbidden')
+        // 2. Route yêu cầu đăng nhập
+        if (to.meta.requiresAuth) {
+            if (!auth.isLoggedIn) {
+                return next({ name: 'Login', query: { redirect: to.fullPath } })
             }
+
+            // 3. Admin bypass tất cả
+            if (auth.isAdmin) return next()
+
+            // 4. Kiểm tra permission key (ưu tiên hơn roles)
+            if (to.meta.permission) {
+                if (!auth.hasPermission(to.meta.permission)) {
+                    return next({ name: 'Forbidden' })
+                }
+                return next()
+            }
+
+            // 5. Kiểm tra roles (backward compat)
+            if (to.meta.roles && to.meta.roles.length > 0) {
+                const hasAccess = to.meta.roles.some(role => auth.hasRole(role))
+                if (!hasAccess) {
+                    return next({ name: 'Forbidden' })
+                }
+            }
+
+            return next()
         }
 
+        // 6. Routes không yêu cầu auth (CheckIn QR, Forbidden, NotFound)
         next()
     })
 }

@@ -19,8 +19,9 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Supplies
+        // GET: api/Supplies — Chỉ Admin, WarehouseManager, MedicalGroupManager được xem
         [HttpGet]
+        [Authorize(Roles = "Admin,WarehouseManager,MedicalGroupManager")]
         public async Task<ActionResult<IEnumerable<SupplyDto>>> GetSupplies()
         {
             var today = DateTime.Today;
@@ -186,6 +187,23 @@ namespace QuanLyDoanKham.API.Controllers
 
             _context.SupplyInventoryVouchers.Add(voucher);
             await _context.SaveChangesAsync();
+
+            // Ghi Audit Log
+            if (user != null)
+            {
+                _context.AuditLogs.Add(new AuditLog
+                {
+                    UserId = user.UserId,
+                    Action = dto.Type == "IMPORT" ? "IMPORT_SUPPLY" : "EXPORT_SUPPLY",
+                    EntityType = "SupplyInventoryVoucher",
+                    EntityId = voucher.VoucherId,
+                    OldValue = null,
+                    NewValue = $"Phiếu {voucher.VoucherCode}: {dto.Details.Count} loại vật tư" + (dto.GroupId.HasValue ? $" cho đoàn #{dto.GroupId}" : ""),
+                    Timestamp = DateTime.Now,
+                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+                });
+                await _context.SaveChangesAsync();
+            }
 
             return Ok(new { message = "Tạo phiếu thành công", voucherCode = voucher.VoucherCode });
         }

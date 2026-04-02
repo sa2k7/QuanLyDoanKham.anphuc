@@ -21,7 +21,7 @@
         </div>
       </div>
       <div class="flex gap-3">
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+        <button v-if="['Admin', 'WarehouseManager', 'MedicalGroupManager'].includes(authStore.role)" 
                 @click="openVoucherModal()" 
                 class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50 transition-all">
           <ClipboardList class="w-4 h-4 mr-2" />
@@ -255,7 +255,7 @@
                           </button>
                           <div class="flex-1"></div>
                           <button type="button" @click="showModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy</button>
-                          <button form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
+                          <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
                       </div>
                   </div>
               </div>
@@ -299,12 +299,44 @@
               <div class="pr-2 space-y-8 pb-4">
                   <!-- Voucher Header Info -->
                   <div class="grid grid-cols-2 gap-8">
-                      <div v-if="newVoucher.type === 'EXPORT'" class="flex flex-col gap-2">
-                          <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đoàn khám tiếp nhận *</label>
-                          <select v-model="newVoucher.groupId" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black">
-                              <option v-for="g in groups" :key="g.groupId" :value="g.groupId">[{{ g.groupCode }}] - {{ g.groupName }}</option>
-                          </select>
-                      </div>
+                        <div v-if="newVoucher.type === 'EXPORT'" class="flex flex-col gap-2 relative">
+                            <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đoàn khám tiếp nhận *</label>
+                            
+                            <!-- Custom Select UI Premium -->
+                            <div class="relative group/select">
+                                <button type="button" @click="isGroupDropdownOpen = !isGroupDropdownOpen" 
+                                    class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all hover:border-violet-300 focus:border-violet-300 focus:bg-white w-full font-black flex items-center justify-between text-left shadow-sm">
+                                    <div v-if="newVoucher.groupId" class="flex items-center gap-3">
+                                        <div class="px-2 py-1 bg-violet-600 text-white text-[9px] rounded-lg">
+                                            {{ groups.find(g => g.groupId === newVoucher.groupId)?.groupCode || 'ĐOÀN' }}
+                                        </div>
+                                        <span class="truncate">{{ groups.find(g => g.groupId === newVoucher.groupId)?.groupName }}</span>
+                                    </div>
+                                    <span v-else class="text-slate-400">-- Chọn đoàn khám đang hoạt động --</span>
+                                    <ChevronDown :class="['w-4 h-4 text-slate-400 transition-transform', isGroupDropdownOpen ? 'rotate-180' : '']" />
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div v-if="isGroupDropdownOpen" class="absolute top-full left-0 right-0 mt-2 bg-white/80 backdrop-blur-xl border-2 border-slate-900 rounded-[2rem] shadow-2xl z-[70] overflow-hidden animate-scale-up">
+                                    <div class="max-h-[300px] overflow-y-auto p-4 space-y-2">
+                                        <div v-for="g in groups" :key="g.groupId" 
+                                            @click="newVoucher.groupId = g.groupId; isGroupDropdownOpen = false"
+                                            class="p-4 rounded-2xl hover:bg-violet-600 hover:text-white transition-all cursor-pointer group/item border border-transparent hover:border-slate-900 shadow-sm">
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 group-hover/item:bg-white/20 rounded text-slate-500 group-hover/item:text-white">{{ g.groupCode }}</span>
+                                                <div class="font-black text-xs uppercase tracking-widest">{{ g.groupName }}</div>
+                                            </div>
+                                            <div class="text-[9px] font-black text-slate-400 group-hover/item:text-white/70 mt-1 uppercase tracking-tighter">
+                                                {{ g.shortName || g.companyName }} • {{ new Date(g.examDate).toLocaleDateString('vi-VN') }}
+                                            </div>
+                                        </div>
+                                        <div v-if="groups.length === 0" class="p-8 text-center text-slate-300 font-black uppercase text-[10px] tracking-widest">
+                                            Không có đoàn hoạt động
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                       <div class="flex flex-col gap-2" :class="{'col-span-2': newVoucher.type === 'IMPORT'}">
                           <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ghi chú nội dung phiếu</label>
                           <input v-model="newVoucher.note" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black" placeholder="Lý do nhập/xuất, chứng từ đính kèm..." />
@@ -376,7 +408,7 @@ import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { 
     Package, Plus, Search, RefreshCw, Layers, AlertCircle, Clock, Edit3, 
-    PackageSearch, ClipboardList, PlusCircle, Trash2, ChevronRight,
+    PackageSearch, ClipboardList, PlusCircle, Trash2, ChevronRight, ChevronDown,
     ArrowDownLeft, ArrowUpRight, X
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
@@ -397,6 +429,7 @@ const showModal = ref(false)
 const showVoucherModal = ref(false)
 const searchQuery = ref('')
 const currentItem = ref({})
+const isGroupDropdownOpen = ref(false)
 
 const newVoucher = ref({
     type: 'IMPORT',
@@ -443,10 +476,10 @@ const fetchVouchers = async () => {
 const fetchGroups = async () => {
     try {
         const res = await axios.get('/api/MedicalGroups')
-        // Lọc bỏ các đoàn khám đã hoàn tất (Completed) để không hiển thị trong danh sách chọn
+        // CHỈ lấy các đoàn khám đang hoạt động (Open)
         groups.value = res.data.filter(g => {
             const status = g.status || g.Status
-            return status !== 'Completed'
+            return status === 'Open'
         })
     } catch (e) { console.warn("Could not fetch groups") }
 }

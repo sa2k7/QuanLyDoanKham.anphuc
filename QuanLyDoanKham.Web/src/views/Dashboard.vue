@@ -1,7 +1,10 @@
 <template>
   <div class="min-h-screen flex bg-slate-50 font-sans overflow-hidden">
+    <!-- Mobile Backdrop -->
+    <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[55] md:hidden"></div>
+
     <!-- Sidebar Navigation -->
-    <aside class="w-72 bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0">
+    <aside :class="['w-72 bg-white/95 md:bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0 transition-transform duration-300', isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
       <!-- Logo Section -->
       <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group" @click="activeMenu = 'home'">
         <div class="bg-white p-1 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0 border border-slate-100">
@@ -16,7 +19,7 @@
       <!-- Menu Items -->
       <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
         <button v-for="item in filteredMenuItems" :key="item.id"
-                @click="activeMenu = item.id"
+                @click="activeMenu = item.id; isMobileMenuOpen = false"
                 :class="['w-full flex items-center flex-nowrap gap-4 px-5 py-4 rounded-2xl font-black text-sm transition-all group relative overflow-hidden', 
                          activeMenu === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600']">
           <component :is="item.icon" :class="['w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110', activeMenu === item.id ? 'text-white' : 'text-slate-300 group-hover:text-primary']" />
@@ -57,11 +60,14 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 h-screen overflow-y-auto bg-slate-50 relative custom-scrollbar">
+    <main class="flex-1 h-screen overflow-y-auto bg-slate-50 relative custom-scrollbar w-full">
       <!-- Top Header / Global Search -->
-      <header class="h-24 bg-white/70 backdrop-blur-3xl border-b border-white/50 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] flex items-center px-10 sticky top-0 z-50">
-        <div class="flex-1 flex items-center gap-8">
-          <div class="flex items-center gap-2">
+      <header class="h-24 bg-white/70 backdrop-blur-3xl border-b border-white/50 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] flex items-center px-4 md:px-10 sticky top-0 z-50">
+        <div class="flex-1 flex items-center gap-4 md:gap-8 overflow-hidden">
+          <button @click="isMobileMenuOpen = true" class="p-2 -ml-2 text-slate-400 hover:text-primary transition-colors md:hidden focus:outline-none">
+            <Menu class="w-6 h-6" />
+          </button>
+          <div class="items-center gap-2 hidden sm:flex">
             <h2 class="text-xl font-black text-slate-800 uppercase tracking-widest whitespace-nowrap ">{{ activeMenuName }}</h2>
             <div class="w-1 h-1 rounded-full bg-slate-300"></div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">{{ itemsBreadcrumb }}</p>
@@ -313,9 +319,12 @@
               <Groups v-if="activeMenu === 'groups'" />
               <Supplies v-if="activeMenu === 'supplies'" />
               <AccountManager v-if="activeMenu === 'users'" />
+              <Permissions v-if="activeMenu === 'permissions'" />
               <Payroll v-if="activeMenu === 'payroll'" />
+              <Departments v-if="activeMenu === 'departments'" />
+              <MySchedule v-if="activeMenu === 'my-schedule'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'payroll'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'permissions', 'payroll', 'departments', 'my-schedule'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
                 </div>
@@ -383,10 +392,12 @@ import axios from 'axios'
 import logo from '../assets/logo.svg'
 import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
-  User, KeyRound, X, ChevronDown, Bell, PlusCircle, Check, ShieldAlert, Inbox
+  User, KeyRound, X, ChevronDown, Bell, PlusCircle, Check, ShieldAlert, Inbox,
+  Building, ShieldCheck, CalendarCheck, Menu
 } from 'lucide-vue-next'
 
 // Import Modules
+import { usePermission } from '../composables/usePermission'
 import Companies from './Companies.vue'
 import Contracts from './Contracts.vue'
 import Staff from './Staff.vue'
@@ -395,6 +406,11 @@ import Supplies from './Supplies.vue'
 import AnalyticsDashboard from './AnalyticsDashboard.vue'
 import AccountManager from './Users.vue'
 import Payroll from './Payroll.vue'
+import Departments from './Departments.vue'
+import Permissions from './Permissions.vue'
+import MySchedule from './MySchedule.vue'
+
+const { can } = usePermission()
 
 const getRoleDisplayName = (role) => {
   return i18n.t('roles.' + role)
@@ -423,6 +439,7 @@ const activeMenu = ref('home')
 const isUserMenuOpen = ref(false)
 const isSearchFocused = ref(false)
 const showNotificationDropdown = ref(false)
+const isMobileMenuOpen = ref(false)
 
 // Password Change State
 const showPasswordModal = ref(false)
@@ -452,31 +469,32 @@ const handleChangePassword = async () => {
 }
 
 const menuItems = computed(() => [
-    { id: 'home', name: i18n.locale === 'vi' ? 'Tổng quan' : 'Dashboard', icon: Bot, color: 'bg-primary-light text-primary', desc: i18n.locale === 'vi' ? 'Trung tâm điều khiển và phân tích.' : 'Control center and analytics.' },
-    { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', roles: ['Admin', 'ContractManager'] },
-    { id: 'contracts', name: i18n.locale === 'vi' ? 'Hợp đồng' : 'Contracts', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: i18n.locale === 'vi' ? 'Quản lý pháp lý & ký kết HĐ.' : 'Legal management & contract signing.', roles: ['Admin', 'ContractManager', 'Customer'] },
-    { id: 'groups', name: i18n.locale === 'vi' ? 'Đoàn khám' : 'Medical Groups', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: i18n.locale === 'vi' ? 'Vận hành thực địa & điều phối.' : 'Field operation & coordination.', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
-    { id: 'staff', name: i18n.locale === 'vi' ? 'Nhân sự' : 'Staff', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: i18n.locale === 'vi' ? 'Đội ngũ Y bác sĩ & Vận hành.' : 'Medical team & operations.', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager'] },
-    { id: 'payroll', name: i18n.locale === 'vi' ? 'Tính lương' : 'Payroll', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: i18n.locale === 'vi' ? 'Kế toán thù lao & lương cứng.' : 'Compensation & fixed salary accounting.', roles: ['Admin', 'PayrollManager'] },
-    { id: 'supplies', name: i18n.locale === 'vi' ? 'Vật tư kho' : 'Supplies', icon: Package, color: 'bg-violet-50 text-violet-600', desc: i18n.locale === 'vi' ? 'Kho vật tư & Phiếu xuất kho.' : 'Supply warehouse & export vouchers.', roles: ['Admin', 'WarehouseManager'] },
-    { id: 'users', name: i18n.locale === 'vi' ? 'Tài khoản' : 'Accounts', icon: Shield, color: 'bg-slate-50 text-slate-600', desc: i18n.locale === 'vi' ? 'Phân quyền & bảo mật tài khoản.' : 'Account permissions & security.', roles: ['Admin'] },
-    { id: 'analytics', name: i18n.locale === 'vi' ? 'Phân tích' : 'Analytics', icon: BarChart3, color: 'bg-blue-50 text-blue-600', desc: i18n.locale === 'vi' ? 'Báo cáo chuyên sâu & biểu đồ.' : 'Deep analytics & charts.', roles: ['Admin'] },
+    { id: 'home', name: i18n.locale === 'vi' ? 'Tổng quan' : 'Dashboard', icon: Bot, color: 'bg-primary-light text-primary', desc: i18n.locale === 'vi' ? 'Trung tâm điều khiển và báo cáo.' : 'Control center and reporting.' },
+    { id: 'my-schedule', name: 'Lịch cá nhân', icon: CalendarCheck, color: 'bg-blue-50 text-blue-600', desc: 'Lịch đi đoàn của tôi.', permission: 'LichKham.ViewOwn' },
+    { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', permission: 'DoiTac.View' },
+    { id: 'contracts', name: i18n.locale === 'vi' ? 'Hợp đồng' : 'Contracts', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: i18n.locale === 'vi' ? 'Quản lý pháp lý & ký kết HĐ.' : 'Legal management & contract signing.', permission: 'HopDong.View' },
+    { id: 'groups', name: i18n.locale === 'vi' ? 'Đoàn khám' : 'Medical Groups', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: i18n.locale === 'vi' ? 'Vận hành thực địa & điều phối.' : 'Field operation & coordination.', permission: 'DoanKham.View' },
+    { id: 'staff', name: i18n.locale === 'vi' ? 'Nhân sự' : 'Staff', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: i18n.locale === 'vi' ? 'Đội ngũ Y bác sĩ & Vận hành.' : 'Medical team & operations.', permission: 'NhanSu.View' },
+    { id: 'departments', name: 'Phòng ban', icon: Building, color: 'bg-orange-50 text-orange-600', desc: 'Quản lý tổ chức phòng ban và chức vụ.', permission: 'HeThong.RoleManage' },
+    { id: 'payroll', name: i18n.locale === 'vi' ? 'Tính lương' : 'Payroll', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: i18n.locale === 'vi' ? 'Kế toán thù lao & lương cứng.' : 'Compensation & fixed salary accounting.', permission: 'Luong.View' },
+    { id: 'supplies', name: i18n.locale === 'vi' ? 'Vật tư kho' : 'Supplies', icon: Package, color: 'bg-violet-50 text-violet-600', desc: i18n.locale === 'vi' ? 'Kho vật tư & Phiếu xuất kho.' : 'Supply warehouse & export vouchers.', permission: 'Kho.View' },
+    { id: 'users', name: i18n.locale === 'vi' ? 'Tài khoản' : 'Accounts', icon: Shield, color: 'bg-slate-50 text-slate-600', desc: i18n.locale === 'vi' ? 'Phân quyền & bảo mật tài khoản.' : 'Account permissions & security.', permission: 'HeThong.UserManage' },
+    { id: 'permissions', name: 'Phân quyền', icon: ShieldCheck, color: 'bg-slate-900 text-white', desc: 'Quản lý nhóm quyền và phân quyền.', permission: 'HeThong.RoleManage' },
+    { id: 'analytics', name: i18n.locale === 'vi' ? 'Báo cáo' : 'Reports', icon: BarChart3, color: 'bg-indigo-50 text-indigo-600', desc: i18n.locale === 'vi' ? 'Báo cáo chuyên sâu & biểu đồ.' : 'Deep analytics & charts.', permission: 'BaoCao.View' },
 ])
 
 const activeModules = computed(() => {
     return menuItems.value.filter(i => {
         if (i.id === 'home') return false;
-        if (!i.roles) return true;
-        const userRole = authStore.role?.toLowerCase();
-        return i.roles.some(r => r.toLowerCase() === userRole);
+        if (!i.permission) return true;
+        return can(i.permission);
     });
 })
 
 const filteredMenuItems = computed(() => {
     return menuItems.value.filter(i => {
-        if (!i.roles) return true;
-        const userRole = authStore.role?.toLowerCase();
-        return i.roles.some(r => r.toLowerCase() === userRole);
+        if (!i.permission) return true;
+        return can(i.permission);
     });
 })
 

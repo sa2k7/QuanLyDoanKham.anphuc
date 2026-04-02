@@ -46,6 +46,12 @@ const processQueue = (error, token = null) => {
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
+        if (error.response) {
+            console.error(`[API Error] ${error.config.url}: Status ${error.status}`, error.response.data);
+        } else {
+            console.error(`[Network Error] Không thể kết nối tới server`);
+        }
+
         const originalRequest = error.config
 
         if (error.response?.status === 401 && !originalRequest._retry) {

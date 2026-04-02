@@ -20,18 +20,34 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
+        // ================================================================
         // GET: api/HealthContracts
+        // ================================================================
         [HttpGet]
-        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,Customer")]
-        public async Task<ActionResult<IEnumerable<HealthContractDto>>> GetContracts()
+        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,Customer,PersonnelManager")]
+        public async Task<ActionResult<IEnumerable<HealthContractDto>>> GetContracts(
+            [FromQuery] string status = null,
+            [FromQuery] int? companyId = null)
         {
-            return await _context.Contracts
+            var query = _context.Contracts
                 .Include(c => c.Company)
                 .Include(c => c.StatusHistories)
+                .Include(c => c.ApprovalHistories).ThenInclude(h => h.ApprovedByUser)
+                .Include(c => c.CreatedByUser)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(status))
+                query = query.Where(c => c.Status == status);
+            if (companyId.HasValue)
+                query = query.Where(c => c.CompanyId == companyId.Value);
+
+            var result = await query
+                .OrderByDescending(c => c.CreatedAt)
                 .Select(c => new HealthContractDto
                 {
                     HealthContractId = c.HealthContractId,
                     CompanyId = c.CompanyId,
+                    ContractCode = c.ContractCode,
                     ShortName = c.Company.ShortName,
                     CompanyName = c.Company.CompanyName,
                     SigningDate = c.SigningDate,
@@ -42,34 +58,130 @@ namespace QuanLyDoanKham.API.Controllers
                     UnitName = c.UnitName,
                     TotalAmount = c.TotalAmount,
                     Status = c.Status,
+                    CurrentApprovalStep = c.CurrentApprovalStep,
                     FilePath = c.FilePath,
-                    StatusHistories = c.StatusHistories.Select(h => new ContractStatusHistoryDto
-                    {
-                        Id = h.Id,
-                        OldStatus = h.OldStatus,
-                        NewStatus = h.NewStatus,
-                        Note = h.Note,
-                        ChangedAt = h.ChangedAt,
-                        ChangedBy = h.ChangedBy
-                    }).OrderByDescending(h => h.ChangedAt).ToList()
+                    CreatedByName = c.CreatedByUser != null ? c.CreatedByUser.FullName : null,
+                    CreatedAt = c.CreatedAt,
+                    Notes = c.Notes,
+                    StatusHistories = c.StatusHistories
+                        .OrderByDescending(h => h.ChangedAt)
+                        .Select(h => new ContractStatusHistoryDto
+                        {
+                            Id = h.Id,
+                            OldStatus = h.OldStatus,
+                            NewStatus = h.NewStatus,
+                            Note = h.Note,
+                            ChangedAt = h.ChangedAt,
+                            ChangedBy = h.ChangedBy
+                        }).ToList(),
+                    ApprovalHistories = c.ApprovalHistories
+                        .OrderBy(h => h.StepOrder)
+                        .Select(h => new ContractApprovalHistoryDto
+                        {
+                            Id = h.Id,
+                            StepOrder = h.StepOrder,
+                            StepName = h.StepName,
+                            Action = h.Action,
+                            Note = h.Note,
+                            ApprovedByName = h.ApprovedByUser != null ? h.ApprovedByUser.FullName : null,
+                            ActionDate = h.ActionDate
+                        }).ToList()
                 })
                 .ToListAsync();
+
+            return Ok(result);
         }
 
-        // POST: api/HealthContracts
+        // GET: api/HealthContracts/{id}
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,PersonnelManager")]
+        public async Task<ActionResult<HealthContractDto>> GetContract(int id)
+        {
+            var c = await _context.Contracts
+                .Include(x => x.Company)
+                .Include(x => x.StatusHistories)
+                .Include(x => x.ApprovalHistories).ThenInclude(h => h.ApprovedByUser)
+                .Include(x => x.CreatedByUser)
+                .Include(x => x.Attachments)
+                .Include(x => x.MedicalGroups)
+                .FirstOrDefaultAsync(x => x.HealthContractId == id);
+
+            if (c == null) return NotFound();
+
+            return Ok(new HealthContractDto
+            {
+                HealthContractId = c.HealthContractId,
+                CompanyId = c.CompanyId,
+                ContractCode = c.ContractCode,
+                ShortName = c.Company?.ShortName,
+                CompanyName = c.Company?.CompanyName,
+                SigningDate = c.SigningDate,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                UnitPrice = c.UnitPrice,
+                ExpectedQuantity = c.ExpectedQuantity,
+                UnitName = c.UnitName,
+                TotalAmount = c.TotalAmount,
+                Status = c.Status,
+                CurrentApprovalStep = c.CurrentApprovalStep,
+                FilePath = c.FilePath,
+                CreatedByName = c.CreatedByUser?.FullName,
+                CreatedAt = c.CreatedAt,
+                Notes = c.Notes,
+                TotalGroups = c.MedicalGroups.Count,
+                StatusHistories = c.StatusHistories
+                    .OrderByDescending(h => h.ChangedAt)
+                    .Select(h => new ContractStatusHistoryDto
+                    {
+                        Id = h.Id, OldStatus = h.OldStatus, NewStatus = h.NewStatus,
+                        Note = h.Note, ChangedAt = h.ChangedAt, ChangedBy = h.ChangedBy
+                    }).ToList(),
+                ApprovalHistories = c.ApprovalHistories
+                    .OrderBy(h => h.StepOrder)
+                    .Select(h => new ContractApprovalHistoryDto
+                    {
+                        Id = h.Id, StepOrder = h.StepOrder, StepName = h.StepName,
+                        Action = h.Action, Note = h.Note,
+                        ApprovedByName = h.ApprovedByUser?.FullName,
+                        ActionDate = h.ActionDate
+                    }).ToList(),
+                Attachments = c.Attachments
+                    .Select(a => new ContractAttachmentDto
+                    {
+                        Id = a.Id, FileName = a.FileName,
+                        FilePath = a.FilePath, FileType = a.FileType,
+                        UploadedAt = a.UploadedAt, UploadedBy = a.UploadedBy
+                    }).ToList()
+            });
+        }
+
+        // ================================================================
+        // POST: api/HealthContracts — Tạo hợp đồng (Draft)
+        // ================================================================
         [HttpPost]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [Authorize(Policy = "HopDong.Create")]
         public async Task<ActionResult<HealthContract>> PostContract(HealthContractDto dto)
         {
-            // Kiểm tra trùng lặp: Tuyệt đối không cho phép 1 công ty có 2 hợp đồng ký cùng 1 ngày
-            if (await _context.Contracts.AnyAsync(c => c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Date))
+            if (await _context.Contracts.AnyAsync(c =>
+                c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Date))
+                return BadRequest("Công ty này đã có hợp đồng ký vào ngày này.");
+
+            var username = User.Identity?.Name ?? "system";
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            int? userId = int.TryParse(userIdClaim, out var uid) ? uid : null;
+
+            // Tự động sinh mã hợp đồng nếu trống
+            var contractCode = dto.ContractCode;
+            if (string.IsNullOrEmpty(contractCode))
             {
-                return BadRequest("Công ty này đã có một hợp đồng ký vào ngày này. Vui lòng kiểm tra lại.");
+                var count = await _context.Contracts.CountAsync();
+                contractCode = $"HD{DateTime.Now.Year}{(count + 1):D4}";
             }
 
             var contract = new HealthContract
             {
                 CompanyId = dto.CompanyId,
+                ContractCode = contractCode,
                 SigningDate = dto.SigningDate,
                 StartDate = dto.StartDate,
                 EndDate = dto.EndDate,
@@ -77,30 +189,33 @@ namespace QuanLyDoanKham.API.Controllers
                 ExpectedQuantity = dto.ExpectedQuantity,
                 UnitName = string.IsNullOrEmpty(dto.UnitName) ? "Người" : dto.UnitName,
                 TotalAmount = dto.UnitPrice * dto.ExpectedQuantity,
-                Status = "Pending",
-                FilePath = dto.FilePath
+                Status = "Draft",
+                FilePath = dto.FilePath,
+                Notes = dto.Notes,
+                CreatedByUserId = userId,
+                CreatedAt = DateTime.Now,
+                CurrentApprovalStep = 0
             };
 
             _context.Contracts.Add(contract);
             await _context.SaveChangesAsync();
-            return Ok(contract);
+            return Ok(new { message = "Tạo hợp đồng thành công.", contractId = contract.HealthContractId, contractCode });
         }
 
+        // ================================================================
         // PUT: api/HealthContracts/{id}
+        // ================================================================
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [Authorize(Policy = "HopDong.Edit")]
         public async Task<IActionResult> PutContract(int id, HealthContractDto dto)
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
-
             if (contract.Status == "Locked") return BadRequest("Hợp đồng đã khóa, không thể chỉnh sửa.");
+            if (contract.Status is "Approved" or "Active")
+                return BadRequest("Hợp đồng đã được duyệt. Chỉ Admin mới có thể chỉnh sửa.");
 
-            // Kiểm tra trùng lặp khi cập nhật
-            if (await _context.Contracts.AnyAsync(c => c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Date && c.HealthContractId != id))
-            {
-                return BadRequest("Thông tin trùng khớp với một hợp đồng khác (Cùng đối tác và ngày ký).");
-            }
+            var username = User.Identity?.Name ?? "system";
 
             contract.CompanyId = dto.CompanyId;
             contract.SigningDate = dto.SigningDate;
@@ -110,62 +225,276 @@ namespace QuanLyDoanKham.API.Controllers
             contract.ExpectedQuantity = dto.ExpectedQuantity;
             contract.UnitName = dto.UnitName;
             contract.TotalAmount = dto.UnitPrice * dto.ExpectedQuantity;
-            
-            if (contract.Status != dto.Status)
+            contract.Notes = dto.Notes;
+            contract.FilePath = dto.FilePath;
+            contract.UpdatedAt = DateTime.Now;
+            contract.UpdatedBy = username;
+
+            // Khi sửa lại HĐ bị từ chối → chuyển về Draft
+            if (contract.Status == "Rejected")
             {
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
                     HealthContractId = id,
                     OldStatus = contract.Status,
-                    NewStatus = dto.Status,
-                    ChangedBy = User.Identity?.Name ?? "system",
+                    NewStatus = "Draft",
+                    ChangedBy = username,
                     ChangedAt = DateTime.Now,
-                    Note = "Cập nhật từ form chỉnh sửa"
+                    Note = "Chỉnh sửa lại sau khi bị từ chối"
                 });
-                contract.Status = dto.Status;
+                contract.Status = "Draft";
+                contract.CurrentApprovalStep = 0;
             }
-            
-            contract.FilePath = dto.FilePath;
 
             await _context.SaveChangesAsync();
-            return Ok(contract);
+            return Ok(new { message = "Cập nhật hợp đồng thành công." });
         }
 
-        // PATCH: api/HealthContracts/{id}/status
-        [HttpPatch("{id}/status")]
-        [Authorize(Roles = "Admin,ContractManager")]
-        public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateDto dto)
+        // ================================================================
+        // POST: api/HealthContracts/{id}/submit — Gửi đi duyệt
+        // ================================================================
+        [HttpPost("{id}/submit")]
+        [Authorize(Policy = "HopDong.Create")]
+        public async Task<IActionResult> SubmitForApproval(int id)
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
+            if (contract.Status != "Draft") return BadRequest($"Chỉ hợp đồng ở trạng thái Draft mới có thể gửi duyệt (hiện tại: {contract.Status}).");
 
-            if (contract.Status == dto.Status) return Ok(contract);
+            var username = User.Identity?.Name ?? "system";
+            var firstStep = await _context.ContractApprovalSteps
+                .Where(s => s.IsActive).OrderBy(s => s.StepOrder).FirstOrDefaultAsync();
 
-            // Ràng buộc: Chỉ kết thúc (Finished) khi tất cả các đoàn khám đã Finished hoặc Locked
-            if (dto.Status == "Finished")
+            _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
-                var unfinishedGroups = await _context.MedicalGroups
-                    .AnyAsync(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked");
-                
-                if (unfinishedGroups)
+                HealthContractId = id,
+                OldStatus = "Draft",
+                NewStatus = "PendingApproval",
+                ChangedBy = username,
+                ChangedAt = DateTime.Now,
+                Note = $"Gửi phê duyệt - Bước {firstStep?.StepOrder}: {firstStep?.StepName}"
+            });
+
+            contract.Status = "PendingApproval";
+            contract.CurrentApprovalStep = firstStep?.StepOrder ?? 1;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"Đã gửi hợp đồng đi duyệt. Đang chờ: {firstStep?.StepName}" });
+        }
+
+        // ================================================================
+        // POST: api/HealthContracts/{id}/approve — Phê duyệt từng bước
+        // ================================================================
+        [HttpPost("{id}/approve")]
+        [Authorize(Policy = "HopDong.Approve")]
+        public async Task<IActionResult> ApproveContract(int id, [FromBody] ApprovalActionDto dto)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+            if (contract.Status != "PendingApproval")
+                return BadRequest("Hợp đồng không ở trạng thái chờ duyệt.");
+
+            var username = User.Identity?.Name ?? "system";
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            int userId = int.TryParse(userIdClaim, out var uid) ? uid : 0;
+
+            // Lấy bước hiện tại
+            var currentStep = await _context.ContractApprovalSteps
+                .Where(s => s.IsActive && s.StepOrder == contract.CurrentApprovalStep)
+                .FirstOrDefaultAsync();
+
+            // Lấy bước tiếp theo
+            var nextStep = await _context.ContractApprovalSteps
+                .Where(s => s.IsActive && s.StepOrder > contract.CurrentApprovalStep)
+                .OrderBy(s => s.StepOrder)
+                .FirstOrDefaultAsync();
+
+            // Ghi lịch sử duyệt
+            _context.ContractApprovalHistories.Add(new ContractApprovalHistory
+            {
+                HealthContractId = id,
+                StepOrder = contract.CurrentApprovalStep,
+                StepName = currentStep?.StepName ?? $"Bước {contract.CurrentApprovalStep}",
+                Action = "Approved",
+                Note = dto.Note,
+                ApprovedByUserId = userId,
+                ActionDate = DateTime.Now
+            });
+
+            if (nextStep != null)
+            {
+                // Còn bước duyệt tiếp theo
+                contract.CurrentApprovalStep = nextStep.StepOrder;
+                _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
-                    return BadRequest("Không thể kết thúc hợp đồng vì vẫn còn đoàn khám đang triển khai (Chưa Finished/Locked).");
-                }
+                    HealthContractId = id,
+                    OldStatus = "PendingApproval",
+                    NewStatus = "PendingApproval",
+                    ChangedBy = username,
+                    ChangedAt = DateTime.Now,
+                    Note = $"Đã duyệt bước {currentStep?.StepOrder}. Đang chờ: {nextStep.StepName}"
+                });
+                await _context.SaveChangesAsync();
+                return Ok(new { message = $"Đã phê duyệt bước {currentStep?.StepOrder}. Tiếp theo: {nextStep.StepName}", status = "PendingApproval" });
             }
+            else
+            {
+                // Đã duyệt hết tất cả bước → Approved
+                contract.Status = "Approved";
+                _context.ContractStatusHistories.Add(new ContractStatusHistory
+                {
+                    HealthContractId = id,
+                    OldStatus = "PendingApproval",
+                    NewStatus = "Approved",
+                    ChangedBy = username,
+                    ChangedAt = DateTime.Now,
+                    Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
+                });
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Hợp đồng đã được phê duyệt hoàn toàn!", status = "Approved" });
+            }
+        }
+
+        // ================================================================
+        // POST: api/HealthContracts/{id}/reject — Từ chối
+        // ================================================================
+        [HttpPost("{id}/reject")]
+        [Authorize(Policy = "HopDong.Reject")]
+        public async Task<IActionResult> RejectContract(int id, [FromBody] ApprovalActionDto dto)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+            if (contract.Status != "PendingApproval")
+                return BadRequest("Chỉ có thể từ chối hợp đồng đang chờ duyệt.");
+
+            var username = User.Identity?.Name ?? "system";
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            int userId = int.TryParse(userIdClaim, out var uid) ? uid : 0;
+
+            _context.ContractApprovalHistories.Add(new ContractApprovalHistory
+            {
+                HealthContractId = id,
+                StepOrder = contract.CurrentApprovalStep,
+                StepName = $"Bước {contract.CurrentApprovalStep}",
+                Action = "Rejected",
+                Note = dto.Note ?? "Từ chối hợp đồng",
+                ApprovedByUserId = userId,
+                ActionDate = DateTime.Now
+            });
 
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
                 OldStatus = contract.Status,
-                NewStatus = dto.Status,
-                ChangedBy = User.Identity?.Name ?? "system",
+                NewStatus = "Rejected",
+                ChangedBy = username,
                 ChangedAt = DateTime.Now,
-                Note = dto.Note ?? "Cập nhật trạng thái trực tiếp"
+                Note = dto.Note ?? "Từ chối hợp đồng"
+            });
+
+            contract.Status = "Rejected";
+            contract.CurrentApprovalStep = 0;
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã từ chối hợp đồng.", status = "Rejected" });
+        }
+
+        // ================================================================
+        // PATCH: api/HealthContracts/{id}/status — Admin update trạng thái thủ công
+        // ================================================================
+        [HttpPatch("{id}/status")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateDto dto)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+            if (contract.Status == dto.Status) return Ok(contract);
+
+            if (dto.Status == "Finished")
+            {
+                var hasUnfinished = await _context.MedicalGroups
+                    .AnyAsync(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked");
+                if (hasUnfinished)
+                    return BadRequest("Còn đoàn khám chưa hoàn thành trong hợp đồng này.");
+            }
+
+            var username = User.Identity?.Name ?? "system";
+            _context.ContractStatusHistories.Add(new ContractStatusHistory
+            {
+                HealthContractId = id,
+                OldStatus = contract.Status,
+                NewStatus = dto.Status,
+                ChangedBy = username,
+                ChangedAt = DateTime.Now,
+                Note = dto.Note ?? $"Admin chuyển trạng thái sang {dto.Status}"
             });
 
             contract.Status = dto.Status;
+            contract.UpdatedAt = DateTime.Now;
+            contract.UpdatedBy = username;
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Đã cập nhật trạng thái hợp đồng.", status = contract.Status });
+            return Ok(new { message = "Đã cập nhật trạng thái.", status = contract.Status });
+        }
+
+        // ================================================================
+        // POST: api/HealthContracts/{id}/attachments — Upload file đính kèm
+        // ================================================================
+        [HttpPost("{id}/attachments")]
+        [Authorize(Policy = "HopDong.Upload")]
+        public async Task<IActionResult> UploadAttachment(int id, [FromForm] IFormFile file)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+            if (file == null || file.Length == 0) return BadRequest("Tệp không hợp lệ.");
+
+            var ext = Path.GetExtension(file.FileName).ToLower();
+            var allowedExt = new[] { ".pdf", ".doc", ".docx", ".jpg", ".png", ".xlsx" };
+            if (!allowedExt.Contains(ext))
+                return BadRequest("Định dạng file không hỗ trợ. Chỉ nhận: PDF, Word, Excel, ảnh.");
+
+            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "contracts");
+            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
+
+            var fileName = $"{Guid.NewGuid()}{ext}";
+            var filePath = Path.Combine(uploadsFolder, fileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+                await file.CopyToAsync(stream);
+
+            var relativePath = $"uploads/contracts/{fileName}";
+            var attachment = new ContractAttachment
+            {
+                HealthContractId = id,
+                FileName = file.FileName,
+                FilePath = relativePath,
+                FileType = ext.TrimStart('.').ToUpper(),
+                UploadedAt = DateTime.Now,
+                UploadedBy = User.Identity?.Name ?? "system"
+            };
+
+            // Cập nhật FilePath chính nếu chưa có
+            if (string.IsNullOrEmpty(contract.FilePath))
+                contract.FilePath = relativePath;
+
+            _context.ContractAttachments.Add(attachment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Upload thành công.", path = relativePath, fileName = file.FileName });
+        }
+
+        // ================================================================
+        // DELETE: api/HealthContracts/{id}
+        // ================================================================
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> DeleteContract(int id)
+        {
+            var contract = await _context.Contracts.FindAsync(id);
+            if (contract == null) return NotFound();
+            if (contract.Status == "Locked") return BadRequest("Hợp đồng đang khóa, mở khóa trước khi xóa.");
+
+            _context.Contracts.Remove(contract);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Xóa hợp đồng thành công." });
         }
 
         // PUT: api/HealthContracts/{id}/lock
@@ -175,22 +504,17 @@ namespace QuanLyDoanKham.API.Controllers
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
-
             if (contract.Status != "Locked")
             {
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
-                    HealthContractId = id,
-                    OldStatus = contract.Status,
-                    NewStatus = "Locked",
-                    ChangedBy = User.Identity?.Name ?? "system",
-                    ChangedAt = DateTime.Now,
-                    Note = "Khóa hợp đồng"
+                    HealthContractId = id, OldStatus = contract.Status, NewStatus = "Locked",
+                    ChangedBy = User.Identity?.Name ?? "system", ChangedAt = DateTime.Now, Note = "Khóa hợp đồng"
                 });
                 contract.Status = "Locked";
                 await _context.SaveChangesAsync();
             }
-            return Ok(new { message = "Hợp đồng đã được khóa an toàn." });
+            return Ok(new { message = "Hợp đồng đã được khóa." });
         }
 
         // PUT: api/HealthContracts/{id}/unlock
@@ -200,64 +524,26 @@ namespace QuanLyDoanKham.API.Controllers
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
-
-            if (contract.Status != "Active")
+            _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
-                _context.ContractStatusHistories.Add(new ContractStatusHistory
-                {
-                    HealthContractId = id,
-                    OldStatus = contract.Status,
-                    NewStatus = "Active",
-                    ChangedBy = User.Identity?.Name ?? "system",
-                    ChangedAt = DateTime.Now,
-                    Note = "Mở khóa hợp đồng"
-                });
-                contract.Status = "Active";
-                await _context.SaveChangesAsync();
-            }
-            return Ok(new { message = "Đã mở khóa hợp đồng thành công." });
+                HealthContractId = id, OldStatus = contract.Status, NewStatus = "Approved",
+                ChangedBy = User.Identity?.Name ?? "system", ChangedAt = DateTime.Now, Note = "Mở khóa hợp đồng"
+            });
+            contract.Status = "Approved";
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã mở khóa hợp đồng." });
         }
 
-        // DELETE: api/HealthContracts/{id}
-        [HttpDelete("{id}")]
+        // GET: api/HealthContracts/approval-steps
+        [HttpGet("approval-steps")]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> DeleteContract(int id)
+        public async Task<IActionResult> GetApprovalSteps()
         {
-            var contract = await _context.Contracts.FindAsync(id);
-            if (contract == null) return NotFound();
-
-            if (contract.Status == "Locked") return BadRequest("Hợp đồng đang khóa, vui lòng mở khóa trước khi xóa.");
-
-            _context.Contracts.Remove(contract);
-            await _context.SaveChangesAsync();
-            return Ok(new { message = "Xóa hợp đồng thành công." });
-        }
-
-        // POST: api/HealthContracts/{id}/upload
-        [HttpPost("{id}/upload")]
-        [Authorize(Roles = "Admin,ContractManager")]
-        public async Task<IActionResult> UploadFile(int id, [FromForm] IFormFile file)
-        {
-            var contract = await _context.Contracts.FindAsync(id);
-            if (contract == null) return NotFound();
-
-            if (file == null || file.Length == 0) return BadRequest("Tệp không hợp lệ.");
-
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "contracts");
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
-            var filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(stream);
-            }
-
-            contract.FilePath = $"uploads/contracts/{fileName}";
-            await _context.SaveChangesAsync();
-
-            return Ok(new { path = contract.FilePath });
+            var steps = await _context.ContractApprovalSteps
+                .Where(s => s.IsActive)
+                .OrderBy(s => s.StepOrder)
+                .ToListAsync();
+            return Ok(steps);
         }
     }
 }

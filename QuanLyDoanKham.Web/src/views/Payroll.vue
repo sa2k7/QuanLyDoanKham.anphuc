@@ -21,8 +21,8 @@
       </div>
     </div>
 
-    <!-- Stats Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+    <!-- Stats Summary (Only for Admin/PayrollManager) -->
+    <div v-if="isManager" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
         <div class="premium-card p-8 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] transition-all hover:-translate-y-1">
             <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng quỹ lương tháng</p>
             <p class="text-3xl font-black text-slate-800 ">{{ formatPrice(totalPayroll) }}</p>
@@ -39,8 +39,50 @@
         </button>
     </div>
 
-    <!-- Payroll List -->
-    <div class="premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
+    <!-- My Salary Card (Only for MedicalStaff) -->
+    <div v-if="!isManager && mySalary" class="premium-card p-10 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] mb-8">
+        <div class="flex items-center gap-4 mb-6">
+            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner border border-emerald-100">
+                <Wallet class="w-7 h-7" />
+            </div>
+            <div>
+                <h3 class="text-xl font-black text-slate-800">{{ mySalary.fullName }}</h3>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ mySalary.employeeCode }} • {{ mySalary.jobTitle }}</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lương định mức</p>
+                <p class="text-xl font-black text-slate-700">{{ formatPrice(mySalary.baseSalary) }}</p>
+            </div>
+            <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
+                <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Thù lao đoàn</p>
+                <p class="text-xl font-black text-emerald-600">+ {{ formatPrice(mySalary.groupEarnings) }}</p>
+            </div>
+            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
+                <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">Số ngày công</p>
+                <p class="text-xl font-black text-indigo-600">{{ mySalary.totalDays }} <span class="text-xs text-indigo-400">ngày</span></p>
+            </div>
+            <div class="bg-slate-900 p-5 rounded-2xl">
+                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">THỰC LÃNH</p>
+                <p class="text-xl font-black text-emerald-400">{{ formatPrice(mySalary.totalSalary) }}</p>
+            </div>
+        </div>
+        <div v-if="mySalary.details?.length" class="mt-6 space-y-2">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi tiết đoàn tham gia</p>
+            <div v-for="d in mySalary.details" :key="d.groupId" class="flex justify-between items-center p-4 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl">
+                <div>
+                    <p class="font-black text-slate-700 text-sm">{{ d.groupName }}</p>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ formatDate(d.examDate) }} • Hệ số: {{ d.shiftType }}</p>
+                </div>
+                <p class="font-black text-emerald-600">{{ formatPrice(d.calculatedSalary) }}</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Payroll List (Only for Admin/PayrollManager) -->
+    <div v-if="isManager" class="premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
         <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
             <div class="relative flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
@@ -154,15 +196,20 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import axios from 'axios'
 import { Wallet, RefreshCcw, Download, Search, X, Layers, FileText } from 'lucide-vue-next'
+import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 
+const authStore = useAuthStore()
 const toast = useToast()
 const loading = ref(false)
 const selectedMonth = ref(new Date().getMonth() + 1)
 const selectedYear = ref(new Date().getFullYear())
 const payrollList = ref([])
+const mySalary = ref(null)
 const searchQuery = ref('')
 const detailItem = ref(null)
+
+const isManager = computed(() => authStore.role === 'Admin' || authStore.role === 'PayrollManager')
 
 const totalPayroll = computed(() => payrollList.value.reduce((sum, item) => sum + item.totalSalary, 0))
 
@@ -178,11 +225,20 @@ const filteredList = computed(() => {
 const fetchPayroll = async () => {
     loading.value = true
     try {
-        const res = await axios.get(`/api/Payroll/monthly`, {
-            params: { month: selectedMonth.value, year: selectedYear.value }
-        })
-        payrollList.value = res.data
-    } catch (e) { toast.error("Lỗi dữ liệu bảng lương") }
+        if (isManager.value) {
+            // Admin/PayrollManager: xem bảng lương toàn bộ
+            const res = await axios.get(`/api/Payroll/monthly`, {
+                params: { month: selectedMonth.value, year: selectedYear.value }
+            })
+            payrollList.value = res.data
+        } else {
+            // MedicalStaff: xem lương cá nhân
+            const res = await axios.get(`/api/Payroll/my-salary`, {
+                params: { month: selectedMonth.value, year: selectedYear.value }
+            })
+            mySalary.value = res.data
+        }
+    } catch (e) { toast.error('Lỗi dữ liệu bảng lương') }
     finally { loading.value = false }
 }
 

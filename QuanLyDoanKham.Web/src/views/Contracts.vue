@@ -100,7 +100,13 @@
     </div>
 
     <!-- Tab Filter -->
-    <div class="flex items-center gap-4 mb-8">
+    <div class="flex items-center gap-4 mb-8 flex-wrap">
+        <button @click="activeTab = 'draft'" 
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'draft' ? 'bg-gradient-to-r from-slate-500 to-slate-600 text-white shadow-slate-500/30' : 'bg-slate-50 border border-slate-200 text-slate-500 hover:bg-slate-100']">
+            <Edit3 class="w-4 h-4" />
+            <span>Nháp ({{ String(filteredList.draft.length).padStart(3, '0') }})</span>
+        </button>
         <button @click="activeTab = 'pending'" 
                 :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
                          activeTab === 'pending' ? 'bg-gradient-to-r from-amber-400 to-amber-500 text-white shadow-amber-500/30' : 'bg-amber-50/30 text-amber-600 border border-amber-100/50 hover:bg-amber-50']">
@@ -125,19 +131,27 @@
             <FileCheck class="w-4 h-4" />
             <span>Đã kết thúc ({{ String(filteredList.finished.length).padStart(3, '0') }})</span>
         </button>
+        <button @click="activeTab = 'rejected'" 
+                :class="['px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-sm flex items-center gap-3', 
+                         activeTab === 'rejected' ? 'bg-gradient-to-r from-rose-500 to-red-500 text-white shadow-rose-500/30' : 'bg-rose-50/30 text-rose-600 border border-rose-100/50 hover:bg-rose-50']">
+            <XCircle class="w-4 h-4" />
+            <span>Từ chối ({{ String(filteredList.rejected.length).padStart(3, '0') }})</span>
+        </button>
     </div>
 
     <!-- Contract Table With Color Indicator -->
     <div :class="['premium-card bg-white/95 backdrop-blur-xl rounded-[2.5rem] shadow-2xl shadow-slate-200/50 border overflow-hidden mt-6 transition-all duration-500', 
                  activeTab === 'pending' ? 'border-amber-200/50 shadow-amber-500/5' : 
-                 activeTab === 'approved' ? 'border-blue-200/50 shadow-blue-500/5' :
+         activeTab === 'approved' ? 'border-blue-200/50 shadow-blue-500/5' :
                  activeTab === 'active' ? 'border-violet-200/50 shadow-violet-500/5' :
+                 activeTab === 'rejected' ? 'border-rose-200/50 shadow-rose-500/5' :
                  'border-emerald-200/50 shadow-emerald-500/5']">
         <!-- Tab accent line -->
         <div :class="['h-2 w-full transition-all duration-500', 
                       activeTab === 'pending' ? 'bg-amber-400' : 
                       activeTab === 'approved' ? 'bg-blue-500' : 
-                      activeTab === 'active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
+                      activeTab === 'active' ? 'bg-violet-500' : 
+                      activeTab === 'rejected' ? 'bg-rose-500' : 'bg-emerald-500']"></div>
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
@@ -156,18 +170,22 @@
                         class="group hover:bg-slate-50/50 transition-all duration-300">
                         <td class="px-8 py-6 text-center">
                             <span :class="['text-xs font-black tabular-nums transition-colors duration-500', 
+                                         activeTab === 'draft' ? 'text-slate-500' : 
                                          activeTab === 'pending' ? 'text-amber-500' : 
                                          activeTab === 'approved' ? 'text-blue-500' : 
-                                         activeTab === 'active' ? 'text-violet-500' : 'text-emerald-500']">
+                                         activeTab === 'active' ? 'text-violet-500' : 
+                                         activeTab === 'rejected' ? 'text-rose-500' : 'text-emerald-500']">
                                 {{ String(index + 1).padStart(3, '0') }}
                             </span>
                         </td>
                         <td class="px-4 py-6">
                             <div class="flex items-center gap-4">
                                 <div :class="['w-10 h-10 rounded-xl flex items-center justify-center border shadow-sm transition-all duration-500',
+                                             activeTab === 'draft' ? 'bg-slate-50 border-slate-100 text-slate-500' : 
                                              activeTab === 'pending' ? 'bg-amber-50 border-amber-100 text-amber-500' : 
                                              activeTab === 'approved' ? 'bg-blue-50 border-blue-100 text-blue-500' : 
                                              activeTab === 'active' ? 'bg-violet-50 border-violet-100 text-violet-500' : 
+                                             activeTab === 'rejected' ? 'bg-rose-50 border-rose-100 text-rose-500' :
                                              'bg-emerald-50 border-emerald-100 text-emerald-500']">
                                     <FileText class="w-5 h-5" />
                                 </div>
@@ -205,9 +223,11 @@
                         <td class="px-4 py-6 text-center">
                             <div :class="[getStatusClass(contract.status), 'mx-auto']">
                                 <div :class="['w-2 h-2 rounded-full mr-2 animate-pulse', 
-                                            contract.status === 'Pending' ? 'bg-amber-500' : 
+                                            contract.status === 'Draft' ? 'bg-slate-500' : 
+                                            contract.status === 'PendingApproval' ? 'bg-amber-500' : 
                                             contract.status === 'Approved' ? 'bg-blue-500' : 
-                                            contract.status === 'Active' ? 'bg-violet-500' : 'bg-emerald-500']"></div>
+                                            contract.status === 'Active' ? 'bg-violet-500' : 
+                                            contract.status === 'Rejected' ? 'bg-rose-500' : 'bg-emerald-500']"></div>
                                 {{ getStatusLabel(contract.status) }}
                             </div>
                         </td>
@@ -365,45 +385,52 @@
                     </div>
                 </div>
 
+                <!-- Dùng ContractApprovalPanel (thay cho các nút đơn lẻ) -->
+                <div v-if="!isEditing" class="mt-4 pb-4">
+                    <ContractApprovalPanel 
+                        :contract="detailsModal.data"
+                        :totalSteps="3"
+                        @submit="handleSubmitForApproval"
+                        @approved="handleSaveApproved"
+                        @rejected="handleSaveApproved"
+                        @reset="fetchList"
+                    />
+                </div>
+
                 <div class="p-10 pt-6 bg-white border-t border-slate-50 relative z-20 flex flex-wrap items-center justify-end gap-3">
                     <template v-if="!isEditing">
-                        <button v-if="detailsModal.data.status === 'Pending' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
-                                @click="handleApproveContract(detailsModal.data.healthContractId)"
-                                 class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-1">
-                            <Sparkles class="w-5 h-5" />
-                            <span>PHÊ DUYỆT HĐ</span>
-                        </button>
-                        <button v-if="detailsModal.data.status === 'Approved' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
+                        <button v-if="detailsModal.data.status === 'Approved' && canActivate" 
                                 @click="handleActivateContract(detailsModal.data.healthContractId)"
                                  class="flex-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-1">
                             <Clock class="w-5 h-5" />
                             <span>KÍCH HOẠT HĐ</span>
                         </button>
-                        <button v-if="detailsModal.data.status === 'Active' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
+                        <button v-if="detailsModal.data.status === 'Active' && canEdit" 
                                 @click="handleFinishContract(detailsModal.data.healthContractId)"
                                 class="flex-1 bg-gradient-to-r from-slate-700 to-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-1">
                             <Lock class="w-5 h-5" />
                             <span>KẾT THÚC HĐ</span>
                         </button>
-                        <button v-if="detailsModal.data.status === 'Finished' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
+                        <button v-if="detailsModal.data.status === 'Finished' && canEdit" 
                                 @click="handleLockContract(detailsModal.data.healthContractId)" 
                                 class="flex-1 bg-gradient-to-r from-slate-700 to-slate-900 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-slate-900/20 hover:shadow-slate-900/40 hover:-translate-y-1">
                             <Lock class="w-5 h-5" />
                             <span>KHÓA TÀI CHÍNH</span>
                         </button>
-                        <button v-if="detailsModal.data.status === 'Locked' && authStore.role === 'Admin'" 
+                        <button v-if="detailsModal.data.status === 'Locked' && canEdit" 
                                 @click="handleUnlockContract(detailsModal.data.healthContractId)" 
                                 class="flex-1 bg-gradient-to-r from-amber-400 to-amber-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center space-x-2 shadow-lg shadow-amber-500/30 hover:shadow-amber-500/50 hover:-translate-y-1">
                             <Unlock class="w-5 h-5" />
                             <span>MỞ KHÓA</span>
                         </button>
-                        <button v-if="detailsModal.data.status === 'Pending' && (authStore.role === 'Admin' || authStore.role === 'ContractManager')" 
+
+                        <button v-if="['Draft', 'Rejected'].includes(detailsModal.data.status) && canEdit" 
                                 @click="isEditing = true" 
                                  class="bg-white text-indigo-600 px-8 py-4 rounded-2xl font-black hover:bg-indigo-50 transition-all flex items-center justify-center border border-indigo-100 shadow-sm hover:shadow-md hover:-translate-y-1">
                             <Edit3 class="w-5 h-5 mr-2" />
                             CHỈNH SỬA
                         </button>
-                        <button v-if="authStore.role === 'Admin'" 
+                        <button v-if="['Draft', 'Rejected'].includes(detailsModal.data.status) && canEdit" 
                                 @click="handleDeleteContract(detailsModal.data.healthContractId)" 
                                 class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-100 hover:border-rose-500 hover:shadow-lg shadow-sm">
                             <Trash2 class="w-5 h-5" />
@@ -443,13 +470,19 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import axios from 'axios'
-import { Plus, FileText, Calendar, ArrowRight, Trash2, Save, PlusCircle, History, Sparkles, Clock, Lock, Upload, X, DollarSign, Users, Eye, Edit3, Unlock, CheckCircle, Activity, FileCheck } from 'lucide-vue-next'
+import { Plus, FileText, Calendar, ArrowRight, Trash2, Save, PlusCircle, History, Sparkles, Clock, Lock, Upload, X, DollarSign, Users, Eye, Edit3, Unlock, CheckCircle, Activity, FileCheck, XCircle } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import StatCard from '../components/StatCard.vue'
+import ContractApprovalPanel from '../components/ContractApprovalPanel.vue'
 
 import CurrencyInput from '../components/CurrencyInput.vue'
+import { usePermission } from '../composables/usePermission'
+
+const { can } = usePermission()
+const canEdit = computed(() => can('HopDong.Edit'))
+const canActivate = computed(() => can('HopDong.Edit'))
 
 const authStore = useAuthStore()
 const toast = useToast()
@@ -477,30 +510,36 @@ const confirmData = ref({ show: false, title: '', message: '', variant: 'warning
 
 const filteredList = computed(() => {
     return {
-        pending: list.value.filter(c => c.status === 'Pending'),
+        draft: list.value.filter(c => c.status === 'Draft'),
+        pending: list.value.filter(c => c.status === 'PendingApproval'),
         approved: list.value.filter(c => c.status === 'Approved'),
         active: list.value.filter(c => c.status === 'Active' || c.status === 'InProgress'),
-        finished: list.value.filter(c => ['Finished', 'Locked'].includes(c.status))
+        finished: list.value.filter(c => ['Finished', 'Locked'].includes(c.status)),
+        rejected: list.value.filter(c => c.status === 'Rejected')
     }
 })
 
 const getStatusClass = (status) => {
     switch(status) {
+        case 'Draft': return 'bg-slate-50 text-slate-600 border-slate-200'
         case 'Approved': return 'bg-blue-50 text-blue-600 border-blue-100'
         case 'Active': return 'bg-violet-50 text-violet-600 border-violet-100'
         case 'Finished': return 'bg-emerald-50 text-emerald-600 border-emerald-100'
         case 'Locked': return 'bg-slate-50 text-slate-500 border-slate-200'
+        case 'Rejected': return 'bg-rose-50 text-rose-600 border-rose-100'
         default: return 'bg-amber-50 text-amber-600 border-amber-100'
     }
 }
 
 const getStatusLabel = (status) => {
     switch(status) {
+        case 'Draft': return 'Bản nháp'
         case 'Active': return 'Đang thực hiện'
         case 'Approved': return 'Đã phê duyệt'
         case 'Finished': return 'Hợp đồng kết thúc'
         case 'Locked': return 'Đã khóa tài chính'
-        case 'Pending': return 'Đang chờ phê duyệt'
+        case 'PendingApproval': return 'Đang chờ phê duyệt'
+        case 'Rejected': return 'Bị từ chối'
         default: return status
     }
 }
@@ -650,14 +689,19 @@ const handleDeleteContract = (id) => {
     }
 }
 
-const handleApproveContract = async (id) => {
+const handleSubmitForApproval = async (id) => {
     try {
-        // BUG FIX: Pending → Approved (not Active). Approved is a separate state before Active.
-        await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Approved', note: 'Phê duyệt hợp đồng' })
-        toast.success("Hợp đồng đã được phê duyệt! Bấm 'Kích hoạt' để bắt đầu thực hiện.")
+        await axios.post(`/api/HealthContracts/${id}/submit`)
+        toast.success("Đã gửi văn bản đi phê duyệt!")
         fetchList()
         detailsModal.value.show = false
-    } catch (e) { toast.error(e.response?.data || "Lỗi phê duyệt") }
+    } catch (e) { toast.error(e.response?.data || "Lỗi khi gửi") }
+}
+
+const handleSaveApproved = () => {
+    toast.success("Hành động phê duyệt đã ghi nhận!")
+    fetchList()
+    detailsModal.value.show = false
 }
 
 const handleActivateContract = async (id) => {

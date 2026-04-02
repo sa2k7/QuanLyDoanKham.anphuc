@@ -25,27 +25,55 @@ namespace QuanLyDoanKham.API.Controllers
             _authService = authService;
         }
 
+        // GET: api/Auth/roles — Danh sách roles
+        [HttpGet("roles")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetRoles()
+        {
+            var roles = await _context.Roles.OrderBy(r => r.RoleId).ToListAsync();
+            return Ok(roles);
+        }
+
+        // GET: api/Auth/permissions — Danh sách permissions theo module
+        [HttpGet("permissions")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetPermissions()
+        {
+            var perms = await _context.Permissions
+                .OrderBy(p => p.Module).ThenBy(p => p.PermissionId)
+                .ToListAsync();
+            return Ok(perms);
+        }
+
         // GET: api/Auth/users
         [HttpGet("users")]
         [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UserProfileDto>>> GetUsers()
         {
-            var list = await _context.Users
+            var users = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Company)
-                .Select(u => new UserProfileDto
-                {
-                    UserId = u.UserId,
-                    Username = u.Username,
-                    FullName = u.FullName,
-                    RoleName = u.Role.RoleName,
-                    RoleId = u.RoleId,
-                    CompanyId = u.CompanyId,
-                    CompanyName = u.Company != null ? u.Company.CompanyName : null,
-                    Email = u.Email,
-                    AvatarPath = u.AvatarPath
-                })
+                .Include(u => u.Department)
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                .OrderBy(u => u.FullName)
                 .ToListAsync();
+
+            var list = users.Select(u => new UserProfileDto
+            {
+                UserId = u.UserId,
+                Username = u.Username,
+                FullName = u.FullName,
+                RoleName = u.Role?.RoleName,
+                RoleId = u.RoleId,
+                Roles = u.UserRoles.Select(ur => ur.Role?.RoleName).Where(r => r != null).ToList(),
+                CompanyId = u.CompanyId,
+                CompanyName = u.Company?.CompanyName,
+                DepartmentId = u.DepartmentId,
+                DepartmentName = u.Department?.DepartmentName,
+                Email = u.Email,
+                AvatarPath = u.AvatarPath,
+                IsActive = u.IsActive
+            }).ToList();
 
             return Ok(list);
         }
@@ -60,22 +88,55 @@ namespace QuanLyDoanKham.API.Controllers
 
             var user = await _context.Users
                 .Include(u => u.Role)
+                    .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
                 .Include(u => u.Company)
+                .Include(u => u.Department)
+                .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+                    .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
 
             if (user == null) return NotFound();
+
+            // Tổng hợp tất cả roles
+            var allRoles = new HashSet<string>();
+            if (user.Role != null) allRoles.Add(user.Role.RoleName);
+            foreach (var ur in user.UserRoles) if (ur.Role != null) allRoles.Add(ur.Role.RoleName);
+
+            // Tổng hợp tất cả permissions
+            var allPerms = new HashSet<string>();
+            if (user.Role?.RoleName == "Admin")
+            {
+                foreach (var p in await _context.Permissions.ToListAsync())
+                    allPerms.Add(p.PermissionKey);
+            }
+            else
+            {
+                if (user.Role?.RolePermissions != null)
+                    foreach (var rp in user.Role.RolePermissions)
+                        if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
+
+                foreach (var ur in user.UserRoles ?? new List<UserRole>())
+                    if (ur.Role?.RolePermissions != null)
+                        foreach (var rp in ur.Role.RolePermissions)
+                            if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
+            }
 
             return Ok(new UserProfileDto
             {
                 UserId = user.UserId,
                 Username = user.Username,
                 FullName = user.FullName,
-                RoleName = user.Role.RoleName,
+                RoleName = user.Role?.RoleName,
                 RoleId = user.RoleId,
+                Roles = allRoles.ToList(),
+                Permissions = allPerms.ToList(),
                 CompanyId = user.CompanyId,
-                CompanyName = user.Company != null ? user.Company.CompanyName : null,
+                CompanyName = user.Company?.CompanyName,
+                DepartmentId = user.DepartmentId,
+                DepartmentName = user.Department?.DepartmentName,
                 Email = user.Email,
-                AvatarPath = user.AvatarPath
+                AvatarPath = user.AvatarPath,
+                IsActive = user.IsActive
             });
         }
 
@@ -88,42 +149,56 @@ namespace QuanLyDoanKham.API.Controllers
             if (user == null) return NotFound();
 
             var oldRoleId = user.RoleId;
-            user.FullName = dto.FullName;
-            user.RoleId = dto.RoleId;
+            user.FullName = dto.FullName ?? user.FullName;
+            user.RoleId = dto.RoleId > 0 ? dto.RoleId : user.RoleId;
             user.CompanyId = dto.CompanyId;
+            user.DepartmentId = dto.DepartmentId;
             user.Email = dto.Email;
-            user.AvatarPath = dto.AvatarPath;
+            user.AvatarPath = dto.AvatarPath ?? user.AvatarPath;
+            if (dto.IsActive.HasValue) user.IsActive = dto.IsActive.Value;
 
             if (!string.IsNullOrEmpty(dto.Password))
-            {
                 user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+
+            // Cập nhật multi-roles nếu có
+            if (dto.RoleIds != null && dto.RoleIds.Count > 0)
+            {
+                var existing = _context.UserRoles.Where(ur => ur.UserId == user.UserId);
+                _context.UserRoles.RemoveRange(existing);
+                foreach (var rid in dto.RoleIds.Distinct())
+                {
+                    _context.UserRoles.Add(new UserRole
+                    {
+                        UserId = user.UserId,
+                        RoleId = rid,
+                        AssignedAt = DateTime.Now,
+                        AssignedBy = User.Identity?.Name
+                    });
+                }
             }
 
             await _context.SaveChangesAsync();
 
-            // TẠO THÔNG BÁO NẾU THAY ĐỔI VAI TRÒ
-            if (oldRoleId != dto.RoleId)
+            if (oldRoleId != user.RoleId)
             {
                 try
                 {
-                    var newRole = await _context.Roles.FindAsync(dto.RoleId);
+                    var newRole = await _context.Roles.FindAsync(user.RoleId);
                     if (newRole != null)
                     {
-                        var notification = new Notification
+                        _context.Notifications.Add(new Notification
                         {
                             UserId = user.UserId,
-                            Message = $"Vai trò hệ thống của bạn đã được cập nhật thành: {newRole.RoleName}.",
+                            Message = $"Vai trò của bạn đã được cập nhật thành: {newRole.RoleName}.",
                             Link = "/profile",
                             CreatedAt = DateTime.Now,
                             IsRead = false
-                        };
-                        _context.Notifications.Add(notification);
+                        });
                         await _context.SaveChangesAsync();
                     }
                 }
                 catch (Exception ex)
                 {
-                    // Log lỗi thông báo, không chặn luồng chính
                     Console.Error.WriteLine($"[Notification Error] UpdateUser: {ex.Message}");
                 }
             }
@@ -131,7 +206,84 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Cập nhật tài khoản thành công" });
         }
 
+        // POST: api/Auth/assign-roles — Gán roles cho user
+        [HttpPost("assign-roles")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AssignRoles([FromBody] AssignRolesDto dto)
+        {
+            var user = await _context.Users.FindAsync(dto.UserId);
+            if (user == null) return NotFound("Không tìm thấy user.");
+
+            // Xóa tất cả roles cũ
+            var existingRoles = _context.UserRoles.Where(ur => ur.UserId == dto.UserId);
+            _context.UserRoles.RemoveRange(existingRoles);
+
+            // Gán roles mới
+            foreach (var roleId in dto.RoleIds.Distinct())
+            {
+                _context.UserRoles.Add(new UserRole
+                {
+                    UserId = dto.UserId,
+                    RoleId = roleId,
+                    AssignedAt = DateTime.Now,
+                    AssignedBy = User.Identity?.Name
+                });
+            }
+
+            // Đặt primary role là role đầu tiên trong danh sách
+            if (dto.RoleIds.Count > 0)
+                user.RoleId = dto.RoleIds[0];
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = $"Đã gán {dto.RoleIds.Count} vai trò cho {user.Username}." });
+        }
+
+        // GET: api/Auth/role-permissions/{roleId} — Lấy permissions của role
+        [HttpGet("role-permissions/{roleId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> GetRolePermissions(int roleId)
+        {
+            var role = await _context.Roles.FindAsync(roleId);
+            if (role == null) return NotFound();
+
+            var perms = await _context.RolePermissions
+                .Include(rp => rp.Permission)
+                .Where(rp => rp.RoleId == roleId)
+                .Select(rp => new { rp.Permission.PermissionId, rp.Permission.PermissionKey, rp.Permission.PermissionName, rp.Permission.Module })
+                .ToListAsync();
+
+            return Ok(perms);
+        }
+
+        // PUT: api/Auth/role-permissions/{roleId} — Cập nhật permissions cho role
+        [HttpPut("role-permissions/{roleId}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateRolePermissions(int roleId, [FromBody] AssignPermissionsDto dto)
+        {
+            var role = await _context.Roles.FindAsync(roleId);
+            if (role == null) return NotFound("Không tìm thấy role.");
+            if (role.RoleName == "Admin") return BadRequest("Không thể sửa quyền của Admin.");
+
+            // Xóa cũ
+            var existing = _context.RolePermissions.Where(rp => rp.RoleId == roleId);
+            _context.RolePermissions.RemoveRange(existing);
+
+            // Thêm mới
+            foreach (var permId in dto.PermissionIds.Distinct())
+            {
+                _context.RolePermissions.Add(new RolePermission
+                {
+                    RoleId = roleId,
+                    PermissionId = permId
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = $"Đã cập nhật {dto.PermissionIds.Count} quyền cho role {role.RoleName}." });
+        }
+
         // DELETE: api/Auth/users/{username}
+
         [HttpDelete("users/{username}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(string username)
@@ -186,6 +338,21 @@ namespace QuanLyDoanKham.API.Controllers
 
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
+
+            if (request.AdditionalRoleIds != null && request.AdditionalRoleIds.Count > 0)
+            {
+                foreach (var rid in request.AdditionalRoleIds.Distinct())
+                {
+                    _context.UserRoles.Add(new UserRole
+                    {
+                        UserId = newUser.UserId,
+                        RoleId = rid,
+                        AssignedAt = DateTime.Now,
+                        AssignedBy = User.Identity?.Name
+                    });
+                }
+                await _context.SaveChangesAsync();
+            }
 
             // Return DTO to avoid circular reference and match GET responses
             return Ok(new UserProfileDto
@@ -269,6 +436,7 @@ namespace QuanLyDoanKham.API.Controllers
         public async Task<IActionResult> GetResetRequests()
         {
             var list = await _context.PasswordResetRequests
+                .Where(r => !r.IsProcessed)
                 .OrderByDescending(r => r.RequestedDate)
                 .Take(50)
                 .ToListAsync();

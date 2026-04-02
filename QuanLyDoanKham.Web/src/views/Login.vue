@@ -189,7 +189,7 @@ const submitResetRequest = async () => {
       resetUsername.value = ''
     }, 3000)
   } catch (e) {
-    resetMessage.value = e.response?.data || 'Lỗi khi gửi yêu cầu'
+    resetMessage.value = e.response?.data?.message || e.response?.data || 'Lỗi khi gửi yêu cầu'
     resetSuccess.value = false
   } finally {
     isResetting.value = false

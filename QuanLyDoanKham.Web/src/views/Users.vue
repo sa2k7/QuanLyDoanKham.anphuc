@@ -81,9 +81,14 @@
                             </div>
                         </td>
                         <td class="p-4">
-                            <span class="inline-flex items-center px-3 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-[0.3em]">
-                                {{ i18n.t('roles.' + u.roleName) }}
-                            </span>
+                            <div class="flex flex-wrap gap-1">
+                                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest border border-indigo-100">
+                                    {{ i18n.t('roles.' + u.roleName) }}
+                                </span>
+                                <span v-for="secRole in u.roles" :key="secRole" class="inline-flex items-center px-2 py-1 rounded-lg bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-200">
+                                    {{ i18n.t('roles.' + secRole) }}
+                                </span>
+                            </div>
                         </td>
                         <td class="p-4 text-center">
                             <div class="flex items-center justify-center gap-3">
@@ -238,22 +243,20 @@
                           <input v-model="form.email" type="email" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="vidu@gmail.com..." />
                       </div>
 
-                      <div class="flex flex-col gap-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò</label>
-                          <select v-model="form.roleId" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
-                              <option :value="1">{{ i18n.t('roles.Admin') }}</option>
-                              <option :value="2">{{ i18n.t('roles.PersonnelManager') }}</option>
-                              <option :value="3">{{ i18n.t('roles.ContractManager') }}</option>
-                              <option :value="4">{{ i18n.t('roles.PayrollManager') }}</option>
-                              <option :value="5">{{ i18n.t('roles.MedicalGroupManager') }}</option>
-                              <option :value="6">{{ i18n.t('roles.WarehouseManager') }}</option>
-                              <option :value="7">{{ i18n.t('roles.MedicalStaff') }}</option>
-                              <option :value="8">{{ i18n.t('roles.Customer') }}</option>
-                          </select>
+                      <div class="flex flex-col gap-2 md:col-span-2">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò (Đa nhiệm)</label>
+                          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                              <label v-for="role in availableRoles" :key="role.id" 
+                                     class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600"
+                                     :class="{'bg-indigo-50 border-indigo-200 text-indigo-700': form.selectedRoleIds.includes(role.id)}">
+                                  <input type="checkbox" :value="role.id" v-model="form.selectedRoleIds" class="w-4 h-4 accent-indigo-600 shrink-0" />
+                                  <span class="truncate">{{ i18n.t('roles.' + role.key) }}</span>
+                              </label>
+                          </div>
                       </div>
 
-                      <div class="flex flex-col gap-2" :class="{ 'opacity-50 pointer-events-none': form.roleId !== 8 }">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp</label>
+                      <div class="flex flex-col gap-2 md:col-span-2" :class="{ 'opacity-50 pointer-events-none': !form.selectedRoleIds.includes(8) }">
+                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp (Chỉ dành cho KH cấp Company)</label>
                           <select v-model="form.companyId" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
                               <option :value="null">-- Hệ điều hành HealthCare --</option>
                               <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
@@ -322,14 +325,25 @@ const resetRequests = ref([])
 const showDeleteConfirm = ref(false)
 const userToDelete = ref(null)
 const modal = ref({ show: false, isEdit: false })
+const availableRoles = [
+  { id: 1, key: 'Admin' },
+  { id: 2, key: 'PersonnelManager' },
+  { id: 3, key: 'ContractManager' },
+  { id: 4, key: 'PayrollManager' },
+  { id: 5, key: 'MedicalGroupManager' },
+  { id: 6, key: 'WarehouseManager' },
+  { id: 7, key: 'MedicalStaff' },
+  { id: 8, key: 'Customer' }
+]
+
 const form = ref({
     username: '',
     password: '',
     fullName: '',
     email: '',
-    roleId: 2,
     companyId: null,
-    avatarPath: ''
+    avatarPath: '',
+    selectedRoleIds: [2]
 })
 
 // SECURITY: getTempPass đã bị xóa - không hiển thị mật khẩu plaintext từ DB
@@ -369,7 +383,7 @@ const fetchCompanies = async () => {
 const fetchResets = async () => {
     if (!isAdmin.value) return
     try {
-        const res = await axios.get('/api/Auth/reset-requests')
+        const res = await apiClient.get('/api/Auth/reset-requests')
         resetRequests.value = res.data 
     } catch (e) {}
 }
@@ -402,22 +416,28 @@ const generateUsername = async (fullName) => {
 
 const openCreateModal = () => {
     modal.value = { show: true, isEdit: false }
-    form.value = { username: '', password: DEFAULT_PASSWORD, fullName: '', email: '', roleId: 2, companyId: null, avatarPath: '' }
+    form.value = { username: '', password: DEFAULT_PASSWORD, fullName: '', email: '', companyId: null, avatarPath: '', selectedRoleIds: [2] }
     selectedFile.value = null
     avatarPreview.value = null
-    newlyCreatedUser.value = null
 }
 
 const openEditModal = (u) => {
     modal.value = { show: true, isEdit: true }
+    let roleIds = [u.roleId]
+    if (u.roles && u.roles.length) {
+        u.roles.forEach(roleName => {
+            const found = availableRoles.find(r => r.key === roleName)
+            if (found) roleIds.push(found.id)
+        })
+    }
     form.value = { 
         username: u.username, 
         password: '', 
         fullName: u.fullName || '', 
         email: u.email || '',
-        roleId: u.roleId, 
         companyId: u.companyId,
-        avatarPath: u.avatarPath || ''
+        avatarPath: u.avatarPath || '',
+        selectedRoleIds: [...new Set(roleIds)]
     }
     selectedFile.value = null
     avatarPreview.value = u.avatarPath ? `/${u.avatarPath}` : null
@@ -425,7 +445,6 @@ const openEditModal = (u) => {
 
 const handleSubmit = async () => {
     try {
-        // Upload avatar first if exists
         if (selectedFile.value) {
             const formData = new FormData()
             formData.append('file', selectedFile.value)
@@ -435,14 +454,20 @@ const handleSubmit = async () => {
             form.value.avatarPath = uploadRes.data.path
         }
 
+        const payload = {
+            ...form.value,
+            roleId: form.value.selectedRoleIds.length > 0 ? form.value.selectedRoleIds[0] : 2,
+            additionalRoleIds: form.value.selectedRoleIds,
+            roleIds: form.value.selectedRoleIds
+        }
+
         if (modal.value.isEdit) {
-            await axios.put(`/api/Auth/users/${form.value.username}`, form.value)
+            await apiClient.put(`/api/Auth/users/${form.value.username}`, payload)
             toast.success("Cập nhật thành công!")
             modal.value.show = false
         } else {
             const createdPassword = form.value.password || DEFAULT_PASSWORD
-            await axios.post('/api/Auth/register', form.value)
-            // Chỉ hiển thị 1 lần qua toast, KHÔNG lưu vào memory hay localStorage
+            await apiClient.post('/api/Auth/register', payload)
             toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${createdPassword} (Copy ngay, chỉ hiển thị 1 lần!)`)
             modal.value.show = false
         }

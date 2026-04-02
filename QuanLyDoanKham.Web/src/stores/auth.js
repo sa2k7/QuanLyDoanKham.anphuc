@@ -1,168 +1,163 @@
 import { defineStore } from 'pinia'
-import axios from 'axios'
-import router from '../router'
+import { ref, computed } from 'vue'
+import apiClient from '@/services/apiClient'
 
-export const useAuthStore = defineStore('auth', {
-    state: () => ({
-        user: JSON.parse(localStorage.getItem('user') || sessionStorage.getItem('user')) || null,
-        profile: null,
-        token: localStorage.getItem('token') || sessionStorage.getItem('token') || null,
-        refreshToken: localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken') || null,
-        loading: false,
-        error: null,
-        isInitialized: false
-    }),
-    getters: {
-        isAuthenticated: (state) => !!state.token,
-        role: (state) => state.user?.role || null,
-        companyId: (state) => state.user?.companyId || null,
-        currentUser: (state) => state.user?.username || null
-    },
-    actions: {
-        async checkAuth() {
-            if (this.token && !this.isInitialized) {
-                try {
-                    // Xác thực token với Backend
-                    axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-                    const res = await axios.get('/api/auth/profile')
-                    this.profile = res.data
-                    this.user = {
-                        username: res.data.username,
-                        role: res.data.roleName,
-                        companyId: res.data.companyId
-                    }
-                    
-                    // Cập nhật lại user info vào đúng bộ nhớ đang dùng
-                    if (localStorage.getItem('token')) {
-                        localStorage.setItem('user', JSON.stringify(this.user))
-                    } else {
-                        sessionStorage.setItem('user', JSON.stringify(this.user))
-                    }
+export const useAuthStore = defineStore('auth', () => {
+  // ──────────────────────────────────────────────────────────────────
+  // STATE
+  // ──────────────────────────────────────────────────────────────────
+  const token = ref(localStorage.getItem('token') || null)
+  const refreshToken = ref(localStorage.getItem('refreshToken') || null)
+  const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
 
-                    this.isInitialized = true
-                    return true
-                } catch (e) {
-                    console.warn("Token verify failed or expired", e)
-                    this.logout()
-                    return false
-                }
-            }
-            this.isInitialized = true
-            return !!this.token
-        },
-        async fetchProfile() {
-            try {
-                const res = await axios.get('/api/auth/profile')
-                this.profile = res.data
-                return res.data
-            } catch (e) {
-                console.error("Fetch profile failed", e)
-            }
-        },
-        async login(username, password, rememberMe = false) {
-            this.loading = true
-            this.error = null
-            try {
-                const response = await axios.post('/api/auth/login', {
-                    username,
-                    password
-                })
-                this.setData(response.data, rememberMe)
-                return true
-            } catch (err) {
-                this.error = err.response?.data || "Đăng nhập thất bại"
-                return false
-            } finally {
-                this.loading = false
-            }
-        },
-        setData(data, rememberMe = false) {
-            this.token = data.token
-            this.refreshToken = data.refreshToken
-            this.user = {
-                username: data.username,
-                role: data.role,
-                companyId: data.companyId
-            }
+  // ──────────────────────────────────────────────────────────────────
+  // GETTERS
+  // ──────────────────────────────────────────────────────────────────
+  const isLoggedIn = computed(() => !!token.value)
 
-            const storage = rememberMe ? localStorage : sessionStorage
-            
-            // Xóa sạch ở cả 2 trước khi set mới để tránh xung đột
-            this.clearStorage()
+  /** Primary role name (backward compat) */
+  const userRole = computed(() => user.value?.role || '')
 
-            storage.setItem('token', this.token)
-            storage.setItem('refreshToken', this.refreshToken)
-            storage.setItem('user', JSON.stringify(this.user))
-            
-            axios.defaults.headers.common['Authorization'] = `Bearer ${this.token}`
-        },
-        clearStorage() {
-            localStorage.removeItem('token')
-            localStorage.removeItem('refreshToken')
-            localStorage.removeItem('user')
-            sessionStorage.removeItem('token')
-            sessionStorage.removeItem('refreshToken')
-            sessionStorage.removeItem('user')
-        },
-        async refresh() {
-            try {
-                const res = await axios.post('/api/auth/refresh-token', {
-                    refreshToken: this.refreshToken
-                })
-                // Kiểm tra xem đang dùng storage nào để lưu tiếp vào đó
-                const isPersistent = !!localStorage.getItem('refreshToken')
-                this.setData(res.data, isPersistent)
-                return res.data.token
-            } catch (e) {
-                this.logout()
-                return null
-            }
-        },
-        logout() {
-            this.user = null
-            this.token = null
-            this.refreshToken = null
-            this.profile = null
-            this.clearStorage()
-            delete axios.defaults.headers.common['Authorization']
-            router.push('/login')
-        }
+  /** Tất cả roles của user */
+  const userRoles = computed(() => user.value?.roles || [])
+
+  /** Tất cả permission keys */
+  const userPermissions = computed(() => user.value?.permissions || [])
+
+  const fullName = computed(() => user.value?.fullName || '')
+  const username = computed(() => user.value?.username || '')
+  const companyId = computed(() => user.value?.companyId || null)
+  const departmentId = computed(() => user.value?.departmentId || null)
+  const departmentName = computed(() => user.value?.departmentName || '')
+  const avatarPath = computed(() => user.value?.avatarPath || null)
+
+  // ──────────────────────────────────────────────────────────────────
+  // PERMISSION HELPERS
+  // ──────────────────────────────────────────────────────────────────
+
+  /** Kiểm tra user có role cụ thể không */
+  const hasRole = (roleName) => {
+    if (!roleName) return false
+    return userRoles.value.includes(roleName) || userRole.value === roleName
+  }
+
+  /** Kiểm tra có ít nhất 1 trong danh sách roles */
+  const hasAnyRole = (...roles) => roles.some(r => hasRole(r))
+
+  /** Admin luôn có mọi quyền */
+  const isAdmin = computed(() => hasRole('Admin'))
+
+  /** Kiểm tra permission key cụ thể (ví dụ: 'HopDong.Approve') */
+  const hasPermission = (permissionKey) => {
+    if (!permissionKey) return true
+    if (isAdmin.value) return true
+    return userPermissions.value.includes(permissionKey)
+  }
+
+  /** Kiểm tra có ít nhất 1 permission trong danh sách */
+  const hasAnyPermission = (...keys) => keys.some(k => hasPermission(k))
+
+  /** Kiểm tra có TẤT CẢ permissions trong danh sách */
+  const hasAllPermissions = (...keys) => keys.every(k => hasPermission(k))
+
+  // ──────────────────────────────────────────────────────────────────
+  // ACTIONS
+  // ──────────────────────────────────────────────────────────────────
+  const login = async (credentials) => {
+    const response = await apiClient.post('/Auth/login', credentials)
+    const data = response.data
+
+    token.value = data.token
+    refreshToken.value = data.refreshToken
+
+    // Lưu đầy đủ thông tin user kể cả roles[] và permissions[]
+    user.value = {
+      username: data.username,
+      fullName: data.fullName,
+      role: data.role,           // primary (backward compat)
+      roles: data.roles || [],   // tất cả roles
+      permissions: data.permissions || [], // tất cả permissions
+      companyId: data.companyId,
+      departmentId: data.departmentId,
+      departmentName: data.departmentName,
+      avatarPath: data.avatarPath
     }
+
+    // Persist
+    localStorage.setItem('token', token.value)
+    localStorage.setItem('refreshToken', refreshToken.value)
+    localStorage.setItem('user', JSON.stringify(user.value))
+
+    return data
+  }
+
+  const logout = () => {
+    token.value = null
+    refreshToken.value = null
+    user.value = null
+    localStorage.removeItem('token')
+    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('user')
+  }
+
+  const refreshAccessToken = async () => {
+    try {
+      if (!refreshToken.value) throw new Error('No refresh token')
+      const response = await apiClient.post('/Auth/refresh', {
+        refreshToken: refreshToken.value
+      })
+      const data = response.data
+      token.value = data.token
+      refreshToken.value = data.refreshToken
+      user.value = {
+        ...user.value,
+        role: data.role,
+        roles: data.roles || [],
+        permissions: data.permissions || [],
+        avatarPath: data.avatarPath
+      }
+      localStorage.setItem('token', token.value)
+      localStorage.setItem('refreshToken', refreshToken.value)
+      localStorage.setItem('user', JSON.stringify(user.value))
+      return data.token
+    } catch (err) {
+      logout()
+      throw err
+    }
+  }
+
+  const updateProfile = (profileData) => {
+    user.value = { ...user.value, ...profileData }
+    localStorage.setItem('user', JSON.stringify(user.value))
+  }
+
+  return {
+    // State
+    token,
+    refreshToken,
+    user,
+    // Getters
+    isLoggedIn,
+    isAdmin,
+    userRole,
+    userRoles,
+    userPermissions,
+    fullName,
+    username,
+    companyId,
+    departmentId,
+    departmentName,
+    avatarPath,
+    // Permission helpers
+    hasRole,
+    hasAnyRole,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    // Actions
+    login,
+    logout,
+    refreshAccessToken,
+    updateProfile
+  }
 })
-
-// Setup Axios Interceptor
-axios.interceptors.response.use(
-    response => response,
-    async error => {
-        const originalRequest = error.config
-
-        // Tránh loop vô tận khi refresh token cũng fail
-        if (error.response?.status === 401 && !originalRequest._retry && !originalRequest.url.includes('refresh-token')) {
-            originalRequest._retry = true
-            const authStore = useAuthStore()
-            if (authStore.refreshToken) {
-                const newToken = await authStore.refresh()
-                if (newToken) {
-                    originalRequest.headers['Authorization'] = `Bearer ${newToken}`
-                    return axios(originalRequest)
-                }
-            }
-        }
-
-        if (error.response?.status === 403) {
-            const currentPath = router.currentRoute.value.path
-            if (currentPath !== '/forbidden') {
-                router.push('/forbidden')
-            }
-        }
-
-        return Promise.reject(error)
-    }
-)
-
-// Initial setup - Chạy khi file được nạp lần đầu
-const token = localStorage.getItem('token') || sessionStorage.getItem('token')
-if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`
-}
-

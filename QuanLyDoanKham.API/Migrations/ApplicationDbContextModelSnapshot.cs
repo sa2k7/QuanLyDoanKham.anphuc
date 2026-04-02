@@ -30,6 +30,10 @@ namespace QuanLyDoanKham.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -43,41 +47,61 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             RoleId = 1,
+                            Description = "Quản trị hệ thống",
                             RoleName = "Admin"
                         },
                         new
                         {
                             RoleId = 2,
+                            Description = "Quản lý nhân sự",
                             RoleName = "PersonnelManager"
                         },
                         new
                         {
                             RoleId = 3,
+                            Description = "Quản lý hợp đồng",
                             RoleName = "ContractManager"
                         },
                         new
                         {
                             RoleId = 4,
+                            Description = "Quản lý tính lương",
                             RoleName = "PayrollManager"
                         },
                         new
                         {
                             RoleId = 5,
+                            Description = "Quản lý đoàn khám",
                             RoleName = "MedicalGroupManager"
                         },
                         new
                         {
                             RoleId = 6,
+                            Description = "Quản lý kho vật tư",
                             RoleName = "WarehouseManager"
                         },
                         new
                         {
                             RoleId = 7,
-                            RoleName = "MedicalStaff"
+                            Description = "Trưởng đoàn khám",
+                            RoleName = "GroupLeader"
                         },
                         new
                         {
                             RoleId = 8,
+                            Description = "Nhân viên đi đoàn",
+                            RoleName = "MedicalStaff"
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            Description = "Kế toán",
+                            RoleName = "Accountant"
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            Description = "Đại diện doanh nghiệp đối tác",
                             RoleName = "Customer"
                         });
                 });
@@ -96,12 +120,22 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int?>("CompanyId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Email")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("FullName")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -125,7 +159,12 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("CompanyId");
 
+                    b.HasIndex("DepartmentId");
+
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
 
@@ -133,8 +172,10 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             UserId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             FullName = "System Administrator",
-                            PasswordHash = "$2a$11$4WF0NH/eKRnI.llEGuVI6Ozj3caSSdFbFw5jFtO0HyK0DL5/tnqXq",
+                            IsActive = true,
+                            PasswordHash = "$2a$11$azxY7U9nnOEV4xF4Cto.gOLsbvUKtALtNoqMjMFRhVfP/45V1BrJ.",
                             RoleId = 1,
                             Username = "admin"
                         });
@@ -235,6 +276,165 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("Companies");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractApprovalHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime>("ActionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ApprovedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StepName")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedByUserId");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.ToTable("ContractApprovalHistories");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractApprovalStep", b =>
+                {
+                    b.Property<int>("StepId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("StepId"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RequiredPermission")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("StepName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("StepOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("StepId");
+
+                    b.ToTable("ContractApprovalSteps");
+
+                    b.HasData(
+                        new
+                        {
+                            StepId = 1,
+                            IsActive = true,
+                            RequiredPermission = "HopDong.Approve",
+                            StepName = "Trưởng phòng xem xét",
+                            StepOrder = 1
+                        },
+                        new
+                        {
+                            StepId = 2,
+                            IsActive = true,
+                            RequiredPermission = "HopDong.Approve",
+                            StepName = "Ban giám đốc phê duyệt",
+                            StepOrder = 2
+                        });
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractAttachment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FileType")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UploadedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.ToTable("ContractAttachments");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractRevenueSummary", b =>
+                {
+                    b.Property<int>("SummaryId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SummaryId"));
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("GeneratedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Revenue")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalContractValue")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalGroupCosts")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<int>("TotalGroups")
+                        .HasColumnType("int");
+
+                    b.HasKey("SummaryId");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.ToTable("ContractRevenueSummaries");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractStatusHistory", b =>
                 {
                     b.Property<int>("Id")
@@ -271,6 +471,120 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("ContractStatusHistories");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Department", b =>
+                {
+                    b.Property<int>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DepartmentId"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DepartmentCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("DepartmentName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.HasKey("DepartmentId");
+
+                    b.ToTable("Departments");
+
+                    b.HasData(
+                        new
+                        {
+                            DepartmentId = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "HCNS",
+                            DepartmentName = "Hành chính - Nhân sự"
+                        },
+                        new
+                        {
+                            DepartmentId = 2,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "DHDK",
+                            DepartmentName = "Điều hành đoàn khám"
+                        },
+                        new
+                        {
+                            DepartmentId = 3,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "KVT",
+                            DepartmentName = "Kho - Vật tư"
+                        },
+                        new
+                        {
+                            DepartmentId = 4,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "KT",
+                            DepartmentName = "Kế toán"
+                        },
+                        new
+                        {
+                            DepartmentId = 5,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "TKBC",
+                            DepartmentName = "Thống kê - Báo cáo"
+                        },
+                        new
+                        {
+                            DepartmentId = 6,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentCode = "NVDK",
+                            DepartmentName = "Nhân viên đi khám"
+                        });
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupCost", b =>
+                {
+                    b.Property<int>("CostId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CostId"));
+
+                    b.Property<DateTime>("CalculatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CalculatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("OtherCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("StaffCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("SupplyCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("TotalCost")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("CostId");
+
+                    b.HasIndex("CalculatedByUserId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("GroupCosts");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -297,6 +611,9 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<string>("Note")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("PositionId")
+                        .HasColumnType("int");
+
                     b.Property<double>("ShiftType")
                         .HasColumnType("float");
 
@@ -315,6 +632,8 @@ namespace QuanLyDoanKham.API.Migrations
 
                     b.HasIndex("GroupId");
 
+                    b.HasIndex("PositionId");
+
                     b.HasIndex("StaffId");
 
                     b.ToTable("GroupStaffDetails");
@@ -331,6 +650,19 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int>("CompanyId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ContractCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CurrentApprovalStep")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("datetime2");
 
@@ -338,6 +670,9 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("FilePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("SigningDate")
@@ -360,9 +695,18 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<decimal>("UnitPrice")
                         .HasColumnType("decimal(18, 2)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("HealthContractId");
 
                     b.HasIndex("CompanyId");
+
+                    b.HasIndex("CreatedByUserId");
 
                     b.ToTable("Contracts");
                 });
@@ -375,8 +719,18 @@ namespace QuanLyDoanKham.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GroupId"));
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<DateTime>("ExamDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int?>("GroupLeaderStaffId")
+                        .HasColumnType("int");
 
                     b.Property<string>("GroupName")
                         .IsRequired()
@@ -389,15 +743,73 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<string>("ImportFilePath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ManagerUserId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Slot")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Status")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("TeamCode")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.HasKey("GroupId");
+
+                    b.HasIndex("GroupLeaderStaffId");
 
                     b.HasIndex("HealthContractId");
 
+                    b.HasIndex("ManagerUserId");
+
                     b.ToTable("MedicalGroups");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroupPosition", b =>
+                {
+                    b.Property<int>("PositionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PositionId"));
+
+                    b.Property<int>("AssignedCount")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("PositionName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RequiredCount")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("PositionId");
+
+                    b.HasIndex("GroupId");
+
+                    b.ToTable("MedicalGroupPositions");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Notification", b =>
@@ -467,23 +879,44 @@ namespace QuanLyDoanKham.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PayrollId"));
 
-                    b.Property<string>("Details")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("BaseSalary")
+                        .HasColumnType("decimal(18,2)");
 
-                    b.Property<DateTime>("GeneratedDate")
+                    b.Property<decimal>("DailyRate")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("GeneratedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("GeneratedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
+                    b.Property<string>("SalaryType")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<int>("StaffId")
                         .HasColumnType("int");
 
-                    b.Property<int>("TotalDays")
+                    b.Property<int>("StandardWorkDays")
                         .HasColumnType("int");
 
+                    b.Property<string>("Status")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<double>("TotalActualDays")
+                        .HasColumnType("float");
+
+                    b.Property<decimal>("TotalAmount")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("TotalSalary")
-                        .HasColumnType("decimal(18, 2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");
@@ -493,6 +926,465 @@ namespace QuanLyDoanKham.API.Migrations
                     b.HasIndex("StaffId");
 
                     b.ToTable("PayrollRecords");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Permission", b =>
+                {
+                    b.Property<int>("PermissionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PermissionId"));
+
+                    b.Property<string>("Module")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PermissionKey")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("PermissionName")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.HasKey("PermissionId");
+
+                    b.HasIndex("PermissionKey")
+                        .IsUnique();
+
+                    b.ToTable("Permissions");
+
+                    b.HasData(
+                        new
+                        {
+                            PermissionId = 1,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.View",
+                            PermissionName = "Xem hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 2,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.Create",
+                            PermissionName = "Tạo hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 3,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.Edit",
+                            PermissionName = "Sửa hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 4,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.Approve",
+                            PermissionName = "Phê duyệt hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 5,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.Reject",
+                            PermissionName = "Từ chối hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 6,
+                            Module = "HopDong",
+                            PermissionKey = "HopDong.Upload",
+                            PermissionName = "Đính kèm file hợp đồng"
+                        },
+                        new
+                        {
+                            PermissionId = 10,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.View",
+                            PermissionName = "Xem đoàn khám"
+                        },
+                        new
+                        {
+                            PermissionId = 11,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.Create",
+                            PermissionName = "Tạo đoàn khám"
+                        },
+                        new
+                        {
+                            PermissionId = 12,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.Edit",
+                            PermissionName = "Sửa đoàn khám"
+                        },
+                        new
+                        {
+                            PermissionId = 13,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.SetPosition",
+                            PermissionName = "Thiết lập vị trí đoàn"
+                        },
+                        new
+                        {
+                            PermissionId = 14,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.AssignStaff",
+                            PermissionName = "Phân công nhân sự đoàn"
+                        },
+                        new
+                        {
+                            PermissionId = 15,
+                            Module = "DoanKham",
+                            PermissionKey = "DoanKham.ManageOwn",
+                            PermissionName = "Quản lý đoàn mình phụ trách"
+                        },
+                        new
+                        {
+                            PermissionId = 20,
+                            Module = "LichKham",
+                            PermissionKey = "LichKham.ViewOwn",
+                            PermissionName = "Xem lịch của mình"
+                        },
+                        new
+                        {
+                            PermissionId = 21,
+                            Module = "LichKham",
+                            PermissionKey = "LichKham.ViewAll",
+                            PermissionName = "Xem toàn bộ lịch khám"
+                        },
+                        new
+                        {
+                            PermissionId = 30,
+                            Module = "ChamCong",
+                            PermissionKey = "ChamCong.QR",
+                            PermissionName = "Mở QR chấm công"
+                        },
+                        new
+                        {
+                            PermissionId = 31,
+                            Module = "ChamCong",
+                            PermissionKey = "ChamCong.CheckInOut",
+                            PermissionName = "Check-in/out nhân viên"
+                        },
+                        new
+                        {
+                            PermissionId = 32,
+                            Module = "ChamCong",
+                            PermissionKey = "ChamCong.ViewAll",
+                            PermissionName = "Xem toàn bộ chấm công"
+                        },
+                        new
+                        {
+                            PermissionId = 40,
+                            Module = "Kho",
+                            PermissionKey = "Kho.View",
+                            PermissionName = "Xem kho vật tư"
+                        },
+                        new
+                        {
+                            PermissionId = 41,
+                            Module = "Kho",
+                            PermissionKey = "Kho.Import",
+                            PermissionName = "Nhập kho"
+                        },
+                        new
+                        {
+                            PermissionId = 42,
+                            Module = "Kho",
+                            PermissionKey = "Kho.Export",
+                            PermissionName = "Xuất kho"
+                        },
+                        new
+                        {
+                            PermissionId = 50,
+                            Module = "Luong",
+                            PermissionKey = "Luong.View",
+                            PermissionName = "Xem bảng lương"
+                        },
+                        new
+                        {
+                            PermissionId = 51,
+                            Module = "Luong",
+                            PermissionKey = "Luong.Manage",
+                            PermissionName = "Tính và duyệt lương"
+                        },
+                        new
+                        {
+                            PermissionId = 60,
+                            Module = "NhanSu",
+                            PermissionKey = "NhanSu.View",
+                            PermissionName = "Xem nhân sự"
+                        },
+                        new
+                        {
+                            PermissionId = 61,
+                            Module = "NhanSu",
+                            PermissionKey = "NhanSu.Manage",
+                            PermissionName = "Quản lý nhân sự"
+                        },
+                        new
+                        {
+                            PermissionId = 70,
+                            Module = "BaoCao",
+                            PermissionKey = "BaoCao.View",
+                            PermissionName = "Xem báo cáo"
+                        },
+                        new
+                        {
+                            PermissionId = 71,
+                            Module = "BaoCao",
+                            PermissionKey = "BaoCao.Export",
+                            PermissionName = "Xuất báo cáo"
+                        },
+                        new
+                        {
+                            PermissionId = 80,
+                            Module = "HeThong",
+                            PermissionKey = "HeThong.UserManage",
+                            PermissionName = "Quản lý tài khoản"
+                        },
+                        new
+                        {
+                            PermissionId = 81,
+                            Module = "HeThong",
+                            PermissionKey = "HeThong.RoleManage",
+                            PermissionName = "Quản lý phân quyền"
+                        });
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.RolePermission", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("PermissionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PermissionId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RolePermissions");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            PermissionId = 1,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            PermissionId = 2,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            PermissionId = 3,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            PermissionId = 4,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            PermissionId = 5,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            PermissionId = 6,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            PermissionId = 10,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 8,
+                            PermissionId = 11,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 9,
+                            PermissionId = 12,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 10,
+                            PermissionId = 13,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 11,
+                            PermissionId = 14,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 12,
+                            PermissionId = 15,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 13,
+                            PermissionId = 20,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 14,
+                            PermissionId = 21,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 15,
+                            PermissionId = 30,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 16,
+                            PermissionId = 31,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 17,
+                            PermissionId = 32,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 18,
+                            PermissionId = 40,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 19,
+                            PermissionId = 41,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 20,
+                            PermissionId = 42,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 21,
+                            PermissionId = 50,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 22,
+                            PermissionId = 51,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 23,
+                            PermissionId = 60,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 24,
+                            PermissionId = 61,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 25,
+                            PermissionId = 70,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 26,
+                            PermissionId = 71,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 27,
+                            PermissionId = 80,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 28,
+                            PermissionId = 81,
+                            RoleId = 1
+                        });
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ScheduleCalendar", b =>
+                {
+                    b.Property<int>("CalendarId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CalendarId"));
+
+                    b.Property<DateTime?>("CheckInTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CheckOutTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("ExamDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int?>("StaffId")
+                        .HasColumnType("int");
+
+                    b.HasKey("CalendarId");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("StaffId");
+
+                    b.ToTable("ScheduleCalendars");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>
@@ -530,7 +1422,10 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<decimal>("DailyRate")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<string>("Department")
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DepartmentName")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -586,6 +1481,10 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<string>("PracticeCertificatePath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SalaryType")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Specialty")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -594,11 +1493,16 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int>("StandardWorkDays")
+                        .HasColumnType("int");
+
                     b.Property<string>("TaxCode")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
                     b.HasKey("StaffId");
+
+                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Staffs");
                 });
@@ -716,19 +1620,57 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("SupplyInventoryVouchers");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.UserRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserRoles");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.AppUser", b =>
                 {
                     b.HasOne("QuanLyDoanKham.API.Models.Company", "Company")
                         .WithMany()
-                        .HasForeignKey("CompanyId");
+                        .HasForeignKey("CompanyId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Department", "Department")
+                        .WithMany("Users")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("QuanLyDoanKham.API.Models.AppRole", "Role")
                         .WithMany()
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Company");
+
+                    b.Navigation("Department");
 
                     b.Navigation("Role");
                 });
@@ -744,6 +1686,47 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractApprovalHistory", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "ApprovedByUser")
+                        .WithMany()
+                        .HasForeignKey("ApprovedByUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany("ApprovalHistories")
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedByUser");
+
+                    b.Navigation("HealthContract");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractAttachment", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany("Attachments")
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HealthContract");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractRevenueSummary", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany()
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HealthContract");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractStatusHistory", b =>
                 {
                     b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
@@ -755,21 +1738,46 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("HealthContract");
                 });
 
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupCost", b =>
                 {
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "CalculatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CalculatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyDoanKham.API.Models.Staff", "Staff")
-                        .WithMany("GroupStaffDetails")
-                        .HasForeignKey("StaffId")
+                    b.Navigation("CalculatedByUser");
+
+                    b.Navigation("MedicalGroup");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
+                        .WithMany("StaffDetails")
+                        .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroupPosition", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Staff", "Staff")
+                        .WithMany("GroupStaffDetails")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("MedicalGroup");
+
+                    b.Navigation("Position");
 
                     b.Navigation("Staff");
                 });
@@ -782,18 +1790,50 @@ namespace QuanLyDoanKham.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "CreatedByUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedByUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Company");
+
+                    b.Navigation("CreatedByUser");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroup", b =>
                 {
-                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                    b.HasOne("QuanLyDoanKham.API.Models.Staff", "GroupLeaderStaff")
                         .WithMany()
+                        .HasForeignKey("GroupLeaderStaffId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany("MedicalGroups")
                         .HasForeignKey("HealthContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "ManagerUser")
+                        .WithMany()
+                        .HasForeignKey("ManagerUserId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("GroupLeaderStaff");
+
                     b.Navigation("HealthContract");
+
+                    b.Navigation("ManagerUser");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroupPosition", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
+                        .WithMany("Positions")
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("MedicalGroup");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Notification", b =>
@@ -816,6 +1856,53 @@ namespace QuanLyDoanKham.API.Migrations
                         .IsRequired();
 
                     b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.RolePermission", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.AppRole", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ScheduleCalendar", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("MedicalGroup");
+
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.Department", "Department")
+                        .WithMany("Staffs")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.SupplyInventoryDetail", b =>
@@ -854,9 +1941,65 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("MedicalGroup");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.UserRole", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.AppRole", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "User")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.AppRole", b =>
+                {
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.AppUser", b =>
+                {
+                    b.Navigation("UserRoles");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Department", b =>
+                {
+                    b.Navigation("Staffs");
+
+                    b.Navigation("Users");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.HealthContract", b =>
                 {
+                    b.Navigation("ApprovalHistories");
+
+                    b.Navigation("Attachments");
+
+                    b.Navigation("MedicalGroups");
+
                     b.Navigation("StatusHistories");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroup", b =>
+                {
+                    b.Navigation("Positions");
+
+                    b.Navigation("StaffDetails");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.Staff", b =>

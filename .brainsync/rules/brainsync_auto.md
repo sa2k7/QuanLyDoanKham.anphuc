@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 793 notes | Score threshold: >40
+> 205 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,51 +20,40 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in build_errors.txt** — File updated (external): QuanLyDoanKham.API/build_errors.txt
+- **gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
+- **gotcha in build3.txt** — File updated (external): QuanLyDoanKham.API/build3.txt
 
-Content 
-- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
-+ ��B
-- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
-+ ��B
-- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
-+ ��B
-- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
-+ ��B
-- **⚠️ GOTCHA: Replaced auth Build** — - Build started 4/1/2026 12:28:05 AM.
-+ ��B
+Content summar
+- **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
+- **gotcha in rjsmrazor.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmrazo
+- **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QLDK.API
+- **gotcha in rjsmcshtml.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmcsht
 
 ## Project Standards
 
-- Optimized GlobalPropertiesHash — confirmed 6x
-- Added JWT tokens authentication — uses a proper password hashing algorithm — confirmed 9x
-- convention in QuanLyDoanKham.API.csproj.AssemblyReference.cache
-- convention in .gitignore
-- Replaced auth Admin — confirmed 3x
-- Updated tbody database schema — confirmed 3x
-- what-changed in BAO_CAO_KIEM_THU.csv — confirmed 6x
-- what-changed in index.html — confirmed 3x
+- Fixed null crash in String — prevents null/undefined runtime crashes — confirmed 3x
+- Optimized GlobalPropertiesHash — confirmed 3x
+- Strengthened types TotalActualDays
+- Strengthened types System
+- Strengthened types System
+- Optimized GlobalPropertiesHash — confirmed 3x
+- Optimized GlobalPropertiesHash — confirmed 5x
+- Fixed null crash in STATE — prevents null/undefined runtime crashes — confirmed 3x
 
 ## Known Fixes
 
-- ❌ -          Failed to load prune package data from PrunePackageData folder, loading from targeting pa → ✅ problem-fix in build_log.txt
-- ❌ {"version":8,"type":"context-options","origin":"library","browserName":"chromium","playwrightVersion → ✅ problem-fix in 9e156dadfc5dbd714a5e-41326303dd4643921436-retry1.trace
-- ❌ + {"type":"after","callId":"call@16","endTime":145700.018,"error":{"name":"Expect","message":"Expect → ✅ problem-fix in 9e156dadfc5dbd714a5e-c74fbf5bd2ac87f0a2b3-retry1.trace
-- ❌ + {"type":"after","callId":"call@22","endTime":41871.907,"error":{"name":"Expect","message":"Expect  → ✅ problem-fix in d5ed79a6b333c2ba7209-c897fa090adae5556b28-retry1.trace
-- ❌ - - `[ ]` Ghi nhật ký vào ERRORS.md và học tập kinh nghiệm → ✅ problem-fix in task.md
+- ❌ File updated (external): QuanLyDoanKham.API/build_errors_new.txt → ✅ problem-fix in migration_errors.txt
 
 ## Recent Decisions
 
-- decision in Program.cs
-- decision in ApplicationDbContext.cs
-- decision in Contracts.vue
-- decision in Contracts.vue
+- decision in ApplicationDbContextModelSnapshot.cs
+- decision in ApplicationDbContextModelSnapshot.cs
 
 ## Learned Patterns
 
-- Avoid: gotcha in QuanLyDoanKham.API.pdb (seen 2x)
-- Avoid: ⚠️ GOTCHA: Updated API endpoint Failed (seen 4x)
-- Avoid: ⚠️ GOTCHA: Updated API endpoint Failed (seen 5x)
+- Avoid: gotcha in staticwebassets.build.json (seen 2x)
+- Avoid: gotcha in QLDK.API.pdb (seen 2x)
+- Avoid: gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache (seen 2x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

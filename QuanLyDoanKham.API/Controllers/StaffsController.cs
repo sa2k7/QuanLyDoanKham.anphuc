@@ -20,9 +20,9 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Staffs — Admin, MedicalStaff và PersonnelManager được xem
+        // GET: api/Staffs — Admin, MedicalStaff, PersonnelManager và MedicalGroupManager được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager")] // Fix role name 'Staff' -> 'MedicalStaff' bh pk bh
+        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager,MedicalGroupManager")]
         public async Task<ActionResult<IEnumerable<StaffDto>>> GetStaffs()
         {
             var staffs = await _context.Staffs
@@ -35,11 +35,11 @@ namespace QuanLyDoanKham.API.Controllers
 
             var result = staffs.Select(s => {
                 // Tìm đoàn khám hiện tại (chưa kết thúc hoặc chưa khóa) mà nhân viên này tham gia
-                var activeGroupDetail = s.GroupStaffDetails
+                var activeGroupDetail = s.GroupStaffDetails?
                     .FirstOrDefault(gsd => gsd.MedicalGroup != null && (gsd.MedicalGroup.Status == "Open"));
 
-                // Tìm thông tin vai trò từ tài khoản tương ứng
-                var userAccount = users.FirstOrDefault(u => u.Username.Equals(s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
+                // Tìm thông tin vai trò từ tài khoản tương ứng (sử dụng string.Equals an toàn tránh null)
+                var userAccount = users.FirstOrDefault(u => string.Equals(u.Username, s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
 
                 return new StaffDto
                 {
@@ -57,7 +57,7 @@ namespace QuanLyDoanKham.API.Controllers
                     PhoneNumber = s.PhoneNumber,
                     JobTitle = s.JobTitle,
                     Email = s.Email,
-                    Department = s.Department,
+                    Department = s.DepartmentName,
                     EmployeeType = s.EmployeeType,
                     AvatarPath = s.AvatarPath,
                     BaseSalary = s.BaseSalary,
@@ -86,8 +86,9 @@ namespace QuanLyDoanKham.API.Controllers
                 return NotFound();
             }
 
+            var lowerEmployeeCode = staff.EmployeeCode?.ToLower();
             var userAccount = await _context.Users.Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
+                .FirstOrDefaultAsync(u => u.Username == lowerEmployeeCode);
 
             var dto = new StaffDetailDto
             {
@@ -105,7 +106,7 @@ namespace QuanLyDoanKham.API.Controllers
                 PhoneNumber = staff.PhoneNumber,
                 Email = staff.Email,
                 JobTitle = staff.JobTitle,
-                Department = staff.Department,
+                Department = staff.DepartmentName,
                 EmployeeType = staff.EmployeeType,
                 IDCardFrontPath = staff.IDCardFrontPath,
                 IDCardBackPath = staff.IDCardBackPath,
@@ -168,7 +169,7 @@ namespace QuanLyDoanKham.API.Controllers
                 PhoneNumber = dto.PhoneNumber,
                 Email = dto.Email,
                 JobTitle = dto.JobTitle,
-                Department = dto.Department,
+                DepartmentName = dto.Department,
                 EmployeeType = dto.EmployeeType,
                 IDCardFrontPath = dto.IDCardFrontPath,
                 IDCardBackPath = dto.IDCardBackPath,
@@ -256,7 +257,7 @@ namespace QuanLyDoanKham.API.Controllers
             staff.PhoneNumber = dto.PhoneNumber;
             staff.Email = dto.Email;
             staff.JobTitle = dto.JobTitle;
-            staff.Department = dto.Department;
+            staff.DepartmentName = dto.Department;
             staff.EmployeeType = dto.EmployeeType;
             staff.AvatarPath = dto.AvatarPath;
             staff.BaseSalary = dto.BaseSalary;
@@ -269,7 +270,8 @@ namespace QuanLyDoanKham.API.Controllers
                 // Cập nhật vai trò hệ thống nếu có thay đổi
                 if (!string.IsNullOrEmpty(dto.SystemRole))
                 {
-                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
+                    var lowerEmployeeCode = staff.EmployeeCode?.ToLower();
+                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.Username == lowerEmployeeCode);
                     var newRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == dto.SystemRole);
                     
                     if (userAccount != null && newRole != null)

@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Services.MedicalGroups;
 using System.Text;
 
 namespace QuanLyDoanKham.API.Controllers
@@ -15,11 +16,13 @@ namespace QuanLyDoanKham.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly Services.IGeminiService _geminiService;
+        private readonly IMedicalGroupAutoAssignmentService _autoAssignmentService;
 
-        public MedicalGroupsController(ApplicationDbContext context, Services.IGeminiService geminiService)
+        public MedicalGroupsController(ApplicationDbContext context, Services.IGeminiService geminiService, IMedicalGroupAutoAssignmentService autoAssignmentService)
         {
             _context = context;
             _geminiService = geminiService;
+            _autoAssignmentService = autoAssignmentService;
         }
 
         // GET: api/MedicalGroups
@@ -106,6 +109,43 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Cập nhật trạng thái thành công", status = group.Status });
         }
 
+        // GET: api/MedicalGroups/my-schedule — MedicalStaff xem lịch đi đoàn cá nhân
+        [HttpGet("my-schedule")]
+        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
+        public async Task<IActionResult> GetMySchedule()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            // Tìm Staff tương ứng với tài khoản đang đăng nhập
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode.ToLower() == username.ToLower());
+            if (staff == null) return NotFound(new { message = "Không tìm thấy hồ sơ nhân sự liên kết với tài khoản này." });
+
+            var schedule = await _context.GroupStaffDetails
+                .Include(gsd => gsd.MedicalGroup)
+                    .ThenInclude(g => g.HealthContract)
+                        .ThenInclude(c => c.Company)
+                .Where(gsd => gsd.StaffId == staff.StaffId)
+                .OrderByDescending(gsd => gsd.MedicalGroup.ExamDate)
+                .Select(gsd => new
+                {
+                    gsd.Id,
+                    gsd.MedicalGroup.GroupId,
+                    gsd.MedicalGroup.GroupName,
+                    gsd.MedicalGroup.ExamDate,
+                    CompanyName = gsd.MedicalGroup.HealthContract.Company.ShortName ?? gsd.MedicalGroup.HealthContract.Company.CompanyName,
+                    gsd.WorkPosition,
+                    gsd.WorkStatus,
+                    gsd.ShiftType,
+                    gsd.CheckInTime,
+                    gsd.CheckOutTime,
+                    GroupStatus = gsd.MedicalGroup.Status
+                })
+                .ToListAsync();
+
+            return Ok(schedule);
+        }
+
         // GET: api/MedicalGroups/{id}/staffs
         [HttpGet("{id}/staffs")]
         public async Task<ActionResult<IEnumerable<GroupStaffItemDto>>> GetGroupStaffs(int id)
@@ -117,11 +157,13 @@ namespace QuanLyDoanKham.API.Controllers
                 {
                     Id = gsd.Id,
                     StaffId = gsd.StaffId,
+                    EmployeeCode = gsd.Staff.EmployeeCode,
                     FullName = gsd.Staff.FullName,
                     JobTitle = gsd.Staff.JobTitle,
                     ShiftType = gsd.ShiftType,
                     CalculatedSalary = gsd.CalculatedSalary,
                     WorkPosition = gsd.WorkPosition,
+                    PositionId = gsd.PositionId,
                     WorkStatus = gsd.WorkStatus
                 })
                 .ToListAsync();
@@ -162,8 +204,19 @@ namespace QuanLyDoanKham.API.Controllers
                 CalculatedSalary = staff.BaseSalary * (decimal)dto.ShiftType,
                 ExamDate = examDate,
                 WorkPosition = dto.WorkPosition,
+                PositionId = dto.PositionId,
                 WorkStatus = dto.WorkStatus ?? "Đang chờ"
             };
+
+            // Cập nhật AssignedCount cho Position nếu có
+            if (dto.PositionId.HasValue)
+            {
+                var position = await _context.MedicalGroupPositions.FindAsync(dto.PositionId.Value);
+                if (position != null)
+                {
+                    position.AssignedCount += 1;
+                }
+            }
 
             _context.GroupStaffDetails.Add(detail);
             await _context.SaveChangesAsync();
@@ -194,6 +247,20 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(detail);
         }
 
+        // POST: api/MedicalGroups/auto-create-with-staff
+        [HttpPost("auto-create-with-staff")]
+        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        public async Task<IActionResult> AutoCreateWithStaff([FromBody] AutoCreateGroupWithStaffRequestDto request)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _autoAssignmentService.AutoCreateAndAssignAsync(request, userId);
+            
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(result.Data);
+        }
+
         // POST: api/MedicalGroups/auto-create/{contractId}
         [HttpPost("auto-create/{contractId}")]
         [Authorize(Roles = "Admin,MedicalGroupManager")]
@@ -210,7 +277,9 @@ namespace QuanLyDoanKham.API.Controllers
                 GroupName = $"Đoàn khám {contract.Company.ShortName ?? contract.Company.CompanyName} - Lần {existingGroupsCount + 1}",
                 ExamDate = DateTime.Now.AddDays(7), // Mặc định 7 ngày sau
                 HealthContractId = contractId,
-                Status = "Open"
+                Status = "Open",
+                CreatedAt = DateTime.Now,
+                CreatedBy = User.Identity?.Name ?? "system"
             };
 
             _context.MedicalGroups.Add(newGroup);
@@ -229,6 +298,15 @@ namespace QuanLyDoanKham.API.Controllers
             var group = await _context.MedicalGroups.FindAsync(detail.GroupId);
             if (group != null && (group.Status == "Locked" || group.Status == "Finished"))
                 return BadRequest("Đoàn khám đã đóng hoặc khóa.");
+
+            if (detail.PositionId.HasValue)
+            {
+                var position = await _context.MedicalGroupPositions.FindAsync(detail.PositionId.Value);
+                if (position != null && position.AssignedCount > 0)
+                {
+                    position.AssignedCount -= 1;
+                }
+            }
 
             _context.GroupStaffDetails.Remove(detail);
             await _context.SaveChangesAsync();
@@ -256,32 +334,70 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // POST: api/MedicalGroups/staffs/{detailId}/checkin
-        // Ghi nhan gio check-in thuc te
+        // Ghi nhan gio check-in thuc te — Admin, GroupMgr hoặc MedicalStaff (tự check-in)
         [HttpPost("staffs/{detailId}/checkin")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
         public async Task<IActionResult> CheckIn(int detailId)
         {
-            var detail = await _context.GroupStaffDetails.FindAsync(detailId);
+            var detail = await _context.GroupStaffDetails.Include(d => d.Staff).FirstOrDefaultAsync(d => d.Id == detailId);
             if (detail == null) return NotFound("Không tìm thấy bản ghi phân công.");
+
+            // MedicalStaff chỉ được tự check-in cho chính mình
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (userRole == "MedicalStaff")
+            {
+                var username = User.Identity?.Name;
+                var myStaff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode.ToLower() == username.ToLower());
+                if (myStaff == null || myStaff.StaffId != detail.StaffId)
+                    return StatusCode(403, new { message = "Bạn chỉ có thể check-in cho chính mình." });
+            }
 
             if (detail.CheckInTime.HasValue)
                 return BadRequest($"Nhân viên này đã check-in lúc {detail.CheckInTime:HH:mm dd/MM/yyyy}.");
 
             detail.CheckInTime = DateTime.Now;
-            detail.WorkStatus = "Đã tham gia"; // Tu dong chuyen sang Da tham gia khi check-in
-            await _context.SaveChangesAsync();
+            detail.WorkStatus = "Đã tham gia";
 
+            // Ghi Audit Log
+            var currentUsername = User.Identity?.Name ?? "system";
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == currentUsername);
+            if (currentUser != null)
+            {
+                _context.AuditLogs.Add(new AuditLog
+                {
+                    UserId = currentUser.UserId,
+                    Action = "CHECK_IN",
+                    EntityType = "GroupStaffDetail",
+                    EntityId = detailId,
+                    OldValue = null,
+                    NewValue = $"Staff {detail.Staff?.FullName} check-in lúc {detail.CheckInTime:HH:mm}",
+                    Timestamp = DateTime.Now,
+                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+                });
+            }
+
+            await _context.SaveChangesAsync();
             return Ok(new { message = "Check-in thành công!", checkInTime = detail.CheckInTime });
         }
 
         // POST: api/MedicalGroups/staffs/{detailId}/checkout
         // Ghi nhan gio check-out khi ket thuc buoi kham
         [HttpPost("staffs/{detailId}/checkout")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
         public async Task<IActionResult> CheckOut(int detailId)
         {
-            var detail = await _context.GroupStaffDetails.FindAsync(detailId);
+            var detail = await _context.GroupStaffDetails.Include(d => d.Staff).FirstOrDefaultAsync(d => d.Id == detailId);
             if (detail == null) return NotFound("Không tìm thấy bản ghi phân công.");
+
+            // MedicalStaff chỉ được tự check-out cho chính mình
+            var userRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value;
+            if (userRole == "MedicalStaff")
+            {
+                var username = User.Identity?.Name;
+                var myStaff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode.ToLower() == username.ToLower());
+                if (myStaff == null || myStaff.StaffId != detail.StaffId)
+                    return StatusCode(403, new { message = "Bạn chỉ có thể check-out cho chính mình." });
+            }
 
             if (!detail.CheckInTime.HasValue)
                 return BadRequest("Chưa có check-in. Không thể check-out.");
@@ -290,6 +406,25 @@ namespace QuanLyDoanKham.API.Controllers
                 return BadRequest($"Nhân viên này đã check-out lúc {detail.CheckOutTime:HH:mm dd/MM/yyyy}.");
 
             detail.CheckOutTime = DateTime.Now;
+
+            // Ghi Audit Log
+            var currentUsername = User.Identity?.Name ?? "system";
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == currentUsername);
+            if (currentUser != null)
+            {
+                _context.AuditLogs.Add(new AuditLog
+                {
+                    UserId = currentUser.UserId,
+                    Action = "CHECK_OUT",
+                    EntityType = "GroupStaffDetail",
+                    EntityId = detailId,
+                    OldValue = null,
+                    NewValue = $"Staff {detail.Staff?.FullName} check-out lúc {detail.CheckOutTime:HH:mm}",
+                    Timestamp = DateTime.Now,
+                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
+                });
+            }
+
             await _context.SaveChangesAsync();
 
             var duration = detail.CheckOutTime.Value - detail.CheckInTime.Value;
@@ -485,6 +620,71 @@ namespace QuanLyDoanKham.API.Controllers
                 groupId = id,
                 timestamp = DateTime.Now 
             });
+        }
+
+        // =========================================================================
+        // PHẦN QUẢN LÝ VỊ TRÍ (POSITIONS)
+        // =========================================================================
+
+        // GET: api/MedicalGroups/{id}/positions
+        [HttpGet("{id}/positions")]
+        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        public async Task<ActionResult<IEnumerable<MedicalGroupPositionDto>>> GetGroupPositions(int id)
+        {
+            return await _context.MedicalGroupPositions
+                .Where(p => p.GroupId == id)
+                .OrderBy(p => p.SortOrder)
+                .Select(p => new MedicalGroupPositionDto
+                {
+                    PositionId = p.PositionId,
+                    GroupId = p.GroupId,
+                    PositionName = p.PositionName,
+                    RequiredCount = p.RequiredCount,
+                    AssignedCount = p.AssignedCount,
+                    Description = p.Description,
+                    SortOrder = p.SortOrder
+                })
+                .ToListAsync();
+        }
+
+        // POST: api/MedicalGroups/{id}/positions
+        [HttpPost("{id}/positions")]
+        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        public async Task<IActionResult> AddPosition(int id, [FromBody] MedicalGroupPositionDto dto)
+        {
+            var group = await _context.MedicalGroups.FindAsync(id);
+            if (group == null) return NotFound("Đoàn khám không tồn tại.");
+
+            var position = new MedicalGroupPosition
+            {
+                GroupId = id,
+                PositionName = dto.PositionName,
+                RequiredCount = dto.RequiredCount > 0 ? dto.RequiredCount : 1,
+                Description = dto.Description,
+                SortOrder = dto.SortOrder
+            };
+
+            _context.MedicalGroupPositions.Add(position);
+            await _context.SaveChangesAsync();
+
+            return Ok(position);
+        }
+
+        // DELETE: api/MedicalGroups/positions/{positionId}
+        [HttpDelete("positions/{positionId}")]
+        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        public async Task<IActionResult> RemovePosition(int positionId)
+        {
+            var position = await _context.MedicalGroupPositions.FindAsync(positionId);
+            if (position == null) return NotFound();
+
+            var hasAssignedStaff = await _context.GroupStaffDetails.AnyAsync(gs => gs.PositionId == positionId);
+            if (hasAssignedStaff)
+                return BadRequest("Không thể xóa vị trí đã có nhân sự được phân công.");
+
+            _context.MedicalGroupPositions.Remove(position);
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

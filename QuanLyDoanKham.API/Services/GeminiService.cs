@@ -26,7 +26,7 @@ namespace QuanLyDoanKham.API.Services
             if (string.IsNullOrEmpty(apiKey))
                 throw new Exception("Gemini API Key is missing in configuration.");
 
-            var url = $"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={apiKey}";
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
 
             var requestBody = new
             {
@@ -46,7 +46,7 @@ namespace QuanLyDoanKham.API.Services
                     topP = 0.8,
                     topK = 40,
                     maxOutputTokens = 2048,
-                    responseMimeType = "application/json"
+                    response_mime_type = "application/json"
                 }
             };
 
@@ -57,7 +57,10 @@ namespace QuanLyDoanKham.API.Services
             var responseString = await response.Content.ReadAsStringAsync();
 
             if (!response.IsSuccessStatusCode)
+            {
+                Console.WriteLine($"[DEBUG] Gemini API Error: {responseString}");
                 throw new Exception($"Gemini API error: {responseString}");
+            }
 
             using var doc = JsonDocument.Parse(responseString);
             var text = doc.RootElement

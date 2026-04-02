@@ -72,18 +72,21 @@ namespace QuanLyDoanKham.API.DTOs
         public double ShiftType { get; set; } // 0.5 (Morning/Afternoon) or 1.0 (Full day)
         public string WorkPosition { get; set; }
         public string WorkStatus { get; set; }
+        public int? PositionId { get; set; }
     }
 
     public class GroupStaffItemDto
     {
         public int Id { get; set; } // Detail ID
         public int StaffId { get; set; }
+        public string EmployeeCode { get; set; }
         public string FullName { get; set; }
         public string JobTitle { get; set; }
         public string StaffType { get; set; } // BacSi, DieuDuong...
         public double ShiftType { get; set; }
         public decimal CalculatedSalary { get; set; }
         public string WorkPosition { get; set; }
+        public int? PositionId { get; set; }
         public string WorkStatus { get; set; }
         public DateTime? CheckInTime { get; set; } // Gio check-in thuc te
         public DateTime? CheckOutTime { get; set; } // Gio check-out thuc te

@@ -61,3 +61,32 @@
 - **Status**: Fixed
 
 ---
+
+---
+
+## [2026-04-01 10:20] - L?i Ph?n h?i API: Mismatch Naming Policy (PascalCase vs camelCase)
+
+- **Type**: Integration / Configuration
+- **Severity**: Medium (Khi?n FE không lýu ðý?c Token)
+- **Files**: QuanLyDoanKham.API/Program.cs, QuanLyDoanKham.Web/src/stores/auth.js
+- **Agent**: Komi (Phát hi?n & S?a ch?a)
+- **Root Cause**: Backend m?c ð?nh tr? v? PascalCase (Token, Username) trong khi Frontend (Axios) mong ð?i camelCase (	oken, username). 
+- **Error Message**: Ðãng nh?p báo thành công ? Network nhýng UI v?n báo l?i ho?c không chuy?n trang.
+- **Fix Applied**: C?u h?nh JsonNamingPolicy.CamelCase trong AddJsonOptions t?i Program.cs.
+- **Prevention**: Luôn ki?m tra PropertyNamingPolicy khi b?t ð?u d? án Fullstack. Ýu tiên ép chu?n camelCase cho toàn b? API ð? ð?ng b? v?i Javascript.
+- **Status**: Fixed
+
+---
+
+## [2026-04-01 10:28] - L?i Th?c thi: Truncation do Shell Interpolation (K? t? $)
+
+- **Type**: Agent Execution (Thao tác Terminal sai)
+- **Severity**: Medium (Làm h?ng d? li?u PasswordHash)
+- **File**: Database (sqlcmd command line)
+- **Agent**: Komi (Rút kinh nghi?m & S?a ch?a)
+- **Root Cause**: S? d?ng sqlcmd v?i nháy kép (" \) trong PowerShell ð? Update m? bãm BCrypt. Các k? t? $ trong m? bãm b? Shell hi?u nh?m là bi?n môi trý?ng và b? xóa tr?ng, d?n ð?n chu?i b? c?t c?t (60 k? t? c?n 34 k? t?).
+- **Error Message**: 401 Unauthorized trên Swagger dù m? bãm trông có v? ðúng (nhýng th?c t? b? thi?u ð?u).
+- **Fix Applied**: Chuy?n sang dùng t?p .sql trung gian ð? th?c hi?n l?nh Update, tránh hoàn toàn s? can thi?p c?a Shell.
+- **Prevention**: **QUY T?C VÀNG**: Tuy?t ð?i không truy?n chu?i có k? t? ð?c bi?t ($, &, |) tr?c ti?p qua tham s? d?ng l?nh. Luôn dùng t?p Script ho?c Escaping chu?n POSIX/PowerShell.
+- **Status**: Fixed
+

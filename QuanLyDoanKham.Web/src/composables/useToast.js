@@ -5,6 +5,12 @@ const toasts = ref([])
 
 export function useToast() {
     const show = (message, type = 'success', duration = 4000) => {
+        // Tự động giải nén message nếu là object từ API response
+        let finalMessage = message
+        if (typeof message === 'object' && message !== null) {
+            finalMessage = message.message || message.title || JSON.stringify(message)
+        }
+
         const container = document.createElement('div')
         document.body.appendChild(container)
 
@@ -17,7 +23,7 @@ export function useToast() {
         }
 
         const vnode = h(Toast, {
-            message,
+            message: finalMessage,
             type,
             duration,
             onClose: close
