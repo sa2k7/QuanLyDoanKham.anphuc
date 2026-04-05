@@ -22,9 +22,18 @@ namespace QuanLyDoanKham.API.Models
         public DateTime EndDate { get; set; }       // Ngày kết thúc khám
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal UnitPrice { get; set; }
+        public decimal UnitPrice { get; set; } = 0; // Giá cũ
 
-        public int ExpectedQuantity { get; set; }
+        public int ExpectedQuantity { get; set; } = 0; // Số khách cũ
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal AdvancePayment { get; set; } = 0; // Tiền tạm ứng
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal FinalSettlementValue { get; set; } = 0; // Giá trị quyết toán thực tế
+
+        [Column(TypeName = "decimal(5, 2)")]
+        public decimal DiscountPercent { get; set; } = 0; // % Chiết khấu / Hoa hồng
 
         [MaxLength(50)]
         public string UnitName { get; set; }
@@ -65,5 +74,8 @@ namespace QuanLyDoanKham.API.Models
         public ICollection<ContractApprovalHistory> ApprovalHistories { get; set; } = new List<ContractApprovalHistory>();
         public ICollection<ContractAttachment> Attachments { get; set; } = new List<ContractAttachment>();
         public ICollection<MedicalGroup> MedicalGroups { get; set; } = new List<MedicalGroup>();
+        
+        // Cụm B2B Financial & Bạc Sỹ
+        public ICollection<ContractPackage> ContractPackages { get; set; } = new List<ContractPackage>();
     }
 }

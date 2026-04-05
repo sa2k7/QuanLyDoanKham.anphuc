@@ -60,6 +60,13 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
 
+        // B2C CLINICAL & B2B FINANCIAL MODULES
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<MedicalRecord> MedicalRecords { get; set; }
+        public DbSet<ExamService> ExamServices { get; set; }
+        public DbSet<MedicalRecordService> MedicalRecordServices { get; set; }
+        public DbSet<ContractPackage> ContractPackages { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -270,6 +277,25 @@ namespace QuanLyDoanKham.API.Data
                 .WithMany(d => d.Staffs)
                 .HasForeignKey(s => s.DepartmentId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // B2C & B2B Financial Relationships
+            modelBuilder.Entity<MedicalRecord>()
+                .HasOne(m => m.Patient)
+                .WithMany(p => p.MedicalRecords)
+                .HasForeignKey(m => m.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<MedicalRecordService>()
+                .HasOne(ms => ms.MedicalRecord)
+                .WithMany(m => m.Services)
+                .HasForeignKey(ms => ms.RecordId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ContractPackage>()
+                .HasOne(cp => cp.HealthContract)
+                .WithMany(hc => hc.ContractPackages)
+                .HasForeignKey(cp => cp.HealthContractId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             // ---- SEED DATA ----
 

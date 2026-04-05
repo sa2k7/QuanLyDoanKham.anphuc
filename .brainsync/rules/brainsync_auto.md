@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 301 notes | Score threshold: >40
+> 361 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,35 +20,29 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - problem-fix in shared-context.json
-+ - Patched security issue SANG
-- **⚠️ GOTCHA: Optimized GOTCHA — externalizes configuration for environment flexibility** — - - gotcha in shared-context.json
-+ - ⚠️ GOTCHA: problem-fix in agent-
-- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Patched security issue SANG
-+ - problem-fix in agent-rules.md
-- - 
-- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Patched security issue SANG
-+ - problem-fix in agent-rules.md
-- - 
+- **gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
 - **gotcha in shared-context.json** — -     }
 +     },
 -   ]
 +     {
 - }
-+       "id": "d7068b490c705955",
++       "id": "1904db385f2afcb3",
 +
-- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Fixed null crash in MedicalGroups — prevents null/undefined runtim
+- **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
+- **gotcha in QLDK.API.staticwebassets.runtime.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
+- **gotcha in QuanLyDoanKham.API.csproj.FileListAbsolute.txt** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
+- **gotcha in QLDK.API.deps.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
 
 ## Project Standards
 
-- what-changed in MedicalGroupsController.cs — confirmed 3x
-- what-changed in shared-context.json — confirmed 11x
-- Strengthened types Fixed
-- Fixed null crash in MedicalGroups — prevents null/undefined runtime crashes — confirmed 3x
-- Strengthened types Fixed
-- what-changed in task.md — confirmed 3x
+- what-changed in shared-context.json — confirmed 7x
+- problem-fix in agent-rules.md — confirmed 3x
+- problem-fix in shared-context.json — confirmed 4x
+- Optimized Optimized — confirmed 4x
 - what-changed in shared-context.json — confirmed 5x
-- Strengthened types Fixed
+- Optimized Score — parallelizes async operations for speed — confirmed 3x
+- what-changed in shared-context.json — confirmed 11x
+- Added JWT tokens authentication — hardens HTTP security headers — confirmed 6x
 
 ## Known Fixes
 
@@ -59,10 +53,10 @@
 
 ## Recent Decisions
 
-- Optimized GOTCHA — externalizes configuration for environment flexibility
-- Optimized GOTCHA — externalizes configuration for environment flexibility
-- Optimized GOTCHA — externalizes configuration for environment flexibility
-- Optimized GOTCHA — externalizes configuration for environment flexibility
+- decision in ApplicationDbContext.cs
+- Optimized Score — hardens HTTP security headers
+- Optimized Score — parallelizes async operations for speed
+- Optimized Score — hardens HTTP security headers
 
 ## Learned Patterns
 
