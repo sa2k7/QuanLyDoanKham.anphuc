@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -27,7 +28,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Auth/roles — Danh sách roles
         [HttpGet("roles")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.RoleManage")]
         public async Task<IActionResult> GetRoles()
         {
             var roles = await _context.Roles.OrderBy(r => r.RoleId).ToListAsync();
@@ -36,7 +37,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Auth/permissions — Danh sách permissions theo module
         [HttpGet("permissions")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HeThong.RoleManage")]
         public async Task<IActionResult> GetPermissions()
         {
             var perms = await _context.Permissions
@@ -47,7 +48,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Auth/users
         [HttpGet("users")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<ActionResult<IEnumerable<UserProfileDto>>> GetUsers()
         {
             var users = await _context.Users
@@ -104,22 +105,14 @@ namespace QuanLyDoanKham.API.Controllers
 
             // Tổng hợp tất cả permissions
             var allPerms = new HashSet<string>();
-            if (user.Role?.RoleName == "Admin")
-            {
-                foreach (var p in await _context.Permissions.ToListAsync())
-                    allPerms.Add(p.PermissionKey);
-            }
-            else
-            {
-                if (user.Role?.RolePermissions != null)
-                    foreach (var rp in user.Role.RolePermissions)
-                        if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
+            if (user.Role?.RolePermissions != null)
+                foreach (var rp in user.Role.RolePermissions)
+                    if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
 
-                foreach (var ur in user.UserRoles ?? new List<UserRole>())
-                    if (ur.Role?.RolePermissions != null)
-                        foreach (var rp in ur.Role.RolePermissions)
-                            if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
-            }
+            foreach (var ur in user.UserRoles ?? new List<UserRole>())
+                if (ur.Role?.RolePermissions != null)
+                    foreach (var rp in ur.Role.RolePermissions)
+                        if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
 
             return Ok(new UserProfileDto
             {
@@ -142,7 +135,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Auth/users/{username}
         [HttpPut("users/{username}")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<IActionResult> UpdateUser(string username, UpdateUserDto dto)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
@@ -208,7 +201,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Auth/assign-roles — Gán roles cho user
         [HttpPost("assign-roles")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.RoleManage")]
         public async Task<IActionResult> AssignRoles([FromBody] AssignRolesDto dto)
         {
             var user = await _context.Users.FindAsync(dto.UserId);
@@ -240,7 +233,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Auth/role-permissions/{roleId} — Lấy permissions của role
         [HttpGet("role-permissions/{roleId}")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HeThong.RoleManage")]
         public async Task<IActionResult> GetRolePermissions(int roleId)
         {
             var role = await _context.Roles.FindAsync(roleId);
@@ -257,16 +250,16 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Auth/role-permissions/{roleId} — Cập nhật permissions cho role
         [HttpPut("role-permissions/{roleId}")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HeThong.RoleManage")]
         public async Task<IActionResult> UpdateRolePermissions(int roleId, [FromBody] AssignPermissionsDto dto)
         {
             var role = await _context.Roles.FindAsync(roleId);
             if (role == null) return NotFound("Không tìm thấy role.");
-            if (role.RoleName == "Admin") return BadRequest("Không thể sửa quyền của Admin.");
 
-            // Xóa cũ
-            var existing = _context.RolePermissions.Where(rp => rp.RoleId == roleId);
-            _context.RolePermissions.RemoveRange(existing);
+            // Removed Admin restriction to allow testing/full control.
+
+            // Xóa cũ bằng ExecuteDeleteAsync để tránh lỗi UNIQUE constraint của EF Core khi thêm mới trùng key
+            await _context.RolePermissions.Where(rp => rp.RoleId == roleId).ExecuteDeleteAsync();
 
             // Thêm mới
             foreach (var permId in dto.PermissionIds.Distinct())
@@ -282,10 +275,81 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = $"Đã cập nhật {dto.PermissionIds.Count} quyền cho role {role.RoleName}." });
         }
 
+        // POST: api/Auth/restore-default-permissions/{roleId}
+        [HttpPost("restore-default-permissions/{roleId}")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HeThong.RoleManage")]
+        public async Task<IActionResult> RestoreDefaultPermissions(int roleId)
+        {
+            var role = await _context.Roles.FindAsync(roleId);
+            if (role == null) return NotFound("Không tìm thấy role.");
+
+            var permissionsToRestore = new List<int>();
+
+            if (role.RoleName == "Admin")
+            {
+                // Admin gets ALL permissions by default
+                permissionsToRestore = await _context.Permissions.Select(p => p.PermissionId).ToListAsync();
+            }
+            else
+            {
+                // Define default permission keys per role based on seed data
+                var defaultKeys = new List<string>();
+
+                switch (role.RoleName)
+                {
+                    case "ContractManager":
+                        defaultKeys = new List<string> { "HopDong.View", "HopDong.Create", "HopDong.Edit", "HopDong.Approve", "HopDong.Reject", "HopDong.Upload" };
+                        break;
+                    case "MedicalGroupManager":
+                        defaultKeys = new List<string> { "DoanKham.View", "DoanKham.Create", "DoanKham.Edit", "DoanKham.SetPosition", "DoanKham.AssignStaff", "DoanKham.ManageOwn", "LichKham.ViewAll" };
+                        break;
+                    case "PersonnelManager":
+                        defaultKeys = new List<string> { "NhanSu.View", "NhanSu.Manage", "DoanKham.AssignStaff", "LichKham.ViewAll" };
+                        break;
+                    case "PayrollManager":
+                        defaultKeys = new List<string> { "Luong.View", "Luong.Manage", "NhanSu.View", "LichKham.ViewAll", "ChamCong.ViewAll" };
+                        break;
+                    case "WarehouseManager":
+                        defaultKeys = new List<string> { "Kho.View", "Kho.Import", "Kho.Export" };
+                        break;
+                    case "GroupLeader":
+                        defaultKeys = new List<string> { "DoanKham.View", "ChamCong.QR", "ChamCong.CheckInOut", "LichKham.ViewAll" };
+                        break;
+                    case "MedicalStaff":
+                        defaultKeys = new List<string> { "LichKham.ViewOwn" };
+                        break;
+                    case "Accountant":
+                        defaultKeys = new List<string> { "BaoCao.View", "BaoCao.Export", "Luong.View", "HopDong.View" };
+                        break;
+                    default:
+                        return BadRequest("Vai trò này không có bộ quyền mặc định.");
+                }
+
+                permissionsToRestore = await _context.Permissions
+                    .Where(p => defaultKeys.Contains(p.PermissionKey))
+                    .Select(p => p.PermissionId)
+                    .ToListAsync();
+            }
+
+            // Clear existing using ExecuteDeleteAsync directly on DB to avoid UNIQUE constraint issue
+            await _context.RolePermissions.Where(rp => rp.RoleId == roleId).ExecuteDeleteAsync();
+
+            // Add defaults
+            foreach (var permId in permissionsToRestore)
+            {
+                _context.RolePermissions.Add(new RolePermission { RoleId = roleId, PermissionId = permId });
+            }
+
+            await _context.SaveChangesAsync();
+            return Ok(new { message = $"Đã khôi phục {permissionsToRestore.Count} quyền mặc định cho vai trò {role.RoleName}." });
+        }
+
+
+
         // DELETE: api/Auth/users/{username}
 
         [HttpDelete("users/{username}")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<IActionResult> DeleteUser(string username)
         {
             if (username == "admin") return BadRequest("Không thể xóa tài khoản Admin mặc định.");
@@ -319,7 +383,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         [HttpPost("register")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<ActionResult<UserProfileDto>> Register(RegisterDto request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
@@ -333,7 +397,8 @@ namespace QuanLyDoanKham.API.Controllers
                 RoleId = request.RoleId,
                 CompanyId = request.CompanyId,
                 Email = request.Email,
-                AvatarPath = request.AvatarPath
+                AvatarPath = request.AvatarPath,
+                StaffId = request.StaffId // Nhận liên kết từ FE nếu có
             };
 
             _context.Users.Add(newUser);
@@ -432,7 +497,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Auth/reset-requests
         [HttpGet("reset-requests")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<IActionResult> GetResetRequests()
         {
             var list = await _context.PasswordResetRequests
@@ -445,7 +510,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Auth/process-reset
         [HttpPost("process-reset")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("HeThong.UserManage")]
         public async Task<IActionResult> ProcessReset([FromBody] ProcessResetDto dto)
         {
             var result = await _authService.ProcessResetAsync(dto);
@@ -453,6 +518,130 @@ namespace QuanLyDoanKham.API.Controllers
                 return BadRequest(new { message = result.Message });
 
             return Ok(new { message = result.Message });
+        }
+        [HttpPost("seed-mock-data")]
+        [AllowAnonymous]
+        public async Task<IActionResult> SeedMockData()
+        {
+            try
+            {
+                // 1. Seed Departments
+                var deptSieuAm = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentCode == "SIEU_AM");
+                if (deptSieuAm == null)
+                {
+                    deptSieuAm = new Department { DepartmentName = "Trạm Siêu Âm", DepartmentCode = "SIEU_AM", Description = "Siêu âm y tế" };
+                    _context.Departments.Add(deptSieuAm);
+                }
+                
+                var deptKhamNoi = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentCode == "KHAM_NOI");
+                if (deptKhamNoi == null)
+                {
+                    deptKhamNoi = new Department { DepartmentName = "Khám Nội", DepartmentCode = "KHAM_NOI", Description = "Khám lâm sàng" };
+                    _context.Departments.Add(deptKhamNoi);
+                }
+
+                await _context.SaveChangesAsync();
+
+                // 2. Seed Staff (Admin)
+                var adminStaff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode == "admin");
+                if (adminStaff == null)
+                {
+                    adminStaff = new Staff
+                    {
+                        FullName = "Bác sĩ Admin",
+                        EmployeeCode = "admin",
+                        Email = "admin@anphuc.vn",
+                        PhoneNumber = "0901234567",
+                        DepartmentId = deptSieuAm.DepartmentId,
+                        BaseSalary = 15000000,
+                        CreatedDate = DateTime.Now.Date,
+                        IsActive = true
+                    };
+                    _context.Staffs.Add(adminStaff);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 3. Map AppUser and Repair existing data
+                var allUsers = await _context.Users.ToListAsync();
+                var allStaffs = await _context.Staffs.ToListAsync();
+
+                foreach (var user in allUsers)
+                {
+                    if (user.StaffId == null)
+                    {
+                        var staff = allStaffs.FirstOrDefault(s => string.Equals(s.EmployeeCode, user.Username, StringComparison.OrdinalIgnoreCase));
+                        if (staff != null)
+                        {
+                            user.StaffId = staff.StaffId;
+                        }
+                    }
+                }
+                await _context.SaveChangesAsync();
+
+                // 4. Seed HealthContract for MedicalGroup
+                var dummyCompany = await _context.Companies.FirstOrDefaultAsync(c => c.TaxCode == "000000000");
+                if (dummyCompany == null)
+                {
+                    dummyCompany = new Company { CompanyName = "Công ty Mẫu Sài Gòn", TaxCode = "000000000", Address = "HCM" };
+                    _context.Companies.Add(dummyCompany);
+                    await _context.SaveChangesAsync();
+                }
+
+                var dummyContract = await _context.Contracts.FirstOrDefaultAsync(c => c.ContractCode == "HD_MAU_2026");
+                if (dummyContract == null)
+                {
+                    dummyContract = new HealthContract { ContractCode = "HD_MAU_2026", CompanyId = dummyCompany.CompanyId, ExpectedQuantity = 100, StartDate = DateTime.Now.Date.AddDays(-30), EndDate = DateTime.Now.Date.AddDays(30), Status = "Active", TotalAmount = 100000000 };
+                    _context.Contracts.Add(dummyContract);
+                    await _context.SaveChangesAsync();
+                }
+
+                // 5. Seed MedicalGroups
+                var group1 = await _context.MedicalGroups.FirstOrDefaultAsync(g => g.GroupName == "Đoàn khám Điện lực SG");
+                if (group1 == null)
+                {
+                    group1 = new MedicalGroup { GroupName = "Đoàn khám Điện lực SG", ExamDate = DateTime.Now.Date, HealthContractId = dummyContract.HealthContractId, Status = "Approved", CreatedAt = DateTime.Now };
+                    _context.MedicalGroups.Add(group1);
+                }
+
+                var group2 = await _context.MedicalGroups.FirstOrDefaultAsync(g => g.GroupName == "Đoàn khám GV Bình Thạnh");
+                if (group2 == null)
+                {
+                    group2 = new MedicalGroup { GroupName = "Đoàn khám GV Bình Thạnh", ExamDate = DateTime.Now.Date.AddDays(-3), HealthContractId = dummyContract.HealthContractId, Status = "Finished", CreatedAt = DateTime.Now.AddDays(-5) };
+                    _context.MedicalGroups.Add(group2);
+                }
+                
+                await _context.SaveChangesAsync();
+
+                // 6. Seed GroupStaffDetails
+                if (!await _context.GroupStaffDetails.AnyAsync(g => g.GroupId == group1.GroupId && g.StaffId == adminStaff.StaffId))
+                {
+                    _context.GroupStaffDetails.Add(new GroupStaffDetail { GroupId = group1.GroupId, StaffId = adminStaff.StaffId, WorkPosition = "Bác sĩ Siêu âm", WorkStatus = "Pending", ExamDate = group1.ExamDate, ShiftType = 1.0, CalculatedSalary = 300000 });
+                }
+
+                if (!await _context.GroupStaffDetails.AnyAsync(g => g.GroupId == group2.GroupId && g.StaffId == adminStaff.StaffId))
+                {
+                    _context.GroupStaffDetails.Add(new GroupStaffDetail { GroupId = group2.GroupId, StaffId = adminStaff.StaffId, WorkPosition = "Bác sĩ Siêu âm", WorkStatus = "Joined", ExamDate = group2.ExamDate, ShiftType = 1.0, CalculatedSalary = 300000 });
+                }
+                
+                // 7. Seed ScheduleCalendars
+                if (!await _context.ScheduleCalendars.AnyAsync(c => c.GroupId == group1.GroupId && c.StaffId == adminStaff.StaffId && c.ExamDate == group1.ExamDate))
+                {
+                    _context.ScheduleCalendars.Add(new ScheduleCalendar { GroupId = group1.GroupId, StaffId = adminStaff.StaffId, ExamDate = group1.ExamDate, CheckInTime = group1.ExamDate.AddHours(8), IsConfirmed = false, Note = "Check-in QR" });
+                }
+
+                if (!await _context.ScheduleCalendars.AnyAsync(c => c.GroupId == group2.GroupId && c.StaffId == adminStaff.StaffId && c.ExamDate == group2.ExamDate))
+                {
+                    _context.ScheduleCalendars.Add(new ScheduleCalendar { GroupId = group2.GroupId, StaffId = adminStaff.StaffId, ExamDate = group2.ExamDate, CheckInTime = group2.ExamDate.AddHours(8), CheckOutTime = group2.ExamDate.AddHours(17), IsConfirmed = true, Note = "Đủ công" });
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Seeding data successfully via EF Core!" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message, detail = ex.InnerException?.Message });
+            }
         }
     }
 }

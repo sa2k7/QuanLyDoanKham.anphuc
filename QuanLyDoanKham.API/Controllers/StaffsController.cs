@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -22,24 +23,29 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Staffs — Admin, MedicalStaff, PersonnelManager và MedicalGroupManager được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager,MedicalGroupManager")]
+        [AuthorizePermission("NhanSu.View")]
         public async Task<ActionResult<IEnumerable<StaffDto>>> GetStaffs()
         {
             var staffs = await _context.Staffs
+                .AsNoTracking()
                 .Where(s => s.IsActive)
                 .Include(s => s.GroupStaffDetails)
                     .ThenInclude(gsd => gsd.MedicalGroup)
                 .ToListAsync();
 
-            var users = await _context.Users.Include(u => u.Role).ToListAsync();
+            var users = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .ToListAsync();
 
             var result = staffs.Select(s => {
                 // Tìm đoàn khám hiện tại (chưa kết thúc hoặc chưa khóa) mà nhân viên này tham gia
                 var activeGroupDetail = s.GroupStaffDetails?
-                    .FirstOrDefault(gsd => gsd.MedicalGroup != null && (gsd.MedicalGroup.Status == "Open"));
+                    .FirstOrDefault(gsd => gsd.MedicalGroup != null && gsd.MedicalGroup.Status == "Open");
 
-                // Tìm thông tin vai trò từ tài khoản tương ứng (sử dụng string.Equals an toàn tránh null)
-                var userAccount = users.FirstOrDefault(u => string.Equals(u.Username, s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
+                // Ưu tiên tìm thông tin vai trò qua StaffId (liên kết mới)
+                var userAccount = users.FirstOrDefault(u => u.StaffId == s.StaffId) 
+                               ?? users.FirstOrDefault(u => string.Equals(u.Username, s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
 
                 return new StaffDto
                 {
@@ -73,10 +79,11 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Staffs/5 — Admin, MedicalStaff, PersonnelManager và MedicalGroupManager được xem
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,MedicalStaff,PersonnelManager,MedicalGroupManager")] // Chuẩn hóa vai trò bh pk bh
+        [AuthorizePermission("NhanSu.View")]
         public async Task<ActionResult<StaffDetailDto>> GetStaff(int id)
         {
             var staff = await _context.Staffs
+                .AsNoTracking()
                 .Include(s => s.GroupStaffDetails)
                     .ThenInclude(gsd => gsd.MedicalGroup)
                 .FirstOrDefaultAsync(s => s.StaffId == id);
@@ -86,9 +93,15 @@ namespace QuanLyDoanKham.API.Controllers
                 return NotFound();
             }
 
-            var lowerEmployeeCode = staff.EmployeeCode?.ToLower();
-            var userAccount = await _context.Users.Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == lowerEmployeeCode);
+            // Ưu tiên tìm theo StaffId (liên kết mới)
+            var userAccount = await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.StaffId == id)
+                ?? await _context.Users
+                .AsNoTracking()
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
 
             var dto = new StaffDetailDto
             {
@@ -115,13 +128,17 @@ namespace QuanLyDoanKham.API.Controllers
                 BaseSalary = staff.BaseSalary,
                 IsActive = staff.IsActive,
                 SystemRole = userAccount?.Role?.RoleName ?? "MedicalStaff",
-                Workdays = staff.GroupStaffDetails.Select(gsd => new StaffWorkdayDto
+                Workdays = staff.GroupStaffDetails
+                    .Where(gsd => gsd.MedicalGroup != null)
+                    .Select(gsd => new StaffWorkdayDto
                 {
                     Date = gsd.MedicalGroup.ExamDate,
                     GroupName = gsd.MedicalGroup.GroupName,
                     WorkPosition = gsd.WorkPosition
                 }).ToList(),
-                Shifts = staff.GroupStaffDetails.Select(gsd => new StaffShiftDto
+                Shifts = staff.GroupStaffDetails
+                    .Where(gsd => gsd.MedicalGroup != null)
+                    .Select(gsd => new StaffShiftDto
                 {
                     GroupName = gsd.MedicalGroup.GroupName,
                     ShiftType = gsd.ShiftType,
@@ -135,7 +152,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Staffs — Admin và PersonnelManager được tạo mới
         [HttpPost]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<ActionResult<Staff>> PostStaff(StaffDto dto)
         {
             // Tự động sinh mã nếu trống
@@ -197,7 +214,8 @@ namespace QuanLyDoanKham.API.Controllers
                     FullName = staff.FullName,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                     RoleId = userRole.RoleId,
-                    AvatarPath = staff.AvatarPath
+                    AvatarPath = staff.AvatarPath,
+                    StaffId = staff.StaffId // Gán StaffId liên kết mới
                 };
 
                 // Kiểm tra xem username đã tồn tại chưa
@@ -220,7 +238,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Staffs/5 — Admin và PersonnelManager được sửa
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> PutStaff(int id, StaffDto dto)
         {
             if (id != dto.StaffId)
@@ -271,7 +289,10 @@ namespace QuanLyDoanKham.API.Controllers
                 if (!string.IsNullOrEmpty(dto.SystemRole))
                 {
                     var lowerEmployeeCode = staff.EmployeeCode?.ToLower();
-                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.Username == lowerEmployeeCode);
+                    // Ưu tiên tìm theo StaffId
+                    var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.StaffId == staff.StaffId)
+                                   ?? await _context.Users.FirstOrDefaultAsync(u => u.Username == lowerEmployeeCode);
+                                   
                     var newRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == dto.SystemRole);
                     
                     if (userAccount != null && newRole != null)
@@ -280,6 +301,7 @@ namespace QuanLyDoanKham.API.Controllers
                         userAccount.RoleId = newRole.RoleId;
                         userAccount.FullName = staff.FullName;
                         userAccount.AvatarPath = staff.AvatarPath;
+                        userAccount.StaffId = staff.StaffId; // Đảm bảo đồng bộ StaffId
                         await _context.SaveChangesAsync();
 
                         // Nếu đổi vai trò và có email thì thông báo
@@ -298,7 +320,8 @@ namespace QuanLyDoanKham.API.Controllers
                             FullName = staff.FullName,
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                             RoleId = newRole.RoleId,
-                            AvatarPath = staff.AvatarPath
+                            AvatarPath = staff.AvatarPath,
+                            StaffId = staff.StaffId // Gán lền kết
                         };
                         _context.Users.Add(newUser);
                         await _context.SaveChangesAsync();
@@ -328,7 +351,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/Staffs/5 (Soft Delete) — Admin và PersonnelManager được xóa
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> DeleteStaff(int id)
         {
             var staff = await _context.Staffs.FindAsync(id);
@@ -346,7 +369,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Staffs/upload-avatar
         [HttpPost("upload-avatar")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> UploadAvatar([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0)
@@ -370,7 +393,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Staffs/export
         [HttpGet("export")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> ExportStaffExcel()
         {
             var staffs = await _context.Staffs.Where(s => s.IsActive).ToListAsync();
@@ -410,7 +433,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Staffs/import — Admin và PersonnelManager được tạo mới
         [HttpPost("import")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> ImportStaffExcel(IFormFile file)
         {
             if (file == null || file.Length == 0) return BadRequest("File không hợp lệ.");
@@ -457,7 +480,8 @@ namespace QuanLyDoanKham.API.Controllers
                                     Username = username,
                                     FullName = staff.FullName,
                                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
-                                    RoleId = medicalStaffRole.RoleId
+                                    RoleId = medicalStaffRole.RoleId,
+                                    StaffId = staff.StaffId // Gán liên kết
                                 };
                                 _context.Users.Add(newUser);
                             }

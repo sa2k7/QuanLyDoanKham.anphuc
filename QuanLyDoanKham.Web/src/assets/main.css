@@ -13,10 +13,10 @@
 
 
 @theme {
-  --color-primary-light: #eef2ff;
-  --color-primary: #3b82f6;
-  --color-primary-dark: #1d4ed8;
-  --color-accent: #0ea5e9;
+  --color-primary-light: #e0f6ff;
+  --color-primary: #009EDB;
+  --color-primary-dark: #007ba8;
+  --color-accent: #009EDB;
   --color-bg-light: #f8fafc;
 }
 

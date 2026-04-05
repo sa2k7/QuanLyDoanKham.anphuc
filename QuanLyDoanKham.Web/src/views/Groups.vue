@@ -4,54 +4,31 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-indigo-200">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
             <Stethoscope class="w-6 h-6" />
           </div>
-          Điều hành Đoàn khám
+          {{ i18n.t('groups.title') }}
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-indigo-600 font-black tabular-nums">{{ String(groups.length).padStart(3, '0') }}</span>
+          <span class="text-primary font-black tabular-nums">{{ String(groups.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px] mt-2">Nội bộ: Quản lý nhân sự, Vị trí trực & Trạng thái làm việc</p>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px] mt-2">{{ i18n.t('groups.subtitle') }}</p>
       </div>
 
       <div class="flex items-center gap-4">
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager'" 
+        <button v-if="can('DoanKham.Create')" 
                 @click="exportGroups"                 class="btn-premium bg-white border-2 border-slate-900 text-slate-800 px-6 py-3 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:bg-slate-50 transition-all font-black">
             <Download class="w-4 h-4 mr-2" />
             <span class="text-[10px] font-black uppercase tracking-widest">Xuất DS Đoàn</span>
         </button>
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager'" 
-                @click="showForm = !showForm"                 class="btn-premium bg-slate-900 text-white px-8 py-3 rounded-xl border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] hover:bg-slate-800 transition-all font-black">
+        <button v-if="can('DoanKham.Create')" 
+                @click="showForm = !showForm"                 class="btn-premium bg-primary text-white px-8 py-3 rounded-xl border-2 border-primary shadow-[4px_4px_0px_#152a41] hover:bg-primary/90 transition-all font-black">
             <Plus class="w-5 h-5 mr-2" />
-            <span class="text-[10px] font-black uppercase tracking-widest ">Khởi tạo đoàn</span>
+            <span class="text-[10px] font-black uppercase tracking-widest ">{{ i18n.t('groups.addBtn') }}</span>
         </button>
       </div>
     </div>
 
-    <!-- Stats Overview -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-            title="Tổng số đoàn khám"
-            :value="String(groups.length).padStart(3, '0')"
-            :icon="Building2"
-            variant="indigo"
-            subtext="Danh mục đoàn"
-        />
-        <StatCard 
-            title="Đang triển khai"
-            :value="String(openGroups.length).padStart(3, '0')"
-            :icon="Calendar"
-            variant="emerald"
-            subtext="Đoàn hoạt động"
-        />
-        <StatCard 
-            title="Tổng nhân sự điều động"
-            :value="String(Object.values(staffDetails).flat().length).padStart(3, '0')"
-            :icon="UsersIcon"
-            variant="amber"
-            subtext="Lượt quân số"
-        />
-    </div>
+
 
     <!-- Smart Create Form -->
     <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 mb-10 animate-slide-up relative overflow-hidden">
@@ -184,43 +161,43 @@
         <button @click="activeTab = 'Open'" 
                 :class="['px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', 
                          activeTab === 'Open' ? 'bg-primary text-white shadow-lg' : 'bg-white text-slate-400 border-2 border-slate-50']">
-            Đang thực hiện ({{ openGroups.length }})
+            {{ i18n.t('groups.tabOpen') }} ({{ openGroups.length }})
         </button>
         <button @click="activeTab = 'Finished'" 
                 :class="['px-6 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all', 
                          activeTab === 'Finished' ? 'bg-slate-800 text-white shadow-lg' : 'bg-white text-slate-400 border-2 border-slate-50']">
-            Đã hoàn tất ({{ closedGroups.length }})
+            {{ i18n.t('groups.tabFinished') }} ({{ closedGroups.length }})
         </button>
     </div>
 
     <!-- Danh sách Đoàn -->
     <div class="space-y-6">
         <div v-for="group in filteredGroups" :key="group.groupId" 
-             class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden group/card">
+             class="premium-card bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden group/card">
             
-            <div class="p-8 bg-slate-900 text-white flex justify-between items-center">
-                <div class="flex items-center gap-6">
-                    <div class="w-16 h-16 bg-indigo-500 rounded-2xl flex items-center justify-center text-white shadow-xl">
-                        <Stethoscope class="w-8 h-8" />
+            <div class="p-5 bg-primary text-white flex justify-between items-center transition-all">
+                <div class="flex items-center gap-5">
+                    <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-sm border border-white/10">
+                        <Stethoscope class="w-7 h-7" />
                     </div>
                     <div>
-                        <h4 class="text-2xl font-black ">{{ group.groupName }}</h4>
-                        <p class="text-xs font-black text-indigo-300 uppercase tracking-widest ">
+                        <h4 class="text-xl font-black ">{{ group.groupName }}</h4>
+                        <p class="text-[11px] font-black text-white/80 uppercase tracking-widest mt-1">
                             [HĐ-{{ group.healthContractId }}] • {{ group.shortName || group.companyName }} • {{ formatDate(group.examDate) }}
                         </p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                   <span :class="['px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border', getStatusClass(group.status)]">{{ getStatusLabel(group.status) }}</span>
-                   <button v-if="group.status === 'Open' && (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager')" @click="updateStatus(group.groupId, 'Finished')" class="text-[9px] font-black bg-white/10 hover:bg-white/20 px-4 py-2 rounded-xl transition-all">HOÀN TẤT ĐOÀN</button>
+                   <span :class="['px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/20 shadow-sm', getStatusClass(group.status)]">{{ getStatusLabel(group.status) }}</span>
+                   <button v-if="group.status === 'Open' && can('DoanKham.Edit')" @click="updateStatus(group.groupId, 'Finished')" class="text-[9px] font-black bg-white text-primary hover:bg-slate-50 px-4 py-2 rounded-xl transition-all shadow-sm">{{ i18n.t('groups.btnFinish') }}</button>
                 </div>
             </div>
 
             <div class="p-8">
                 <!-- Tabs for Card -->
-                <div class="flex gap-4 mb-6 border-b border-slate-100 pb-2">
-                    <button @click="cardTab[group.groupId] = 'staffs'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', (cardTab[group.groupId] || 'staffs') === 'staffs' ? 'bg-slate-900 text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">Đội ngũ tham gia</button>
-                    <button @click="cardTab[group.groupId] = 'positions'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', cardTab[group.groupId] === 'positions' ? 'bg-indigo-600 text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">Cơ cấu Vị trí trực</button>
+                <div class="flex gap-4 mb-6 border-b border-slate-100 pb-2 mt-2">
+                    <button @click="cardTab[group.groupId] = 'staffs'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', (cardTab[group.groupId] || 'staffs') === 'staffs' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabStaff') }}</button>
+                    <button @click="cardTab[group.groupId] = 'positions'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', cardTab[group.groupId] === 'positions' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabPositions') }}</button>
                 </div>
 
                 <!-- Nhân sự List Table -->
@@ -230,15 +207,20 @@
                             <UsersIcon class="w-4 h-4" /> Đội ngũ đi khám
                         </h5>
                         <div class="flex items-center gap-3">
-                            <button v-if="group.status === 'Open' && (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager')" @click="openStaffModal(group.groupId)" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ ĐIỀU ĐỘNG & GÁN VỊ TRÍ</button>
-                            <div v-if="authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager'" class="w-px h-3 bg-slate-200"></div>
-                            <button v-if="group.status === 'Open' && (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager')" @click="handleAiSuggest(group.groupId)" :disabled="isAiLoading" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="openStaffModal(group.groupId)" class="text-[9px] font-black text-primary uppercase tracking-widest hover:underline">{{ i18n.t('groups.btnAssign') }}</button>
+                            <div v-if="can('DoanKham.StaffAssign')" class="w-px h-3 bg-slate-200"></div>
+                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="handleAiSuggest(group.groupId)" :disabled="isAiLoading" class="text-[9px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
                                 <Sparkles class="w-3 h-3" v-if="!isAiLoading" />
                                 <RefreshCw class="w-3 h-3 animate-spin" v-else />
-                                {{ isAiLoading ? 'AI ĐANG TÍNH TOÁN...' : '✨ AI COPILOT GỢI Ý' }}
+                                {{ isAiLoading ? 'AI ĐANG TÍNH TOÁN...' : '✨ ' + i18n.t('groups.btnAICopilot') }}
                             </button>
                             <div class="w-px h-3 bg-slate-200"></div>
                             <button @click="exportGroupStaff(group.groupId, group.groupName)" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">XUẤT DS ĐI ĐOÀN (EXCEL)</button>
+                            <div class="w-px h-3 bg-slate-200"></div>
+                            <button v-if="group.status === 'Open' && can('ChamCong.QR')" @click="openQrModal(group.groupId)" class="text-[9px] font-black text-purple-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                                <QrCode class="w-3 h-3" />
+                                MÃ QR CHẤM CÔNG
+                            </button>
                         </div>
                     </div>
                     
@@ -246,12 +228,12 @@
                         <table class="w-full text-left bg-white">
                             <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                                 <tr>
-                                    <th class="p-4 text-center w-16">STT</th>
-                                    <th class="p-4">Nhân sự</th>
-                                    <th class="p-4">Vị trí làm việc tại đoàn</th>
-                                    <th class="p-4 text-center">Ca làm</th>
+                                    <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
+                                    <th class="p-4">{{ i18n.t('groups.table.staff') }}</th>
+                                    <th class="p-4">{{ i18n.t('groups.table.position') }}</th>
+                                    <th class="p-4 text-center">{{ i18n.t('groups.table.shift') }}</th>
                                     <th class="p-4 text-center">Trạng thái</th>
-                                    <th class="p-4 text-center">Tác vụ</th>
+                                    <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50 text-xs">
@@ -262,7 +244,7 @@
                                         <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black mt-1">{{ s.jobTitle }}</div>
                                     </td>
                                     <td class="p-4">
-                                        <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-black uppercase tracking-widest text-[9px]">
+                                        <span class="px-3 py-1 bg-indigo-50 text-primary rounded-lg font-black uppercase tracking-widest text-[9px]">
                                             {{ s.workPosition || 'Chưa gán' }}
                                         </span>
                                     </td>
@@ -307,13 +289,13 @@
                             <ShieldCheck class="w-4 h-4" /> Cơ cấu vị trí trực tại đoàn
                         </h5>
                         <div class="flex items-center gap-3">
-                            <button v-if="group.status === 'Open' && (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager')" @click="openPositionModal(group.groupId)" class="text-[9px] font-black text-indigo-600 uppercase tracking-widest hover:underline">+ THÊM VỊ TRÍ TRỰC</button>
+                            <button v-if="group.status === 'Open' && can('DoanKham.SetPosition')" @click="openPositionModal(group.groupId)" class="text-[9px] font-black text-primary uppercase tracking-widest hover:underline">{{ i18n.t('groups.btnAddPosition') }}</button>
                         </div>
                     </div>
                     
                     <div class="overflow-x-auto border border-slate-100 rounded-2xl">
                         <table class="w-full text-left bg-white">
-                            <thead class="bg-indigo-50/50 text-[10px] font-black uppercase tracking-widest text-indigo-400">
+                            <thead class="bg-indigo-50/50 text-[10px] font-black uppercase tracking-widest text-primary">
                                 <tr>
                                     <th class="p-4 w-16 text-center">STT</th>
                                     <th class="p-4">Tên Vị trí</th>
@@ -328,12 +310,12 @@
                                     <td class="p-4 font-black text-slate-800 uppercase tracking-widest">{{ p.positionName }}</td>
                                     <td class="p-4 text-center font-black">{{ p.requiredCount }}</td>
                                     <td class="p-4 text-center">
-                                       <span :class="['px-3 py-1 text-indigo-600 rounded-lg font-black text-[9px]', p.assignedCount >= p.requiredCount ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50']">
+                                       <span :class="['px-3 py-1 text-primary rounded-lg font-black text-[9px]', p.assignedCount >= p.requiredCount ? 'bg-emerald-50 text-emerald-600' : 'bg-indigo-50']">
                                           {{ p.assignedCount }} / {{ p.requiredCount }}
                                        </span>
                                     </td>
                                     <td class="p-4 text-center">
-                                        <button v-if="group.status === 'Open' && (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager')" 
+                                        <button v-if="group.status === 'Open' && can('DoanKham.SetPosition')" 
                                                 @click="removePosition(p.positionId, group.groupId)"
                                                 class="text-rose-400 hover:text-rose-600 p-2" title="Xóa vị trí">
                                             <Trash2 class="w-4 h-4" />
@@ -502,6 +484,51 @@
       </div>
     </Teleport>
 
+    <!-- QR Attendance Modal -->
+    <Teleport to="body">
+      <div v-if="modals.qr.show" class="fixed inset-0 z-[110] flex items-center justify-center bg-slate-900/90 backdrop-blur-xl p-4 overflow-y-auto">
+          <div class="bg-white w-full max-w-sm rounded-[3rem] border-4 border-slate-900 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.5)] animate-fade-in-up relative overflow-hidden">
+              <div class="absolute top-0 left-0 right-0 h-3 bg-gradient-to-r from-purple-500 via-indigo-500 to-blue-500"></div>
+              
+              <button @click="modals.qr.show = false" class="absolute top-8 right-8 bg-slate-50 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-400 z-[60] border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
+                  <X class="w-5 h-5" />
+              </button>
+
+              <div class="p-10 text-center">
+                  <div class="mb-6 mt-4">
+                      <div class="w-20 h-20 bg-indigo-50 text-indigo-600 rounded-[2rem] flex items-center justify-center mx-auto mb-4 border-2 border-indigo-100 shadow-inner">
+                          <QrCode class="w-10 h-10" />
+                      </div>
+                      <h3 class="text-xl font-black text-slate-800 uppercase tracking-tighter">QR CHẤM CÔNG</h3>
+                      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ qrData?.groupName || 'Đoàn khám' }}</p>
+                  </div>
+
+                  <div v-if="qrData" class="space-y-6">
+                      <div class="bg-white p-6 rounded-[2.5rem] border-4 border-slate-900 shadow-[8px_8px_0px_#0f172a] inline-block mb-4">
+                          <img :src="qrData.pngBase64" class="w-48 h-48 mx-auto rendering-pixelated" alt="Mã QR Chấm công" />
+                      </div>
+
+                      <div class="space-y-2">
+                        <div class="flex items-center justify-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-xl text-[10px] font-black uppercase border border-amber-200">
+                            <Clock class="w-3 h-3" /> Hết hạn: {{ formatDateTime(qrData.expiresAt) }}
+                        </div>
+                        <p class="text-[10px] text-slate-400 font-medium px-6 leading-relaxed">Nhân sự dùng điện thoại quét mã này để tự động ghi nhận giờ vào/ra đoàn.</p>
+                      </div>
+
+                      <div class="pt-4 flex flex-col gap-3">
+                          <button @click="copyQrUrl" class="w-full py-3 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all">Sao chép Link</button>
+                          <button @click="modals.qr.show = false" class="w-full py-4 bg-slate-900 text-white rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-[4px_4px_0px_#1e293b] active:scale-95 transition-all">XÁC NHẬN</button>
+                      </div>
+                  </div>
+                  <div v-else class="py-20 flex flex-col items-center gap-4">
+                      <RefreshCw class="w-8 h-8 animate-spin text-slate-200" />
+                      <span class="text-[10px] font-black text-slate-400 uppercase">Đang tạo mã token...</span>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </Teleport>
+
     <!-- Hidden Input for Import -->
     <input type="file" ref="importInput" class="hidden" @change="handleImportFile" />
 
@@ -642,18 +669,21 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 import { 
     Stethoscope, Plus, Building2, Calendar, Users as UsersIcon, FileText, Trash2, Sparkles, Brain, 
     FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, CheckCircle2, Clock, Zap, RefreshCw,
-    ShieldCheck, Scale, ListTodo
+    ShieldCheck, Scale, ListTodo, QrCode
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { parseApiError } from '../services/errorHelper'
+import { usePermission } from '@/composables/usePermission'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import StatCard from '../components/StatCard.vue'
+
 
 const authStore = useAuthStore()
+const { can } = usePermission()
 const toast = useToast()
 const groups = ref([])
 const contracts = ref([])
@@ -703,13 +733,13 @@ const handleAutoAssign = async () => {
 
     try {
         isAutoAssignLoading.value = true
-        const res = await axios.post('/api/MedicalGroups/auto-create-with-staff', payload)
+        const res = await apiClient.post('/api/MedicalGroups/auto-create-with-staff', payload)
         autoAssignResult.value = res.data
         showAutoAssignModal.value = true
         fetchData()
         toast.success("Hệ thống đã thực hiện phân bổ nhân sự!")
     } catch (e) {
-        toast.error(e.response?.data?.message || e.response?.data?.title || "Lỗi khi phân bổ tự động. Có thể không đủ nhân sự rảnh.")
+        toast.error(parseApiError(e))
     } finally {
         isAutoAssignLoading.value = false
     }
@@ -733,8 +763,30 @@ const groupPositions = ref({})
 
 const modals = ref({
     staff: { show: false, groupId: null, data: { staffId: null, shiftType: 1.0, positionId: null, workPosition: '', workStatus: 'Đã tham gia' } },
-    position: { show: false, groupId: null, data: { positionName: '', requiredCount: 1 } }
+    position: { show: false, groupId: null, data: { positionName: '', requiredCount: 1 } },
+    qr: { show: false }
 })
+const qrData = ref(null)
+
+const openQrModal = async (groupId) => {
+    modals.value.qr.show = true
+    qrData.value = null
+    try {
+        const res = await apiClient.get(`/api/Attendance/qr/${groupId}`)
+        qrData.value = res.data
+    } catch (e) {
+        toast.error(parseApiError(e))
+        modals.value.qr.show = false
+    }
+}
+
+const copyQrUrl = () => {
+    if (!qrData.value?.qrUrl) return
+    navigator.clipboard.writeText(qrData.value.qrUrl)
+    toast.success("Đã sao chép link chấm công vào clipboard!")
+}
+
+const formatDateTime = (d) => d ? new Date(d).toLocaleString('vi-VN') : ''
 const confirmData = ref({ show: false, title: '', message: '', variant: 'warning', onConfirm: () => {} })
 
 const isAiLoading = ref(false)
@@ -746,7 +798,7 @@ const handleAiSuggest = async (groupId) => {
     try {
         isAiLoading.value = true
         currentAiGroupId.value = groupId
-        const res = await axios.post(`/api/MedicalGroups/${groupId}/ai-suggest-staff`)
+        const res = await apiClient.post(`/api/MedicalGroups/${groupId}/ai-suggest-staff`)
         aiSuggestions.value = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
         showAiModal.value = true
     } catch (e) {
@@ -760,7 +812,7 @@ const applyAiSuggestions = async () => {
     try {
         const groupId = currentAiGroupId.value
         for (const s of aiSuggestions.value) {
-            await axios.post(`/api/MedicalGroups/${groupId}/staffs`, {
+            await apiClient.post(`/api/MedicalGroups/${groupId}/staffs`, {
                 staffId: s.staffId,
                 workPosition: s.workPosition,
                 shiftType: s.shiftType,
@@ -787,17 +839,17 @@ const approvedContracts = computed(() => contracts.value.filter(c =>
 // Permission helpers: MedicalStaff can only check-in/out for themselves (backend validates by EmployeeCode)
 const canCheckIn = (staffDetail, group) => {
     if (group.status !== 'Open' || staffDetail.checkInTime) return false
-    if (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager') return true
+    if (can('ChamCong.CheckInOut')) return true
     // MedicalStaff can only check-in for themselves — backend validates identity
-    if (authStore.role === 'MedicalStaff' && staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
+    if (staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
     return false
 }
 
 const canCheckOut = (staffDetail, group) => {
     if (group.status !== 'Open' || !staffDetail.checkInTime || staffDetail.checkOutTime) return false
-    if (authStore.role === 'Admin' || authStore.role === 'MedicalGroupManager') return true
+    if (can('ChamCong.CheckInOut')) return true
     // MedicalStaff can only check-out for themselves — backend validates identity
-    if (authStore.role === 'MedicalStaff' && staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
+    if (staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
     return false
 }
 
@@ -822,7 +874,7 @@ const getStatusLabel = (status) => {
 const fetchData = async () => {
     try {
         if (authStore.role === 'MedicalStaff') {
-            const res = await axios.get('/api/MedicalGroups/my-schedule')
+            const res = await apiClient.get('/api/MedicalGroups/my-schedule')
             // Map my-schedule data to fit group list structure
             groups.value = res.data.map(item => ({
                 groupId: item.groupId,
@@ -838,16 +890,16 @@ const fetchData = async () => {
                 myCheckOut: item.checkOutTime
             }))
         } else {
-            const res = await axios.get('/api/MedicalGroups')
+            const res = await apiClient.get('/api/MedicalGroups')
             groups.value = res.data
         }
         
-        const cRes = await axios.get('/api/HealthContracts')
+        const cRes = await apiClient.get('/api/HealthContracts')
         contracts.value = cRes.data
 
         if (['Admin', 'MedicalGroupManager', 'MedicalStaff', 'PersonnelManager'].includes(authStore.role)) {
             try {
-                const sRes = await axios.get('/api/Staffs')
+                const sRes = await apiClient.get('/api/Staffs')
                 staffList.value = sRes.data
             } catch (err) {
                 console.warn("Không thể tải toàn bộ nhân sự:", err)
@@ -866,14 +918,14 @@ const fetchData = async () => {
 
 const fetchGroupStaff = async (id) => {
     try {
-        const res = await axios.get(`/api/MedicalGroups/${id}/staffs`)
+        const res = await apiClient.get(`/api/MedicalGroups/${id}/staffs`)
         staffDetails.value[id] = res.data
     } catch (e) { console.error(e) }
 }
 
 const addGroup = async () => {
     try {
-        await axios.post('/api/MedicalGroups', newGroup.value)
+        await apiClient.post('/api/MedicalGroups', newGroup.value)
         toast.success("Khởi tạo đoàn thành công!")
         showForm.value = false
         // Reset form
@@ -885,7 +937,7 @@ const addGroup = async () => {
 const autoCreateGroup = async () => {
     if (!selectedContractForAuto.value) return
     try {
-        await axios.post(`/api/MedicalGroups/auto-create/${selectedContractForAuto.value}`)
+        await apiClient.post(`/api/MedicalGroups/auto-create/${selectedContractForAuto.value}`)
         toast.success("Đã tạo đoàn khám tự động từ hợp đồng!")
         showForm.value = false
         fetchData()
@@ -930,7 +982,7 @@ const confirmSmartCreate = async () => {
     if (!smartPreview.value || !selectedContractForAuto.value) return
     try {
         // Create the group
-        const res = await axios.post('/api/MedicalGroups', {
+        const res = await apiClient.post('/api/MedicalGroups', {
             healthContractId: selectedContractForAuto.value,
             groupName: smartPreview.value.groupName,
             examDate: smartPreview.value.examDate
@@ -953,7 +1005,7 @@ const confirmSmartCreate = async () => {
                     conflictWarnings.value.push({ staffId: s.staffId, fullName: s.fullName })
                 } else {
                     try {
-                        await axios.post(`/api/MedicalGroups/${newGroupId}/staffs`, {
+                        await apiClient.post(`/api/MedicalGroups/${newGroupId}/staffs`, {
                             staffId: s.staffId,
                             shiftType: s.shiftType,
                             workPosition: s.workPosition,
@@ -973,7 +1025,7 @@ const confirmSmartCreate = async () => {
         smartPreview.value = null
         selectedContractForAuto.value = null // Reset selection
         fetchData()
-    } catch (e) { toast.error(e.response?.data || 'Lỗi tạo nhanh đoàn') }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const updateStatus = async (id, status) => {
@@ -985,12 +1037,11 @@ const updateStatus = async (id, status) => {
             variant: 'warning',
             onConfirm: async () => {
                 try {
-                    await axios.put(`/api/MedicalGroups/${id}/status`, { status: status })
+                    await apiClient.put(`/api/MedicalGroups/${id}/status`, { status: status })
                     toast.success(`Đã hoàn tất đoàn khám!`)
                     fetchData()
                 } catch (e) { 
-                    const msg = e.response?.data?.message || e.response?.data || "Lỗi cập nhật trạng thái"
-                    toast.error(msg) 
+                    toast.error(parseApiError(e)) 
                 }
             }
         }
@@ -998,12 +1049,11 @@ const updateStatus = async (id, status) => {
     }
 
     try {
-        await axios.put(`/api/MedicalGroups/${id}/status`, { status: status })
+        await apiClient.put(`/api/MedicalGroups/${id}/status`, { status: status })
         toast.success(`Đã cập nhật trạng thái: ${getStatusLabel(status)}`)
         fetchData()
     } catch (e) { 
-        const msg = e.response?.data?.message || e.response?.data || "Lỗi cập nhật trạng thái"
-        toast.error(msg) 
+        toast.error(parseApiError(e)) 
     }
 }
 
@@ -1030,13 +1080,13 @@ const addStaff = async () => {
             payload.workPosition = pos.positionName
         }
 
-        await axios.post(`/api/MedicalGroups/${gid}/staffs`, payload)
+        await apiClient.post(`/api/MedicalGroups/${gid}/staffs`, payload)
         toast.success("Đã phân công nhân sự!")
         modals.value.staff.show = false
         fetchGroupStaff(gid)
         fetchGroupPositions(gid) // update count
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi khi phân công. Nhân viên có thể bị trùng lịch!") 
+        toast.error(parseApiError(e)) 
     }
 }
 
@@ -1048,18 +1098,18 @@ const openPositionModal = (groupId) => {
 
 const fetchGroupPositions = async (id) => {
     try {
-        const res = await axios.get(`/api/MedicalGroups/${id}/positions`)
+        const res = await apiClient.get(`/api/MedicalGroups/${id}/positions`)
         groupPositions.value[id] = res.data
     } catch (e) { console.error(e) }
 }
 
 const addPosition = async () => {
     try {
-        await axios.post(`/api/MedicalGroups/${modals.value.position.groupId}/positions`, modals.value.position.data)
+        await apiClient.post(`/api/MedicalGroups/${modals.value.position.groupId}/positions`, modals.value.position.data)
         toast.success("Thêm vị trí thành công!")
         modals.value.position.show = false
         fetchGroupPositions(modals.value.position.groupId)
-    } catch (e) { toast.error("Lỗi khi thêm vị trí") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const removePosition = async (positionId, groupId) => {
@@ -1070,7 +1120,7 @@ const removePosition = async (positionId, groupId) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await axios.delete(`/api/MedicalGroups/positions/${positionId}`)
+                await apiClient.delete(`/api/MedicalGroups/positions/${positionId}`)
                 toast.success("Đã xóa vị trí!")
                 fetchGroupPositions(groupId)
             } catch (e) {
@@ -1084,7 +1134,7 @@ const removePosition = async (positionId, groupId) => {
 
 const exportGroups = async () => {
     try {
-        const res = await axios.get('/api/MedicalGroups/export', { responseType: 'blob' })
+        const res = await apiClient.get('/api/MedicalGroups/export', { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -1097,7 +1147,7 @@ const exportGroups = async () => {
 
 const exportGroupStaff = async (id, name) => {
     try {
-        const res = await axios.get(`/api/MedicalGroups/${id}/export-staff`, { responseType: 'blob' })
+        const res = await apiClient.get(`/api/MedicalGroups/${id}/export-staff`, { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -1110,7 +1160,7 @@ const exportGroupStaff = async (id, name) => {
 
 const removeStaff = async (detailId, gid) => {
     try {
-        await axios.delete(`/api/MedicalGroups/staffs/${detailId}`)
+        await apiClient.delete(`/api/MedicalGroups/staffs/${detailId}`)
         toast.success("Đã gỡ nhân sự")
         fetchGroupStaff(gid)
     } catch (e) { toast.error("Lỗi khi gỡ nhân sự") }
@@ -1123,7 +1173,7 @@ const triggerImport = (id) => {
 
 const checkIn = async (detailId, gid) => {
     try {
-        await axios.post(`/api/MedicalGroups/staffs/${detailId}/checkin`)
+        await apiClient.post(`/api/MedicalGroups/staffs/${detailId}/checkin`)
         toast.success("Đã ghi nhận giờ vào đoàn!")
         fetchGroupStaff(gid)
     } catch (e) { toast.error(e.response?.data || "Lỗi Check-in") }
@@ -1131,7 +1181,7 @@ const checkIn = async (detailId, gid) => {
 
 const checkOut = async (detailId, gid) => {
     try {
-        const res = await axios.post(`/api/MedicalGroups/staffs/${detailId}/checkout`)
+        const res = await apiClient.post(`/api/MedicalGroups/staffs/${detailId}/checkout`)
         toast.success(`Check-out thành công! Tổng giờ: ${res.data.totalHours}h`)
         fetchGroupStaff(gid)
     } catch (e) { toast.error(e.response?.data || "Lỗi Check-out") }
@@ -1143,8 +1193,8 @@ const handleImportFile = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        const res = await axios.post(`/api/MedicalGroups/upload-data`, formData)
-        await axios.put(`/api/MedicalGroups/${currentGroupId.value}`, { importFilePath: res.data.path })
+        const res = await apiClient.post(`/api/MedicalGroups/upload-data`, formData)
+        await apiClient.put(`/api/MedicalGroups/${currentGroupId.value}`, { importFilePath: res.data.path })
         toast.success("Đã Import dữ liệu đoàn khám!")
         fetchData()
     } catch (e) { toast.error("Lỗi Import file") }

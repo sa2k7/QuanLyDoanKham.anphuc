@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -21,7 +22,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Departments
         [HttpGet]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.View")]
         public async Task<ActionResult<IEnumerable<DepartmentDto>>> GetDepartments()
         {
             var deps = await _context.Departments
@@ -44,7 +45,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Departments/{id}
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,PersonnelManager")]
+        [AuthorizePermission("NhanSu.View")]
         public async Task<IActionResult> GetDepartment(int id)
         {
             var dep = await _context.Departments
@@ -73,7 +74,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Departments
         [HttpPost]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> PostDepartment([FromBody] DepartmentDto dto)
         {
             if (await _context.Departments.AnyAsync(d => d.DepartmentCode == dto.DepartmentCode))
@@ -94,7 +95,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Departments/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> PutDepartment(int id, [FromBody] DepartmentDto dto)
         {
             var dept = await _context.Departments.FindAsync(id);
@@ -110,7 +111,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/Departments/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [AuthorizePermission("NhanSu.Manage")]
         public async Task<IActionResult> DeleteDepartment(int id)
         {
             var dept = await _context.Departments.FindAsync(id);

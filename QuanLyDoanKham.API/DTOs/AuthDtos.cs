@@ -44,6 +44,9 @@ namespace QuanLyDoanKham.API.DTOs
         public string Email { get; set; }
 
         public string AvatarPath { get; set; }
+
+        /// <summary>Liên kết với bảng Staff (Chỉ dùng cho MedicalStaff)</summary>
+        public int? StaffId { get; set; }
     }
 
     /// <summary>Response khi đăng nhập thành công - bao gồm roles[] và permissions[]</summary>
@@ -71,7 +74,7 @@ namespace QuanLyDoanKham.API.DTOs
 
     public class RefreshTokenDto
     {
-        [Required]
+        [Required(ErrorMessage = "RefreshToken không được để trống.")]
         public string RefreshToken { get; set; }
     }
 
@@ -99,6 +102,9 @@ namespace QuanLyDoanKham.API.DTOs
         public string AvatarPath { get; set; }
 
         public bool? IsActive { get; set; }
+
+        /// <summary>Liên kết với bảng Staff (Chỉ dùng cho MedicalStaff)</summary>
+        public int? StaffId { get; set; }
     }
 
     public class UserProfileDto
@@ -128,7 +134,7 @@ namespace QuanLyDoanKham.API.DTOs
 
     public class ChangePasswordDto
     {
-        [Required]
+        [Required(ErrorMessage = "Mật khẩu hiện tại không được để trống.")]
         public string CurrentPassword { get; set; }
 
         [Required]
@@ -138,7 +144,7 @@ namespace QuanLyDoanKham.API.DTOs
 
     public class ResetRequestDto
     {
-        [Required]
+        [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
         public string Username { get; set; }
     }
 

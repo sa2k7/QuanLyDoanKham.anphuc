@@ -21,7 +21,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Supplies — Chỉ Admin, WarehouseManager, MedicalGroupManager được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,WarehouseManager,MedicalGroupManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.View")]
         public async Task<ActionResult<IEnumerable<SupplyDto>>> GetSupplies()
         {
             var today = DateTime.Today;
@@ -50,7 +50,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Supplies/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,WarehouseManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
         public async Task<IActionResult> PutSupply(int id, SupplyDto dto)
         {
             if (id != dto.SupplyId) return BadRequest("ID không khớp.");
@@ -83,7 +83,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/Supplies/{id}
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,WarehouseManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
         public async Task<IActionResult> DeleteSupply(int id)
         {
             var supply = await _context.Supplies.FindAsync(id);
@@ -99,7 +99,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Supplies (Tạo mới loại vật tư)
         [HttpPost]
-        [Authorize(Roles = "Admin,WarehouseManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
         public async Task<ActionResult<Supply>> PostSupply(SupplyDto dto)
         {
             if (await _context.Supplies.AnyAsync(s => s.SupplyName == dto.SupplyName))
@@ -143,7 +143,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Supplies/vouchers (Tạo phiếu nhập/xuất)
         [HttpPost("vouchers")]
-        [Authorize(Roles = "Admin,WarehouseManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Export")]
         public async Task<IActionResult> CreateVoucher(CreateVoucherDto dto)
         {
             var username = User.Identity.Name;
@@ -209,7 +209,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
         // DELETE: api/Supplies/vouchers/{id}
         [HttpDelete("vouchers/{id}")]
-        [Authorize(Roles = "Admin,WarehouseManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Export")]
         public async Task<IActionResult> DeleteVoucher(int id)
         {
             var voucher = await _context.SupplyInventoryVouchers

@@ -4,13 +4,22 @@
     <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[55] md:hidden"></div>
 
     <!-- Sidebar Navigation -->
-    <aside :class="['w-72 bg-white/95 md:bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0 transition-transform duration-300', isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+    <aside :class="['bg-white/95 md:bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0 transition-all duration-300 ease-in-out', 
+                    isSidebarCollapsed ? 'w-24' : 'w-60',
+                    isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
+      <!-- Collapse Toggle Button (Desktop) -->
+      <button @click="isSidebarCollapsed = !isSidebarCollapsed" 
+              class="hidden md:flex absolute -right-4 top-10 w-8 h-8 bg-white border border-slate-100 rounded-full items-center justify-center shadow-lg text-slate-400 hover:text-primary z-[70] transition-all"
+              :class="{'rotate-180': isSidebarCollapsed}">
+        <ChevronLeft class="w-4 h-4" />
+      </button>
+
       <!-- Logo Section -->
-      <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group" @click="activeMenu = 'home'">
+      <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group overflow-hidden" @click="activeMenu = 'home'">
         <div class="bg-white p-1 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0 border border-slate-100">
           <img :src="logo" class="w-10 h-10 object-contain" alt="Logo" />
         </div>
-        <div>
+        <div v-show="!isSidebarCollapsed" class="transition-opacity duration-300">
           <h1 class="font-black text-lg text-slate-900 leading-tight tracking-tight">ĐA KHOA <span class="text-primary italic">AN PHÚC</span></h1>
           <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Hệ thống Điều hành</p>
         </div>
@@ -21,27 +30,28 @@
         <button v-for="item in filteredMenuItems" :key="item.id"
                 @click="activeMenu = item.id; isMobileMenuOpen = false"
                 :class="['w-full flex items-center flex-nowrap gap-4 px-5 py-4 rounded-2xl font-black text-sm transition-all group relative overflow-hidden', 
-                         activeMenu === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600']">
+                         activeMenu === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                         isSidebarCollapsed ? 'justify-center px-0' : '']">
           <component :is="item.icon" :class="['w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110', activeMenu === item.id ? 'text-white' : 'text-slate-300 group-hover:text-primary']" />
-          <span class="tracking-[0.2em] uppercase whitespace-nowrap flex-shrink-0">{{ item.name }}</span>
+          <span v-show="!isSidebarCollapsed" class="tracking-[0.2em] uppercase whitespace-nowrap flex-shrink-0 transition-opacity duration-300">{{ item.name }}</span>
           
           <div v-if="activeMenu === item.id" class="absolute right-0 top-0 bottom-0 w-1.5 bg-white/20"></div>
-          <ArrowRight v-if="activeMenu !== item.id" class="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0" />
+          <ArrowRight v-if="activeMenu !== item.id && !isSidebarCollapsed" class="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0" />
         </button>
       </nav>
 
       <!-- User Profile Card -->
-      <div class="p-6 border-t border-slate-100 bg-slate-50/50">
-        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 group relative">
+      <div :class="['border-t border-slate-100 bg-slate-50/50 transition-all duration-300', isSidebarCollapsed ? 'p-4' : 'p-6']">
+        <div :class="['bg-white rounded-2xl shadow-sm border border-slate-100 group relative transition-all duration-300', isSidebarCollapsed ? 'p-3 flex justify-center' : 'p-4']">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
               <User class="w-5 h-5" />
             </div>
-            <div class="flex-1 min-w-0">
+            <div v-show="!isSidebarCollapsed" class="flex-1 min-w-0 transition-opacity duration-300">
               <p class="text-xs font-black text-slate-800 truncate">{{ authStore.user?.username }}</p>
               <p class="text-[9px] font-black text-primary uppercase tracking-[0.3em]">{{ i18n.t('roles.' + authStore.user?.role) }}</p>
             </div>
-            <button @click="isUserMenuOpen = !isUserMenuOpen" class="p-2 hover:bg-slate-50 rounded-lg transition-all">
+            <button v-show="!isSidebarCollapsed" @click="isUserMenuOpen = !isUserMenuOpen" class="p-2 hover:bg-slate-50 rounded-lg transition-all">
               <ChevronDown class="w-4 h-4 text-slate-400" :class="{'rotate-180': isUserMenuOpen}" />
             </button>
           </div>
@@ -392,7 +402,7 @@ import axios from 'axios'
 import logo from '../assets/logo.svg'
 import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
-  User, KeyRound, X, ChevronDown, Bell, PlusCircle, Check, ShieldAlert, Inbox,
+  User, KeyRound, X, ChevronDown, ChevronLeft, Bell, PlusCircle, Check, ShieldAlert, Inbox,
   Building, ShieldCheck, CalendarCheck, Menu
 } from 'lucide-vue-next'
 
@@ -440,6 +450,7 @@ const isUserMenuOpen = ref(false)
 const isSearchFocused = ref(false)
 const showNotificationDropdown = ref(false)
 const isMobileMenuOpen = ref(false)
+const isSidebarCollapsed = ref(false)
 
 // Password Change State
 const showPasswordModal = ref(false)
@@ -471,11 +482,11 @@ const handleChangePassword = async () => {
 const menuItems = computed(() => [
     { id: 'home', name: i18n.locale === 'vi' ? 'Tổng quan' : 'Dashboard', icon: Bot, color: 'bg-primary-light text-primary', desc: i18n.locale === 'vi' ? 'Trung tâm điều khiển và báo cáo.' : 'Control center and reporting.' },
     { id: 'my-schedule', name: 'Lịch cá nhân', icon: CalendarCheck, color: 'bg-blue-50 text-blue-600', desc: 'Lịch đi đoàn của tôi.', permission: 'LichKham.ViewOwn' },
-    { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', permission: 'DoiTac.View' },
+    { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', permission: 'HopDong.View' },
     { id: 'contracts', name: i18n.locale === 'vi' ? 'Hợp đồng' : 'Contracts', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: i18n.locale === 'vi' ? 'Quản lý pháp lý & ký kết HĐ.' : 'Legal management & contract signing.', permission: 'HopDong.View' },
     { id: 'groups', name: i18n.locale === 'vi' ? 'Đoàn khám' : 'Medical Groups', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: i18n.locale === 'vi' ? 'Vận hành thực địa & điều phối.' : 'Field operation & coordination.', permission: 'DoanKham.View' },
     { id: 'staff', name: i18n.locale === 'vi' ? 'Nhân sự' : 'Staff', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: i18n.locale === 'vi' ? 'Đội ngũ Y bác sĩ & Vận hành.' : 'Medical team & operations.', permission: 'NhanSu.View' },
-    { id: 'departments', name: 'Phòng ban', icon: Building, color: 'bg-orange-50 text-orange-600', desc: 'Quản lý tổ chức phòng ban và chức vụ.', permission: 'HeThong.RoleManage' },
+    { id: 'departments', name: 'Trạm Khám', icon: Building, color: 'bg-orange-50 text-orange-600', desc: 'Quản lý các trạm khám & chuyên khoa y tế.', permission: 'HeThong.RoleManage' },
     { id: 'payroll', name: i18n.locale === 'vi' ? 'Tính lương' : 'Payroll', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: i18n.locale === 'vi' ? 'Kế toán thù lao & lương cứng.' : 'Compensation & fixed salary accounting.', permission: 'Luong.View' },
     { id: 'supplies', name: i18n.locale === 'vi' ? 'Vật tư kho' : 'Supplies', icon: Package, color: 'bg-violet-50 text-violet-600', desc: i18n.locale === 'vi' ? 'Kho vật tư & Phiếu xuất kho.' : 'Supply warehouse & export vouchers.', permission: 'Kho.View' },
     { id: 'users', name: i18n.locale === 'vi' ? 'Tài khoản' : 'Accounts', icon: Shield, color: 'bg-slate-50 text-slate-600', desc: i18n.locale === 'vi' ? 'Phân quyền & bảo mật tài khoản.' : 'Account permissions & security.', permission: 'HeThong.UserManage' },

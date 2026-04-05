@@ -2,6 +2,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Services;
 
 namespace QuanLyDoanKham.API.Controllers
@@ -20,7 +21,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // Dashboard KPIs - Dùng cho trang Tổng quan (Cho phép tất cả Managers xem chỉ số chung)
         [HttpGet("dashboard-kpis")]
-        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,PersonnelManager,PayrollManager,WarehouseManager")]
+        [AuthorizePermission("BaoCao.View")]
         public async Task<IActionResult> GetDashboardKpis([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
@@ -36,7 +37,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // Báo cáo Tài chính - Dùng cho Admin và PayrollManager/ContractManager
         [HttpGet("financial")]
-        [Authorize(Roles = "Admin,PayrollManager,ContractManager")]
+        [AuthorizePermission("BaoCao.View")]
         public async Task<IActionResult> GetFinancialReport([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
@@ -52,7 +53,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // Hiệu suất Nhân sự - Dùng cho Admin và PersonnelManager
         [HttpGet("staff-efficiency")]
-        [Authorize(Roles = "Admin,PersonnelManager,MedicalGroupManager")]
+        [AuthorizePermission("BaoCao.View")]
         public async Task<IActionResult> GetStaffEfficiency([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
@@ -68,7 +69,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // Cảnh báo Kho - Dùng cho Admin và WarehouseManager/MedicalGroupManager
         [HttpGet("inventory-alerts")]
-        [Authorize(Roles = "Admin,WarehouseManager,MedicalGroupManager")]
+        [AuthorizePermission("BaoCao.View")]
         public async Task<IActionResult> GetInventoryAlerts()
         {
             try
@@ -80,6 +81,15 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 return StatusCode(500, new { message = "Lỗi khi lấy thông tin cảnh báo kho", error = ex.Message });
             }
+        }
+
+        // P&L theo hợp đồng
+        [HttpGet("pnl/contract/{contractId}")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("BaoCao.View")]
+        public async Task<IActionResult> GetContractPnL(int contractId, [FromServices] QuanLyDoanKham.API.Services.Reports.FinancialReportService finSvc)
+        {
+            var data = await finSvc.BuildContractSummaryAsync(contractId);
+            return Ok(data);
         }
     }
 }

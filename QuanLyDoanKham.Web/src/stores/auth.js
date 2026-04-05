@@ -6,9 +6,11 @@ export const useAuthStore = defineStore('auth', () => {
   // ──────────────────────────────────────────────────────────────────
   // STATE
   // ──────────────────────────────────────────────────────────────────
-  const token = ref(localStorage.getItem('token') || null)
-  const refreshToken = ref(localStorage.getItem('refreshToken') || null)
+  const token = ref(localStorage.getItem('auth_token') || null)
+  const refreshToken = ref(localStorage.getItem('auth_refresh_token') || null)
   const user = ref(JSON.parse(localStorage.getItem('user') || 'null'))
+  const loading = ref(false)
+  const error = ref(null)
 
   // ──────────────────────────────────────────────────────────────────
   // GETTERS
@@ -64,46 +66,55 @@ export const useAuthStore = defineStore('auth', () => {
   // ACTIONS
   // ──────────────────────────────────────────────────────────────────
   const login = async (credentials) => {
-    const response = await apiClient.post('/Auth/login', credentials)
-    const data = response.data
+    loading.value = true
+    error.value = null
+    try {
+      const response = await apiClient.post('/api/Auth/login', credentials)
+      const data = response.data
 
-    token.value = data.token
-    refreshToken.value = data.refreshToken
+      token.value = data.token
+      refreshToken.value = data.refreshToken
 
-    // Lưu đầy đủ thông tin user kể cả roles[] và permissions[]
-    user.value = {
-      username: data.username,
-      fullName: data.fullName,
-      role: data.role,           // primary (backward compat)
-      roles: data.roles || [],   // tất cả roles
-      permissions: data.permissions || [], // tất cả permissions
-      companyId: data.companyId,
-      departmentId: data.departmentId,
-      departmentName: data.departmentName,
-      avatarPath: data.avatarPath
+      // Lưu đầy đủ thông tin user kể cả roles[] và permissions[]
+      user.value = {
+        username: data.username,
+        fullName: data.fullName,
+        role: data.role,           // primary (backward compat)
+        roles: data.roles || [],   // tất cả roles
+        permissions: data.permissions || [], // tất cả permissions
+        companyId: data.companyId,
+        departmentId: data.departmentId,
+        departmentName: data.departmentName,
+        avatarPath: data.avatarPath
+      }
+
+      // Persist
+      localStorage.setItem('auth_token', token.value)
+      localStorage.setItem('auth_refresh_token', refreshToken.value)
+      localStorage.setItem('user', JSON.stringify(user.value))
+
+      return true
+    } catch (err) {
+      error.value = err.response?.data?.message || err.response?.data || "Lỗi đăng nhập hệ thống"
+      return false
+    } finally {
+      loading.value = false
     }
-
-    // Persist
-    localStorage.setItem('token', token.value)
-    localStorage.setItem('refreshToken', refreshToken.value)
-    localStorage.setItem('user', JSON.stringify(user.value))
-
-    return data
   }
 
   const logout = () => {
     token.value = null
     refreshToken.value = null
     user.value = null
-    localStorage.removeItem('token')
-    localStorage.removeItem('refreshToken')
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_refresh_token')
     localStorage.removeItem('user')
   }
 
   const refreshAccessToken = async () => {
     try {
       if (!refreshToken.value) throw new Error('No refresh token')
-      const response = await apiClient.post('/Auth/refresh', {
+      const response = await apiClient.post('/api/Auth/refresh-token', {
         refreshToken: refreshToken.value
       })
       const data = response.data
@@ -116,8 +127,8 @@ export const useAuthStore = defineStore('auth', () => {
         permissions: data.permissions || [],
         avatarPath: data.avatarPath
       }
-      localStorage.setItem('token', token.value)
-      localStorage.setItem('refreshToken', refreshToken.value)
+      localStorage.setItem('auth_token', token.value)
+      localStorage.setItem('auth_refresh_token', refreshToken.value)
       localStorage.setItem('user', JSON.stringify(user.value))
       return data.token
     } catch (err) {
@@ -158,6 +169,9 @@ export const useAuthStore = defineStore('auth', () => {
     login,
     logout,
     refreshAccessToken,
-    updateProfile
+    updateProfile,
+    // Loading/Error
+    loading,
+    error
   }
 })

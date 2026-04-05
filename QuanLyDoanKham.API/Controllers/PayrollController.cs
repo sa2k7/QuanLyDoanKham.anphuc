@@ -27,7 +27,7 @@ namespace QuanLyDoanKham.API.Controllers
         //   Lương theo ngày:  DailyRate × ActualDays
         // ================================================================
         [HttpGet("monthly")]
-        [Authorize(Policy = "Luong.View")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Luong.View")]
         public async Task<ActionResult<IEnumerable<PayrollSummaryDto>>> GetMonthlyPayroll(
             [FromQuery] int month, [FromQuery] int year)
         {
@@ -137,7 +137,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/Payroll/my-salary — Nhân viên xem lương cá nhân
         // ================================================================
         [HttpGet("my-salary")]
-        [Authorize(Policy = "Luong.View")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Luong.View")]
         public async Task<IActionResult> GetMySalary([FromQuery] int? month, [FromQuery] int? year)
         {
             var username = User.Identity?.Name;
@@ -197,7 +197,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST api/Payroll/generate?month=4&year=2026 — Tạo bản ghi lương
         // ================================================================
         [HttpPost("generate")]
-        [Authorize(Policy = "Luong.Manage")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Luong.Manage")]
         public async Task<IActionResult> GeneratePayroll([FromQuery] int month, [FromQuery] int year)
         {
             var username = User.Identity?.Name ?? "system";
@@ -254,7 +254,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST api/Payroll/confirm?month=4&year=2026 — Duyệt bảng lương
         // ================================================================
         [HttpPost("confirm")]
-        [Authorize(Policy = "Luong.Manage")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Luong.Manage")]
         public async Task<IActionResult> ConfirmPayroll([FromQuery] int month, [FromQuery] int year)
         {
             var records = await _context.PayrollRecords
@@ -284,7 +284,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/Payroll/export-monthly?month=4&year=2026
         // ================================================================
         [HttpGet("export-monthly")]
-        [Authorize(Policy = "Luong.View")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Luong.View")]
         public async Task<IActionResult> ExportMonthlyPayroll([FromQuery] int month, [FromQuery] int year)
         {
             if (month == 0) month = DateTime.Now.Month;

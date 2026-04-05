@@ -97,7 +97,9 @@ namespace QuanLyDoanKham.API.DTOs
     public class SupplyDto
     {
         public int SupplyId { get; set; }
+        [Required(ErrorMessage = "Tên vật tư không được để trống.")]
         public string SupplyName { get; set; }
+        [Required(ErrorMessage = "Đơn vị tính không được để trống.")]
         public string Unit { get; set; }
         public bool IsFixedAsset { get; set; }
         public string Category { get; set; } // Nhom vat tu

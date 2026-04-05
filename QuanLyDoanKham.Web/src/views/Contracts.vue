@@ -3,52 +3,24 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <FileText class="w-6 h-6" />
           </div>
-          Hệ thống Hợp đồng
+          {{ i18n.t('contracts.title') }}
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-blue-600 font-black tabular-nums">{{ String(list?.length || 0).padStart(3, '0') }}</span>
+          <span class="text-primary font-black tabular-nums">{{ String(list?.length || 0).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">Quản lý pháp lý và giá trị hợp đồng</p>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ i18n.t('contracts.subtitle') }}</p>
       </div>
-      <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'" 
+      <button v-if="can('HopDong.Create')" 
               @click="showForm = !showForm" 
-              class="btn-premium bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-8 py-3 shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:-translate-y-0.5 transition-all">
+              class="btn-premium bg-primary text-white px-8 py-3 shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-0.5 transition-all">
         <Plus class="w-5 h-5" />
-        <span>{{ showForm ? 'HỦY BỎ' : 'TẠO HỢP ĐỒNG' }}</span>
+        <span>{{ showForm ? i18n.t('common.cancel') : i18n.t('contracts.addBtn') }}</span>
       </button>
     </div>
 
-    <!-- Stats Summary Section -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <StatCard 
-            title="Tổng giá trị HĐ (Dự kiến)"
-            :value="formatPrice(list?.reduce((sum, c) => sum + (c.totalAmount || 0), 0) || 0)"
-            :icon="DollarSign"
-            variant="default"
-        />
-        <StatCard 
-            title="Giá trị nghiệm thu"
-            :value="formatPrice(list?.filter(c => ['Finished', 'Locked'].includes(c.status)).reduce((sum, c) => sum + (c.totalAmount || 0), 0) || 0)"
-            :icon="Sparkles"
-            variant="emerald"
-        />
-        <StatCard 
-            title="HĐ Đang thực hiện"
-            :value="String(list?.filter(c => ['Active', 'Pending'].includes(c.status)).length || 0).padStart(3, '0')"
-            :icon="Clock"
-            variant="indigo"
-            subtext="Dự án đang vận hành"
-        />
-        <StatCard 
-            title="Tổng quy mô khám"
-            :value="String(list?.reduce((sum, c) => sum + (c.expectedQuantity || 0), 0) || 0).padStart(3, '0')"
-            :icon="Users"
-            variant="sky"
-            subtext="Số lượng người (Dự kiến)"
-        />
-    </div>
+
 
     <!-- Creation Area -->
     <div v-if="showForm" class="premium-card p-10 bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 mb-12 animate-slide-up relative overflow-hidden">
@@ -57,8 +29,8 @@
                 <PlusCircle class="w-7 h-7" />
             </div>
             <div>
-                <h3 class="text-2xl font-black text-slate-800 ">Ký kết Hợp đồng mới</h3>
-                <p class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Soạn thảo hồ sơ pháp lý đối tác</p>
+                <h3 class="text-2xl font-black text-slate-800 ">{{ i18n.t('contracts.formTitle') }}</h3>
+                <p class="text-xs font-black text-slate-400 uppercase tracking-[0.3em] mt-1">{{ i18n.t('contracts.formSubtitle') }}</p>
             </div>
         </div>
         <form @submit.prevent="addContract" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -94,7 +66,13 @@
                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng giá trị dự kiến</p>
                    <p class="text-2xl font-black text-primary">{{ formatPrice(newContract.unitPrice * newContract.expectedQuantity) }}</p>
                 </div>
-                <button type="submit" class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-10 py-3 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all">XÁC NHẬN KÝ KẾT</button>
+                <div class="flex items-center gap-3">
+                    <button type="button" @click="showForm = false" 
+                            class="bg-slate-100 text-slate-500 px-8 py-3 rounded-2xl font-black hover:bg-slate-200 transition-all border border-slate-200 uppercase tracking-widest text-xs">
+                        HỦY
+                    </button>
+                    <button type="submit" class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-10 py-3 shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all">XÁC NHẬN TẠO</button>
+                </div>
             </div>
         </form>
     </div>
@@ -156,13 +134,13 @@
             <table class="w-full text-left border-collapse">
                 <thead class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-slate-100/50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="px-8 py-5 text-center">STT</th>
-                        <th class="px-4 py-5">Hợp đồng / Đối tác</th>
-                        <th class="px-4 py-5">Giá trị quyết toán</th>
+                        <th class="px-8 py-5 text-center">{{ i18n.t('common.stt') }}</th>
+                        <th class="px-4 py-5">{{ i18n.t('contracts.table.client') }}</th>
+                        <th class="px-4 py-5">{{ i18n.t('contracts.table.value') }}</th>
                         <th class="px-4 py-5 text-center">Quy mô</th>
                         <th class="px-4 py-5 text-center">Trạng thái</th>
-                        <th class="px-4 py-5 text-center">Hạn hiệu lực</th>
-                        <th class="px-8 py-5 text-right">Thao tác</th>
+                        <th class="px-4 py-5 text-center">{{ i18n.t('contracts.table.date') }}</th>
+                        <th class="px-8 py-5 text-right">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -469,17 +447,20 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { Plus, FileText, Calendar, ArrowRight, Trash2, Save, PlusCircle, History, Sparkles, Clock, Lock, Upload, X, DollarSign, Users, Eye, Edit3, Unlock, CheckCircle, Activity, FileCheck, XCircle } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import StatCard from '../components/StatCard.vue'
+
 import ContractApprovalPanel from '../components/ContractApprovalPanel.vue'
 
 import CurrencyInput from '../components/CurrencyInput.vue'
 import { usePermission } from '../composables/usePermission'
+import { useI18nStore } from '../stores/i18n'
 
+const i18n = useI18nStore()
 const { can } = usePermission()
 const canEdit = computed(() => can('HopDong.Edit'))
 const canActivate = computed(() => can('HopDong.Edit'))
@@ -495,8 +476,8 @@ const currentUploadId = ref(null)
 const newContract = ref({
     companyId: null,
     signingDate: new Date().toISOString().split('T')[0],
-    startDate: '',
-    endDate: '',
+    startDate: null,
+    endDate: null,
     unitPrice: 0,
     expectedQuantity: 0,
     unitName: 'Người',
@@ -546,14 +527,14 @@ const getStatusLabel = (status) => {
 
 const fetchList = async () => {
     try {
-        const res = await axios.get('/api/HealthContracts')
+        const res = await apiClient.get('/api/HealthContracts')
         list.value = res.data
     } catch (e) { toast.error("Lỗi khi tải danh sách hợp đồng") }
 }
 
 const fetchCompanies = async () => {
     try {
-        const res = await axios.get('/api/Companies')
+        const res = await apiClient.get('/api/Companies')
         companies.value = res.data
     } catch (e) { console.error(e) }
 }
@@ -573,18 +554,18 @@ const addContract = async () => {
         }
 
         const payload = { ...newContract.value, totalAmount: newContract.value.unitPrice * newContract.value.expectedQuantity };
-        await axios.post('/api/HealthContracts', payload)
+        await apiClient.post('/api/HealthContracts', payload)
         toast.success("Tạo hợp đồng thành công!")
         fetchList()
         showForm.value = false
         resetForm()
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi khi tạo hợp đồng") 
+        toast.error(parseApiError(e)) 
     }
 }
 
 const resetForm = () => {
-    newContract.value = { companyId: null, signingDate: new Date().toISOString().split('T')[0], startDate: '', endDate: '', unitPrice: 0, expectedQuantity: 0, unitName: 'Người', status: 'Pending' }
+    newContract.value = { companyId: null, signingDate: new Date().toISOString().split('T')[0], startDate: null, endDate: null, unitPrice: 0, expectedQuantity: 0, unitName: 'Người', status: 'Pending' }
 }
 
 const openDetails = (contract) => {
@@ -604,12 +585,12 @@ const openModal = (contract) => {
 
 const handleUpdateContract = async () => {
     try {
-        await axios.put(`/api/HealthContracts/${detailsModal.value.data.healthContractId}`, detailsModal.value.data)
+        await apiClient.put(`/api/HealthContracts/${detailsModal.value.data.healthContractId}`, detailsModal.value.data)
         toast.success("Đã cập nhật hợp đồng!")
         fetchList()
         detailsModal.value.show = false
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi khi cập nhật") 
+        toast.error(parseApiError(e)) 
     }
 }
 
@@ -624,11 +605,11 @@ const handleFileUpload = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        await axios.post(`/api/HealthContracts/${currentUploadId.value}/upload`, formData)
+        await apiClient.post(`/api/HealthContracts/${currentUploadId.value}/upload`, formData)
         toast.success("Đã tải lên văn bản hợp đồng!")
         fetchList()
     } catch (err) { 
-        toast.error(err.response?.data || "Lỗi khi tải file") 
+        toast.error(parseApiError(err)) 
     }
 }
 
@@ -640,12 +621,12 @@ const handleLockContract = (id) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await axios.put(`/api/HealthContracts/${id}/lock`)
+                await apiClient.put(`/api/HealthContracts/${id}/lock`)
                 toast.success("Hợp đồng đã được khóa an toàn")
                 fetchList()
                 detailsModal.value.show = false
             } catch (e) { 
-                toast.error(e.response?.data || "Không thể khóa hợp đồng") 
+                toast.error(parseApiError(e)) 
             }
         }
     }
@@ -659,12 +640,12 @@ const handleUnlockContract = (id) => {
         variant: 'warning',
         onConfirm: async () => {
             try {
-                await axios.put(`/api/HealthContracts/${id}/unlock`)
+                await apiClient.put(`/api/HealthContracts/${id}/unlock`)
                 toast.success("Đã mở khóa hợp đồng")
                 fetchList()
                 detailsModal.value.show = false
             } catch (e) { 
-                toast.error(e.response?.data || "Lỗi khi mở khóa") 
+                toast.error(parseApiError(e)) 
             }
         }
     }
@@ -678,12 +659,12 @@ const handleDeleteContract = (id) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await axios.delete(`/api/HealthContracts/${id}`)
+                await apiClient.delete(`/api/HealthContracts/${id}`)
                 toast.success("Đã xóa hợp đồng thành công")
                 fetchList()
                 detailsModal.value.show = false
             } catch (e) { 
-                toast.error(e.response?.data || "Lỗi khi xóa") 
+                toast.error(parseApiError(e)) 
             }
         }
     }
@@ -691,11 +672,11 @@ const handleDeleteContract = (id) => {
 
 const handleSubmitForApproval = async (id) => {
     try {
-        await axios.post(`/api/HealthContracts/${id}/submit`)
+        await apiClient.post(`/api/HealthContracts/${id}/submit`)
         toast.success("Đã gửi văn bản đi phê duyệt!")
         fetchList()
         detailsModal.value.show = false
-    } catch (e) { toast.error(e.response?.data || "Lỗi khi gửi") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const handleSaveApproved = () => {
@@ -707,11 +688,11 @@ const handleSaveApproved = () => {
 const handleActivateContract = async (id) => {
     try {
         // Approved → Active (Đang thực hiện)
-        await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Active', note: 'Kích hoạt hợp đồng để triển khai' })
+        await apiClient.patch(`/api/HealthContracts/${id}/status`, { status: 'Active', note: 'Kích hoạt hợp đồng để triển khai' })
         toast.success("Hợp đồng đã được kích hoạt! Bắt đầu triển khai.")
         fetchList()
         detailsModal.value.show = false
-    } catch (e) { toast.error(e.response?.data || "Lỗi kích hoạt") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const handleFinishContract = async (id) => {
@@ -722,11 +703,11 @@ const handleFinishContract = async (id) => {
         variant: 'info',
         onConfirm: async () => {
             try {
-                await axios.patch(`/api/HealthContracts/${id}/status`, { status: 'Finished', note: 'Nghiệm thu kết thúc hợp đồng' })
+                await apiClient.patch(`/api/HealthContracts/${id}/status`, { status: 'Finished', note: 'Nghiệm thu kết thúc hợp đồng' })
                 toast.success("Đã kết thúc hợp đồng!")
                 fetchList()
                 detailsModal.value.show = false
-            } catch (e) { toast.error(e.response?.data || "Không thể kết thúc HĐ") }
+            } catch (e) { toast.error(parseApiError(e)) }
         }
     }
 }

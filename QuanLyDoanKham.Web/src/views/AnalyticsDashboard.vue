@@ -221,7 +221,8 @@
 
 <script setup>
 import { ref, computed, onMounted, reactive } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { useAuthStore } from '../stores/auth'
 import StatCard from '../components/StatCard.vue'
 import { useToast } from '../composables/useToast'
@@ -293,37 +294,41 @@ const fetchReportData = async () => {
   
   // Tải KPI tổng quát (Dành cho tất cả Manager)
   try {
-    const res = await axios.get('/api/Reports/dashboard-kpis', { params })
+    const res = await apiClient.get('/api/Reports/dashboard-kpis', { params })
     if (res.data) kpis.value = res.data
   } catch (err) {
     console.error("Lỗi KPI:", err)
+    toast.error(parseApiError(err))
     // Giữ nguyên giá trị mặc định đã init
   }
 
   // Tải báo cáo Tài chính (Chỉ Admin/Payroll/Contract)
   try {
-    const res = await axios.get('/api/Reports/financial', { params })
+    const res = await apiClient.get('/api/Reports/financial', { params })
     if (res.data) financialReport.value = res.data
   } catch (err) {
     console.warn("Hạn chế quyền truy cập Tài chính hoặc lỗi server:", err.response?.status)
+    toast.error(parseApiError(err))
     financialReport.value = { revenue: 0, staffCost: 0, supplyCost: 0, margin: 0, topContracts: [] }
   }
 
   // Tải hiệu suất nhân sự (Chỉ Admin/Personnel)
   try {
-    const res = await axios.get('/api/Reports/staff-efficiency', { params })
+    const res = await apiClient.get('/api/Reports/staff-efficiency', { params })
     if (res.data) staffEfficiency.value = res.data
   } catch (err) {
     console.warn("Hạn chế quyền truy cập Nhân sự:", err.response?.status)
+    toast.error(parseApiError(err))
     staffEfficiency.value = []
   }
 
   // Tải cảnh báo kho (Chỉ Admin/Warehouse)
   try {
-    const res = await axios.get('/api/Reports/inventory-alerts')
+    const res = await apiClient.get('/api/Reports/inventory-alerts')
     if (res.data) inventoryAlerts.value = res.data
   } catch (err) {
     console.warn("Hạn chế quyền truy cập Kho:", err.response?.status)
+    toast.error(parseApiError(err))
     inventoryAlerts.value = []
   }
 }

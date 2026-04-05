@@ -24,7 +24,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET: api/HealthContracts
         // ================================================================
         [HttpGet]
-        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,Customer,PersonnelManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.View")]
         public async Task<ActionResult<IEnumerable<HealthContractDto>>> GetContracts(
             [FromQuery] string status = null,
             [FromQuery] int? companyId = null)
@@ -94,7 +94,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/HealthContracts/{id}
         [HttpGet("{id}")]
-        [Authorize(Roles = "Admin,ContractManager,MedicalGroupManager,PersonnelManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.View")]
         public async Task<ActionResult<HealthContractDto>> GetContract(int id)
         {
             var c = await _context.Contracts
@@ -159,11 +159,11 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/HealthContracts — Tạo hợp đồng (Draft)
         // ================================================================
         [HttpPost]
-        [Authorize(Policy = "HopDong.Create")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Create")]
         public async Task<ActionResult<HealthContract>> PostContract(HealthContractDto dto)
         {
             if (await _context.Contracts.AnyAsync(c =>
-                c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Date))
+                c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Value.Date))
                 return BadRequest("Công ty này đã có hợp đồng ký vào ngày này.");
 
             var username = User.Identity?.Name ?? "system";
@@ -182,9 +182,9 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 CompanyId = dto.CompanyId,
                 ContractCode = contractCode,
-                SigningDate = dto.SigningDate,
-                StartDate = dto.StartDate,
-                EndDate = dto.EndDate,
+                SigningDate = dto.SigningDate.Value,
+                StartDate = dto.StartDate.Value,
+                EndDate = dto.EndDate.Value,
                 UnitPrice = dto.UnitPrice,
                 ExpectedQuantity = dto.ExpectedQuantity,
                 UnitName = string.IsNullOrEmpty(dto.UnitName) ? "Người" : dto.UnitName,
@@ -206,7 +206,7 @@ namespace QuanLyDoanKham.API.Controllers
         // PUT: api/HealthContracts/{id}
         // ================================================================
         [HttpPut("{id}")]
-        [Authorize(Policy = "HopDong.Edit")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> PutContract(int id, HealthContractDto dto)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -218,9 +218,9 @@ namespace QuanLyDoanKham.API.Controllers
             var username = User.Identity?.Name ?? "system";
 
             contract.CompanyId = dto.CompanyId;
-            contract.SigningDate = dto.SigningDate;
-            contract.StartDate = dto.StartDate;
-            contract.EndDate = dto.EndDate;
+            contract.SigningDate = dto.SigningDate.Value;
+            contract.StartDate = dto.StartDate.Value;
+            contract.EndDate = dto.EndDate.Value;
             contract.UnitPrice = dto.UnitPrice;
             contract.ExpectedQuantity = dto.ExpectedQuantity;
             contract.UnitName = dto.UnitName;
@@ -254,7 +254,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/HealthContracts/{id}/submit — Gửi đi duyệt
         // ================================================================
         [HttpPost("{id}/submit")]
-        [Authorize(Policy = "HopDong.Create")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Approve")]
         public async Task<IActionResult> SubmitForApproval(int id)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -286,7 +286,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/HealthContracts/{id}/approve — Phê duyệt từng bước
         // ================================================================
         [HttpPost("{id}/approve")]
-        [Authorize(Policy = "HopDong.Approve")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Approve")]
         public async Task<IActionResult> ApproveContract(int id, [FromBody] ApprovalActionDto dto)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -297,6 +297,10 @@ namespace QuanLyDoanKham.API.Controllers
             var username = User.Identity?.Name ?? "system";
             var userIdClaim = User.FindFirst("UserId")?.Value;
             int userId = int.TryParse(userIdClaim, out var uid) ? uid : 0;
+
+            // Cấm người tạo tự duyệt
+            if (contract.CreatedByUserId.HasValue && contract.CreatedByUserId.Value == userId)
+                return BadRequest("Người tạo không được tự phê duyệt hợp đồng của chính mình.");
 
             // Lấy bước hiện tại
             var currentStep = await _context.ContractApprovalSteps
@@ -341,25 +345,25 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 // Đã duyệt hết tất cả bước → Approved
                 contract.Status = "Approved";
-                _context.ContractStatusHistories.Add(new ContractStatusHistory
-                {
-                    HealthContractId = id,
-                    OldStatus = "PendingApproval",
-                    NewStatus = "Approved",
-                    ChangedBy = username,
-                    ChangedAt = DateTime.Now,
-                    Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
-                });
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Hợp đồng đã được phê duyệt hoàn toàn!", status = "Approved" });
-            }
+            _context.ContractStatusHistories.Add(new ContractStatusHistory
+            {
+                HealthContractId = id,
+                OldStatus = "PendingApproval",
+                NewStatus = "Approved",
+                ChangedBy = username,
+                ChangedAt = DateTime.Now,
+                Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
+            });
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Hợp đồng đã được phê duyệt hoàn toàn!", status = "Approved" });
+        }
         }
 
         // ================================================================
         // POST: api/HealthContracts/{id}/reject — Từ chối
         // ================================================================
         [HttpPost("{id}/reject")]
-        [Authorize(Policy = "HopDong.Reject")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Reject")]
         public async Task<IActionResult> RejectContract(int id, [FromBody] ApprovalActionDto dto)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -402,12 +406,21 @@ namespace QuanLyDoanKham.API.Controllers
         // PATCH: api/HealthContracts/{id}/status — Admin update trạng thái thủ công
         // ================================================================
         [HttpPatch("{id}/status")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateDto dto)
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return NotFound();
             if (contract.Status == dto.Status) return Ok(contract);
+
+            // Bắt buộc có file & signer khi chuyển Signed
+            if (dto.Status == "Signed")
+            {
+                if (string.IsNullOrEmpty(contract.FilePath))
+                    return BadRequest("Phải đính kèm file hợp đồng trước khi ký.");
+                if (!contract.SignerId.HasValue)
+                    return BadRequest("Phải lưu thông tin người ký (SignerId) trước khi ký.");
+            }
 
             if (dto.Status == "Finished")
             {
@@ -439,7 +452,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/HealthContracts/{id}/attachments — Upload file đính kèm
         // ================================================================
         [HttpPost("{id}/attachments")]
-        [Authorize(Policy = "HopDong.Upload")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Upload")]
         public async Task<IActionResult> UploadAttachment(int id, [FromForm] IFormFile file)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -485,7 +498,7 @@ namespace QuanLyDoanKham.API.Controllers
         // DELETE: api/HealthContracts/{id}
         // ================================================================
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> DeleteContract(int id)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -499,7 +512,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/HealthContracts/{id}/lock
         [HttpPut("{id}/lock")]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> LockContract(int id)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -519,7 +532,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/HealthContracts/{id}/unlock
         [HttpPut("{id}/unlock")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> UnlockContract(int id)
         {
             var contract = await _context.Contracts.FindAsync(id);
@@ -536,7 +549,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/HealthContracts/approval-steps
         [HttpGet("approval-steps")]
-        [Authorize(Roles = "Admin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.View")]
         public async Task<IActionResult> GetApprovalSteps()
         {
             var steps = await _context.ContractApprovalSteps

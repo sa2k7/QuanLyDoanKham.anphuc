@@ -1,85 +1,107 @@
 <template>
-  <div class="schedule-page">
-    <div class="page-header">
+  <div class="schedule-page animate-fade-in pb-20">
+    <div class="page-header flex justify-between items-center mb-8 gap-4 flex-wrap">
       <div>
-        <h1 class="page-title"><i class="fas fa-calendar-check"></i> Lịch khám của tôi</h1>
-        <p class="page-subtitle">Tháng {{ currentMonth }}/{{ currentYear }}</p>
+        <h1 class="page-title text-3xl font-black text-slate-800 flex items-center gap-3">
+            <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+                <CalendarCheck class="w-6 h-6" />
+            </div>
+            Lịch khám của tôi
+        </h1>
+        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">Tháng {{ currentMonth }} / {{ currentYear }} • Theo dõi tiến độ công việc</p>
       </div>
-      <div class="month-nav">
-        <button class="nav-btn" @click="prevMonth"><i class="fas fa-chevron-left"></i></button>
-        <span class="month-label">{{ currentMonth }}/{{ currentYear }}</span>
-        <button class="nav-btn" @click="nextMonth"><i class="fas fa-chevron-right"></i></button>
+      <div class="month-nav flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
+        <button class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all" @click="prevMonth">
+            <ChevronLeft class="w-5 h-5" />
+        </button>
+        <span class="month-label font-black text-sm uppercase tracking-widest text-slate-700 min-width-[100px] text-center">{{ currentMonth }} / {{ currentYear }}</span>
+        <button class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all" @click="nextMonth">
+            <ChevronRight class="w-5 h-5" />
+        </button>
       </div>
     </div>
 
     <!-- Tổng kết tháng -->
-    <div class="summary-cards">
-      <div class="summary-card">
-        <i class="fas fa-calendar-check"></i>
+    <div class="summary-cards grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+      <div class="summary-card premium-card bg-white p-8 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center gap-4 group">
+        <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <CalendarCheck class="w-6 h-6" />
+        </div>
         <div>
-          <span class="summary-value">{{ summary.totalGroups }}</span>
-          <span class="summary-label">Đoàn tham gia</span>
+          <span class="summary-value block text-2xl font-black text-slate-800 tabular-nums">{{ String(summary.totalGroups).padStart(2, '0') }}</span>
+          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">Đoàn tham gia</span>
         </div>
       </div>
-      <div class="summary-card">
-        <i class="fas fa-sun"></i>
+      <div class="summary-card premium-card bg-white p-8 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center gap-4 group">
+        <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Sun class="w-6 h-6" />
+        </div>
         <div>
-          <span class="summary-value">{{ summary.totalActualDays }}</span>
-          <span class="summary-label">Công thực tế</span>
+          <span class="summary-value block text-2xl font-black text-slate-800 tabular-nums">{{ summary.totalActualDays }}</span>
+          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">Công thực tế</span>
         </div>
       </div>
-      <div class="summary-card accent">
-        <i class="fas fa-money-bill-wave"></i>
+      <div class="summary-card premium-card bg-slate-900 p-8 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] flex items-center gap-4 group">
+        <div class="w-12 h-12 bg-white/10 text-emerald-400 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+            <Wallet class="w-6 h-6" />
+        </div>
         <div>
-          <span class="summary-value">{{ formatMoney(summary.estimatedSalary) }}</span>
-          <span class="summary-label">Lương ước tính</span>
+          <span class="summary-value block text-2xl font-black text-emerald-400 tabular-nums">{{ formatMoney(summary.estimatedSalary) }}</span>
+          <span class="summary-label text-[10px] font-black text-slate-500 uppercase tracking-widest">Lương ước tính</span>
         </div>
       </div>
     </div>
 
     <!-- Chi tiết lịch -->
-    <div class="schedule-list" v-if="!loading && details.length > 0">
-      <div v-for="item in details" :key="item.groupId" class="schedule-item"
-        :class="item.workStatus === 'Đủ công' ? 'done' : item.workStatus === 'Chờ check-out' ? 'partial' : 'absent'">
-        <div class="item-date">
-          <span class="day">{{ new Date(item.examDate).getDate() }}</span>
-          <span class="month">Th{{ new Date(item.examDate).getMonth() + 1 }}</span>
+    <div class="schedule-list grid grid-cols-1 gap-4" v-if="!loading && details.length > 0">
+      <div v-for="item in details" :key="item.groupId" 
+        class="schedule-item bg-white p-6 rounded-3xl border-2 transition-all flex items-center gap-6"
+        :class="getStatusBorderCls(item.workStatus)">
+        <div class="item-date flex flex-col items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
+          <span class="day text-xl font-black text-slate-800 leading-none">{{ new Date(item.examDate).getDate() }}</span>
+          <span class="month text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">T{{ new Date(item.examDate).getMonth() + 1 }}</span>
         </div>
-        <div class="item-info">
-          <h4 class="group-name">{{ item.groupName }}</h4>
-          <div class="item-meta">
-            <span v-if="item.checkInTime">
-              <i class="fas fa-sign-in-alt"></i> {{ formatTime(item.checkInTime) }}
+        <div class="item-info flex-1">
+          <h4 class="group-name text-sm font-black text-slate-800 uppercase tracking-widest mb-2">{{ item.groupName }}</h4>
+          <div class="item-meta flex items-center gap-6">
+            <span v-if="item.checkInTime" class="flex items-center gap-2 text-[10px] font-black text-emerald-500 uppercase tracking-widest">
+              <LogIn class="w-3.5 h-3.5" /> {{ formatTime(item.checkInTime) }}
             </span>
-            <span v-if="item.checkOutTime">
-              <i class="fas fa-sign-out-alt"></i> {{ formatTime(item.checkOutTime) }}
+            <span v-if="item.checkOutTime" class="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase tracking-widest">
+              <LogOut class="w-3.5 h-3.5" /> {{ formatTime(item.checkOutTime) }}
             </span>
           </div>
         </div>
-        <div class="item-right">
-          <span class="shift-badge" :class="item.shiftType >= 1 ? 'full' : 'half'">
-            {{ item.shiftType >= 1 ? '1 công' : '½ công' }}
+        <div class="item-right flex flex-col items-end gap-2">
+          <span class="shift-badge px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="item.shiftType >= 1 ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-amber-50 text-amber-600 border-amber-100'">
+            {{ item.shiftType >= 1 ? '1.0 Công' : '0.5 Công' }}
           </span>
-          <span class="status-chip" :class="getStatusCls(item.workStatus)">
+          <span class="status-chip px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest" :class="getStatusCls(item.workStatus)">
             {{ item.workStatus }}
           </span>
         </div>
       </div>
     </div>
 
-    <div v-else-if="!loading && details.length === 0" class="empty-state">
-      <i class="fas fa-calendar-times"></i>
-      <p>Không có lịch khám trong tháng {{ currentMonth }}/{{ currentYear }}</p>
+    <div v-else-if="!loading && details.length === 0" class="flex flex-col items-center justify-center py-32 text-center">
+      <CalendarOff class="w-16 h-16 text-slate-200 mb-6" />
+      <p class="text-slate-400 font-black uppercase tracking-widest text-sm">Không có lịch khám phát sinh trong tháng {{ currentMonth }}/{{ currentYear }}</p>
     </div>
 
-    <div v-if="loading" class="loading-overlay"><div class="spinner"></div></div>
+    <div v-if="loading" class="flex justify-center py-20">
+        <Loader2 class="w-10 h-10 animate-spin text-slate-200" />
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
-import apiClient from '@/services/apiClient'
-import { useAuthStore } from '@/stores/auth'
+import apiClient from '../services/apiClient'
+import { useAuthStore } from '../stores/auth'
+import { 
+    CalendarCheck, ChevronLeft, ChevronRight, Sun, Wallet, 
+    LogIn, LogOut, CalendarOff, Loader2 
+} from 'lucide-vue-next'
 
 const auth = useAuthStore()
 const now = new Date()
@@ -110,16 +132,22 @@ const formatTime  = (d) => d ? new Date(d).toLocaleTimeString('vi-VN', { hour: '
 const formatMoney = (n) => n ? n.toLocaleString('vi-VN') + ' ₫' : '—'
 
 const getStatusCls = (s) => {
-  if (s === 'Đủ công') return 'done'
-  if (s === 'Chờ check-out') return 'partial'
-  return 'absent'
+  if (s === 'Đủ công') return 'bg-emerald-500 text-white'
+  if (s === 'Chờ check-out') return 'bg-amber-500 text-white'
+  return 'bg-rose-500 text-white'
+}
+
+const getStatusBorderCls = (s) => {
+  if (s === 'Đủ công') return 'border-emerald-100 hover:border-emerald-300'
+  if (s === 'Chờ check-out') return 'border-amber-100 hover:border-amber-300'
+  return 'border-rose-100 hover:border-rose-300'
 }
 
 const loadSchedule = async () => {
   if (!staffId.value) return
   loading.value = true
   try {
-    const res = await apiClient.get(`/Attendance/summary/${staffId.value}`, {
+    const res = await apiClient.get(`/api/Attendance/summary/${staffId.value}`, {
       params: { month: currentMonth.value, year: currentYear.value }
     })
     details.value = res.data.details || []
@@ -129,11 +157,11 @@ const loadSchedule = async () => {
 
 const loadStaffId = async () => {
   try {
-    const res = await apiClient.get('/Auth/profile')
+    const res = await apiClient.get('/api/Auth/profile')
     staffId.value = res.data.staffId || null
     if (!staffId.value) {
       // Fallback: tìm staff theo employeeCode = username
-      const sRes = await apiClient.get('/Staffs', { params: { search: auth.username } })
+      const sRes = await apiClient.get('/api/Staffs', { params: { search: auth.username } })
       if (sRes.data.length > 0) staffId.value = sRes.data[0].staffId
     }
   } catch { staffId.value = null }

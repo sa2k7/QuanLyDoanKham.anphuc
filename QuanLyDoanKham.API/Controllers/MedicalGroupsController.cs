@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -27,6 +28,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/MedicalGroups
         [HttpGet]
+        [AuthorizePermission("DoanKham.View")]
         public async Task<ActionResult<IEnumerable<MedicalGroupDto>>> GetMedicalGroups()
         {
             var today = DateTime.Today;
@@ -48,9 +50,40 @@ namespace QuanLyDoanKham.API.Controllers
                 .ToListAsync();
         }
 
+        // GET: api/MedicalGroups/calendar?from=2024-01-01&to=2024-01-31
+        [HttpGet("calendar")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("LichKham.ViewAll")]
+        public async Task<IActionResult> GetCalendar([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+        {
+            var start = from?.Date ?? DateTime.Today.AddDays(-7);
+            var end = to?.Date ?? DateTime.Today.AddDays(30);
+            var data = await _context.MedicalGroups
+                .Where(g => g.ExamDate.Date >= start && g.ExamDate.Date <= end)
+                .Select(g => new
+                {
+                    g.GroupId,
+                    g.GroupName,
+                    g.ExamDate,
+                    g.Status,
+                    g.HealthContractId
+                }).ToListAsync();
+            return Ok(data);
+        }
+
+        [HttpGet("{id}/qr")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.QR")]
+        public async Task<IActionResult> GetQr(int id, [FromServices] QuanLyDoanKham.API.Services.QrService qr)
+        {
+            var group = await _context.MedicalGroups.FindAsync(id);
+            if (group == null) return NotFound();
+            // Payload đơn giản cũ để giữ tương thích hoặc debug
+            var png = qr.GenerateQr($"GROUP:{id}|DATE:{group.ExamDate:yyyy-MM-dd}");
+            return Ok(new { pngBase64 = png });
+        }
+
         // POST: api/MedicalGroups
         [HttpPost]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Create")]
         public async Task<ActionResult<MedicalGroup>> PostMedicalGroup(MedicalGroupDto dto)
         {
             var contract = await _context.Contracts.FindAsync(dto.HealthContractId);
@@ -75,7 +108,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/MedicalGroups/{id}
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Edit")]
         public async Task<IActionResult> PutMedicalGroup(int id, MedicalGroupDto dto)
         {
             var group = await _context.MedicalGroups.FindAsync(id);
@@ -92,16 +125,50 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(group);
         }
 
+        // POST: api/MedicalGroups/generate-from-contract/{contractId}
+        [HttpPost("generate-from-contract/{contractId}")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("DoanKham.Create")]
+        public async Task<IActionResult> GenerateFromContract(int contractId)
+        {
+            var contract = await _context.Contracts
+                .Include(c => c.Company)
+                .FirstOrDefaultAsync(c => c.HealthContractId == contractId);
+            if (contract == null) return NotFound();
+            if (contract.Status != "Approved" && contract.Status != "Active")
+                return BadRequest("Hợp đồng chưa được duyệt hoặc chưa kích hoạt.");
+
+            var start = contract.StartDate.Date;
+            var end = contract.EndDate.Date;
+            for (var d = start; d <= end; d = d.AddDays(1))
+            {
+                var exists = await _context.MedicalGroups.AnyAsync(g =>
+                    g.HealthContractId == contractId && g.ExamDate.Date == d);
+                if (exists) continue;
+
+                _context.MedicalGroups.Add(new MedicalGroup
+                {
+                    GroupName = $"{contract.Company?.ShortName ?? contract.Company?.CompanyName} - {d:dd/MM/yyyy}",
+                    ExamDate = d,
+                    HealthContractId = contractId,
+                    Status = "Open",
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = User.Identity?.Name ?? "system"
+                });
+            }
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã sinh đoàn theo dải ngày hợp đồng." });
+        }
+
         // PUT: api/MedicalGroups/{id}/status
         [HttpPut("{id}/status")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Edit")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] StatusUpdateDto dto)
         {
             var group = await _context.MedicalGroups.FindAsync(id);
             if (group == null) return NotFound();
 
-            // Nếu đã khóa thì không cho đổi nữa trừ khi là Admin (tùy chính sách, hiện tại giữ đơn giản)
-            if (group.Status == "Locked" && !User.IsInRole("Admin")) 
+            // Nếu đã khóa thì không cho đổi nữa
+            if (group.Status == "Locked")
                 return BadRequest("Đoàn khám đã bị khóa, không thể thay đổi trạng thái.");
 
             group.Status = dto.Status;
@@ -111,7 +178,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/MedicalGroups/my-schedule — MedicalStaff xem lịch đi đoàn cá nhân
         [HttpGet("my-schedule")]
-        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
+        [AuthorizePermission("LichKham.ViewOwn")]
         public async Task<IActionResult> GetMySchedule()
         {
             var username = User.Identity?.Name;
@@ -171,7 +238,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/{id}/staffs
         [HttpPost("{id}/staffs")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("DoanKham.AssignStaff")]
         public async Task<IActionResult> AddStaffToGroup(int id, [FromBody] AddStaffToGroupDto dto)
         {
             var group = await _context.MedicalGroups.FindAsync(id);
@@ -182,19 +249,32 @@ namespace QuanLyDoanKham.API.Controllers
             var staff = await _context.Staffs.FindAsync(dto.StaffId);
             if (staff == null) return NotFound("Nhân viên không tồn tại.");
 
-            // RULE: Bác sĩ không được phân vào vị trí đơn giản
-            var forbiddenPositionsForDoctor = new[] { "Tiếp nhận", "Cân đo huyết áp", "Lấy máu", "Hậu cần", "Khác" };
-            if (staff.StaffType == "BacSi" && forbiddenPositionsForDoctor.Contains(dto.WorkPosition))
-                return BadRequest($"Bác sĩ không được phân công vào vị trí '{dto.WorkPosition}'. Chỉ được phân vị trí khám bệnh (Khám nội, Khám ngoại, Siêu âm, Sản phụ khoa).");
+            // Check chuyên môn/department với vị trí yêu cầu
+            if (dto.PositionId.HasValue)
+            {
+                var quota = await _context.GroupPositionQuotas
+                    .Include(q => q.Position)
+                    .FirstOrDefaultAsync(q => q.Id == dto.PositionId.Value || q.PositionId == dto.PositionId.Value && q.MedicalGroupId == id);
+                if (quota != null && !string.IsNullOrEmpty(quota.Position.SpecialtyRequired))
+                {
+                    if (!string.Equals(quota.Position.SpecialtyRequired, staff.Specialty, StringComparison.OrdinalIgnoreCase))
+                        return BadRequest("Sai chuyên môn so với vị trí yêu cầu.");
+                }
+                // Kiểm tra quota
+                if (quota != null && quota.Assigned >= quota.Required)
+                    return BadRequest("Vị trí đã đủ định biên.");
+            }
 
-            // KIỂM TRA TRÙNG LỊCH: Nhân viên không được tham gia đoàn khác vào cùng ngày ExamDate
+            // Kiểm tra trùng lịch theo ngày + ca (ShiftType)
             var examDate = group.ExamDate.Date;
             var isOverlapping = await _context.GroupStaffDetails
                 .Include(gsd => gsd.MedicalGroup)
-                .AnyAsync(gsd => gsd.StaffId == dto.StaffId && gsd.MedicalGroup.ExamDate.Date == examDate);
+                .AnyAsync(gsd => gsd.StaffId == dto.StaffId
+                    && gsd.MedicalGroup.ExamDate.Date == examDate
+                    && Math.Abs(gsd.ShiftType - dto.ShiftType) < 0.001);
 
             if (isOverlapping)
-                return BadRequest($"Nhân viên {staff.FullName} đã được phân công vào một đoàn khám khác trong ngày {examDate:dd/MM/yyyy}.");
+                return BadRequest($"Nhân viên {staff.FullName} đã được phân công vào đoàn khác trong ngày {examDate:dd/MM/yyyy}.");
 
             var detail = new GroupStaffDetail
             {
@@ -205,16 +285,19 @@ namespace QuanLyDoanKham.API.Controllers
                 ExamDate = examDate,
                 WorkPosition = dto.WorkPosition,
                 PositionId = dto.PositionId,
-                WorkStatus = dto.WorkStatus ?? "Đang chờ"
+                GroupPositionQuotaId = dto.PositionId,
+                WorkStatus = dto.WorkStatus ?? "Đang chờ",
+                AssignedByUserId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : null,
+                AssignedAt = DateTime.UtcNow
             };
 
-            // Cập nhật AssignedCount cho Position nếu có
+            // Cập nhật AssignedCount cho quota nếu có
             if (dto.PositionId.HasValue)
             {
-                var position = await _context.MedicalGroupPositions.FindAsync(dto.PositionId.Value);
-                if (position != null)
+                var quota = await _context.GroupPositionQuotas.FindAsync(dto.PositionId.Value);
+                if (quota != null)
                 {
-                    position.AssignedCount += 1;
+                    quota.Assigned = Math.Min(quota.Assigned + 1, quota.Required);
                 }
             }
 
@@ -249,7 +332,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/auto-create-with-staff
         [HttpPost("auto-create-with-staff")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Create")]
         public async Task<IActionResult> AutoCreateWithStaff([FromBody] AutoCreateGroupWithStaffRequestDto request)
         {
             var userId = User.Identity?.Name ?? "system";
@@ -263,7 +346,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/auto-create/{contractId}
         [HttpPost("auto-create/{contractId}")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Create")]
         public async Task<ActionResult<MedicalGroup>> AutoCreateFromContract(int contractId)
         {
             var contract = await _context.Contracts.Include(c => c.Company).FirstOrDefaultAsync(c => c.HealthContractId == contractId);
@@ -289,7 +372,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/MedicalGroups/staffs/{detailId}
         [HttpDelete("staffs/{detailId}")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.AssignStaff")]
         public async Task<IActionResult> RemoveStaffFromGroup(int detailId)
         {
             var detail = await _context.GroupStaffDetails.FindAsync(detailId);
@@ -299,13 +382,10 @@ namespace QuanLyDoanKham.API.Controllers
             if (group != null && (group.Status == "Locked" || group.Status == "Finished"))
                 return BadRequest("Đoàn khám đã đóng hoặc khóa.");
 
-            if (detail.PositionId.HasValue)
+            if (detail.GroupPositionQuotaId.HasValue)
             {
-                var position = await _context.MedicalGroupPositions.FindAsync(detail.PositionId.Value);
-                if (position != null && position.AssignedCount > 0)
-                {
-                    position.AssignedCount -= 1;
-                }
+                var quota = await _context.GroupPositionQuotas.FindAsync(detail.GroupPositionQuotaId.Value);
+                if (quota != null && quota.Assigned > 0) quota.Assigned -= 1;
             }
 
             _context.GroupStaffDetails.Remove(detail);
@@ -316,7 +396,7 @@ namespace QuanLyDoanKham.API.Controllers
         // PATCH: api/MedicalGroups/staffs/{detailId}/status
         // Cap nhat trang thai diem danh (Dang cho / Da tham gia / Vang mat / Xin nghi)
         [HttpPatch("staffs/{detailId}/status")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.AssignStaff")]
         public async Task<IActionResult> UpdateWorkStatus(int detailId, [FromBody] UpdateWorkStatusDto dto)
         {
             var detail = await _context.GroupStaffDetails.FindAsync(detailId);
@@ -336,7 +416,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/MedicalGroups/staffs/{detailId}/checkin
         // Ghi nhan gio check-in thuc te — Admin, GroupMgr hoặc MedicalStaff (tự check-in)
         [HttpPost("staffs/{detailId}/checkin")]
-        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
+        [AuthorizePermission("ChamCong.CheckInOut")]
         public async Task<IActionResult> CheckIn(int detailId)
         {
             var detail = await _context.GroupStaffDetails.Include(d => d.Staff).FirstOrDefaultAsync(d => d.Id == detailId);
@@ -383,7 +463,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/MedicalGroups/staffs/{detailId}/checkout
         // Ghi nhan gio check-out khi ket thuc buoi kham
         [HttpPost("staffs/{detailId}/checkout")]
-        [Authorize(Roles = "Admin,MedicalGroupManager,MedicalStaff")]
+        [AuthorizePermission("ChamCong.CheckInOut")]
         public async Task<IActionResult> CheckOut(int detailId)
         {
             var detail = await _context.GroupStaffDetails.Include(d => d.Staff).FirstOrDefaultAsync(d => d.Id == detailId);
@@ -438,7 +518,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/upload-data
         [HttpPost("upload-data")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.Edit")]
         public async Task<IActionResult> UploadData([FromForm] IFormFile file)
         {
             if (file == null || file.Length == 0) return BadRequest("No file uploaded");
@@ -458,7 +538,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
         // GET: api/MedicalGroups/export
         [HttpGet("export")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> ExportGroupsExcel()
         {
             var groups = await _context.MedicalGroups
@@ -497,7 +577,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/MedicalGroups/{id}/export-staff
         [HttpGet("{id}/export-staff")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> ExportGroupStaffExcel(int id)
         {
             var group = await _context.MedicalGroups.FindAsync(id);
@@ -542,7 +622,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/{id}/ai-suggest-staff
         [HttpPost("{id}/ai-suggest-staff")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.AssignStaff")]
         public async Task<IActionResult> AiSuggestStaff(int id)
         {
             var group = await _context.MedicalGroups
@@ -628,7 +708,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/MedicalGroups/{id}/positions
         [HttpGet("{id}/positions")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.SetPosition")]
         public async Task<ActionResult<IEnumerable<MedicalGroupPositionDto>>> GetGroupPositions(int id)
         {
             return await _context.MedicalGroupPositions
@@ -649,7 +729,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/MedicalGroups/{id}/positions
         [HttpPost("{id}/positions")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.SetPosition")]
         public async Task<IActionResult> AddPosition(int id, [FromBody] MedicalGroupPositionDto dto)
         {
             var group = await _context.MedicalGroups.FindAsync(id);
@@ -672,7 +752,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/MedicalGroups/positions/{positionId}
         [HttpDelete("positions/{positionId}")]
-        [Authorize(Roles = "Admin,MedicalGroupManager")]
+        [AuthorizePermission("DoanKham.SetPosition")]
         public async Task<IActionResult> RemovePosition(int positionId)
         {
             var position = await _context.MedicalGroupPositions.FindAsync(positionId);

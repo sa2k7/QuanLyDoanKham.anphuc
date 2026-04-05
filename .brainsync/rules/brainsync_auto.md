@@ -20,40 +20,49 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
-- **gotcha in build3.txt** — File updated (external): QuanLyDoanKham.API/build3.txt
+- **⚠️ GOTCHA: Optimized Optimized** — - - Optimized Optimized
++ - Optimized Project
+- - Optimized Optimized
 
-Content summar
-- **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
-- **gotcha in rjsmrazor.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmrazo
-- **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QLDK.API
-- **gotcha in rjsmcshtml.dswa.cache.json** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/rjsmcsht
+- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Patched security issue SANG
++ - problem-fix in agent-rules.md
+- - 
+- **⚠️ GOTCHA: Strengthened types Fixed** — - - Fixed null crash in CodeInput — prevents null/undefined runtime cr
+- **⚠️ GOTCHA: Optimized GOTCHA** — - - ⚠️ GOTCHA: Optimized Architectural
++ - ⚠️ GOTCHA: Optimized GOTCHA
+- **⚠️ GOTCHA: Optimized GOTCHA** — - - ⚠️ GOTCHA: Optimized GOTCHA
++ - ⚠️ GOTCHA: Optimized Architectural
+- **⚠️ GOTCHA: Optimized Architectural** — - 
++ - what-changed in brainsync_auto.md — confirmed 3x
+- ## Architect
 
 ## Project Standards
 
-- Fixed null crash in String — prevents null/undefined runtime crashes — confirmed 3x
-- Optimized GlobalPropertiesHash — confirmed 3x
-- Strengthened types TotalActualDays
-- Strengthened types System
-- Strengthened types System
-- Optimized GlobalPropertiesHash — confirmed 3x
-- Optimized GlobalPropertiesHash — confirmed 5x
-- Fixed null crash in STATE — prevents null/undefined runtime crashes — confirmed 3x
+- Strengthened types Patched
+- Strengthened types GOTCHA
+- what-changed in shared-context.json — confirmed 8x
+- problem-fix in agent-rules.md — confirmed 3x
+- Patched security issue SANG — confirmed 3x
+- Fixed null crash in ArrowDownLeft — prevents null/undefined runtime crashes — confirmed 4x
+- Strengthened types Fixed
+- Optimized Optimized — confirmed 3x
 
 ## Known Fixes
 
-- ❌ File updated (external): QuanLyDoanKham.API/build_errors_new.txt → ✅ problem-fix in migration_errors.txt
+- ❌ - - Fixed null crash in ArrowDownLeft — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
 
 ## Recent Decisions
 
-- decision in ApplicationDbContextModelSnapshot.cs
-- decision in ApplicationDbContextModelSnapshot.cs
+- Optimized Score — parallelizes async operations for speed
+- decision in Departments.vue
+- Optimized Score — parallelizes async operations for speed
+- Optimized Score — parallelizes async operations for speed
 
 ## Learned Patterns
 
-- Avoid: gotcha in staticwebassets.build.json (seen 2x)
-- Avoid: gotcha in QLDK.API.pdb (seen 2x)
-- Avoid: gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache (seen 2x)
+- Architecture note: Dependency: vue (imported in 9 files) (seen 2x)
+- Always: what-changed in brainsync_auto.md — confirmed 3x (seen 2x)
+- Always: what-changed in brainsync_auto.md — confirmed 3x (seen 3x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

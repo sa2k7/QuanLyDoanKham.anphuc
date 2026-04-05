@@ -139,7 +139,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 import logo from '../assets/logo.svg'
 import { 
   Stethoscope, 
@@ -180,7 +180,7 @@ const submitResetRequest = async () => {
   resetMessage.value = ''
   
   try {
-    const res = await axios.post('/api/Auth/request-reset', { username: resetUsername.value })
+    const res = await apiClient.post('/api/Auth/request-reset', { username: resetUsername.value })
     resetMessage.value = res.data.message
     resetSuccess.value = true
     setTimeout(() => {
@@ -203,7 +203,10 @@ const handleLogin = async () => {
     cleanUsername = cleanUsername.substring(1)
   }
   
-  const success = await authStore.login(cleanUsername, password.value, rememberMe.value)
+  const success = await authStore.login({ 
+    username: cleanUsername, 
+    password: password.value 
+  })
   if (success) {
     router.push('/')
   }

@@ -1,5 +1,5 @@
 # QuanLyDoanKham.anphuc — Project Memory
-# Auto-synced | 224 observations
+# Auto-synced | 214 observations
 
 **Stack:** JavaScript/Python/TypeScript · Express + React + Tailwind + Vue · DB: SQLite
 
@@ -25,25 +25,6 @@ Example:
 
 > Always read `.cursor/active-context.md` for exact instructions on the specific file you are currently editing. It updates dynamically.
 
-# 🔴 CRITICAL — DO NOT IGNORE
-
-- **Don't mix Tailwind with inline styles** — Don't mix Tailwind with inline styles
-- **Use async error handler middleware — don't let errors crash server** — Use async error handler middleware — don't let errors crash server
-- **Don't mutate props directly — emit events to parent** — Don't mutate props directly — emit events to parent
-- **Always use :key with v-for directives** — Always use :key with v-for directives
-- **Clean up effects — return cleanup function from useEffect** — Clean up effects — return cleanup function from useEffect
-
-# 📐 Conventions
-
-- Extract repeated class patterns into components
-- Use responsive prefixes consistently (sm:, md:, lg:, xl:)
-- Don't use arbitrary values when a utility class exists
-- Rate limit API endpoints to prevent abuse
-- Validate request body with a schema validator (Joi, Zod)
-- Use helmet for security headers
-- Use computed properties for derived state
-- Use Composition API (setup) for new components
-
 # ⚡ Available Tools (ON-DEMAND only)
 - `save(title, content, category)` — Save a note + auto-detect conflicts
 - `batch_save(items[])` — Save multiple notes in 1 call
@@ -54,7 +35,4 @@ Example:
 > ℹ️ DO NOT call get_context() or get_gotchas() at startup — context above IS your context.
 
 ---
-*Auto-synced | 2026-04-02*
-
-# BrainSync Intelligence (Auto-Synced)
-[BrainSync Rules](.brainsync/agent-rules.md)
+*Auto-synced | 2026-04-05*

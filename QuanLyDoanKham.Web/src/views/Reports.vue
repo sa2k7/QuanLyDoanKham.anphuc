@@ -136,13 +136,16 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useI18nStore } from '../stores/i18n'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 import { 
     RefreshCw, CircleDollarSign, FileCheck2, Stethoscope, 
     Users2, PieChart, AlertTriangle, ShieldCheck, PackageX
 } from 'lucide-vue-next'
+import { parseApiError } from '../services/errorHelper'
+import { useToast } from '../composables/useToast'
 
 const i18n = useI18nStore()
+const toast = useToast()
 const isRefreshing = ref(false)
 
 const totalRevenue = ref(0)
@@ -166,9 +169,9 @@ const fetchStats = async () => {
     isRefreshing.value = true
     try {
         // Fetch Contracts for Revenue and Stats
-        const reqContracts = axios.get('/api/HealthContracts')
-        const reqGroups = axios.get('/api/MedicalGroups')
-        const reqSupplies = axios.get('/api/Supplies')
+        const reqContracts = apiClient.get('/api/HealthContracts')
+        const reqGroups = apiClient.get('/api/MedicalGroups')
+        const reqSupplies = apiClient.get('/api/Supplies')
 
         const [resContracts, resGroups, resSupplies] = await Promise.all([reqContracts, reqGroups, reqSupplies])
 
@@ -194,7 +197,7 @@ const fetchStats = async () => {
 
     } catch (error) {
         console.error("Lỗi khi lấy dữ liệu thống kê:", error)
-        alert("Lỗi kết nối khi lấy dữ liệu thống kê!")
+        toast.error(parseApiError(error))
     } finally {
         isRefreshing.value = false
     }

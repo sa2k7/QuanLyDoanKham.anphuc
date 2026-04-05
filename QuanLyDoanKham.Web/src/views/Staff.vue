@@ -4,61 +4,38 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-sky-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <UsersIcon class="w-6 h-6" />
           </div>
-          Quản lý Nhân sự
+          {{ i18n.t('staff.title') }}
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-indigo-600 font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
+          <span class="text-primary font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-widest text-[9px] mt-2">Nội bộ: Lịch sử công tác & Thù lao nhân sự</p>
+        <p class="text-slate-400 font-black uppercase tracking-widest text-[9px] mt-2">{{ i18n.t('staff.subtitle') }}</p>
       </div>
       <div class="flex items-center gap-3">
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'PersonnelManager'" 
+        <button v-if="can('NhanSu.Manage')" 
                 @click="exportStaff" 
                 class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50">
           <Download class="w-4 h-4 mr-2" />
           <span class="text-[10px] font-black uppercase tracking-widest">XUẤT EXCEL</span>
         </button>
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'PersonnelManager'" 
+        <button v-if="can('NhanSu.Manage')" 
                 @click="triggerImport" 
-                class="btn-premium bg-indigo-50 text-indigo-600 px-6 py-3 shadow-sm hover:bg-indigo-100">
+                class="btn-premium bg-primary/10 text-primary px-6 py-3 shadow-sm hover:bg-primary/20">
           <UploadIcon class="w-4 h-4 mr-2" />
           <span class="text-[10px] font-black uppercase tracking-widest">NHẬP EXCEL</span>
         </button>
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'PersonnelManager'" 
+        <button v-if="can('NhanSu.Manage')" 
                 @click="openModal()" 
-                class="btn-premium bg-slate-900 text-white px-8 py-3 shadow-lg">
+                class="btn-premium bg-primary text-white px-8 py-3 shadow-lg">
           <Plus class="w-5 h-5" />
-          <span>THÊM NHÂN SỰ</span>
+          <span>{{ i18n.t('staff.addBtn') }}</span>
         </button>
       </div>
     </div>
     
-    <!-- Stats Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <StatCard 
-            title="Tổng nhân sự hệ thống"
-            :value="String(list.length).padStart(3, '0')"
-            :icon="UsersIcon"
-            variant="indigo"
-            subtext="Toàn bộ danh sách"
-        />
-        <StatCard 
-            title="Nhân sự đang đi đoàn"
-            :value="String(list.filter(s => s.isWorking).length).padStart(3, '0')"
-            :icon="Stethoscope"
-            variant="emerald"
-            subtext="Vận hành thực địa"
-        />
-        <StatCard 
-            title="Tổng quỹ lương (Cơ bản)"
-            :value="formatPrice(list.reduce((sum, s) => sum + (s.baseSalary || 0), 0))"
-            :icon="Wallet"
-            variant="rose"
-            subtext="Chi phí định kỳ"
-        />
-    </div>
+
 
     <!-- Search & List in Table Format -->
     <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
@@ -66,7 +43,7 @@
             <div class="relative group flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
                 <input v-model="searchQuery" placeholder="Tìm tên hoặc mã nhân viên..." 
-                       class="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 focus:border-indigo-600/20 outline-none font-black text-xs text-slate-600 shadow-sm transition-all" />
+                       class="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 focus:border-primary/20 outline-none font-black text-xs text-slate-600 shadow-sm transition-all" />
             </div>
             <select v-model="activeTab" class="px-4 py-2 rounded-xl bg-white border border-slate-200 font-black text-xs uppercase tracking-widest text-slate-500 outline-none min-w-[200px]">
                 <option value="All">Tất cả chức danh ({{ list.length }})</option>
@@ -80,13 +57,13 @@
             <table class="w-full text-left">
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-4 text-center w-16">STT</th>
-                        <th class="p-4">Thông tin nhân sự</th>
-                        <th class="p-4">Chức danh</th>
+                        <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
+                        <th class="p-4">{{ i18n.t('staff.table.info') }}</th>
+                        <th class="p-4">{{ i18n.t('staff.table.title') }}</th>
                         <th class="p-4">Vai trò</th>
                         <th class="p-4 text-center">Trạng thái</th>
-                        <th class="p-4 text-right">Lương cơ bản</th>
-                        <th class="p-4 text-center">Tác vụ</th>
+                        <th class="p-4 text-right">{{ i18n.t('staff.table.salary') }}</th>
+                        <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -124,7 +101,7 @@
                             {{ formatPrice(item.baseSalary || 0) }}
                         </td>
                         <td class="p-4 text-center">
-                            <button v-if="authStore.role === 'Admin' || authStore.role === 'PersonnelManager'" 
+                            <button v-if="can('NhanSu.Manage')" 
                                     @click="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Cập nhật">
                                 <Edit3 class="w-5 h-5" />
                             </button>
@@ -162,7 +139,7 @@
                         <UsersIcon class="w-7 h-7" />
                     </div>
                     <div>
-                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ currentStaff.staffId ? currentStaff.fullName : 'Thêm Nhân sự mới' }}</h3>
+                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ currentStaff.staffId ? currentStaff.fullName : i18n.t('staff.formTitle') }}</h3>
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Mã NS: <span class="text-sky-600 font-bold">{{ currentStaff.employeeCode || 'TỰ ĐỘNG' }}</span></p>
                     </div>
                 </div>
@@ -273,12 +250,12 @@
             </div>
 
             <div class="p-8 border-t border-slate-50 flex justify-between gap-4 bg-white">
-                <button v-if="currentStaff.staffId && authStore.role === 'Admin'" @click="deleteStaff" type="button" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
+                <button v-if="currentStaff.staffId && can('HeThong.UserManage')" @click="deleteStaff" type="button" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
                     <Trash2 class="w-5 h-5" />
                 </button>
                 <div class="flex-1"></div>
-                <button @click="showModal = false" class="px-8 py-3 text-slate-400 font-black">QUAY LẠI</button>
-                <button form="staffForm" type="submit" class="bg-slate-900 text-white px-10 py-3 rounded-xl font-black shadow-lg">LƯU THÔNG TIN</button>
+                <button @click="showModal = false" class="px-8 py-3 text-slate-400 font-black">{{ i18n.t('common.cancel') }}</button>
+                <button form="staffForm" type="submit" class="bg-slate-900 text-white px-10 py-3 rounded-xl font-black shadow-lg">{{ i18n.t('common.save') }}</button>
             </div>
         </div>
     </div>
@@ -291,20 +268,25 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { 
   Users as UsersIcon, Plus, Search, ArrowRight, X, Camera, Save, 
-  History as HistoryIcon, Download, Upload as UploadIcon, Wallet, Stethoscope 
+  History as HistoryIcon, Download, Upload as UploadIcon, Wallet, Stethoscope,
+  Edit3, Trash2, RefreshCw, Filter, MoreHorizontal, UserPlus, FileSpreadsheet,
+  Mail, Phone, MapPin, Briefcase, Calendar, ChevronRight, CheckCircle,
+  AlertCircle, Clock, Loader2, ShieldAlert, UserCheck
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { usePermission } from '../composables/usePermission'
 import { useToast } from '../composables/useToast'
-import StatCard from '../components/StatCard.vue'
+
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 import { useI18nStore } from '../stores/i18n'
-
 import CurrencyInput from '../components/CurrencyInput.vue'
 
 const authStore = useAuthStore()
+const { can } = usePermission()
 const i18n = useI18nStore()
 const toast = useToast()
 const list = ref([])
@@ -333,7 +315,7 @@ const filteredList = computed(() => {
 
 const fetchList = async () => {
     try {
-        const res = await axios.get('/api/Staffs')
+        const res = await apiClient.get('/api/Staffs')
         list.value = res.data
     } catch (e) { toast.error("Lỗi dữ liệu nhân viên") }
 }
@@ -341,7 +323,7 @@ const fetchList = async () => {
 const openModal = async (staff = null) => {
     if (staff) {
         try {
-            const res = await axios.get(`/api/Staffs/${staff.staffId}`)
+            const res = await apiClient.get(`/api/Staffs/${staff.staffId}`)
             // Đảm bảo systemRole luôn tồn tại và map đúng kể cả nếu backend trả PascalCase
             const data = res.data
             currentStaff.value = {
@@ -380,27 +362,27 @@ watch(jobCategory, (newVal) => {
 const saveStaff = async () => {
     try {
         if (currentStaff.value.staffId) {
-            await axios.put(`/api/Staffs/${currentStaff.value.staffId}`, currentStaff.value)
+            await apiClient.put(`/api/Staffs/${currentStaff.value.staffId}`, currentStaff.value)
         } else {
-            await axios.post('/api/Staffs', currentStaff.value)
+            await apiClient.post('/api/Staffs', currentStaff.value)
         }
         toast.success("Đã ghi nhận dữ liệu nhân sự!")
         showModal.value = false
         fetchList()
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi khi lưu dữ liệu") 
+        toast.error(parseApiError(e)) 
     }
 }
 
 const deleteStaff = async () => {
     if (!confirm("Xóa nhân viên này?")) return
     try {
-        await axios.delete(`/api/Staffs/${currentStaff.value.staffId}`)
+        await apiClient.delete(`/api/Staffs/${currentStaff.value.staffId}`)
         toast.success("Đã gỡ bỏ!")
         showModal.value = false
         fetchList()
     } catch (e) { 
-        toast.error(e.response?.data || "Không thể xóa") 
+        toast.error(parseApiError(e)) 
     }
 }
 
@@ -411,16 +393,18 @@ const onAvatarChange = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        const res = await axios.post('/api/Staffs/upload-avatar', formData)
+        const res = await apiClient.post('/api/Staffs/upload-avatar', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' }
+        })
         currentStaff.value.avatarPath = res.data.path
     } catch (e) { 
-        toast.error(e.response?.data || "Lỗi tải ảnh") 
+        toast.error(parseApiError(e)) 
     }
 }
 
 const exportStaff = async () => {
     try {
-        const res = await axios.get('/api/Staffs/export', { responseType: 'blob' })
+        const res = await apiClient.get('/api/Staffs/export', { responseType: 'blob' })
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
@@ -438,10 +422,10 @@ const handleImportFile = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        await axios.post('/api/Staffs/import', formData)
+        await apiClient.post('/api/Staffs/import', formData)
         toast.success("Đã nhập dữ liệu nhân sự thành công!")
         fetchList()
-    } catch (e) { toast.error("Lỗi nhập dữ liệu từ Excel") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')

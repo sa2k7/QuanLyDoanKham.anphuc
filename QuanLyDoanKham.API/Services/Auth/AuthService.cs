@@ -14,11 +14,13 @@ namespace QuanLyDoanKham.API.Services.Auth
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ITokenService _tokenService;
 
-        public AuthService(ApplicationDbContext context, IConfiguration configuration)
+        public AuthService(ApplicationDbContext context, IConfiguration configuration, ITokenService tokenService)
         {
             _context = context;
             _configuration = configuration;
+            _tokenService = tokenService;
         }
 
         public async Task<(bool IsSuccess, string Message, AuthResponseDto Data)> LoginAsync(LoginDto request)
@@ -27,7 +29,7 @@ namespace QuanLyDoanKham.API.Services.Auth
             {
                 var loginId = request.Username?.Trim();
                 var user = await _context.Users
-                    .Include(u => u.Role)
+                    .Include(u => u.Role).ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
                     .Include(u => u.Department)
                     .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                         .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
@@ -59,9 +61,9 @@ namespace QuanLyDoanKham.API.Services.Auth
                 var allRoles = GetAllRoles(user);
                 var allPermissions = GetAllPermissions(user);
 
-                var token = CreateToken(user, allRoles, allPermissions);
-                var originalRefreshToken = GenerateSecureRefreshToken();
-                var refreshTokenHash = HashRefreshToken(originalRefreshToken);
+                var token = _tokenService.CreateToken(user, allRoles, allPermissions);
+                var originalRefreshToken = _tokenService.GenerateSecureRefreshToken();
+                var refreshTokenHash = _tokenService.HashRefreshToken(originalRefreshToken);
 
                 user.RefreshToken = refreshTokenHash;
                 user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
@@ -91,10 +93,10 @@ namespace QuanLyDoanKham.API.Services.Auth
 
         public async Task<(bool IsSuccess, string Message, AuthResponseDto Data)> RefreshTokenAsync(RefreshTokenDto request)
         {
-            var hashedInputToken = HashRefreshToken(request.RefreshToken);
+            var hashedInputToken = _tokenService.HashRefreshToken(request.RefreshToken);
 
             var user = await _context.Users
-                .Include(u => u.Role)
+                .Include(u => u.Role).ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
                 .Include(u => u.Department)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
@@ -109,9 +111,9 @@ namespace QuanLyDoanKham.API.Services.Auth
             var allRoles = GetAllRoles(user);
             var allPermissions = GetAllPermissions(user);
 
-            var newToken = CreateToken(user, allRoles, allPermissions);
-            var newOriginalRefreshToken = GenerateSecureRefreshToken();
-            var newRefreshTokenHash = HashRefreshToken(newOriginalRefreshToken);
+            var newToken = _tokenService.CreateToken(user, allRoles, allPermissions);
+            var newOriginalRefreshToken = _tokenService.GenerateSecureRefreshToken();
+            var newRefreshTokenHash = _tokenService.HashRefreshToken(newOriginalRefreshToken);
 
             user.RefreshToken = newRefreshTokenHash;
             user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
@@ -214,14 +216,6 @@ namespace QuanLyDoanKham.API.Services.Auth
         {
             var permissions = new HashSet<string>();
 
-            // Admin gets all permissions
-            if (user.Role?.RoleName == "Admin")
-            {
-                var allPerms = _context.Permissions.Select(p => p.PermissionKey).ToList();
-                foreach (var p in allPerms) permissions.Add(p);
-                return permissions.ToList();
-            }
-
             // Từ primary role
             if (user.Role?.RolePermissions != null)
                 foreach (var rp in user.Role.RolePermissions)
@@ -238,60 +232,6 @@ namespace QuanLyDoanKham.API.Services.Auth
             return permissions.ToList();
         }
 
-        /// <summary>Tạo JWT token với đầy đủ roles + permissions claims</summary>
-        private string CreateToken(AppUser user, List<string> roles, List<string> permissions)
-        {
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username ?? ""),
-                new Claim("FullName", user.FullName ?? user.Username ?? "User"),
-                new Claim("UserId", user.UserId.ToString())
-            };
 
-            // Thêm tất cả roles vào claims
-            foreach (var role in roles)
-                claims.Add(new Claim(ClaimTypes.Role, role));
-
-            // Thêm tất cả permissions vào claims
-            foreach (var perm in permissions)
-                claims.Add(new Claim("permission", perm));
-
-            if (user.CompanyId.HasValue)
-                claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
-
-            if (user.DepartmentId.HasValue)
-                claims.Add(new Claim("DepartmentId", user.DepartmentId.Value.ToString()));
-
-            var configKey = _configuration.GetSection("AppSettings:Token").Value
-                ?? throw new InvalidOperationException("CRITICAL: AppSettings:Token is missing!");
-
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configKey));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
-
-            var token = new JwtSecurityToken(
-                issuer: _configuration.GetSection("AppSettings:Issuer").Value ?? "QuanLyDoanKham",
-                audience: _configuration.GetSection("AppSettings:Audience").Value ?? "QuanLyDoanKham",
-                claims: claims,
-                expires: DateTime.Now.AddHours(8),
-                signingCredentials: creds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
-        }
-
-        private string GenerateSecureRefreshToken()
-        {
-            var randomNumber = new byte[32];
-            using var rng = RandomNumberGenerator.Create();
-            rng.GetBytes(randomNumber);
-            return Convert.ToBase64String(randomNumber);
-        }
-
-        private string HashRefreshToken(string token)
-        {
-            using var sha256 = SHA256.Create();
-            var bytes = Encoding.UTF8.GetBytes(token);
-            return Convert.ToBase64String(sha256.ComputeHash(bytes));
-        }
     }
 }

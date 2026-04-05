@@ -4,57 +4,34 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <Building2 class="w-6 h-6" />
           </div>
-          Công ty Đối tác
+          {{ i18n.t('companies.title') }}
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-indigo-600 font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
+          <span class="text-primary font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">Nội bộ: Quản lý thông tin pháp nhân khách hàng</p>
+        <p class="text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('companies.subtitle') }}</p>
       </div>
       <button v-if="authStore.role === 'Admin' || authStore.role === 'ContractManager'"
               @click="showForm = !showForm"
-               class="btn-premium bg-gradient-to-r from-teal-500 to-emerald-500 text-white px-8 py-3 rounded-xl shadow-lg shadow-teal-500/30 hover:shadow-teal-500/50 hover:-translate-y-1 transition-all font-black">
+               class="btn-premium bg-primary text-white px-8 py-3 rounded-xl shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all font-black">
         <Plus class="w-5 h-5" />
-        <span>{{ showForm ? 'HỦY BỎ' : 'THÊM CÔNG TY' }}</span>
+        <span>{{ showForm ? i18n.t('companies.cancelBtn') : i18n.t('companies.addBtn') }}</span>
       </button>
     </div>
 
-    <!-- Stats Section -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-        <StatCard 
-            title="Tổng đối tác pháp nhân"
-            :value="String(list.length).padStart(3, '0')"
-            :icon="Building2"
-            variant="indigo"
-            subtext="Công ty đối tác"
-        />
-        <StatCard 
-            title="Mới trong tháng"
-            :value="String(list.length > 0 ? 1 : 0).padStart(3, '0')"
-            :icon="PlusCircle"
-            variant="emerald"
-            subtext="Khai báo mới"
-        />
-        <StatCard 
-            title="Hợp đồng liên kết"
-            :value="String(list.length).padStart(3, '0')"
-            :icon="FileText"
-            variant="sky"
-            subtext="Dự án thực tế"
-        />
-    </div>
+
 
     <!-- Inline Add Form (like Contracts.vue) -->
     <div v-if="showForm" class="premium-card p-10 bg-white/80 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 animate-slide-up">
         <div class="flex items-center gap-4 mb-8">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center">
+            <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center">
                 <Building2 class="w-6 h-6" />
             </div>
             <div>
-                <h3 class="text-xl font-black text-slate-800">Khai báo Công ty mới</h3>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Thêm mới đối tác pháp nhân vào hệ thống</p>
+                <h3 class="text-xl font-black text-slate-800">{{ i18n.t('companies.formTitle') }}</h3>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('companies.formSubtitle') }}</p>
             </div>
         </div>
         <form @submit.prevent="saveCompany" class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slide-up">
@@ -109,13 +86,13 @@
             <table class="w-full text-left">
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-4 text-center w-16">STT</th>
-                        <th class="p-4">Tên công ty</th>
+                        <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
+                        <th class="p-4">{{ i18n.t('companies.table.info') }}</th>
                         <th class="p-4">Người đại diện</th>
-                        <th class="p-4">Mã số thuế</th>
+                        <th class="p-4">{{ i18n.t('companies.table.taxCode') }}</th>
                         <th class="p-4">SĐT Công ty</th>
                         <th class="p-4">SĐT Đại diện</th>
-                        <th class="p-4 text-center">Tác vụ</th>
+                        <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -216,9 +193,9 @@
                           </button>
                           <div class="flex-1"></div>
                           <button type="button" @click="showModal = false" 
-                                  class="bg-white border-2 border-slate-100 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-xs">HỦY</button>
+                                  class="bg-white border-2 border-slate-100 text-slate-400 px-8 py-4 rounded-2xl font-black hover:bg-slate-50 transition-all uppercase tracking-widest text-xs">{{ i18n.t('common.cancel') }}</button>
                            <button form="companyForm" type="submit" 
-                                   class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-indigo-500/30 uppercase tracking-widest text-xs hover:shadow-indigo-500/50 hover:-translate-y-1 active:scale-95 transition-all">LƯU THÔNG TIN</button>
+                                   class="flex-1 bg-gradient-to-r from-indigo-500 to-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-lg shadow-indigo-500/30 uppercase tracking-widest text-xs hover:shadow-indigo-500/50 hover:-translate-y-1 active:scale-95 transition-all">{{ i18n.t('common.save') }}</button>
                       </div>
                   </div>
               </div>
@@ -234,11 +211,12 @@ import axios from 'axios'
 import { Building2, Plus, Search, MapPin, FileText, PlusCircle, X, Edit3, Trash2 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
-import StatCard from '../components/StatCard.vue'
+import { useI18nStore } from '../stores/i18n'
 import CodeInput from '../components/CodeInput.vue'
 
 const authStore = useAuthStore()
 const toast = useToast()
+const i18n = useI18nStore()
 const list = ref([])
 const showModal = ref(false)
 const showForm = ref(false)

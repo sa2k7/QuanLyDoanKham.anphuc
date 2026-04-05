@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyDoanKham.API.DTOs
 {
@@ -9,8 +10,11 @@ namespace QuanLyDoanKham.API.DTOs
     public class CompanyDto
     {
         public int CompanyId { get; set; }
+        [Required(ErrorMessage = "TĂªn viáº¿t táº¯t khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
         public string ShortName { get; set; }
+        [Required(ErrorMessage = "TĂªn cĂ´ng ty khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
         public string CompanyName { get; set; }
+        [Required(ErrorMessage = "MĂ£ sá»‘ thuáº¿ khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
         public string TaxCode { get; set; }
         public string Address { get; set; }
         public string PhoneNumber { get; set; }
@@ -32,9 +36,12 @@ namespace QuanLyDoanKham.API.DTOs
         public string ContractCode { get; set; }
         public string ShortName { get; set; }
         public string CompanyName { get; set; }
-        public DateTime SigningDate { get; set; }
-        public DateTime StartDate { get; set; }
-        public DateTime EndDate { get; set; }
+        [Required(ErrorMessage = "Ngày ký hợp đồng không được để trống.")]
+        public DateTime? SigningDate { get; set; }
+        [Required(ErrorMessage = "Ngày bắt đầu không được để trống.")]
+        public DateTime? StartDate { get; set; }
+        [Required(ErrorMessage = "Ngày kết thúc không được để trống.")]
+        public DateTime? EndDate { get; set; }
         public decimal UnitPrice { get; set; }
         public int ExpectedQuantity { get; set; }
         public string UnitName { get; set; }
@@ -94,6 +101,7 @@ namespace QuanLyDoanKham.API.DTOs
     public class MedicalGroupDto
     {
         public int GroupId { get; set; }
+        [Required(ErrorMessage = "TĂªn Ä‘oĂ n khĂ¡m khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
         public string GroupName { get; set; }
         public DateTime ExamDate { get; set; }
         public string Slot { get; set; }

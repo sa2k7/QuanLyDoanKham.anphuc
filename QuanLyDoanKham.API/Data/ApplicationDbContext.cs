@@ -24,12 +24,16 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<HealthContract> Contracts { get; set; }
         public DbSet<ContractApprovalStep> ContractApprovalSteps { get; set; }
         public DbSet<ContractApprovalHistory> ContractApprovalHistories { get; set; }
+        public DbSet<ApprovalStep> ApprovalSteps { get; set; }
+        public DbSet<ApprovalHistory> ApprovalHistories { get; set; }
         public DbSet<ContractAttachment> ContractAttachments { get; set; }
         public DbSet<ContractStatusHistory> ContractStatusHistories { get; set; }
 
         // MEDICAL GROUPS
         public DbSet<MedicalGroup> MedicalGroups { get; set; }
         public DbSet<MedicalGroupPosition> MedicalGroupPositions { get; set; }
+        public DbSet<Position> Positions { get; set; }
+        public DbSet<GroupPositionQuota> GroupPositionQuotas { get; set; }
         public DbSet<GroupStaffDetail> GroupStaffDetails { get; set; }
 
         // STAFF
@@ -46,6 +50,7 @@ namespace QuanLyDoanKham.API.Data
         // COST & REVENUE
         public DbSet<GroupCost> GroupCosts { get; set; }
         public DbSet<ContractRevenueSummary> ContractRevenueSummaries { get; set; }
+        public DbSet<ContractFinancialSummary> ContractFinancialSummaries { get; set; }
 
         // PAYROLL
         public DbSet<PayrollRecord> PayrollRecords { get; set; }
@@ -135,6 +140,36 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(h => h.HealthContractId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<ApprovalStep>()
+                .HasOne(s => s.HealthContract)
+                .WithMany()
+                .HasForeignKey(s => s.HealthContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApprovalStep>()
+                .HasOne(s => s.Role)
+                .WithMany()
+                .HasForeignKey(s => s.RoleId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<ApprovalHistory>()
+                .HasOne(h => h.ApprovalStep)
+                .WithMany()
+                .HasForeignKey(h => h.ApprovalStepId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<ApprovalHistory>()
+                .HasOne(h => h.Approver)
+                .WithMany()
+                .HasForeignKey(h => h.ApproverId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<ApprovalHistory>()
+                .HasOne(h => h.HealthContract)
+                .WithMany()
+                .HasForeignKey(h => h.HealthContractId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             // MedicalGroup -> ManagerUser (no cascade)
             modelBuilder.Entity<MedicalGroup>()
                 .HasOne(g => g.ManagerUser)
@@ -169,6 +204,24 @@ namespace QuanLyDoanKham.API.Data
                 .WithMany()
                 .HasForeignKey(g => g.PositionId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<GroupStaffDetail>()
+                .HasOne(g => g.GroupPositionQuota)
+                .WithMany()
+                .HasForeignKey(g => g.GroupPositionQuotaId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<GroupPositionQuota>()
+                .HasOne(q => q.MedicalGroup)
+                .WithMany()
+                .HasForeignKey(q => q.MedicalGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<GroupPositionQuota>()
+                .HasOne(q => q.Position)
+                .WithMany()
+                .HasForeignKey(q => q.PositionId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // MedicalGroupPosition -> MedicalGroup (cascade)
             modelBuilder.Entity<MedicalGroupPosition>()
@@ -290,10 +343,63 @@ namespace QuanLyDoanKham.API.Data
             );
 
             // Seed RolePermissions - Admin gets all
-            var adminPermissions = new int[] { 1,2,3,4,5,6,10,11,12,13,14,15,20,21,30,31,32,40,41,42,50,51,60,61,70,71,80,81 };
+            // Admin: chÆ°a phÃ©p thao tÃ¡c nghiá»‡p vá»¥ trá»±c tiáº¿p (PoLP) â†’ chá»‰ quyá»n xem + cáº¥u hÃ¬nh há»‡ thá»‘ng
+            var adminPermissions = new int[] { 1, 10, 21, 32, 40, 50, 60, 70, 80, 81 };
             var adminRolePerms = adminPermissions.Select((pid, idx) =>
-                new RolePermission { Id = idx + 1, RoleId = 1, PermissionId = pid }).ToArray();
-            modelBuilder.Entity<RolePermission>().HasData(adminRolePerms);
+                new RolePermission { Id = idx + 1, RoleId = 1, PermissionId = pid }).ToList();
+
+            // Contract Manager
+            var contractPermissions = new int[] { 1, 2, 3, 4, 5, 6 };
+            var contractRolePerms = contractPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 100 + idx, RoleId = 3, PermissionId = pid }).ToList();
+
+            // Medical Group Manager
+            var mgPermissions = new int[] { 10, 11, 12, 13, 14, 15, 21 };
+            var mgRolePerms = mgPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 200 + idx, RoleId = 5, PermissionId = pid }).ToList();
+
+            // Personnel Manager
+            var hrPermissions = new int[] { 60, 61, 14, 21 };
+            var hrRolePerms = hrPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 300 + idx, RoleId = 2, PermissionId = pid }).ToList();
+
+            // Payroll Manager
+            var payrollPermissions = new int[] { 50, 51, 60, 21, 32 };
+            var payrollRolePerms = payrollPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 400 + idx, RoleId = 4, PermissionId = pid }).ToList();
+
+            // Warehouse Manager
+            var warehousePermissions = new int[] { 40, 41, 42 };
+            var warehouseRolePerms = warehousePermissions.Select((pid, idx) =>
+                new RolePermission { Id = 500 + idx, RoleId = 6, PermissionId = pid }).ToList();
+
+            // Group Leader
+            var leaderPermissions = new int[] { 10, 30, 31, 21 };
+            var leaderRolePerms = leaderPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 600 + idx, RoleId = 7, PermissionId = pid }).ToList();
+
+            // Medical Staff
+            var staffPermissions = new int[] { 20 };
+            var staffRolePerms = staffPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 700 + idx, RoleId = 8, PermissionId = pid }).ToList();
+
+            // Accountant
+            var accountantPermissions = new int[] { 70, 71, 50, 1 };
+            var accountantRolePerms = accountantPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 800 + idx, RoleId = 9, PermissionId = pid }).ToList();
+
+            var allSeedPerms = new List<RolePermission>();
+            allSeedPerms.AddRange(adminRolePerms);
+            allSeedPerms.AddRange(contractRolePerms);
+            allSeedPerms.AddRange(mgRolePerms);
+            allSeedPerms.AddRange(hrRolePerms);
+            allSeedPerms.AddRange(payrollRolePerms);
+            allSeedPerms.AddRange(warehouseRolePerms);
+            allSeedPerms.AddRange(leaderRolePerms);
+            allSeedPerms.AddRange(staffRolePerms);
+            allSeedPerms.AddRange(accountantRolePerms);
+
+            modelBuilder.Entity<RolePermission>().HasData(allSeedPerms);
 
             // Seed ContractApprovalSteps (default 2-level workflow)
             modelBuilder.Entity<ContractApprovalStep>().HasData(

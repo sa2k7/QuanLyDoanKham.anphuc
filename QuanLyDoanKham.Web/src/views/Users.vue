@@ -4,46 +4,23 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-rose-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <ShieldCheck class="w-6 h-6" />
           </div>
-          {{ isAdmin ? 'Quản trị Hệ thống' : 'Thông tin Tài khoản' }}
+          {{ isAdmin ? i18n.t('users.title') : 'Thông tin Tài khoản' }}
           <span v-if="isAdmin" class="text-slate-200 ml-2 font-black">/</span>
-          <span v-if="isAdmin" class="text-rose-600 font-black tabular-nums">{{ String(users.length).padStart(3, '0') }}</span>
+          <span v-if="isAdmin" class="text-primary font-black tabular-nums">{{ String(users.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? 'Phân quyền & Kiểm soát truy cập tập trung' : 'Thông tin cá nhân & Nhật ký hoạt động' }}</p>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : 'Thông tin cá nhân & Nhật ký hoạt động' }}</p>
       </div>
       <button v-if="isAdmin" @click="openCreateModal" 
-              class="btn-premium bg-slate-900 text-white px-8 py-3 shadow-lg">
+              class="btn-premium bg-primary text-white px-8 py-3 shadow-lg">
         <UserPlus class="w-5 h-5" />
-        <span class="">CẤP TÀI KHOẢN MỚI</span>
+        <span class="">{{ i18n.t('users.addBtn') }}</span>
       </button>
     </div>
 
-    <!-- Admin Stats Section -->
-    <div v-if="isAdmin" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <StatCard 
-            title="Định danh hệ thống"
-            :value="String(users.length).padStart(3, '0')"
-            :icon="AtSign"
-            variant="slate"
-            subtext="Tổng tài khoản"
-        />
-        <StatCard 
-            title="Quản trị viên root"
-            :value="String(users.filter(u => u.roleName === 'Admin').length).padStart(3, '0')"
-            :icon="ShieldCheck"
-            variant="rose"
-            subtext="Quyền tối cao"
-        />
-        <StatCard 
-            title="Nhân sự y tế"
-            :value="String(users.filter(u => u.roleName === 'MedicalStaff').length).padStart(3, '0')"
-            :icon="Stethoscope"
-            variant="indigo"
-            subtext="Đi đoàn khám"
-        />
-    </div>
+
 
     <!-- ADMIN VIEW: USER LIST -->
     <div v-if="isAdmin" class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mb-20">
@@ -51,10 +28,10 @@
             <table class="w-full text-left">
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-4 text-center w-16">STT</th>
+                        <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
                         <th class="p-4">Tài khoản</th>
                         <th class="p-4">Vai trò</th>
-                        <th class="p-4 text-center">Thao tác</th>
+                        <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -302,21 +279,25 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { 
-    UserPlus, Edit3, Trash2, Shield, X, MapPin, Mail, Calendar, Camera, ShieldCheck, AtSign, Building2, Stethoscope
+    Users as UsersIcon, Plus, MoreHorizontal, ShieldCheck, 
+    X, MapPin, Mail, Calendar, Camera, AtSign, Building2, Stethoscope, UserPlus, Edit3
 } from 'lucide-vue-next'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
-import StatCard from '../components/StatCard.vue'
+
 import { useAuthStore } from '../stores/auth'
+import { usePermission } from '../composables/usePermission'
 import { useI18nStore } from '../stores/i18n'
 
 const authStore = useAuthStore()
+const { can } = usePermission()
 const i18n = useI18nStore()
 const toast = useToast()
-const isAdmin = computed(() => authStore.role === 'Admin')
+const isAdmin = computed(() => can('HeThong.UserManage'))
 const profile = computed(() => authStore.profile)
 
 const users = ref([])
@@ -345,10 +326,6 @@ const form = ref({
     avatarPath: '',
     selectedRoleIds: [2]
 })
-
-// SECURITY: getTempPass đã bị xóa - không hiển thị mật khẩu plaintext từ DB
-// Yêu cầu reset mật khẩu được Admin xử lý mà không lộ mật khẩu
-
 
 const selectedFile = ref(null)
 const avatarPreview = ref(null)
@@ -389,26 +366,20 @@ const fetchResets = async () => {
 }
 
 const DEFAULT_PASSWORD = 'HealthCare2026'
-// SECURITY: Không lưu mật khẩu vào memory hay localStorage
-// Chỉ hiển thị 1 lần trong toast sau khi tạo tài khoản
 
-// Remove Vietnamese diacritics (e.g. 'Hoàng' -> 'Hoang')
 const removeDiacritics = (str) => str
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd').replace(/Đ/g, 'D')
 
-// Generate username: last word (first name) + initials of preceding words + 4-digit counter
-// E.g. "Nguyễn Huy Hoàng" → "hoangnh<count>"
 const generateUsername = async (fullName) => {
     if (!fullName || modal.value.isEdit) return
     const parts = fullName.trim().split(/\s+/).filter(Boolean)
     if (parts.length === 0) return
-    const firstName = parts[parts.length - 1]  // 'Hoàng'
-    const initials = parts.slice(0, -1).map(p => p[0]).join('') // 'NH'
+    const firstName = parts[parts.length - 1]
+    const initials = parts.slice(0, -1).map(p => p[0]).join('')
     const base = removeDiacritics(firstName + initials).toLowerCase().replace(/[^a-z]/g, '')
     if (!base) return
-    // Count existing users with same base to generate 4-digit suffix
     const count = users.value.filter(u => u.username.startsWith(base)).length
     const suffix = String(count + 1).padStart(4, '0')
     form.value.username = base + suffix
@@ -474,7 +445,7 @@ const handleSubmit = async () => {
         fetchUsers()
     } catch (e) {
         console.error(e)
-        toast.error(e.response?.data || "Thao tác thất bại. Vui lòng thử lại.")
+        toast.error(parseApiError(e))
     }
 }
 
@@ -489,7 +460,7 @@ const deleteUser = async () => {
         toast.success("Đã xóa tài khoản!")
         fetchUsers()
     } catch (e) {
-        toast.error("Không thể xóa tài khoản này.")
+        toast.error(parseApiError(e))
     }
 }
 

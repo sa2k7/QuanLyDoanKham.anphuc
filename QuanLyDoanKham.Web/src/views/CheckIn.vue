@@ -86,10 +86,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 
 const route = useRoute()
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
 
 const urlToken = ref('')
 const manualToken = ref('')
@@ -114,9 +114,7 @@ const processToken = async (token) => {
     if (!groupId) { error.value = 'Mã QR không hợp lệ.'; return }
 
     // Fetch thông tin đoàn
-    const res = await axios.get(`${API_BASE}/Attendance/qr/${groupId}`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` }
-    }).catch(() => ({ data: { groupId, groupName: `Đoàn #${groupId}`, examDate: new Date(), expiresAt: new Date(Date.now() + 12*3600*1000), qrToken: token } }))
+    const res = await apiClient.get(`/api/Attendance/qr/${groupId}`).catch(() => ({ data: { groupId, groupName: `Đoàn #${groupId}`, examDate: new Date(), expiresAt: new Date(Date.now() + 12*3600*1000), qrToken: token } }))
 
     tokenData.value = { ...res.data, qrToken: token }
   } catch (e) {
@@ -130,7 +128,7 @@ const doCheckIn = async () => {
   loading.value = true
   error.value = ''
   try {
-    const res = await axios.post(`${API_BASE}/Attendance/checkin`, {
+    const res = await apiClient.post(`/api/Attendance/checkin`, {
       groupId: tokenData.value.groupId,
       staffId: staffId.value,
       qrToken: tokenData.value.qrToken,

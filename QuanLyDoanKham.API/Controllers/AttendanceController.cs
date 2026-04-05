@@ -32,8 +32,8 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/attendance/qr/{groupId} — Tạo QR token cho trưởng đoàn
         // ================================================================
         [HttpGet("qr/{groupId}")]
-        [Authorize(Policy = "ChamCong.QR")]
-        public async Task<IActionResult> GenerateQrToken(int groupId)
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.QR")]
+        public async Task<IActionResult> GenerateQrToken(int groupId, [FromServices] Services.QrService qrService)
         {
             var group = await _context.MedicalGroups.FindAsync(groupId);
             if (group == null) return NotFound("Không tìm thấy đoàn khám.");
@@ -45,6 +45,12 @@ namespace QuanLyDoanKham.API.Controllers
             var raw = $"{groupId}:{expiry}";
             var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));
 
+            // URL trỏ về Frontend (CheckIn.vue)
+            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = $"{baseUrl}/checkin?token={Uri.EscapeDataString(token)}";
+            
+            var pngBase64 = qrService.GenerateQr(frontendUrl);
+
             return Ok(new
             {
                 groupId,
@@ -52,8 +58,8 @@ namespace QuanLyDoanKham.API.Controllers
                 examDate = group.ExamDate,
                 qrToken = token,
                 expiresAt = DateTimeOffset.FromUnixTimeSeconds(expiry).LocalDateTime,
-                // URL dùng cho QR code (frontend tự render QR từ URL này)
-                qrUrl = $"{Request.Scheme}://{Request.Host}/api/attendance/checkin?token={Uri.EscapeDataString(token)}"
+                qrUrl = frontendUrl,
+                pngBase64 = pngBase64
             });
         }
 
@@ -144,7 +150,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST api/attendance/manual — Trưởng đoàn chấm công thủ công
         // ================================================================
         [HttpPost("manual")]
-        [Authorize(Policy = "ChamCong.CheckInOut")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.CheckInOut")]
         public async Task<IActionResult> ManualCheckIn([FromBody] CheckInOutDto dto)
         {
             var groupDetail = await _context.GroupStaffDetails
@@ -188,7 +194,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/attendance/summary/{staffId}?month=4&year=2026
         // ================================================================
         [HttpGet("summary/{staffId}")]
-        [Authorize(Policy = "ChamCong.ViewAll")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
         public async Task<IActionResult> GetAttendanceSummary(int staffId, [FromQuery] int month, [FromQuery] int year)
         {
             if (month == 0) month = DateTime.Now.Month;
@@ -240,7 +246,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/attendance/group/{groupId} — Danh sách chấm công của đoàn
         // ================================================================
         [HttpGet("group/{groupId}")]
-        [Authorize(Roles = "Admin,MedicalGroupManager,GroupLeader,PersonnelManager")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
         public async Task<IActionResult> GetGroupAttendance(int groupId)
         {
             var records = await _context.ScheduleCalendars

@@ -150,6 +150,9 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("StaffId")
+                        .HasColumnType("int");
+
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -162,6 +165,8 @@ namespace QuanLyDoanKham.API.Migrations
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("StaffId");
 
                     b.HasIndex("Username")
                         .IsUnique();
@@ -179,6 +184,80 @@ namespace QuanLyDoanKham.API.Migrations
                             RoleId = 1,
                             Username = "admin"
                         });
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ApprovalHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ApprovalStepId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ApproverId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Decision")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovalStepId");
+
+                    b.HasIndex("ApproverId");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.ToTable("ApprovalHistories");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ApprovalStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsFinal")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RequiredPermission")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("ApprovalSteps");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.AuditLog", b =>
@@ -398,6 +477,39 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("ContractAttachments");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractFinancialSummary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("HealthContractId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("OtherCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Revenue")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("SnapshotAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<decimal>("StaffCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SupplyCost")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HealthContractId");
+
+                    b.ToTable("ContractFinancialSummaries");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractRevenueSummary", b =>
                 {
                     b.Property<int>("SummaryId")
@@ -585,6 +697,35 @@ namespace QuanLyDoanKham.API.Migrations
                     b.ToTable("GroupCosts");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupPositionQuota", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Assigned")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MedicalGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PositionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Required")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedicalGroupId");
+
+                    b.HasIndex("PositionId");
+
+                    b.ToTable("GroupPositionQuotas");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
                 {
                     b.Property<int>("Id")
@@ -592,6 +733,12 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("AssignedByUserId")
+                        .HasColumnType("int");
 
                     b.Property<decimal>("CalculatedSalary")
                         .HasColumnType("decimal(18, 2)");
@@ -606,6 +753,9 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("GroupId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("GroupPositionQuotaId")
                         .HasColumnType("int");
 
                     b.Property<string>("Note")
@@ -631,6 +781,8 @@ namespace QuanLyDoanKham.API.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("GroupPositionQuotaId");
 
                     b.HasIndex("PositionId");
 
@@ -675,6 +827,9 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<string>("Notes")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("SignerId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("SigningDate")
                         .HasColumnType("datetime2");
 
@@ -702,11 +857,18 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
                     b.HasKey("HealthContractId");
 
                     b.HasIndex("CompanyId");
 
                     b.HasIndex("CreatedByUserId");
+
+                    b.HasIndex("SignerId");
+
+                    b.HasIndex("UpdatedByUserId");
 
                     b.ToTable("Contracts");
                 });
@@ -1155,6 +1317,37 @@ namespace QuanLyDoanKham.API.Migrations
                         });
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.Position", b =>
+                {
+                    b.Property<int>("PositionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PositionId"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("SpecialtyRequired")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("PositionId");
+
+                    b.ToTable("Positions");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.RolePermission", b =>
                 {
                     b.Property<int>("Id")
@@ -1187,164 +1380,260 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             Id = 2,
-                            PermissionId = 2,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            PermissionId = 3,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            PermissionId = 4,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            PermissionId = 5,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 6,
-                            PermissionId = 6,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
                             PermissionId = 10,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 8,
-                            PermissionId = 11,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 9,
-                            PermissionId = 12,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 10,
-                            PermissionId = 13,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 11,
-                            PermissionId = 14,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 12,
-                            PermissionId = 15,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 13,
-                            PermissionId = 20,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 14,
+                            Id = 3,
                             PermissionId = 21,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 15,
-                            PermissionId = 30,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 16,
-                            PermissionId = 31,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 17,
+                            Id = 4,
                             PermissionId = 32,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 5,
                             PermissionId = 40,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 19,
-                            PermissionId = 41,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 20,
-                            PermissionId = 42,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 21,
+                            Id = 6,
                             PermissionId = 50,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 22,
-                            PermissionId = 51,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 23,
+                            Id = 7,
                             PermissionId = 60,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 24,
-                            PermissionId = 61,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 25,
+                            Id = 8,
                             PermissionId = 70,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 26,
-                            PermissionId = 71,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 27,
+                            Id = 9,
                             PermissionId = 80,
                             RoleId = 1
                         },
                         new
                         {
-                            Id = 28,
+                            Id = 10,
                             PermissionId = 81,
                             RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 100,
+                            PermissionId = 1,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 101,
+                            PermissionId = 2,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 102,
+                            PermissionId = 3,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 103,
+                            PermissionId = 4,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 104,
+                            PermissionId = 5,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 105,
+                            PermissionId = 6,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 200,
+                            PermissionId = 10,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 201,
+                            PermissionId = 11,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 202,
+                            PermissionId = 12,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 203,
+                            PermissionId = 13,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 204,
+                            PermissionId = 14,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 205,
+                            PermissionId = 15,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 206,
+                            PermissionId = 21,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 300,
+                            PermissionId = 60,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 301,
+                            PermissionId = 61,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 302,
+                            PermissionId = 14,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 303,
+                            PermissionId = 21,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 400,
+                            PermissionId = 50,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 401,
+                            PermissionId = 51,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 402,
+                            PermissionId = 60,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 403,
+                            PermissionId = 21,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 404,
+                            PermissionId = 32,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 500,
+                            PermissionId = 40,
+                            RoleId = 6
+                        },
+                        new
+                        {
+                            Id = 501,
+                            PermissionId = 41,
+                            RoleId = 6
+                        },
+                        new
+                        {
+                            Id = 502,
+                            PermissionId = 42,
+                            RoleId = 6
+                        },
+                        new
+                        {
+                            Id = 600,
+                            PermissionId = 10,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 601,
+                            PermissionId = 30,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 602,
+                            PermissionId = 31,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 603,
+                            PermissionId = 21,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 700,
+                            PermissionId = 20,
+                            RoleId = 8
+                        },
+                        new
+                        {
+                            Id = 800,
+                            PermissionId = 70,
+                            RoleId = 9
+                        },
+                        new
+                        {
+                            Id = 801,
+                            PermissionId = 71,
+                            RoleId = 9
+                        },
+                        new
+                        {
+                            Id = 802,
+                            PermissionId = 50,
+                            RoleId = 9
+                        },
+                        new
+                        {
+                            Id = 803,
+                            PermissionId = 1,
+                            RoleId = 9
                         });
                 });
 
@@ -1635,7 +1924,7 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<int>("RoleId")
+                    b.Property<int?>("RoleId")
                         .HasColumnType("int");
 
                     b.Property<int>("UserId")
@@ -1668,9 +1957,61 @@ namespace QuanLyDoanKham.API.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("QuanLyDoanKham.API.Models.Staff", "Staff")
+                        .WithMany()
+                        .HasForeignKey("StaffId");
+
                     b.Navigation("Company");
 
                     b.Navigation("Department");
+
+                    b.Navigation("Role");
+
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ApprovalHistory", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.ApprovalStep", "ApprovalStep")
+                        .WithMany()
+                        .HasForeignKey("ApprovalStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "Approver")
+                        .WithMany()
+                        .HasForeignKey("ApproverId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany()
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("ApprovalStep");
+
+                    b.Navigation("Approver");
+
+                    b.Navigation("HealthContract");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ApprovalStep", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany()
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.AppRole", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("HealthContract");
 
                     b.Navigation("Role");
                 });
@@ -1709,6 +2050,17 @@ namespace QuanLyDoanKham.API.Migrations
                 {
                     b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
                         .WithMany("Attachments")
+                        .HasForeignKey("HealthContractId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("HealthContract");
+                });
+
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.ContractFinancialSummary", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.HealthContract", "HealthContract")
+                        .WithMany()
                         .HasForeignKey("HealthContractId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1756,6 +2108,25 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Navigation("MedicalGroup");
                 });
 
+            modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupPositionQuota", b =>
+                {
+                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
+                        .WithMany()
+                        .HasForeignKey("MedicalGroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Position", "Position")
+                        .WithMany()
+                        .HasForeignKey("PositionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("MedicalGroup");
+
+                    b.Navigation("Position");
+                });
+
             modelBuilder.Entity("QuanLyDoanKham.API.Models.GroupStaffDetail", b =>
                 {
                     b.HasOne("QuanLyDoanKham.API.Models.MedicalGroup", "MedicalGroup")
@@ -1764,7 +2135,12 @@ namespace QuanLyDoanKham.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyDoanKham.API.Models.MedicalGroupPosition", "Position")
+                    b.HasOne("QuanLyDoanKham.API.Models.GroupPositionQuota", "GroupPositionQuota")
+                        .WithMany()
+                        .HasForeignKey("GroupPositionQuotaId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("QuanLyDoanKham.API.Models.Position", "Position")
                         .WithMany()
                         .HasForeignKey("PositionId")
                         .OnDelete(DeleteBehavior.NoAction);
@@ -1774,6 +2150,8 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasForeignKey("StaffId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("GroupPositionQuota");
 
                     b.Navigation("MedicalGroup");
 
@@ -1795,9 +2173,21 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasForeignKey("CreatedByUserId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "Signer")
+                        .WithMany()
+                        .HasForeignKey("SignerId");
+
+                    b.HasOne("QuanLyDoanKham.API.Models.AppUser", "UpdatedByUser")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByUserId");
+
                     b.Navigation("Company");
 
                     b.Navigation("CreatedByUser");
+
+                    b.Navigation("Signer");
+
+                    b.Navigation("UpdatedByUser");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroup", b =>
@@ -1946,8 +2336,7 @@ namespace QuanLyDoanKham.API.Migrations
                     b.HasOne("QuanLyDoanKham.API.Models.AppRole", "Role")
                         .WithMany("UserRoles")
                         .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("QuanLyDoanKham.API.Models.AppUser", "User")
                         .WithMany("UserRoles")

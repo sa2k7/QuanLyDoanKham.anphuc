@@ -18,7 +18,7 @@ namespace QuanLyDoanKham.API.Middleware
 
     /// <summary>
     /// Handler kiểm tra claim "permission" trong JWT token.
-    /// Admin luôn được phép vì Admin có toàn bộ permissions trong JWT.
+    /// Lưu ý: KHÔNG bypass Admin (tuân thủ nguyên tắc PoLP).
     /// </summary>
     public class PermissionAuthorizationHandler : AuthorizationHandler<PermissionRequirement>
     {
@@ -26,13 +26,6 @@ namespace QuanLyDoanKham.API.Middleware
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            // Admin bypass tất cả
-            if (context.User.IsInRole("Admin"))
-            {
-                context.Succeed(requirement);
-                return Task.CompletedTask;
-            }
-
             // Kiểm tra claim "permission"
             var hasPerm = context.User.Claims
                 .Any(c => c.Type == "permission" && c.Value == requirement.PermissionKey);

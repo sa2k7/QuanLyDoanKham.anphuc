@@ -4,15 +4,15 @@
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-violet-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <Package class="w-6 h-6" />
           </div>
-          Hệ thống Vật tư & Kho
+          {{ i18n.t('supplies.title') }}
           <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-violet-600 font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
+          <span class="text-primary font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
         </h2>
         <div class="flex items-center gap-4 mt-2">
-            <button @click="activeTab = 'inventory'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'inventory' ? 'bg-violet-600 text-white shadow-lg shadow-violet-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
+            <button @click="activeTab = 'inventory'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'inventory' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
                 <span class="tracking-[0.3em]">Tồn kho hiện tại</span>
             </button>
             <button @click="activeTab = 'vouchers'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'vouchers' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
@@ -21,49 +21,24 @@
         </div>
       </div>
       <div class="flex gap-3">
-        <button v-if="['Admin', 'WarehouseManager', 'MedicalGroupManager'].includes(authStore.role)" 
+        <button v-if="can('Kho.Export')" 
                 @click="openVoucherModal()" 
                 class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50 transition-all">
           <ClipboardList class="w-4 h-4 mr-2" />
           <span class="text-[10px] uppercase tracking-widest font-black ">LẬP PHIẾU MỚI</span>
         </button>
-        <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+        <button v-if="can('Kho.Import')" 
                 @click="openModal()" 
-                class="btn-premium bg-slate-900 text-white px-8 py-3 shadow-lg transition-all">
+                class="btn-premium bg-primary text-white px-8 py-3 shadow-lg transition-all">
           <Plus class="w-5 h-5 mr-2" />
-          <span class="text-[10px] uppercase tracking-widest font-black ">THÊM VẬT TƯ</span>
+          <span class="text-[10px] uppercase tracking-widest font-black ">{{ i18n.t('supplies.addBtn') }}</span>
         </button>
       </div>
     </div>
 
     <!-- Active View: INVENTORY -->
     <div v-if="activeTab === 'inventory'" class="space-y-6 animate-fade-in">
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard 
-                title="Tổng danh mục mặt hàng"
-                :value="String(list.length).padStart(3, '0')"
-                :icon="Layers"
-                variant="indigo"
-                subtext="Danh mục kho"
-            />
-            <StatCard 
-                title="Cảnh báo tồn kho thấp"
-                :value="String(list.filter(s => s.isLowStock).length).padStart(3, '0')"
-                :icon="AlertCircle"
-                variant="rose"
-                trend="Cần nhập"
-                trendColor="rose"
-            />
-            <StatCard 
-                title="Vật tư sắp hết hạn"
-                :value="String(list.filter(s => s.isExpiringSoon).length).padStart(3, '0')"
-                :icon="Clock"
-                variant="amber"
-                trend="Cần xử lý"
-                trendColor="amber"
-            />
-        </div>
+
 
         <!-- Search & Table -->
         <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mt-8">
@@ -118,7 +93,7 @@
                                 </div>
                             </td>
                             <td class="p-5 text-center">
-                                <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" 
+                                <button v-if="can('Kho.Import')" 
                                         @click.stop="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Sửa hàng">
                                     <Edit3 class="w-5 h-5" />
                                 </button>
@@ -175,7 +150,7 @@
                             <td class="p-5 font-black text-slate-500">{{ v.createdBy }}</td>
                             <td class="p-5 text-slate-400 font-medium italic truncate max-w-[200px]">{{ v.note || '---' }}</td>
                             <td class="p-5 text-center">
-                                <button v-if="authStore.role === 'Admin'" @click="deleteVoucher(v.voucherId)" class="p-2 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                                <button v-if="can('HeThong.UserManage')" @click="deleteVoucher(v.voucherId)" class="p-2 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
                                     <Trash2 class="w-4 h-4" />
                                 </button>
                             </td>
@@ -250,12 +225,12 @@
 
                   <div class="px-12 pb-12 pt-4 bg-white relative z-20">
                       <div class="flex gap-4">
-                          <button v-if="currentItem.supplyId && authStore.role === 'Admin'" type="button" @click="deleteItem" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
+                          <button v-if="currentItem.supplyId && can('Kho.Import')" type="button" @click="deleteItem" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
                               <Trash2 class="w-5 h-5" />
                           </button>
                           <div class="flex-1"></div>
                           <button type="button" @click="showModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy</button>
-                          <button v-if="authStore.role === 'Admin' || authStore.role === 'WarehouseManager'" form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
+                          <button v-if="can('Kho.Import')" form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
                       </div>
                   </div>
               </div>
@@ -405,20 +380,24 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { 
     Package, Plus, Search, RefreshCw, Layers, AlertCircle, Clock, Edit3, 
     PackageSearch, ClipboardList, PlusCircle, Trash2, ChevronRight, ChevronDown,
     ArrowDownLeft, ArrowUpRight, X
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { usePermission } from '@/composables/usePermission'
 import { useToast } from '../composables/useToast'
-import StatCard from '../components/StatCard.vue'
+import { useI18nStore } from '../stores/i18n'
 
 import CurrencyInput from '../components/CurrencyInput.vue'
 
 const authStore = useAuthStore()
+const { can } = usePermission()
 const toast = useToast()
+const i18n = useI18nStore()
 
 // -- STATE --
 const activeTab = ref('inventory')
@@ -461,21 +440,21 @@ const isVoucherValid = computed(() => {
 // -- DATA FETCHING --
 const fetchList = async () => {
     try {
-        const res = await axios.get('/api/Supplies')
+        const res = await apiClient.get('/api/Supplies')
         list.value = res.data
-    } catch (e) { toast.error("Lỗi dữ liệu kho") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const fetchVouchers = async () => {
     try {
-        const res = await axios.get('/api/Supplies/vouchers')
+        const res = await apiClient.get('/api/Supplies/vouchers')
         vouchers.value = res.data
-    } catch (e) { toast.error("Lỗi dữ liệu phiếu") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const fetchGroups = async () => {
     try {
-        const res = await axios.get('/api/MedicalGroups')
+        const res = await apiClient.get('/api/MedicalGroups')
         // CHỈ lấy các đoàn khám đang hoạt động (Open)
         groups.value = res.data.filter(g => {
             const status = g.status || g.Status
@@ -493,29 +472,27 @@ const openModal = (item = null) => {
 const saveItem = async () => {
     try {
         if (currentItem.value.supplyId) {
-            await axios.put(`/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
+            await apiClient.put(`/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
         } else {
-            await axios.post('/api/Supplies', currentItem.value)
+            await apiClient.post('/api/Supplies', currentItem.value)
         }
         toast.success("Hợp lệ: Dữ liệu đã được cập nhật!")
         showModal.value = false
         fetchList()
     } catch (e) { 
-        console.error("Lỗi lưu vật tư:", e)
-        const errMsg = e.response?.data?.message || e.response?.data || e.message || "Lỗi lưu dữ liệu"
-        toast.error(typeof errMsg === 'string' ? errMsg : "Lỗi dữ liệu đầu vào (400)") 
+        toast.error(parseApiError(e)) 
     }
 }
 
 const deleteItem = async () => {
     if (!confirm("Xác nhận xóa mặt hàng này khỏi kho?")) return
     try {
-        await axios.delete(`/api/Supplies/${currentItem.value.supplyId}`)
+        await apiClient.delete(`/api/Supplies/${currentItem.value.supplyId}`)
         toast.success("Đã xóa khỏi danh mục!")
         showModal.value = false
         fetchList()
     } catch (e) { 
-        toast.error(e.response?.data || "Không thể xóa hàng đang lưu kho") 
+        toast.error(parseApiError(e)) 
     }
 }
 
@@ -542,25 +519,25 @@ const removeDetailRow = (idx) => {
 
 const saveVoucher = async () => {
     try {
-        await axios.post('/api/Supplies/vouchers', newVoucher.value)
+        await apiClient.post('/api/Supplies/vouchers', newVoucher.value)
         toast.success("Phiếu kho đã được chốt và cập nhật tồn kho!")
         showVoucherModal.value = false
         fetchList()
         fetchVouchers()
     } catch (e) {
-        toast.error(e.response?.data || "Lỗi lập phiếu")
+        toast.error(parseApiError(e))
     }
 }
 
 const deleteVoucher = async (id) => {
     if (!confirm("Xác nhận xóa phiếu kho này? Tồn kho liên quan sẽ được tự động hoàn tác.")) return
     try {
-        await axios.delete(`/api/Supplies/vouchers/${id}`)
+        await apiClient.delete(`/api/Supplies/vouchers/${id}`)
         toast.success("Đã xóa phiếu và hoàn tác tồn kho!")
         fetchVouchers()
         fetchList()
     } catch (e) {
-        toast.error(e.response?.data || "Lỗi xóa phiếu")
+        toast.error(parseApiError(e))
     }
 }
 

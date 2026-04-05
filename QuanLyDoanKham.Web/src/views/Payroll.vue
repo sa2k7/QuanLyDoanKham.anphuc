@@ -194,12 +194,15 @@
 
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
+import { parseApiError } from '../services/errorHelper'
 import { Wallet, RefreshCcw, Download, Search, X, Layers, FileText } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
+import { usePermission } from '../composables/usePermission'
 import { useToast } from '../composables/useToast'
 
 const authStore = useAuthStore()
+const { can } = usePermission()
 const toast = useToast()
 const loading = ref(false)
 const selectedMonth = ref(new Date().getMonth() + 1)
@@ -209,7 +212,7 @@ const mySalary = ref(null)
 const searchQuery = ref('')
 const detailItem = ref(null)
 
-const isManager = computed(() => authStore.role === 'Admin' || authStore.role === 'PayrollManager')
+const isManager = computed(() => can('Luong.Manage'))
 
 const totalPayroll = computed(() => payrollList.value.reduce((sum, item) => sum + item.totalSalary, 0))
 
@@ -227,24 +230,24 @@ const fetchPayroll = async () => {
     try {
         if (isManager.value) {
             // Admin/PayrollManager: xem bảng lương toàn bộ
-            const res = await axios.get(`/api/Payroll/monthly`, {
+            const res = await apiClient.get(`/api/Payroll/monthly`, {
                 params: { month: selectedMonth.value, year: selectedYear.value }
             })
             payrollList.value = res.data
         } else {
             // MedicalStaff: xem lương cá nhân
-            const res = await axios.get(`/api/Payroll/my-salary`, {
+            const res = await apiClient.get(`/api/Payroll/my-salary`, {
                 params: { month: selectedMonth.value, year: selectedYear.value }
             })
             mySalary.value = res.data
         }
-    } catch (e) { toast.error('Lỗi dữ liệu bảng lương') }
+    } catch (e) { toast.error(parseApiError(e)) }
     finally { loading.value = false }
 }
 
 const exportExcel = async () => {
     try {
-        const res = await axios.get(`/api/Payroll/export-monthly`, {
+        const res = await apiClient.get(`/api/Payroll/export-monthly`, {
             params: { month: selectedMonth.value, year: selectedYear.value },
             responseType: 'blob'
         })
@@ -255,7 +258,7 @@ const exportExcel = async () => {
         document.body.appendChild(link)
         link.click()
         toast.success("Đã xuất file bảng lương!")
-    } catch (e) { toast.error("Lỗi xuất file") }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const showDetails = (item) => { detailItem.value = item }

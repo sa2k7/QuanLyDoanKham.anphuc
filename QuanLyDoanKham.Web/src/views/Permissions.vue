@@ -1,67 +1,81 @@
 <template>
-  <div class="permissions-page">
-    <div class="page-header">
+  <div class="permissions-page animate-fade-in">
+    <div class="page-header mb-8">
       <div>
-        <h1 class="page-title"><i class="fas fa-shield-alt"></i> Quản lý Phân quyền</h1>
-        <p class="page-subtitle">Cấu hình permissions cho từng Role</p>
+        <h1 class="page-title text-2xl font-black text-slate-800 flex items-center gap-3">
+            <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg">
+                <ShieldAlert class="w-6 h-6" />
+            </div>
+            Quản lý Phân quyền
+        </h1>
+        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">Cấu hình permissions cho từng Role hệ thống</p>
       </div>
     </div>
 
     <!-- Role Tabs -->
-    <div class="role-tabs">
+    <div class="role-tabs flex flex-wrap gap-3 mb-8">
       <button v-for="role in roles" :key="role.roleId"
-        class="role-tab" :class="{ active: selectedRoleId === role.roleId }"
+        class="role-tab px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest transition-all border-2" 
+        :class="selectedRoleId === role.roleId ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-200'"
         @click="selectRole(role.roleId)">
         {{ getRoleLabel(role.roleName) }}
       </button>
     </div>
 
     <!-- Permission Matrix -->
-    <div v-if="selectedRole" class="permission-matrix">
-      <div class="matrix-header">
-        <h3>{{ getRoleLabel(selectedRole.roleName) }}</h3>
-        <div class="matrix-actions">
-          <button class="btn btn-sm btn-outline" @click="toggleAll(true)">
-            <i class="fas fa-check-double"></i> Chọn tất cả
+    <div v-if="selectedRole" class="permission-matrix premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden p-8">
+      <div class="matrix-header flex justify-between items-center mb-8 pb-6 border-b border-slate-50">
+        <div>
+            <h3 class="text-xl font-black text-slate-800 uppercase tracking-widest">{{ getRoleLabel(selectedRole.roleName) }}</h3>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Danh sách đặc quyền được cấp cho vai trò</p>
+        </div>
+        <div class="matrix-actions flex gap-3">
+          <button class="btn-premium variant-indigo scale-90" @click="toggleAll(true)">
+            <CheckCheck class="w-4 h-4" /> Chọn tất cả
           </button>
-          <button class="btn btn-sm btn-outline" @click="toggleAll(false)">
-            <i class="fas fa-times"></i> Bỏ chọn
+          <button class="btn-premium variant-slate scale-90" @click="toggleAll(false)">
+            <X class="w-4 h-4" /> Bỏ chọn
           </button>
-          <button class="btn btn-sm btn-primary" @click="savePermissions" :disabled="saving">
-            <i v-if="saving" class="fas fa-spinner fa-spin"></i>
-            <i v-else class="fas fa-save"></i>
+          <button class="btn-premium bg-emerald-600 text-white hover:bg-emerald-700 scale-90 px-6 transition-colors" @click="restoreDefaults" :disabled="saving || restoring">
+            <RefreshCcw v-if="!restoring" class="w-4 h-4" />
+            <Loader2 v-else class="w-4 h-4 animate-spin" />
+            {{ restoring ? 'Đang khôi phục...' : 'Trở về mặc định' }}
+          </button>
+          <button class="btn-premium bg-slate-900 text-white scale-90 px-8" @click="savePermissions" :disabled="saving || restoring">
+            <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
+            <Save v-else class="w-4 h-4" />
             {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
           </button>
         </div>
       </div>
 
-      <div v-if="selectedRole.roleName === 'Admin'" class="admin-notice">
-        <i class="fas fa-crown"></i>
-        Admin tự động có <strong>tất cả quyền</strong> trong hệ thống.
-      </div>
-
-      <div v-else>
-        <div v-for="(modulePerms, module) in permsByModule" :key="module" class="perm-module">
-          <div class="module-header">
-            <span class="module-icon">{{ getModuleIcon(module) }}</span>
-            <span class="module-name">{{ getModuleLabel(module) }}</span>
-            <label class="toggle-all-module">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div v-for="(modulePerms, module) in permsByModule" :key="module" class="perm-module bg-slate-50/30 p-6 rounded-3xl border border-slate-100">
+          <div class="module-header flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+                <span class="module-icon text-xl">{{ getModuleIcon(module) }}</span>
+                <span class="module-name font-black text-slate-700 uppercase tracking-widest text-sm">{{ getModuleLabel(module) }}</span>
+            </div>
+            <label class="toggle-all-module flex items-center gap-2 cursor-pointer group">
               <input type="checkbox"
+                class="w-4 h-4 accent-indigo-600 rounded"
                 :checked="isModuleAllChecked(module)"
                 :indeterminate.prop="isModuleIndeterminate(module)"
                 @change="toggleModule(module, $event.target.checked)" />
-              Tất cả
+              <span class="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 uppercase tracking-widest transition-colors">Tất cả</span>
             </label>
           </div>
-          <div class="perm-list">
-            <label v-for="perm in modulePerms" :key="perm.permissionId" class="perm-item"
-              :class="{ active: checkedPerms.includes(perm.permissionId) }">
+          <div class="perm-list grid grid-cols-1 gap-2">
+            <label v-for="perm in modulePerms" :key="perm.permissionId" 
+              class="perm-item flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer"
+              :class="checkedPerms.includes(perm.permissionId) ? 'bg-white border-slate-900 shadow-[2px_2px_0px_#0f172a]' : 'bg-transparent border-transparent text-slate-400 hover:bg-white hover:border-slate-100'">
               <input type="checkbox"
+                class="w-4 h-4 accent-indigo-600 rounded"
                 :value="perm.permissionId"
                 v-model="checkedPerms" />
-              <div class="perm-info">
-                <span class="perm-name">{{ perm.permissionName }}</span>
-                <code class="perm-key">{{ perm.permissionKey }}</code>
+              <div class="perm-info flex flex-col">
+                <span class="perm-name text-xs font-black uppercase tracking-widest" :class="checkedPerms.includes(perm.permissionId) ? 'text-slate-800' : 'text-slate-400'">{{ perm.permissionName }}</span>
+                <code class="perm-key text-[9px] font-mono mt-0.5" :class="checkedPerms.includes(perm.permissionId) ? 'text-indigo-500' : 'text-slate-300'">{{ perm.permissionKey }}</code>
               </div>
             </label>
           </div>
@@ -69,20 +83,35 @@
       </div>
     </div>
 
-    <div v-if="loading" class="loading-overlay"><div class="spinner"></div></div>
+    <div v-if="loading" class="flex justify-center py-20">
+        <Loader2 class="w-10 h-10 animate-spin text-slate-200" />
+    </div>
 
     <!-- Toast notification -->
-    <div v-if="toast.show" class="toast" :class="toast.type">
-      <i :class="toast.type === 'success' ? 'fas fa-check-circle' : 'fas fa-exclamation-circle'"></i>
-      {{ toast.message }}
-    </div>
+    <Teleport to="body">
+        <div v-if="toast.show" class="fixed bottom-10 right-10 z-[200] animate-fade-in-up">
+            <div class="px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center gap-4"
+                 :class="toast.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                <CheckCircle2 v-if="toast.type === 'success'" class="w-6 h-6" />
+                <AlertCircle v-else class="w-6 h-6" />
+                <div class="font-black uppercase tracking-widest text-xs">{{ toast.message }}</div>
+            </div>
+        </div>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import apiClient from '@/services/apiClient'
+import apiClient from '../services/apiClient'
+import { 
+    ShieldAlert, CheckCheck, X, Save, Loader2, CheckCircle2, AlertCircle, RefreshCcw 
+} from 'lucide-vue-next'
+import { usePermission } from '../composables/usePermission'
+import { useAuthStore } from '../stores/auth'
 
+const auth = useAuthStore()
+const { can } = usePermission()
 const roles = ref([])
 const permissions = ref([])
 const rolePermissions = ref({}) // { roleId: [permissionId, ...] }
@@ -90,6 +119,7 @@ const selectedRoleId = ref(null)
 const checkedPerms = ref([])
 const loading = ref(false)
 const saving = ref(false)
+const restoring = ref(false)
 const toast = ref({ show: false, type: 'success', message: '' })
 
 const selectedRole = computed(() => roles.value.find(r => r.roleId === selectedRoleId.value))
@@ -155,7 +185,7 @@ const selectRole = async (roleId) => {
   // Load permissions của role này nếu chưa có
   if (!rolePermissions.value[roleId]) {
     try {
-      const res = await apiClient.get(`/Auth/role-permissions/${roleId}`)
+      const res = await apiClient.get(`/api/Auth/role-permissions/${roleId}`)
       rolePermissions.value[roleId] = res.data.map(p => p.permissionId)
     } catch {
       rolePermissions.value[roleId] = []
@@ -167,10 +197,20 @@ const selectRole = async (roleId) => {
 const savePermissions = async () => {
   saving.value = true
   try {
-    await apiClient.put(`/Auth/role-permissions/${selectedRoleId.value}`, {
+    await apiClient.put(`/api/Auth/role-permissions/${selectedRoleId.value}`, {
       permissionIds: checkedPerms.value
     })
     rolePermissions.value[selectedRoleId.value] = [...checkedPerms.value]
+    
+    // Nếu đang sửa quyền của chính role hiện tại, cần làm mới JWT
+    if (auth.userRole === selectedRole.value?.roleName || selectedRole.value?.roleName === 'Admin') {
+      try {
+        await auth.refreshAccessToken()
+      } catch (e) {
+        console.warn('Could not refresh token automatically', e)
+      }
+    }
+
     showToast('success', 'Cập nhật quyền thành công!')
   } catch (e) {
     showToast('error', e.response?.data?.message || 'Lỗi khi cập nhật quyền.')
@@ -179,21 +219,41 @@ const savePermissions = async () => {
   }
 }
 
+
 const showToast = (type, message) => {
   toast.value = { show: true, type, message }
   setTimeout(() => { toast.value.show = false }, 3000)
+}
+
+const restoreDefaults = async () => {
+  if (!confirm('Bạn có chắc chắn muốn khôi phục phân quyền của vai trò này về mặc định ban đầu không? (Quyền hiện tại sẽ bị ghi đè)')) return;
+  restoring.value = true;
+  try {
+    const res = await apiClient.post(`/api/Auth/restore-default-permissions/${selectedRoleId.value}`);
+    // Tải lại các quyền sau khi khôi phục
+    const permRes = await apiClient.get(`/api/Auth/role-permissions/${selectedRoleId.value}`);
+    rolePermissions.value[selectedRoleId.value] = permRes.data.map(p => p.permissionId);
+    checkedPerms.value = [...rolePermissions.value[selectedRoleId.value]];
+    showToast('success', res.data?.message || 'Khôi phục mặc định thành công!');
+  } catch (e) {
+    showToast('error', e.response?.data?.message || 'Lỗi khi khôi phục quyền mặc định.');
+  } finally {
+    restoring.value = false;
+  }
 }
 
 onMounted(async () => {
   loading.value = true
   try {
     const [rolesRes, permsRes] = await Promise.all([
-      apiClient.get('/Auth/roles'),
-      apiClient.get('/Auth/permissions')
+      apiClient.get('/api/Auth/roles'),
+      apiClient.get('/api/Auth/permissions')
     ])
     roles.value = rolesRes.data
     permissions.value = permsRes.data
     if (roles.value.length > 0) await selectRole(roles.value[0].roleId)
+  } catch (e) {
+      console.error("Lỗi s khởi tạo phân quyền:", e)
   } finally {
     loading.value = false
   }

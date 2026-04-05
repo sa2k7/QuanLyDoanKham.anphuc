@@ -3,8 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
-using QuanLyDoanKham.API.Middleware;
 using QuanLyDoanKham.API.Models;
 using QuanLyDoanKham.API.Services.Auth;
 using QuanLyDoanKham.API.Services.MedicalGroups;
@@ -25,52 +25,30 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // ================================================================
 builder.Services.AddHttpClient();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.IGeminiService, QuanLyDoanKham.API.Services.GeminiService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMedicalGroupAutoAssignmentService, MedicalGroupAutoAssignmentService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.IReportingService, QuanLyDoanKham.API.Services.ReportingService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.QrService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.TimeSheetService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Reports.FinancialReportService>();
 
 // ================================================================
 // 3. PERMISSION AUTHORIZATION
 // ================================================================
 // Đăng ký handler granular permission
-builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
-
-// Danh sách tất cả permission keys - map mỗi key thành một Policy
-var allPermissionKeys = new[]
-{
-    // HopDong
-    "HopDong.View", "HopDong.Create", "HopDong.Edit", "HopDong.Approve", "HopDong.Reject", "HopDong.Upload",
-    // DoanKham
-    "DoanKham.View", "DoanKham.Create", "DoanKham.Edit", "DoanKham.SetPosition", "DoanKham.AssignStaff", "DoanKham.ManageOwn",
-    // LichKham
-    "LichKham.ViewOwn", "LichKham.ViewAll",
-    // ChamCong
-    "ChamCong.QR", "ChamCong.CheckInOut", "ChamCong.ViewAll",
-    // Kho
-    "Kho.View", "Kho.Import", "Kho.Export",
-    // Luong
-    "Luong.View", "Luong.Manage",
-    // NhanSu
-    "NhanSu.View", "NhanSu.Manage",
-    // BaoCao
-    "BaoCao.View", "BaoCao.Export",
-    // HeThong
-    "HeThong.UserManage", "HeThong.RoleManage"
-};
+builder.Services.AddScoped<Microsoft.AspNetCore.Authorization.IAuthorizationHandler, PermissionHandler>();
 
 builder.Services.AddAuthorization(options =>
 {
-    // Tạo policy cho mỗi permission key
-    foreach (var key in allPermissionKeys)
+    foreach (var key in PermissionConstants.All)
     {
-        options.AddPolicy(key, policy =>
-            policy.Requirements.Add(new PermissionRequirement(key)));
+        options.AddPolicy(PermissionConstants.PolicyPrefix + key,
+            policy => policy.Requirements.Add(new PermissionRequirement(key)));
     }
 
-    // Policy tiện lợi: chỉ cần đăng nhập
     options.AddPolicy("AuthenticatedUser", policy => policy.RequireAuthenticatedUser());
 
-    // Policy mặc định: phải đăng nhập
     options.DefaultPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
@@ -118,11 +96,11 @@ builder.Services.AddSwaggerGen(c =>
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
+        Type = SecuritySchemeType.ApiKey,
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Nhập JWT token. Định dạng: Bearer <token>"
+        Description = "Nhập JWT token. Bắt buộc có chữ Bearer ở đầu. Ví dụ: Bearer eyJhbG..."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -143,11 +121,11 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowVueApp",
-        policy => policy
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials());
+    policy => policy
+        .SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost" || new Uri(origin).Host == "127.0.0.1")
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials());
 });
 
 // ================================================================
@@ -168,6 +146,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = builder.Configuration.GetSection("AppSettings:Audience").Value ?? "QuanLyDoanKham",
             ValidateLifetime = true,
             ClockSkew = TimeSpan.Zero
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
+                {
+                    context.Response.Headers.Add("IS-TOKEN-EXPIRED", "true");
+                }
+                Console.WriteLine($"[AUTH ERROR] Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnChallenge = context =>
+            {
+                Console.WriteLine($"[AUTH ERROR] OnChallenge triggered: {context.Error}, {context.ErrorDescription}");
+                return Task.CompletedTask;
+            }
         };
     });
 

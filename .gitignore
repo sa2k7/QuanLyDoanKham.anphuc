@@ -74,3 +74,9 @@ BAO_CAO_*.csv
 
 # Auto-generated agent rules (personalized per developer)
 .brainsync/agent-rules.md
+
+# Auto-generated AI agent exclusions
+.cursorrules
+.clineRules
+.windsurfrules
+.cline/

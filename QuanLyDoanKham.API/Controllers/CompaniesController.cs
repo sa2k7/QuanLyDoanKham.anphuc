@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -21,7 +22,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // GET: api/Companies — Admin, ContractManager và MedicalStaff được xem
         [HttpGet]
-        [Authorize(Roles = "Admin,ContractManager,MedicalStaff,MedicalGroupManager")] // Cho phép MedicalGroupManager xem để điều phối đoàn
+        [AuthorizePermission("HopDong.View")] // Cho phép MedicalGroupManager xem để điều phối đoàn
         public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
         {
             return await _context.Companies.ToListAsync();
@@ -29,7 +30,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Companies — Admin và ContractManager được tạo mới
         [HttpPost]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [AuthorizePermission("HopDong.Create")]
         public async Task<ActionResult<Company>> PostCompany(CompanyDto dto)
         {
             // Kiểm tra trùng lặp
@@ -59,7 +60,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // PUT: api/Companies/{id} — Admin và ContractManager được sửa
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> UpdateCompany(int id, CompanyDto dto)
         {
             var company = await _context.Companies.FindAsync(id);
@@ -87,7 +88,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // DELETE: api/Companies/{id} — Admin và ContractManager được xóa
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin,ContractManager")]
+        [AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> DeleteCompany(int id)
         {
             var company = await _context.Companies.FindAsync(id);

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import apiClient from '@/services/apiClient';
 
 export const useNotificationStore = defineStore('notification', {
     state: () => ({
@@ -12,7 +12,7 @@ export const useNotificationStore = defineStore('notification', {
         async fetchNotifications() {
             this.loading = true;
             try {
-                const response = await axios.get('/api/notifications');
+                const response = await apiClient.get('/api/notifications');
                 this.notifications = response.data;
                 await this.fetchUnreadCount();
             } catch (error) {
@@ -24,7 +24,7 @@ export const useNotificationStore = defineStore('notification', {
 
         async fetchUnreadCount() {
             try {
-                const response = await axios.get('/api/notifications/unread-count');
+                const response = await apiClient.get('/api/notifications/unread-count');
                 this.unreadCount = response.data;
             } catch (error) {
                 console.error('Failed to fetch unread count:', error);
@@ -33,7 +33,7 @@ export const useNotificationStore = defineStore('notification', {
 
         async markAsRead(id) {
             try {
-                await axios.put(`/api/notifications/${id}/read`);
+                await apiClient.put(`/api/notifications/${id}/read`);
                 const n = this.notifications.find(n => n.id === id);
                 if (n && !n.isRead) {
                     n.isRead = true;
@@ -46,7 +46,7 @@ export const useNotificationStore = defineStore('notification', {
 
         async markAllAsRead() {
             try {
-                await axios.put('/api/notifications/read-all');
+                await apiClient.put('/api/notifications/read-all');
                 this.notifications.forEach(n => n.isRead = true);
                 this.unreadCount = 0;
             } catch (error) {
@@ -56,7 +56,7 @@ export const useNotificationStore = defineStore('notification', {
 
         async deleteNotification(id) {
             try {
-                await axios.delete(`/api/notifications/${id}`);
+                await apiClient.delete(`/api/notifications/${id}`);
                 this.notifications = this.notifications.filter(n => n.id !== id);
                 await this.fetchUnreadCount();
             } catch (error) {
