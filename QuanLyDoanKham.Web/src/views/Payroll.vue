@@ -17,27 +17,16 @@
             <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
         </select>
         <input type="number" v-model="selectedYear" class="w-20 bg-slate-50 px-4 py-2 rounded-xl font-black text-xs outline-none" />
-        <button @click="fetchPayroll" class="bg-slate-900 text-white p-2 rounded-xl"><RefreshCcw class="w-4 h-4" :class="loading ? 'animate-spin' : ''" /></button>
+        <button @click="fetchPayroll" class="bg-slate-900 text-white p-2 rounded-xl hover:bg-slate-800 transition-all"><RefreshCcw class="w-4 h-4" :class="loading ? 'animate-spin' : ''" /></button>
+        <div v-if="isManager" class="w-px h-6 bg-slate-200 mx-2"></div>
+        <button v-if="isManager" @click="exportExcel" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center gap-2">
+            <Download class="w-4 h-4" />
+            Excel
+        </button>
       </div>
     </div>
 
-    <!-- Stats Summary (Only for Admin/PayrollManager) -->
-    <div v-if="isManager" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-        <div class="premium-card p-8 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] transition-all hover:-translate-y-1">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng quỹ lương tháng</p>
-            <p class="text-3xl font-black text-slate-800 ">{{ formatPrice(totalPayroll) }}</p>
-            <div class="mt-4 h-1 w-12 bg-emerald-500 rounded-full"></div>
-        </div>
-        <div class="premium-card p-8 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] transition-all hover:-translate-y-1">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Nhân sự hưởng lương</p>
-            <p class="text-3xl font-black text-slate-800 ">{{ payrollList.length }} <span class="text-xs text-slate-400 uppercase">Thành viên</span></p>
-            <div class="mt-4 h-1 w-12 bg-indigo-500 rounded-full"></div>
-        </div>
-        <button @click="exportExcel" class="p-8 bg-slate-900 text-white rounded-[2rem] shadow-[4px_4px_0px_#1e293b] border-2 border-slate-900 hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-2 group">
-            <Download class="w-6 h-6 text-emerald-400 group-hover:scale-110 transition-transform" />
-            <span class="font-black text-[11px] uppercase tracking-[0.2em]">XUẤT BẢNG LƯƠNG (EXCEL)</span>
-        </button>
-    </div>
+
 
     <!-- My Salary Card (Only for MedicalStaff) -->
     <div v-if="!isManager && mySalary" class="premium-card p-10 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] mb-8">

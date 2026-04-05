@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 205 notes | Score threshold: >40
+> 301 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,49 +20,55 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
-- **⚠️ GOTCHA: Optimized Optimized** — - - Optimized Optimized
-+ - Optimized Project
-- - Optimized Optimized
-
+- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - problem-fix in shared-context.json
++ - Patched security issue SANG
+- **⚠️ GOTCHA: Optimized GOTCHA — externalizes configuration for environment flexibility** — - - gotcha in shared-context.json
++ - ⚠️ GOTCHA: problem-fix in agent-
 - **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Patched security issue SANG
 + - problem-fix in agent-rules.md
 - - 
-- **⚠️ GOTCHA: Strengthened types Fixed** — - - Fixed null crash in CodeInput — prevents null/undefined runtime cr
-- **⚠️ GOTCHA: Optimized GOTCHA** — - - ⚠️ GOTCHA: Optimized Architectural
-+ - ⚠️ GOTCHA: Optimized GOTCHA
-- **⚠️ GOTCHA: Optimized GOTCHA** — - - ⚠️ GOTCHA: Optimized GOTCHA
-+ - ⚠️ GOTCHA: Optimized Architectural
-- **⚠️ GOTCHA: Optimized Architectural** — - 
-+ - what-changed in brainsync_auto.md — confirmed 3x
-- ## Architect
+- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Patched security issue SANG
++ - problem-fix in agent-rules.md
+- - 
+- **gotcha in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "d7068b490c705955",
++
+- **⚠️ GOTCHA: problem-fix in agent-rules.md** — - - Fixed null crash in MedicalGroups — prevents null/undefined runtim
 
 ## Project Standards
 
-- Strengthened types Patched
-- Strengthened types GOTCHA
-- what-changed in shared-context.json — confirmed 8x
-- problem-fix in agent-rules.md — confirmed 3x
-- Patched security issue SANG — confirmed 3x
-- Fixed null crash in ArrowDownLeft — prevents null/undefined runtime crashes — confirmed 4x
+- what-changed in MedicalGroupsController.cs — confirmed 3x
+- what-changed in shared-context.json — confirmed 11x
 - Strengthened types Fixed
-- Optimized Optimized — confirmed 3x
+- Fixed null crash in MedicalGroups — prevents null/undefined runtime crashes — confirmed 3x
+- Strengthened types Fixed
+- what-changed in task.md — confirmed 3x
+- what-changed in shared-context.json — confirmed 5x
+- Strengthened types Fixed
 
 ## Known Fixes
 
+- ❌ - - Fixed null crash in Microsoft — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
 - ❌ - - Fixed null crash in ArrowDownLeft — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
+- ❌ - - Fixed null crash in MedicalGroups — prevents null/undefined runtime crashes → ✅ problem-fix in agent-rules.md
+- ❌ - - Fixed null crash in Substring → ✅ problem-fix in agent-rules.md
 
 ## Recent Decisions
 
-- Optimized Score — parallelizes async operations for speed
-- decision in Departments.vue
-- Optimized Score — parallelizes async operations for speed
-- Optimized Score — parallelizes async operations for speed
+- Optimized GOTCHA — externalizes configuration for environment flexibility
+- Optimized GOTCHA — externalizes configuration for environment flexibility
+- Optimized GOTCHA — externalizes configuration for environment flexibility
+- Optimized GOTCHA — externalizes configuration for environment flexibility
 
 ## Learned Patterns
 
 - Architecture note: Dependency: vue (imported in 9 files) (seen 2x)
 - Always: what-changed in brainsync_auto.md — confirmed 3x (seen 2x)
-- Always: what-changed in brainsync_auto.md — confirmed 3x (seen 3x)
+- Decision: Optimized Score — parallelizes async operations for speed (seen 2x)
 - Agent generates new migration for every change (squash related changes)
 - Agent installs packages without checking if already installed
 

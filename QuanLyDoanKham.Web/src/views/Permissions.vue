@@ -6,9 +6,9 @@
             <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg">
                 <ShieldAlert class="w-6 h-6" />
             </div>
-            Quản lý Phân quyền
+            {{ i18n.t('permissions.title') }}
         </h1>
-        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">Cấu hình permissions cho từng Role hệ thống</p>
+        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('permissions.subtitle') }}</p>
       </div>
     </div>
 
@@ -27,24 +27,24 @@
       <div class="matrix-header flex justify-between items-center mb-8 pb-6 border-b border-slate-50">
         <div>
             <h3 class="text-xl font-black text-slate-800 uppercase tracking-widest">{{ getRoleLabel(selectedRole.roleName) }}</h3>
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Danh sách đặc quyền được cấp cho vai trò</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('permissions.list') }}</p>
         </div>
         <div class="matrix-actions flex gap-3">
           <button class="btn-premium variant-indigo scale-90" @click="toggleAll(true)">
-            <CheckCheck class="w-4 h-4" /> Chọn tất cả
+            <CheckCheck class="w-4 h-4" /> {{ i18n.t('permissions.selectAll') }}
           </button>
           <button class="btn-premium variant-slate scale-90" @click="toggleAll(false)">
-            <X class="w-4 h-4" /> Bỏ chọn
+            <X class="w-4 h-4" /> {{ i18n.t('permissions.deselect') }}
           </button>
           <button class="btn-premium bg-emerald-600 text-white hover:bg-emerald-700 scale-90 px-6 transition-colors" @click="restoreDefaults" :disabled="saving || restoring">
             <RefreshCcw v-if="!restoring" class="w-4 h-4" />
             <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ restoring ? 'Đang khôi phục...' : 'Trở về mặc định' }}
+            {{ restoring ? i18n.t('permissions.restoring') : i18n.t('permissions.restore') }}
           </button>
           <button class="btn-premium bg-slate-900 text-white scale-90 px-8" @click="savePermissions" :disabled="saving || restoring">
             <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
             <Save v-else class="w-4 h-4" />
-            {{ saving ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            {{ saving ? i18n.t('permissions.saving') : i18n.t('permissions.save') }}
           </button>
         </div>
       </div>
@@ -62,7 +62,7 @@
                 :checked="isModuleAllChecked(module)"
                 :indeterminate.prop="isModuleIndeterminate(module)"
                 @change="toggleModule(module, $event.target.checked)" />
-              <span class="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 uppercase tracking-widest transition-colors">Tất cả</span>
+              <span class="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 uppercase tracking-widest transition-colors">{{ i18n.t('permissions.all') }}</span>
             </label>
           </div>
           <div class="perm-list grid grid-cols-1 gap-2">
@@ -108,8 +108,10 @@ import {
     ShieldAlert, CheckCheck, X, Save, Loader2, CheckCircle2, AlertCircle, RefreshCcw 
 } from 'lucide-vue-next'
 import { usePermission } from '../composables/usePermission'
+import { useI18nStore } from '../stores/i18n'
 import { useAuthStore } from '../stores/auth'
 
+const i18n = useI18nStore()
 const auth = useAuthStore()
 const { can } = usePermission()
 const roles = ref([])

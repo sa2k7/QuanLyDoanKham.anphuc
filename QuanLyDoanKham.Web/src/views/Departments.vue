@@ -33,14 +33,14 @@
             </button>
           </div>
         </div>
-        <p class="dept-desc text-slate-400 text-xs font-medium leading-relaxed mb-6 h-12 overflow-hidden line-clamp-2 italic">{{ dept.description || 'Chưa có mô tả chức năng của trạm khám / chuyên khoa này...' }}</p>
+        <p class="dept-desc text-slate-400 text-xs font-medium leading-relaxed mb-6 h-12 overflow-hidden line-clamp-2 italic">{{ dept.description || i18n.t('departments.noDesc') }}</p>
         <div class="dept-stats grid grid-cols-2 gap-4 border-t border-slate-50 pt-6">
           <div class="stat flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
                 <Users class="w-4 h-4" />
             </div>
             <div>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Nhân sự</p>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ i18n.t('departments.staff') }}</p>
                 <p class="text-sm font-black text-slate-700">{{ dept.totalStaff }} TV</p>
             </div>
           </div>
@@ -49,7 +49,7 @@
                 <ShieldCheck class="w-4 h-4" />
             </div>
             <div>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Tài khoản</p>
+                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ i18n.t('departments.users') }}</p>
                 <p class="text-sm font-black text-slate-700">{{ dept.totalUsers }} TK</p>
             </div>
           </div>
@@ -86,8 +86,8 @@
                           <Edit v-else class="w-7 h-7" />
                       </div>
                       <div>
-                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ editMode ? 'Cập nhật Trạm Khám' : 'Tạo Trạm Khám mới' }}</h3>
-                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Đơn vị chuyên môn trong hệ thống đoàn khám sức khoẻ</p>
+                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ editMode ? i18n.t('departments.formTitleEdit') : i18n.t('departments.formTitleAdd') }}</h3>
+                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('departments.formSubtitle') }}</p>
                       </div>
                   </div>
                   <button @click="closeModal" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500">

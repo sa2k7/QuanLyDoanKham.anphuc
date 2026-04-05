@@ -7,11 +7,11 @@
           <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <ShieldCheck class="w-6 h-6" />
           </div>
-          {{ isAdmin ? i18n.t('users.title') : 'Thông tin Tài khoản' }}
+          {{ isAdmin ? i18n.t('users.title') : i18n.t('users.profileTitle') }}
           <span v-if="isAdmin" class="text-slate-200 ml-2 font-black">/</span>
           <span v-if="isAdmin" class="text-primary font-black tabular-nums">{{ String(users.length).padStart(3, '0') }}</span>
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : 'Thông tin cá nhân & Nhật ký hoạt động' }}</p>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
       </div>
       <button v-if="isAdmin" @click="openCreateModal" 
               class="btn-premium bg-primary text-white px-8 py-3 shadow-lg">
@@ -29,8 +29,8 @@
                 <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
                         <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
-                        <th class="p-4">Tài khoản</th>
-                        <th class="p-4">Vai trò</th>
+                        <th class="p-4">{{ i18n.t('users.table.account') }}</th>
+                        <th class="p-4">{{ i18n.t('users.table.role') }}</th>
                         <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
@@ -47,7 +47,7 @@
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ u.fullName || 'Chưa đặt tên' }}</h4>
+                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ u.fullName || i18n.t('users.unnamed') }}</h4>
                                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1 flex items-center gap-1">
                                         <AtSign class="w-3 h-3 text-indigo-400" /> {{ u.username }}
                                     </p>
@@ -82,7 +82,7 @@
                         <td colspan="4" class="py-20 text-center">
                             <div class="flex flex-col items-center justify-center gap-4">
                                 <ShieldCheck class="w-10 h-10 text-slate-200" />
-                                <p class="text-slate-300 font-black uppercase tracking-widest text-xs">Không có dữ liệu tài khoản</p>
+                                <p class="text-slate-300 font-black uppercase tracking-widest text-xs">{{ i18n.t('users.empty') }}</p>
                             </div>
                         </td>
                     </tr>
@@ -185,8 +185,8 @@
                               <Edit3 v-else class="w-7 h-7" />
                           </div>
                           <div>
-                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ modal.isEdit ? 'Cập nhật tài khoản' : 'Cấp tài khoản mới' }}</h3>
-                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Hệ thống phân quyền & Bảo mật</p>
+                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ modal.isEdit ? i18n.t('users.formTitleEdit') : i18n.t('users.formTitleAdd') }}</h3>
+                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('users.formSubtitle') }}</p>
                           </div>
                       </div>
 

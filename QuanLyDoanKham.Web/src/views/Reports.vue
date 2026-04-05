@@ -13,44 +13,62 @@
     </div>
 
     <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-10">
         <!-- Revenue Card -->
-        <div class="bg-indigo-600 rounded-[3rem] p-6 lg:p-8 text-white relative overflow-hidden shadow-2xl shadow-indigo-200 group flex flex-col justify-between min-h-[16rem]">
-            <div class="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:bg-white/20 transition-all duration-500"></div>
-            <div class="w-16 h-16 bg-white/20 rounded-3xl flex items-center justify-center mb-4">
-                <CircleDollarSign class="w-8 h-8 text-white" />
+        <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2rem] p-6 text-white relative overflow-hidden shadow-2xl shadow-indigo-200 group flex flex-col justify-between">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
+            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
+                <CircleDollarSign class="w-6 h-6 text-white" />
             </div>
             <div>
-                <p class="text-[10px] sm:text-[11px] font-black uppercase tracking-wider text-indigo-200 mb-2 leading-tight whitespace-nowrap">Tổng Doanh Thu (Dự kiến)</p>
-                <h3 class="text-2xl sm:text-3xl lg:text-4xl font-black break-words leading-none">{{ formatCurrency(totalRevenue) }}</h3>
+                <p class="text-[10px] font-black uppercase tracking-wider text-indigo-200 mb-1 leading-tight">{{ i18n.locale === 'vi' ? 'Tổng Doanh Thu (Dự kiến)' : 'Total Revenue (Est)' }}</p>
+                <h3 class="text-2xl font-black break-words leading-none">{{ formatCurrency(totalRevenue) }}</h3>
             </div>
         </div>
 
         <!-- Contracts Card -->
-        <div class="bg-white rounded-[3rem] p-8 border-2 border-slate-50 relative overflow-hidden premium-card group">
-            <div class="w-16 h-16 bg-teal-50 text-teal-600 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-500">
-                <FileCheck2 class="w-8 h-8" />
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <FileCheck2 class="w-6 h-6" />
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Hợp Đồng Khám</p>
-            <h3 class="text-3xl font-black text-slate-800">{{ totalContracts }} <span class="text-sm text-slate-300 font-bold ml-1">bản</span></h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Hợp Đồng Ký Kết' : 'Signed Contracts' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalContracts }} <span class="text-xs text-slate-300 font-bold ml-1">hợp đồng</span></h3>
         </div>
 
         <!-- Groups Card -->
-        <div class="bg-white rounded-[3rem] p-8 border-2 border-slate-50 relative overflow-hidden premium-card group">
-            <div class="w-16 h-16 bg-sky-50 text-sky-600 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-500">
-                <Stethoscope class="w-8 h-8" />
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-sky-50 text-sky-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <Stethoscope class="w-6 h-6" />
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Đoàn Đã Tổ Chức</p>
-            <h3 class="text-3xl font-black text-slate-800">{{ totalGroups }} <span class="text-sm text-slate-300 font-bold ml-1">đoàn</span></h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Đoàn Đã Tổ Chức' : 'Organized Groups' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalGroups }} <span class="text-xs text-slate-300 font-bold ml-1">đoàn</span></h3>
         </div>
 
-        <!-- Patients Card -->
-        <div class="bg-white rounded-[3rem] p-8 border-2 border-slate-50 relative overflow-hidden premium-card group">
-            <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-3xl flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform duration-500">
-                <Users2 class="w-8 h-8" />
+        <!-- Departments Card -->
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <Layers class="w-6 h-6" />
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Lượt Người Khám</p>
-            <h3 class="text-3xl font-black text-slate-800">{{ totalPatients }} <span class="text-sm text-slate-300 font-bold ml-1">lượt</span></h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Trạm Khám / Chuyên Khoa' : 'Active Departments' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalDepartments }} <span class="text-xs text-slate-300 font-bold ml-1">trạm</span></h3>
+        </div>
+
+        <!-- Users Card -->
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <Users2 class="w-6 h-6" />
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Tài Khoản Hệ Thống' : 'System Accounts' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalUsers }} <span class="text-xs text-slate-300 font-bold ml-1">user</span></h3>
+        </div>
+
+        <!-- Supplies Card -->
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <Box class="w-6 h-6" />
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Danh Mục Vật Tư' : 'Supply Categories' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalSupplies }} <span class="text-xs text-slate-300 font-bold ml-1">mục</span></h3>
         </div>
     </div>
 
@@ -139,7 +157,8 @@ import { useI18nStore } from '../stores/i18n'
 import apiClient from '../services/apiClient'
 import { 
     RefreshCw, CircleDollarSign, FileCheck2, Stethoscope, 
-    Users2, PieChart, AlertTriangle, ShieldCheck, PackageX
+    Users2, PieChart, AlertTriangle, ShieldCheck, PackageX,
+    Layers, Box
 } from 'lucide-vue-next'
 import { parseApiError } from '../services/errorHelper'
 import { useToast } from '../composables/useToast'
@@ -151,7 +170,9 @@ const isRefreshing = ref(false)
 const totalRevenue = ref(0)
 const totalContracts = ref(0)
 const totalGroups = ref(0)
-const totalPatients = ref(0)
+const totalDepartments = ref(0)
+const totalUsers = ref(0)
+const totalSupplies = ref(0)
 
 const contractStats = ref({
     active: 0,
@@ -172,15 +193,16 @@ const fetchStats = async () => {
         const reqContracts = apiClient.get('/api/HealthContracts')
         const reqGroups = apiClient.get('/api/MedicalGroups')
         const reqSupplies = apiClient.get('/api/Supplies')
+        const reqDepts = apiClient.get('/api/Departments')
+        const reqUsers = apiClient.get('/api/Users')
 
-        const [resContracts, resGroups, resSupplies] = await Promise.all([reqContracts, reqGroups, reqSupplies])
+        const [resContracts, resGroups, resSupplies, resDepts, resUsers] = await Promise.all([reqContracts, reqGroups, reqSupplies, reqDepts, reqUsers])
 
         // Process Contracts
         const contracts = resContracts.data || []
         totalContracts.value = contracts.length
         
         totalRevenue.value = contracts.reduce((sum, c) => sum + (c.totalAmount || 0), 0)
-        totalPatients.value = contracts.reduce((sum, c) => sum + (c.expectedQuantity || 0), 0)
         
         contractStats.value = {
             active: contracts.filter(c => c.status === 'Active').length,
@@ -191,8 +213,15 @@ const fetchStats = async () => {
         // Process Groups
         totalGroups.value = resGroups.data ? resGroups.data.length : 0
 
+        // Process Departments
+        totalDepartments.value = resDepts.data ? resDepts.data.length : 0
+
+        // Process Users
+        totalUsers.value = resUsers.data ? resUsers.data.length : 0
+
         // Process Supplies
         const supplies = resSupplies.data || []
+        totalSupplies.value = supplies.length
         lowSupplies.value = supplies.filter(s => s.totalStock <= s.minStockLevel).sort((a,b) => a.totalStock - b.totalStock)
 
     } catch (error) {

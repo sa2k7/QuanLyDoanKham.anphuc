@@ -107,12 +107,42 @@ export const useI18nStore = defineStore('i18n', () => {
                     discount: 'CHIẾT KHẤU'
                 }
             },
-            departments: {
+            permissions: {
+      title: "Quản lý Phân quyền",
+      subtitle: "Cấu hình permissions cho từng Role hệ thống",
+      list: "Danh sách đặc quyền được cấp cho vai trò",
+      selectAll: "Chọn tất cả",
+      deselect: "Bỏ chọn",
+      restore: "Trở về mặc định",
+      save: "Lưu thay đổi",
+      saving: "Đang lưu...",
+      restoring: "Đang khôi phục...",
+      all: "Tất cả",
+    },
+    permissions: {
+      title: "Permissions Management",
+      subtitle: "Configure permissions for system Roles",
+      list: "List of privileges granted to the role",
+      selectAll: "Select All",
+      deselect: "Deselect",
+      restore: "Restore Defaults",
+      save: "Save Changes",
+      saving: "Saving...",
+      restoring: "Restoring...",
+      all: "All",
+    },
+    departments: {
                 title: 'Quản lý Trạm Khám & Chuyên Khoa',
                 subtitle: '{0} trạm khám / đơn vị chuyên môn đang hoạt động',
                 addBtn: 'Thêm Trạm Khám mới',
                 empty: 'Chưa có Trạm Khám nào được tạo',
-                startLabel: 'Bắt đầu bằng cách tạo trạm khám đầu tiên'
+                startLabel: 'Bắt đầu bằng cách tạo trạm khám đầu tiên',
+                noDesc: 'Chưa có mô tả chức năng của trạm khám / chuyên khoa này...',
+                staff: 'Nhân sự',
+                users: 'Tài khoản',
+                formTitleEdit: 'Cập nhật Trạm Khám',
+                formTitleAdd: 'Tạo Trạm Khám mới',
+                formSubtitle: 'Đơn vị chuyên môn trong hệ thống đoàn khám sức khoẻ'
             },
             users: {
                 title: 'Quản trị Tài khoản Hệ thống',
@@ -122,7 +152,18 @@ export const useI18nStore = defineStore('i18n', () => {
                 filterAdmin: 'Quản trị viên ({0})',
                 filterDoctor: 'Chuyên gia Y tế ({0})',
                 filterDirector: 'Ban Giám đốc ({0})',
-                filterStaff: 'Nhân viên ({0})'
+                filterStaff: 'Nhân viên ({0})',
+                profileTitle: 'Thông tin Tài khoản',
+                profileSubtitle: 'Thông tin cá nhân & Nhật ký hoạt động',
+                table: {
+                    account: 'Tài khoản',
+                    role: 'Vai trò'
+                },
+                unnamed: 'Chưa đặt tên',
+                empty: 'Không có dữ liệu tài khoản',
+                formTitleEdit: 'Hiệu chỉnh Tài khoản',
+                formTitleAdd: 'Cấp Tài khoản Mới',
+                formSubtitle: 'Phân quyền và bảo mật truy cập hệ thống'
             },
             supplies: {
                 title: 'Kho Vật tư Y tế',
@@ -139,6 +180,21 @@ export const useI18nStore = defineStore('i18n', () => {
                 PayrollManager: 'Quản lý tính lương',
                 MedicalStaff: 'Nhân sự đi đoàn',
                 Customer: 'Tài khoản đối tác'
+            },
+            schedule: {
+                title: 'Lịch khám của tôi',
+                subtitle: 'Tháng {0} / {1} • Theo dõi tiến độ công việc',
+                summary: {
+                    groups: 'Đoàn tham gia',
+                    days: 'Công thực tế',
+                    salary: 'Lương ước tính'
+                },
+                item: {
+                    month: 'T{0}',
+                    shift1: '1.0 Công',
+                    shift05: '0.5 Công'
+                },
+                empty: 'Không có lịch khám phát sinh trong tháng {0}/{1}'
             }
         },
         en: {
@@ -243,6 +299,46 @@ export const useI18nStore = defineStore('i18n', () => {
                     discount: 'DISCOUNT'
                 }
             },
+            departments: {
+                title: 'Clinic Departments & Specialties',
+                subtitle: '{0} departments / medical units active',
+                addBtn: 'Add New Department',
+                empty: 'No Departments Created Yet',
+                startLabel: 'Start by creating your first department',
+                noDesc: 'No functional description available for this department...',
+                staff: 'Staff',
+                users: 'Accounts',
+                formTitleEdit: 'Update Department',
+                formTitleAdd: 'Create New Department',
+                formSubtitle: 'Specialized medical unit in the health check group system'
+            },
+            users: {
+                title: 'System Account Management',
+                subtitle: '{0} accounts with access rights',
+                addBtn: 'Grant New Account',
+                filterAll: 'All ({0})',
+                filterAdmin: 'Administrators ({0})',
+                filterDoctor: 'Medical Experts ({0})',
+                filterDirector: 'Board of Directors ({0})',
+                filterStaff: 'Staff ({0})',
+                profileTitle: 'Account Profile',
+                profileSubtitle: 'Personal Info & Activity Logs',
+                table: {
+                    account: 'Account',
+                    role: 'Role'
+                },
+                unnamed: 'Unnamed',
+                empty: 'No account data found',
+                formTitleEdit: 'Update Account',
+                formTitleAdd: 'Create New Account',
+                formSubtitle: 'Manage permissions & system access'
+            },
+            supplies: {
+                title: 'Medical Supplies Inventory',
+                subtitle: 'Manage Import/Export and Stock Levels',
+                addBtn: 'IMPORT NEW SUPPLIES',
+                cancelBtn: 'CANCEL'
+            },
             roles: {
                 Admin: 'Admin',
                 PersonnelManager: 'HR Manager',
@@ -252,6 +348,21 @@ export const useI18nStore = defineStore('i18n', () => {
                 PayrollManager: 'Accounting',
                 MedicalStaff: 'Medical Team',
                 Customer: 'Partner'
+            },
+            schedule: {
+                title: 'My Schedule',
+                subtitle: 'Month {0} / {1} • Track Work Progress',
+                summary: {
+                    groups: 'Joined Groups',
+                    days: 'Actual Days',
+                    salary: 'Est. Salary'
+                },
+                item: {
+                    month: 'M{0}',
+                    shift1: '1.0 Shift',
+                    shift05: '0.5 Shift'
+                },
+                empty: 'No schedule found in month {0}/{1}'
             }
         }
     }

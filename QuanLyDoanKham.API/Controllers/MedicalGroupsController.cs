@@ -672,7 +672,7 @@ namespace QuanLyDoanKham.API.Controllers
             prompt.AppendLine("4. Vị trí Cân đo & Huyết áp: DieuDuong.");
             prompt.AppendLine("5. Vị trí Lấy máu: DieuDuong hoặc KyThuatVien.");
             prompt.AppendLine("6. Vị trí Hậu cần: DieuDuong hoặc Khac.");
-            prompt.AppendLine("\nKết quả trả về DUY NHẤT một mảng JSON format: [{\"staffId\": int, \"workPosition\": string, \"shiftType\": float, \"reason\": string}]");
+            prompt.AppendLine("\nKết quả trả về DUY NHẤT một mảng JSON format: [{\"staffId\": int, \"staffName\": string, \"workPosition\": string, \"shiftType\": float, \"reason\": string}]");
             prompt.AppendLine("Vị trí (workPosition) phải là một trong: Tiếp nhận, Cân đo huyết áp, Khám nội, Khám ngoại, Lấy máu, Siêu âm, Khám sản phụ khoa, Hậu cần, Khác.");
 
             try {

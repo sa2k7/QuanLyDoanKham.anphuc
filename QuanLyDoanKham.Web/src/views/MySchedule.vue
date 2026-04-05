@@ -6,9 +6,9 @@
             <div class="w-12 h-12 bg-indigo-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
                 <CalendarCheck class="w-6 h-6" />
             </div>
-            Lịch khám của tôi
+            {{ i18n.t('schedule.title') }}
         </h1>
-        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">Tháng {{ currentMonth }} / {{ currentYear }} • Theo dõi tiến độ công việc</p>
+        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('schedule.subtitle').replace('{0}', currentMonth).replace('{1}', currentYear) }}</p>
       </div>
       <div class="month-nav flex items-center gap-4 bg-white p-2 rounded-2xl border border-slate-100 shadow-sm">
         <button class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-all" @click="prevMonth">
@@ -29,7 +29,7 @@
         </div>
         <div>
           <span class="summary-value block text-2xl font-black text-slate-800 tabular-nums">{{ String(summary.totalGroups).padStart(2, '0') }}</span>
-          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">Đoàn tham gia</span>
+          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ i18n.t('schedule.summary.groups') }}</span>
         </div>
       </div>
       <div class="summary-card premium-card bg-white p-8 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center gap-4 group">
@@ -38,7 +38,7 @@
         </div>
         <div>
           <span class="summary-value block text-2xl font-black text-slate-800 tabular-nums">{{ summary.totalActualDays }}</span>
-          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">Công thực tế</span>
+          <span class="summary-label text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ i18n.t('schedule.summary.days') }}</span>
         </div>
       </div>
       <div class="summary-card premium-card bg-slate-900 p-8 rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] flex items-center gap-4 group">
@@ -47,7 +47,7 @@
         </div>
         <div>
           <span class="summary-value block text-2xl font-black text-emerald-400 tabular-nums">{{ formatMoney(summary.estimatedSalary) }}</span>
-          <span class="summary-label text-[10px] font-black text-slate-500 uppercase tracking-widest">Lương ước tính</span>
+          <span class="summary-label text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ i18n.t('schedule.summary.salary') }}</span>
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@
         :class="getStatusBorderCls(item.workStatus)">
         <div class="item-date flex flex-col items-center justify-center w-16 h-16 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
           <span class="day text-xl font-black text-slate-800 leading-none">{{ new Date(item.examDate).getDate() }}</span>
-          <span class="month text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">T{{ new Date(item.examDate).getMonth() + 1 }}</span>
+          <span class="month text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('schedule.item.month').replace('{0}', new Date(item.examDate).getMonth() + 1) }}</span>
         </div>
         <div class="item-info flex-1">
           <h4 class="group-name text-sm font-black text-slate-800 uppercase tracking-widest mb-2">{{ item.groupName }}</h4>
@@ -74,7 +74,7 @@
         </div>
         <div class="item-right flex flex-col items-end gap-2">
           <span class="shift-badge px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="item.shiftType >= 1 ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-amber-50 text-amber-600 border-amber-100'">
-            {{ item.shiftType >= 1 ? '1.0 Công' : '0.5 Công' }}
+            {{ item.shiftType >= 1 ? i18n.t('schedule.item.shift1') : i18n.t('schedule.item.shift05') }}
           </span>
           <span class="status-chip px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest" :class="getStatusCls(item.workStatus)">
             {{ item.workStatus }}
@@ -85,7 +85,7 @@
 
     <div v-else-if="!loading && details.length === 0" class="flex flex-col items-center justify-center py-32 text-center">
       <CalendarOff class="w-16 h-16 text-slate-200 mb-6" />
-      <p class="text-slate-400 font-black uppercase tracking-widest text-sm">Không có lịch khám phát sinh trong tháng {{ currentMonth }}/{{ currentYear }}</p>
+      <p class="text-slate-400 font-black uppercase tracking-widest text-sm">{{ i18n.t('schedule.empty').replace('{0}', currentMonth).replace('{1}', currentYear) }}</p>
     </div>
 
     <div v-if="loading" class="flex justify-center py-20">
@@ -98,12 +98,14 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import apiClient from '../services/apiClient'
 import { useAuthStore } from '../stores/auth'
+import { useI18nStore } from '../stores/i18n'
 import { 
     CalendarCheck, ChevronLeft, ChevronRight, Sun, Wallet, 
     LogIn, LogOut, CalendarOff, Loader2 
 } from 'lucide-vue-next'
 
 const auth = useAuthStore()
+const i18n = useI18nStore()
 const now = new Date()
 const currentMonth = ref(now.getMonth() + 1)
 const currentYear  = ref(now.getFullYear())

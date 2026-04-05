@@ -172,6 +172,14 @@
 
     <!-- Danh sách Đoàn -->
     <div class="space-y-6">
+        <div v-if="filteredGroups.length === 0" class="premium-card bg-white rounded-[2rem] shadow-xl border border-slate-100 p-16 text-center flex flex-col items-center justify-center">
+            <div class="w-24 h-24 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-100 shadow-inner">
+                <Stethoscope class="w-12 h-12" />
+            </div>
+            <h4 class="text-xl font-black text-slate-800 uppercase tracking-widest">{{ i18n.t('common.noData') }}</h4>
+            <p class="text-xs font-black text-slate-400 mt-2 uppercase tracking-widest">Không có dữ liệu hiển thị trong mục này</p>
+        </div>
+
         <div v-for="group in filteredGroups" :key="group.groupId" 
              class="premium-card bg-white rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden group/card">
             
@@ -237,6 +245,14 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-slate-50 text-xs">
+                                <tr v-if="!staffDetails[group.groupId] || staffDetails[group.groupId].length === 0">
+                                    <td colspan="6" class="p-8 text-center bg-slate-50/50">
+                                        <div class="flex flex-col items-center justify-center text-slate-400">
+                                            <UsersIcon class="w-8 h-8 mb-3 opacity-20" />
+                                            <span class="text-[10px] font-black uppercase tracking-widest">Chưa gán nhân sự nào</span>
+                                        </div>
+                                    </td>
+                                </tr>
                                 <tr v-for="(s, index) in staffDetails[group.groupId]" :key="s.id" class="hover:bg-slate-50/50 transition-all">
                                     <td class="p-4 text-center font-black text-slate-400 tabular-nums">{{ String(index + 1).padStart(3, '0') }}</td>
                                     <td class="p-4">
@@ -802,7 +818,9 @@ const handleAiSuggest = async (groupId) => {
         aiSuggestions.value = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
         showAiModal.value = true
     } catch (e) {
-        toast.error("Lỗi khi gọi AI gợi ý: " + e.message)
+        const errorMsg = e.response?.data?.message || e.response?.data || e.message;
+        toast.error("Lỗi khi phân tích Dữ liệu AI: " + errorMsg)
+        console.error("AI Parse Error details: ", e);
     } finally {
         isAiLoading.value = false
     }
