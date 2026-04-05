@@ -1,7 +1,7 @@
 
 
 # Project Memory — QuanLyDoanKham.anphuc
-> 361 notes | Score threshold: >40
+> 433 notes | Score threshold: >40
 
 ## Safety — Never Run Destructive Commands
 
@@ -20,6 +20,16 @@
 
 ## 📝 NOTE: 1 uncommitted file(s) in working tree.\n\n## Important Warnings
 
+- **gotcha in QuanLyDoanKham.API.csproj.FileListAbsolute.txt** — - d:\QuanLyDoanKham\QuanLyDoanKham.Api\obj\Debug\net10.0\QuanLyDo.E490
+- **gotcha in shared-context.json** — -     }
++     },
+-   ]
++     {
+- }
++       "id": "a592aab6198fb99e",
++
+- **⚠️ GOTCHA: Optimized Score — hardens HTTP security headers** — - > 347 notes | Score threshold: >40
++ > 361 notes | Score threshold: 
 - **gotcha in QuanLyDoanKham.API.csproj.CoreCompileInputs.cache** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
 - **gotcha in shared-context.json** — -     }
 +     },
@@ -29,12 +39,10 @@
 +       "id": "1904db385f2afcb3",
 +
 - **gotcha in QLDK.API.pdb** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
-- **gotcha in QLDK.API.staticwebassets.runtime.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
-- **gotcha in QuanLyDoanKham.API.csproj.FileListAbsolute.txt** — File updated (external): QuanLyDoanKham.API/obj/Debug/net10.0/QuanLyDo
-- **gotcha in QLDK.API.deps.json** — File updated (external): QuanLyDoanKham.API/bin/Debug/net10.0/QLDK.API
 
 ## Project Standards
 
+- what-changed in shared-context.json — confirmed 4x
 - what-changed in shared-context.json — confirmed 7x
 - problem-fix in agent-rules.md — confirmed 3x
 - problem-fix in shared-context.json — confirmed 4x
@@ -42,7 +50,6 @@
 - what-changed in shared-context.json — confirmed 5x
 - Optimized Score — parallelizes async operations for speed — confirmed 3x
 - what-changed in shared-context.json — confirmed 11x
-- Added JWT tokens authentication — hardens HTTP security headers — confirmed 6x
 
 ## Known Fixes
 
@@ -53,10 +60,10 @@
 
 ## Recent Decisions
 
+- decision in ApplicationDbContextModelSnapshot.cs
 - decision in ApplicationDbContext.cs
 - Optimized Score — hardens HTTP security headers
 - Optimized Score — parallelizes async operations for speed
-- Optimized Score — hardens HTTP security headers
 
 ## Learned Patterns
 

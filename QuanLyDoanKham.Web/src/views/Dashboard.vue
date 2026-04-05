@@ -332,9 +332,10 @@
               <Permissions v-if="activeMenu === 'permissions'" />
               <Payroll v-if="activeMenu === 'payroll'" />
               <Departments v-if="activeMenu === 'departments'" />
+              <Patients v-if="activeMenu === 'patients'" />
               <MySchedule v-if="activeMenu === 'my-schedule'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'permissions', 'payroll', 'departments', 'my-schedule'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'permissions', 'payroll', 'departments', 'my-schedule', 'patients', 'analytics'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
                 </div>
@@ -403,7 +404,7 @@ import logo from '../assets/logo.svg'
 import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
   User, KeyRound, X, ChevronDown, ChevronLeft, Bell, PlusCircle, Check, ShieldAlert, Inbox,
-  Building, ShieldCheck, CalendarCheck, Menu
+  Building, ShieldCheck, CalendarCheck, Menu, UserRound
 } from 'lucide-vue-next'
 
 // Import Modules
@@ -419,6 +420,8 @@ import Payroll from './Payroll.vue'
 import Departments from './Departments.vue'
 import Permissions from './Permissions.vue'
 import MySchedule from './MySchedule.vue'
+import Patients from './Patients.vue'
+
 
 const { can } = usePermission()
 
@@ -485,6 +488,7 @@ const menuItems = computed(() => [
     { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', permission: 'HopDong.View' },
     { id: 'contracts', name: i18n.locale === 'vi' ? 'Hợp đồng' : 'Contracts', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: i18n.locale === 'vi' ? 'Quản lý pháp lý & ký kết HĐ.' : 'Legal management & contract signing.', permission: 'HopDong.View' },
     { id: 'groups', name: i18n.locale === 'vi' ? 'Đoàn khám' : 'Medical Groups', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: i18n.locale === 'vi' ? 'Vận hành thực địa & điều phối.' : 'Field operation & coordination.', permission: 'DoanKham.View' },
+    { id: 'patients', name: i18n.locale === 'vi' ? 'Bệnh Nhân' : 'Patients', icon: UserRound, color: 'bg-pink-50 text-pink-600', desc: i18n.locale === 'vi' ? 'Lý lịch & hồ sơ khám bệnh.' : 'Patient profiles & medical records.', permission: 'DoanKham.View' },
     { id: 'staff', name: i18n.locale === 'vi' ? 'Nhân sự' : 'Staff', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: i18n.locale === 'vi' ? 'Đội ngũ Y bác sĩ & Vận hành.' : 'Medical team & operations.', permission: 'NhanSu.View' },
     { id: 'departments', name: 'Trạm Khám', icon: Building, color: 'bg-orange-50 text-orange-600', desc: 'Quản lý các trạm khám & chuyên khoa y tế.', permission: 'HeThong.RoleManage' },
     { id: 'payroll', name: i18n.locale === 'vi' ? 'Tính lương' : 'Payroll', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: i18n.locale === 'vi' ? 'Kế toán thù lao & lương cứng.' : 'Compensation & fixed salary accounting.', permission: 'Luong.View' },
@@ -493,6 +497,7 @@ const menuItems = computed(() => [
     { id: 'permissions', name: 'Phân quyền', icon: ShieldCheck, color: 'bg-slate-900 text-white', desc: 'Quản lý nhóm quyền và phân quyền.', permission: 'HeThong.RoleManage' },
     { id: 'analytics', name: i18n.locale === 'vi' ? 'Báo cáo' : 'Reports', icon: BarChart3, color: 'bg-indigo-50 text-indigo-600', desc: i18n.locale === 'vi' ? 'Báo cáo chuyên sâu & biểu đồ.' : 'Deep analytics & charts.', permission: 'BaoCao.View' },
 ])
+
 
 const activeModules = computed(() => {
     return menuItems.value.filter(i => {

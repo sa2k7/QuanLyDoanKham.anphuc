@@ -62,6 +62,15 @@ const routes = [
         meta: { requiresAuth: true, permission: 'DoanKham.View' }
     },
 
+
+    // ── Lâm sàng B2C ────────────────────────────────────────────────
+    {
+        path: '/patients',
+        name: 'Patients',
+        component: () => import('../views/Patients.vue'),
+        meta: { requiresAuth: true }
+    },
+
     // ── Nhân sự ──────────────────────────────────────────────────────
     {
         path: '/staff',
