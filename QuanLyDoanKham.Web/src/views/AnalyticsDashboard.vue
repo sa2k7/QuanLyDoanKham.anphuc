@@ -1,7 +1,7 @@
 <template>
-  <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
     <!-- Filters & Header Toolbar -->
-    <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 p-6 mb-8 flex flex-wrap items-center justify-between gap-6 shadow-sm">
+    <div class="sticky top-0 z-40 glass-header p-6 mb-8 flex flex-wrap items-center justify-between gap-6 shadow-sm">
       <div class="flex items-center gap-4">
         <div class="p-4 bg-primary/10 rounded-2xl shadow-inner">
           <BarChart3 class="w-8 h-8 text-primary" />
@@ -26,10 +26,10 @@
       </div>
 
       <div class="flex items-center gap-3">
-        <button @click="handleExport('PDF')" class="px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm">
+        <button @click="handleExport('PDF')" class="btn-premium secondary shadow-sm">
           <FileDown class="w-3.5 h-3.5" /> Xuất PDF
         </button>
-        <button @click="handleExport('Excel')" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-slate-800 shadow-lg shadow-slate-900/20 transition-all flex items-center gap-2">
+        <button @click="handleExport('Excel')" class="btn-premium primary">
           <Download class="w-3.5 h-3.5" /> Tải Excel
         </button>
       </div>
@@ -39,16 +39,16 @@
     <div class="px-6 pb-20 max-w-[1600px] mx-auto w-full">
       <!-- 1. Top Level KPIs (Live from Backend) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Tổng lượt khám" :value="kpis.totalPatients?.toLocaleString() || '0'" :icon="Users" trend="+12%" subtext="Dựa trên hợp đồng ký kết" variant="indigo" />
-        <StatCard title="Lợi nhuận ròng" :value="formatCurrency(kpis.netProfit)" :icon="DollarSign" :trend="kpis.netProfit > 0 ? 'Tăng trưởng' : 'Cần lưu ý'" :trendColor="kpis.netProfit > 0 ? 'emerald' : 'rose'" subtext="Doanh thu - Lương - Vật tư" variant="emerald" />
-        <StatCard title="Tiến độ vận hành" :value="(kpis.completionRate || 0) + '%'" :icon="CheckCircle2" :trend="(kpis.activeGroupsCount || 0) + ' đoàn đang mở'" subtext="Tỷ lệ đoàn đã hoàn tất" :progress="kpis.completionRate || 0" variant="sky" />
-        <StatCard title="Cảnh báo trọng yếu" :value="kpis.criticalAlertsCount || 0" :icon="BellRing" :trend="(kpis.criticalAlertsCount || 0) > 5 ? 'High' : 'Normal'" :trendColor="(kpis.criticalAlertsCount || 0) > 5 ? 'rose' : 'amber'" subtext="Tồn kho & HĐ quá hạn" variant="rose" />
+        <StatCard title="Số Ca Khám (Tháng)" :value="operationalSummary?.totalPatientsThisMonth?.toLocaleString() || '0'" :icon="Users" trend="Real-time" subtext="Bệnh nhân check-in" variant="indigo" />
+        <StatCard title="Tổng Lợi Nhuận" :value="formatCurrency(kpis.netProfit)" :icon="DollarSign" :trend="kpis.netProfit > 0 ? 'Tín hiệu tốt' : 'Đang xử lý'" :trendColor="kpis.netProfit > 0 ? 'emerald' : 'rose'" subtext="Doanh thu - Nhân sự" variant="emerald" />
+        <StatCard title="Đoàn Khám (Tháng)" :value="operationalSummary?.totalMedicalGroupsThisMonth || 0" :icon="CheckCircle2" :trend="(operationalSummary?.totalStaffDeployedThisMonth || 0) + ' lượt NS'" subtext="Số lượng đoàn triển khai" :progress="kpis.completionRate || 0" variant="sky" />
+        <StatCard title="Hợp Đồng Đang Chờ" :value="operationalSummary?.pendingContractsCount || 0" :icon="FileText" :trend="(operationalSummary?.pendingContractsCount || 0) > 5 ? 'Cần xử lý' : 'Bình thường'" :trendColor="(operationalSummary?.pendingContractsCount || 0) > 5 ? 'rose' : 'amber'" subtext="Hợp đồng mới chờ Approve" variant="rose" />
       </div>
 
       <!-- 2. Charts & Performance Matrix -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Revenue Trend Analysis -->
-        <div class="lg:col-span-2 bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden group">
+        <div class="lg:col-span-2 premium-card p-8 relative overflow-hidden group">
           <div class="flex items-center justify-between mb-8">
              <div>
                 <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Biểu đồ Xu hướng Doanh thu</h3>
@@ -75,38 +75,35 @@
           </div>
         </div>
 
-        <!-- 2.2 Alert Center Widget -->
-        <div class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col group/alerts">
+        <!-- 2.2 Operation Deadlines Widget -->
+        <div class="premium-card p-8 flex flex-col group/alerts">
           <div class="flex items-center justify-between mb-6">
-             <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Trung tâm Cảnh báo</h3>
-             <div class="p-2 bg-amber-50 rounded-xl">
-               <AlertTriangle class="text-amber-500 w-5 h-5 animate-bounce-slow" />
+             <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Tiến độ Hợp đồng</h3>
+             <div class="p-2 bg-indigo-50 rounded-xl">
+               <Calendar class="text-indigo-500 w-5 h-5" />
              </div>
           </div>
           <div class="flex-grow space-y-4">
-             <div v-if="!inventoryAlerts || inventoryAlerts.length === 0" class="flex flex-col items-center justify-center h-full opacity-30 italic text-sm py-10">
-                <Package class="w-12 h-12 mb-2 opacity-20" />
-                <p class="font-bold text-slate-400">Không có cảnh báo khẩn</p>
+             <div v-if="!kpis.upcomingDeadlines || kpis.upcomingDeadlines.length === 0" class="flex flex-col items-center justify-center h-full opacity-30 italic text-sm py-10">
+                <FileText class="w-12 h-12 mb-2 opacity-20" />
+                <p class="font-bold text-slate-400">Không có deadline gần</p>
              </div>
-             <div v-for="alert in inventoryAlerts.slice(0, 5)" :key="alert.supplyId" class="p-5 rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-rose-200 transition-all group scale-100 hover:scale-[1.02] active:scale-95 duration-300">
+             <div v-for="item in kpis.upcomingDeadlines" :key="item.id" class="p-5 rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group scale-100 hover:scale-[1.02] duration-300">
                 <div class="flex justify-between items-start mb-2">
-                   <p class="text-xs font-black text-slate-700 uppercase tracking-tight">{{ alert.supplyName }}</p>
-                   <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest shadow-sm" :class="alert.status === 'Critical' ? 'bg-rose-500 text-white' : 'bg-amber-500 text-white'">{{ alert.status }}</span>
+                   <p class="text-xs font-black text-slate-700 uppercase tracking-tight">{{ item.name }}</p>
+                   <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-indigo-500 text-white">{{ item.daysRemaining }} ngày</span>
                 </div>
-                <div class="flex items-end justify-between">
-                   <div class="text-[10px] font-bold text-slate-400">Tồn: <span class="text-slate-900 font-black tabular-nums">{{ alert.currentStock }}</span> / {{ alert.minStockLevel }} <span class="text-[8px]">{{ alert.unit }}</span></div>
-                   <button class="text-[9px] font-black text-blue-600 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">Nhập hàng →</button>
-                </div>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ item.company }}</p>
              </div>
           </div>
-          <button @click="showAllAlerts = true" class="mt-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-100 transition-all border border-slate-100 hover:text-slate-800">Xem tất cả cảnh báo</button>
+          <button class="mt-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-100 transition-all border border-slate-100">Quản lý Hợp đồng</button>
         </div>
       </div>
 
       <!-- 3. Financial & Efficiency Grid -->
       <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
         <!-- 3.1 Top Performers (HR Analysis) -->
-        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <div class="premium-card overflow-hidden flex flex-col">
           <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
             <div>
               <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Hiệu suất Nhân sự Top Đầu</h3>
@@ -175,9 +172,9 @@
                    <p class="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2">CP Nhân sự</p>
                    <p class="text-3xl font-black text-rose-600 tabular-nums">{{ calculatePercentage(financialReport.staffCost, financialReport.revenue) }}%</p>
                 </div>
-                <div class="text-center p-6 bg-amber-50/50 rounded-[2.5rem] border border-amber-100 group shadow-sm">
-                   <p class="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] mb-2">CP Vật tư</p>
-                   <p class="text-3xl font-black text-amber-600 tabular-nums">{{ calculatePercentage(financialReport.supplyCost, financialReport.revenue) }}%</p>
+                <div class="text-center p-6 bg-amber-50/50 rounded-[2.5rem] border border-amber-100 group shadow-sm col-span-2">
+                   <p class="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] mb-2">Số lượt khám mới (Tháng)</p>
+                   <p class="text-3xl font-black text-amber-600 tabular-nums">{{ kpis.newPatientsThisMonth || 0 }}</p>
                 </div>
              </div>
 
@@ -247,8 +244,10 @@ const kpis = ref({
   netProfit: 0,
   completionRate: 0,
   activeGroupsCount: 0,
-  criticalAlertsCount: 0,
-  revenueTrend: []
+  pendingContractsCount: 0,
+  newPatientsThisMonth: 0,
+  revenueTrend: [],
+  upcomingDeadlines: []
 })
 
 const financialReport = ref({
@@ -261,6 +260,7 @@ const financialReport = ref({
 
 const staffEfficiency = ref([])
 const inventoryAlerts = ref([])
+const operationalSummary = ref(null)
 const exporting = ref(false)
 const exportProgress = ref(0)
 const showAllAlerts = ref(false)
@@ -272,14 +272,14 @@ const maxRevenue = computed(() => {
 })
 
 const formatCurrency = (val) => {
-  if (!val) return '0'
+  if (val === undefined || val === null || isNaN(val)) return '0 ₫'
   if (val >= 1000000000) return (val / 1000000000).toFixed(2) + ' tỷ'
   if (val >= 1000000) return (val / 1000000).toFixed(1) + ' tr'
-  return val.toLocaleString()
+  return val.toLocaleString() + ' ₫'
 }
 
 const formatFullCurrency = (val) => {
-  if (!val) return '0 VNĐ'
+  if (val === undefined || val === null || isNaN(val)) return '0 VNĐ'
   return val.toLocaleString() + ' VNĐ'
 }
 
@@ -302,6 +302,17 @@ const fetchReportData = async () => {
     // Giữ nguyên giá trị mặc định đã init
   }
 
+  // Tải báo cáo Vận hành
+  try {
+    const endDt = new Date(filters.endDate);
+    const resOps = await apiClient.get('/api/Reports/operational-summary', { 
+        params: { year: endDt.getFullYear(), month: endDt.getMonth() + 1 } 
+    })
+    if (resOps.data) operationalSummary.value = resOps.data
+  } catch (err) {
+    console.error("Lỗi lấy Operational Summary:", err)
+  }
+
   // Tải báo cáo Tài chính (Chỉ Admin/Payroll/Contract)
   try {
     const res = await apiClient.get('/api/Reports/financial', { params })
@@ -322,32 +333,59 @@ const fetchReportData = async () => {
     staffEfficiency.value = []
   }
 
-  // Tải cảnh báo kho (Chỉ Admin/Warehouse)
-  try {
-    const res = await apiClient.get('/api/Reports/inventory-alerts')
-    if (res.data) inventoryAlerts.value = res.data
-  } catch (err) {
-    console.warn("Hạn chế quyền truy cập Kho:", err.response?.status)
-    toast.error(parseApiError(err))
-    inventoryAlerts.value = []
-  }
+  // Tải cảnh báo hệ thống (Chỉ Admin/Manager)
+  /* Removed Inventory Alerts call */
 }
 
-const handleExport = (type) => {
+const handleExport = async (type) => {
   exporting.value = true
   exportProgress.value = 0
   
-  const timer = setInterval(() => {
-    exportProgress.value += Math.floor(Math.random() * 20) + 5
-    if (exportProgress.value >= 100) {
-      exportProgress.value = 100
-      clearInterval(timer)
-      setTimeout(() => {
-        exporting.value = false
-        toast.show(`Xuất báo cáo ${type} thành công!`, 'success')
-      }, 700)
+  // Hiệu ứng progress giả mượt mà trong khi chờ API
+  const progressInterval = setInterval(() => {
+    if (exportProgress.value < 90) {
+      exportProgress.value += Math.floor(Math.random() * 10) + 2
     }
-  }, 200)
+  }, 300)
+
+  try {
+    const endpoint = type === 'PDF' ? '/api/Reports/export-pdf' : '/api/Reports/export-excel'
+    const response = await apiClient.get(endpoint, {
+      params: { 
+        startDate: filters.startDate, 
+        endDate: filters.endDate 
+      },
+      responseType: 'blob'
+    })
+
+    // Xử lý hoàn tất progress
+    clearInterval(progressInterval)
+    exportProgress.value = 100
+
+    // Tạo link download
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    const extension = type === 'PDF' ? 'pdf' : 'xlsx'
+    link.setAttribute('download', `BaoCao_HeThong_${new Date().toISOString().split('T')[0]}.${extension}`)
+    document.body.appendChild(link)
+    link.click()
+    
+    // Cleanup
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+    setTimeout(() => {
+      exporting.value = false
+      toast.show(`Xuất báo cáo ${type} thành công!`, 'success')
+    }, 500)
+
+  } catch (err) {
+    clearInterval(progressInterval)
+    exporting.value = false
+    console.error("Lỗi xuất báo cáo:", err)
+    toast.error("Không thể xuất báo cáo. Vui lòng thử lại sau.")
+  }
 }
 
 onMounted(() => {
