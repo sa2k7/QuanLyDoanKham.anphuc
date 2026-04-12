@@ -8,11 +8,11 @@ namespace QuanLyDoanKham.API.DTOs
     {
         [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
         [StringLength(100, MinimumLength = 3)]
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         [Required(ErrorMessage = "Mật khẩu không được để trống.")]
         [StringLength(100, MinimumLength = 6)]
-        public string Password { get; set; }
+        public required string Password { get; set; }
     }
 
     public class RegisterDto
@@ -20,15 +20,15 @@ namespace QuanLyDoanKham.API.DTOs
         [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
         [StringLength(50, MinimumLength = 3)]
         [RegularExpression(@"^[a-zA-Z0-9_]+$", ErrorMessage = "Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới.")]
-        public string Username { get; set; }
+        public required string Username { get; set; }
 
         [Required(ErrorMessage = "Mật khẩu không được để trống.")]
         [StringLength(100, MinimumLength = 8)]
-        public string Password { get; set; }
+        public required string Password { get; set; }
 
         [Required(ErrorMessage = "Họ và tên không được để trống.")]
         [StringLength(200, MinimumLength = 2)]
-        public string FullName { get; set; }
+        public required string FullName { get; set; }
 
         [Range(1, int.MaxValue, ErrorMessage = "Vai trò không hợp lệ.")]
         public int RoleId { get; set; }
@@ -37,13 +37,12 @@ namespace QuanLyDoanKham.API.DTOs
         public List<int> AdditionalRoleIds { get; set; } = new();
 
         public int? CompanyId { get; set; }
-        public int? DepartmentId { get; set; }
 
         [EmailAddress]
         [StringLength(200)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
-        public string AvatarPath { get; set; }
+        public string? AvatarPath { get; set; }
 
         /// <summary>Liên kết với bảng Staff (Chỉ dùng cho MedicalStaff)</summary>
         public int? StaffId { get; set; }
@@ -52,13 +51,13 @@ namespace QuanLyDoanKham.API.DTOs
     /// <summary>Response khi đăng nhập thành công - bao gồm roles[] và permissions[]</summary>
     public class AuthResponseDto
     {
-        public string Token { get; set; }
-        public string RefreshToken { get; set; }
-        public string Username { get; set; }
-        public string FullName { get; set; }
+        public required string Token { get; set; }
+        public required string RefreshToken { get; set; }
+        public required string Username { get; set; }
+        public string? FullName { get; set; }
 
         /// <summary>Primary role name (backward compat)</summary>
-        public string Role { get; set; }
+        public string? Role { get; set; }
 
         /// <summary>Tất cả roles của user</summary>
         public List<string> Roles { get; set; } = new();
@@ -67,39 +66,36 @@ namespace QuanLyDoanKham.API.DTOs
         public List<string> Permissions { get; set; } = new();
 
         public int? CompanyId { get; set; }
-        public int? DepartmentId { get; set; }
-        public string DepartmentName { get; set; }
-        public string AvatarPath { get; set; }
+        public string? AvatarPath { get; set; }
     }
 
     public class RefreshTokenDto
     {
         [Required(ErrorMessage = "RefreshToken không được để trống.")]
-        public string RefreshToken { get; set; }
+        public required string RefreshToken { get; set; }
     }
 
     public class UpdateUserDto
     {
         [StringLength(200, MinimumLength = 2)]
-        public string FullName { get; set; }
+        public string? FullName { get; set; }
 
         [StringLength(100, MinimumLength = 8)]
-        public string Password { get; set; }
+        public string? Password { get; set; }
 
         [Range(1, int.MaxValue)]
-        public int RoleId { get; set; }
+        public int? RoleId { get; set; }
 
         /// <summary>Danh sách role IDs gán cho user (ghi đè toàn bộ)</summary>
-        public List<int> RoleIds { get; set; } = new();
+        public List<int>? RoleIds { get; set; }
 
         public int? CompanyId { get; set; }
-        public int? DepartmentId { get; set; }
 
         [EmailAddress]
         [StringLength(200)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
-        public string AvatarPath { get; set; }
+        public string? AvatarPath { get; set; }
 
         public bool? IsActive { get; set; }
 
@@ -110,11 +106,11 @@ namespace QuanLyDoanKham.API.DTOs
     public class UserProfileDto
     {
         public int UserId { get; set; }
-        public string Username { get; set; }
-        public string FullName { get; set; }
+        public required string Username { get; set; }
+        public string? FullName { get; set; }
 
         // Primary role (backward compat)
-        public string RoleName { get; set; }
+        public string? RoleName { get; set; }
         public int RoleId { get; set; }
 
         /// <summary>Tất cả roles</summary>
@@ -124,28 +120,26 @@ namespace QuanLyDoanKham.API.DTOs
         public List<string> Permissions { get; set; } = new();
 
         public int? CompanyId { get; set; }
-        public string CompanyName { get; set; }
-        public int? DepartmentId { get; set; }
-        public string DepartmentName { get; set; }
-        public string Email { get; set; }
-        public string AvatarPath { get; set; }
+        public string? CompanyName { get; set; }
+        public string? Email { get; set; }
+        public string? AvatarPath { get; set; }
         public bool IsActive { get; set; }
     }
 
     public class ChangePasswordDto
     {
         [Required(ErrorMessage = "Mật khẩu hiện tại không được để trống.")]
-        public string CurrentPassword { get; set; }
+        public required string CurrentPassword { get; set; }
 
         [Required]
         [StringLength(100, MinimumLength = 8)]
-        public string NewPassword { get; set; }
+        public required string NewPassword { get; set; }
     }
 
     public class ResetRequestDto
     {
         [Required(ErrorMessage = "Tên đăng nhập không được để trống.")]
-        public string Username { get; set; }
+        public required string Username { get; set; }
     }
 
     public class ProcessResetDto
@@ -155,7 +149,7 @@ namespace QuanLyDoanKham.API.DTOs
 
         [Required]
         [StringLength(100, MinimumLength = 8)]
-        public string NewPassword { get; set; }
+        public required string NewPassword { get; set; }
     }
 
     // ---- User Role Management DTOs ----
@@ -167,13 +161,13 @@ namespace QuanLyDoanKham.API.DTOs
 
         /// <summary>Danh sách RoleId cần gán (ghi đè toàn bộ)</summary>
         [Required]
-        public List<int> RoleIds { get; set; } = new();
+        public required List<int> RoleIds { get; set; }
     }
 
     public class AssignPermissionsDto
     {
         /// <summary>Danh sách PermissionId cần gán cho role (ghi đè toàn bộ)</summary>
         [Required]
-        public List<int> PermissionIds { get; set; } = new();
+        public required List<int> PermissionIds { get; set; }
     }
 }

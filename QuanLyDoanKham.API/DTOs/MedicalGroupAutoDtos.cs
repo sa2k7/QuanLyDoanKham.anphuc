@@ -10,7 +10,7 @@ namespace QuanLyDoanKham.API.DTOs
 
         [Required]
         [StringLength(255)]
-        public string GroupName { get; set; }
+        public required string GroupName { get; set; }
 
         [Required]
         public DateTime ExamDate { get; set; }
@@ -34,16 +34,16 @@ namespace QuanLyDoanKham.API.DTOs
         public bool AllowReuseAiSuggestion { get; set; } = false;
 
         [Required]
-        public string IdempotencyKey { get; set; }
+        public required string IdempotencyKey { get; set; }
     }
 
     public class AutoCreateGroupWithStaffResponseDto
     {
-        public MedicalGroupDto Group { get; set; }
-        public AssignmentSummaryDto Summary { get; set; }
-        public List<AssignedStaffDto> AssignedStaff { get; set; }
-        public List<UnassignedReasonDto> UnassignedReasons { get; set; }
-        public List<string> Warnings { get; set; }
+        public required MedicalGroupDto Group { get; set; }
+        public required AssignmentSummaryDto Summary { get; set; }
+        public List<AssignedStaffDto> AssignedStaff { get; set; } = new();
+        public List<UnassignedReasonDto> UnassignedReasons { get; set; } = new();
+        public List<string> Warnings { get; set; } = new();
     }
 
     public class AssignmentSummaryDto
@@ -51,21 +51,21 @@ namespace QuanLyDoanKham.API.DTOs
         public int RequiredHeadcount { get; set; }
         public int AssignedCount { get; set; }
         public int MissingCount { get; set; }
-        public string Mode { get; set; }
+        public string? Mode { get; set; }
     }
 
     public class AssignedStaffDto
     {
         public int StaffId { get; set; }
-        public string StaffName { get; set; }
-        public string WorkPosition { get; set; }
+        public string? StaffName { get; set; }
+        public string? WorkPosition { get; set; }
         public double ShiftType { get; set; }
-        public string Reason { get; set; }
+        public string? Reason { get; set; }
     }
 
     public class UnassignedReasonDto
     {
-        public string Position { get; set; }
-        public string Reason { get; set; }
+        public string? Position { get; set; }
+        public string? Reason { get; set; }
     }
 }
