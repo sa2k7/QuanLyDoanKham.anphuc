@@ -26,7 +26,7 @@
           </div>
           <div>
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Mức độ định danh hiện tại</p>
-            <p class="text-lg font-black text-slate-900 uppercase tracking-widest">VAI TRÒ: <span class="text-indigo-600">{{ authStore.role || 'GUEST' }}</span></p>
+            <p class="text-lg font-black text-slate-900 uppercase tracking-widest">VAI TRÒ: <span class="text-indigo-600">{{ authStore.userRole || 'GUEST' }}</span></p>
           </div>
         </div>
       </div>

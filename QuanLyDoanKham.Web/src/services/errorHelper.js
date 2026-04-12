@@ -25,10 +25,17 @@ export const parseApiError = (error) => {
         return errorMessages.join('\n') || data.title || "Dá»¯ liá»‡u khĂ´ng há»£p lá»‡";
     }
 
-    // CĂ¡c trÆ°á» ng há»£p lá»—i khĂ¡c (tráº£ vá»  string trÆ°á»£c tiáº¿p hoáº·c message)
-    if (typeof data === 'string') return data;
+    // Các trường hợp lỗi khác (trả về string trực tiếp hoặc message)
+    if (typeof data === 'string') {
+        // Bảo mật: Nếu string quá dài hoặc chứa ký tự Token, không hiện trực tiếp
+        if (data.length > 200 || data.includes('ey')) {
+            return `Lỗi hệ thống hoặc thiếu quyền thực thi (${status})`;
+        }
+        return data;
+    }
+    
     if (data.message) return data.message;
     if (data.title) return data.title;
 
-    return `Lá»—i há»‡ thĂ´ng (${status})`;
+    return `Lỗi hệ thống (${status})`;
 };

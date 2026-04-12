@@ -40,7 +40,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         // 3) Kiểm tra primary role
         var hasPerm = await _db.Users
             .Where(u => u.UserId == userId)
-            .SelectMany(u => u.Role.RolePermissions.Select(rp => rp.Permission.PermissionKey))
+            .SelectMany(u => u.Role != null ? u.Role.RolePermissions.Select(rp => rp.Permission!.PermissionKey) : Enumerable.Empty<string>())
             .AnyAsync(pk => pk == requirement.Permission);
 
         // 3) Kiá»ƒm tra cÃ¡c role phá»¥ (UserRoles)
@@ -48,7 +48,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         {
             hasPerm = await _db.UserRoles
                 .Where(ur => ur.UserId == userId)
-                .SelectMany(ur => ur.Role.RolePermissions.Select(rp => rp.Permission.PermissionKey))
+                .SelectMany(ur => ur.Role != null ? ur.Role.RolePermissions.Select(rp => rp.Permission!.PermissionKey) : Enumerable.Empty<string>())
                 .AnyAsync(pk => pk == requirement.Permission);
         }
 

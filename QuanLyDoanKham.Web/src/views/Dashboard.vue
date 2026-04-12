@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen flex bg-slate-50 font-sans overflow-hidden">
+  <div class="min-h-screen flex dashboard-gradient font-sans overflow-hidden">
     <!-- Mobile Backdrop -->
     <div v-if="isMobileMenuOpen" @click="isMobileMenuOpen = false" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[55] md:hidden"></div>
 
     <!-- Sidebar Navigation -->
-    <aside :class="['bg-white/95 md:bg-white/80 backdrop-blur-2xl border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[10px_0_30px_-15px_rgba(0,0,0,0.05)] flex-shrink-0 transition-all duration-300 ease-in-out', 
+    <aside :class="['sidebar-gradient border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[20px_0_40px_-20px_rgba(0,0,0,0.03)] flex-shrink-0 transition-all duration-300 ease-in-out', 
                     isSidebarCollapsed ? 'w-24' : 'w-60',
                     isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
       <!-- Collapse Toggle Button (Desktop) -->
@@ -20,8 +20,8 @@
           <img :src="logo" class="w-10 h-10 object-contain" alt="Logo" />
         </div>
         <div v-show="!isSidebarCollapsed" class="transition-opacity duration-300">
-          <h1 class="font-black text-lg text-slate-900 leading-tight tracking-tight">ĐA KHOA <span class="text-primary italic">AN PHÚC</span></h1>
-          <p class="text-[8px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1">Hệ thống Điều hành</p>
+          <h1 class="font-bold text-lg text-slate-900 leading-tight tracking-tight">ĐA KHOA <span class="text-primary italic">AN PHÚC</span></h1>
+          <p class="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.3em] mt-1">Hệ thống Điều hành</p>
         </div>
       </div>
 
@@ -29,7 +29,7 @@
       <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
         <button v-for="item in filteredMenuItems" :key="item.id"
                 @click="activeMenu = item.id; isMobileMenuOpen = false"
-                :class="['w-full flex items-center flex-nowrap gap-4 px-5 py-4 rounded-2xl font-black text-sm transition-all group relative overflow-hidden', 
+                :class="['w-full flex items-center flex-nowrap gap-4 px-5 py-4 rounded-2xl font-bold text-sm transition-all group relative overflow-hidden', 
                          activeMenu === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                          isSidebarCollapsed ? 'justify-center px-0' : '']">
           <component :is="item.icon" :class="['w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110', activeMenu === item.id ? 'text-white' : 'text-slate-300 group-hover:text-primary']" />
@@ -49,7 +49,7 @@
             </div>
             <div v-show="!isSidebarCollapsed" class="flex-1 min-w-0 transition-opacity duration-300">
               <p class="text-xs font-black text-slate-800 truncate">{{ authStore.user?.username }}</p>
-              <p class="text-[9px] font-black text-primary uppercase tracking-[0.3em]">{{ i18n.t('roles.' + authStore.user?.role) }}</p>
+              <p class="text-[9px] font-black text-primary uppercase tracking-[0.3em]">{{ i18n.t('roles.' + authStore.userRole) }}</p>
             </div>
             <button v-show="!isSidebarCollapsed" @click="isUserMenuOpen = !isUserMenuOpen" class="p-2 hover:bg-slate-50 rounded-lg transition-all">
               <ChevronDown class="w-4 h-4 text-slate-400" :class="{'rotate-180': isUserMenuOpen}" />
@@ -70,9 +70,9 @@
     </aside>
 
     <!-- Main Content Area -->
-    <main class="flex-1 h-screen overflow-y-auto bg-slate-50 relative custom-scrollbar w-full">
+    <main class="flex-1 h-screen overflow-y-auto relative custom-scrollbar w-full">
       <!-- Top Header / Global Search -->
-      <header class="h-24 bg-white/70 backdrop-blur-3xl border-b border-white/50 shadow-[0_10px_30px_-15px_rgba(0,0,0,0.05)] flex items-center px-4 md:px-10 sticky top-0 z-50">
+      <header class="h-24 glass-header shadow-sm flex items-center px-4 md:px-10 sticky top-0 z-50">
         <div class="flex-1 flex items-center gap-4 md:gap-8 overflow-hidden">
           <button @click="isMobileMenuOpen = true" class="p-2 -ml-2 text-slate-400 hover:text-primary transition-colors md:hidden focus:outline-none">
             <Menu class="w-6 h-6" />
@@ -107,7 +107,6 @@
                      res.type === 'contract' ? 'bg-teal-50 text-teal-600' :
                      res.type === 'staff' ? 'bg-rose-50 text-rose-600' :
                      res.type === 'group' ? 'bg-primary/10 text-primary' :
-                     res.type === 'payroll' ? 'bg-emerald-50 text-emerald-600' :
                      'bg-violet-50 text-violet-600']">
                   <component :is="getSearchIcon(res.type)" class="w-6 h-6" />
                 </div>
@@ -183,7 +182,7 @@
                 </div>
               </div>
 
-              <div v-if="authStore.role === 'Admin' && resetRequests.length > 0" class="p-4 bg-rose-50/50 border-t border-rose-100">
+              <div v-if="authStore.isAdmin && resetRequests.length > 0" class="p-4 bg-rose-50/50 border-t border-rose-100">
                   <button @click="showResetModal = true; showNotificationDropdown = false" class="w-full py-4 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-rose-200 flex items-center justify-center gap-2">
                     <ShieldAlert class="w-4 h-4" />
                     {{ resetRequests.length }} YÊU CẦU CẤP LẠI MK
@@ -252,9 +251,9 @@
                       <h1 class="text-4xl font-black text-slate-800 ">
                         Chào ngày mới, <span class="text-primary italic">{{ authStore.user?.username }}!</span>
                       </h1>
-                      <div :class="['inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 shadow-sm', getRoleBadgeClass(authStore.role)]">
+                      <div :class="['inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 shadow-sm', getRoleBadgeClass(authStore.userRole)]">
                           <Shield class="w-4 h-4" />
-                          Phiên làm việc: {{ i18n.t('roles.' + authStore.role) }}
+                          Phiên làm việc: {{ i18n.t('roles.' + authStore.userRole) }}
                       </div>
                   </div>
                   <p class="text-slate-400 font-black mt-2">Hôm nay là {{ new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
@@ -327,15 +326,16 @@
               <Contracts v-if="activeMenu === 'contracts'" />
               <Staff v-if="activeMenu === 'staff'" />
               <Groups v-if="activeMenu === 'groups'" />
-              <Supplies v-if="activeMenu === 'supplies'" />
               <AccountManager v-if="activeMenu === 'users'" />
               <Permissions v-if="activeMenu === 'permissions'" />
-              <Payroll v-if="activeMenu === 'payroll'" />
-              <Departments v-if="activeMenu === 'departments'" />
+              <SettlementReport v-if="activeMenu === 'settlement-report'" />
               <Patients v-if="activeMenu === 'patients'" />
-              <MySchedule v-if="activeMenu === 'my-schedule'" />
+              <QueueDashboard v-if="activeMenu === 'oms-dashboard'" />
+              <CheckIn v-if="activeMenu === 'oms-checkin'" />
+              <Payroll v-if="activeMenu === 'payroll'" />
+              <Supplies v-if="activeMenu === 'supplies'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'supplies', 'users', 'permissions', 'payroll', 'departments', 'my-schedule', 'patients', 'analytics'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'patients', 'users', 'permissions', 'analytics', 'reports', 'settlement-report', 'oms-dashboard', 'oms-checkin', 'payroll', 'supplies'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
                 </div>
@@ -399,13 +399,17 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useI18nStore } from '../stores/i18n'
 import { useNotificationStore } from '../stores/notification'
-import axios from 'axios'
+import apiClient from '../services/apiClient'
 import logo from '../assets/logo.svg'
 import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
   LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
   User, KeyRound, X, ChevronDown, ChevronLeft, Bell, PlusCircle, Check, ShieldAlert, Inbox,
-  Building, ShieldCheck, CalendarCheck, Menu, UserRound
+  Building, ShieldCheck, CalendarCheck, Menu, UserRound, Activity, Calculator, History, CheckCircle2,
+  LayoutDashboard, ClipboardList, UserCheck, CreditCard, Settings
 } from 'lucide-vue-next'
+import { useToast } from '../composables/useToast'
+
+const toast = useToast()
 
 // Import Modules
 import { usePermission } from '../composables/usePermission'
@@ -413,14 +417,16 @@ import Companies from './Companies.vue'
 import Contracts from './Contracts.vue'
 import Staff from './Staff.vue'
 import Groups from './Groups.vue'
-import Supplies from './Supplies.vue'
 import AnalyticsDashboard from './AnalyticsDashboard.vue'
 import AccountManager from './Users.vue'
-import Payroll from './Payroll.vue'
-import Departments from './Departments.vue'
 import Permissions from './Permissions.vue'
-import MySchedule from './MySchedule.vue'
+import SettlementReport from './SettlementReport.vue'
 import Patients from './Patients.vue'
+import QueueDashboard from './oms/QueueDashboard.vue'
+import CheckIn from './CheckIn.vue'
+import StationCoordinator from './oms/StationCoordinator.vue'
+import Payroll from './Payroll.vue'
+import Supplies from './Supplies.vue'
 
 
 const { can } = usePermission()
@@ -468,34 +474,44 @@ const handleChangePassword = async () => {
 
     isChangingPass.value = true
     try {
-        const res = await axios.post('/api/Auth/change-password', {
+        const res = await apiClient.post('/api/Auth/change-password', {
             currentPassword: passForm.value.currentPassword,
             newPassword: passForm.value.newPassword
         })
-        alert(res.data.message)
+        toast.success(res.data.message || "Đổi mật khẩu thành công!")
         showPasswordModal.value = false
         passForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' }
     } catch (err) {
-        alert(err.response?.data || "Lỗi khi đổi mật khẩu")
+        toast.error(err.response?.data || "Lỗi khi đổi mật khẩu")
     } finally {
         isChangingPass.value = false
     }
 }
 
 const menuItems = computed(() => [
-    { id: 'home', name: i18n.locale === 'vi' ? 'Tổng quan' : 'Dashboard', icon: Bot, color: 'bg-primary-light text-primary', desc: i18n.locale === 'vi' ? 'Trung tâm điều khiển và báo cáo.' : 'Control center and reporting.' },
-    { id: 'my-schedule', name: 'Lịch cá nhân', icon: CalendarCheck, color: 'bg-blue-50 text-blue-600', desc: 'Lịch đi đoàn của tôi.', permission: 'LichKham.ViewOwn' },
-    { id: 'companies', name: i18n.locale === 'vi' ? 'Công ty' : 'Companies', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: i18n.locale === 'vi' ? 'Pháp nhân & Doanh nghiệp khách hàng.' : 'Legal entities & corporate clients.', permission: 'HopDong.View' },
-    { id: 'contracts', name: i18n.locale === 'vi' ? 'Hợp đồng' : 'Contracts', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: i18n.locale === 'vi' ? 'Quản lý pháp lý & ký kết HĐ.' : 'Legal management & contract signing.', permission: 'HopDong.View' },
-    { id: 'groups', name: i18n.locale === 'vi' ? 'Đoàn khám' : 'Medical Groups', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: i18n.locale === 'vi' ? 'Vận hành thực địa & điều phối.' : 'Field operation & coordination.', permission: 'DoanKham.View' },
-    { id: 'patients', name: i18n.locale === 'vi' ? 'Bệnh Nhân' : 'Patients', icon: UserRound, color: 'bg-pink-50 text-pink-600', desc: i18n.locale === 'vi' ? 'Lý lịch & hồ sơ khám bệnh.' : 'Patient profiles & medical records.', permission: 'DoanKham.View' },
-    { id: 'staff', name: i18n.locale === 'vi' ? 'Nhân sự' : 'Staff', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: i18n.locale === 'vi' ? 'Đội ngũ Y bác sĩ & Vận hành.' : 'Medical team & operations.', permission: 'NhanSu.View' },
-    { id: 'departments', name: 'Trạm Khám', icon: Building, color: 'bg-orange-50 text-orange-600', desc: 'Quản lý các trạm khám & chuyên khoa y tế.', permission: 'HeThong.RoleManage' },
-    { id: 'payroll', name: i18n.locale === 'vi' ? 'Tính lương' : 'Payroll', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: i18n.locale === 'vi' ? 'Kế toán thù lao & lương cứng.' : 'Compensation & fixed salary accounting.', permission: 'Luong.View' },
-    { id: 'supplies', name: i18n.locale === 'vi' ? 'Vật tư kho' : 'Supplies', icon: Package, color: 'bg-violet-50 text-violet-600', desc: i18n.locale === 'vi' ? 'Kho vật tư & Phiếu xuất kho.' : 'Supply warehouse & export vouchers.', permission: 'Kho.View' },
-    { id: 'users', name: i18n.locale === 'vi' ? 'Tài khoản' : 'Accounts', icon: Shield, color: 'bg-slate-50 text-slate-600', desc: i18n.locale === 'vi' ? 'Phân quyền & bảo mật tài khoản.' : 'Account permissions & security.', permission: 'HeThong.UserManage' },
-    { id: 'permissions', name: 'Phân quyền', icon: ShieldCheck, color: 'bg-slate-900 text-white', desc: 'Quản lý nhóm quyền và phân quyền.', permission: 'HeThong.RoleManage' },
-    { id: 'analytics', name: i18n.locale === 'vi' ? 'Báo cáo' : 'Reports', icon: BarChart3, color: 'bg-indigo-50 text-indigo-600', desc: i18n.locale === 'vi' ? 'Báo cáo chuyên sâu & biểu đồ.' : 'Deep analytics & charts.', permission: 'BaoCao.View' },
+    // 1. Tổng quan
+    { id: 'home', name: 'Tổng quan', icon: LayoutDashboard, color: 'bg-primary-light text-primary', desc: 'Trung tâm điều chuyển.' },
+    
+    // 2. Kinh doanh & Vận hành (Theo thứ tự yêu cầu)
+    { id: 'companies', name: 'Công ty', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: 'Quản lý thông tin công ty.', permission: 'HopDong.View' },
+    { id: 'contracts', name: 'Hợp đồng', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: 'Pháp lý & Ký kết.', permission: 'HopDong.View' },
+    { id: 'groups', name: 'Đoàn khám', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: 'Vận hành tuyến đầu.', permission: 'DoanKham.View' },
+    { id: 'patients', name: 'Bệnh nhân', icon: UserRound, color: 'bg-sky-50 text-sky-600', desc: 'Hồ sơ sức khỏe.', permission: 'DoanKham.View' },
+    { id: 'supplies', name: 'Vật tư', icon: Package, color: 'bg-violet-50 text-violet-600', desc: 'Kho dược & Thiết bị.', permission: 'Kho.View' },
+    
+    // 3. OMS - Tại điểm khám
+    { id: 'oms-checkin', name: 'Tiếp đón', icon: CalendarCheck, color: 'bg-sky-50 text-sky-600', desc: 'Ghi danh & Cấp số.', permission: 'DoanKham.Edit' },
+    { id: 'oms-dashboard', name: 'Điều phối', icon: Activity, color: 'bg-rose-50 text-rose-600', desc: 'Quản lý hàng chờ.', permission: 'DoanKham.View' },
+    
+    // 4. Tài chính & Nhân sự
+    { id: 'settlement-report', name: 'Quyết toán', icon: Calculator, color: 'bg-emerald-50 text-emerald-600', desc: 'Đối soát doanh thu.', permission: 'BaoCao.View' },
+    { id: 'staff', name: 'Nhân sự', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: 'Đội ngũ y tế.', permission: 'NhanSu.View' },
+    { id: 'payroll', name: 'Tính lương', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: 'Thanh toán thu nhập.', permission: 'Luong.View' },
+    
+    // 5. Phân tích & Hệ thống
+    { id: 'analytics', name: 'Thống kê', icon: BarChart3, color: 'bg-indigo-50 text-indigo-600', desc: 'Báo cáo vận hành.', permission: 'BaoCao.View' },
+    { id: 'users', name: 'Tài khoản', icon: User, color: 'bg-slate-50 text-slate-600', desc: 'Quản trị truy cập.', permission: 'HeThong.UserManage' },
+    { id: 'permissions', name: 'Phân quyền', icon: ShieldCheck, color: 'bg-slate-900 text-white', desc: 'Bảo mật hệ thống.', permission: 'HeThong.RoleManage' },
 ])
 
 
@@ -527,7 +543,7 @@ const handleLogout = () => {
 const searchQuery = ref('')
 const searchResults = ref([])
 const isDataSyncing = ref(false)
-const allData = ref({ companies: [], contracts: [], staff: [], groups: [], supplies: [] })
+const allData = ref({ companies: [], contracts: [], staff: [], groups: [] })
 
 // Password Reset Requests (Admin only)
 const resetRequests = ref([])
@@ -536,9 +552,9 @@ const processingResetId = ref(null)
 const newPasswordForReset = ref('HealthCare2026')
 
 const fetchResetRequests = async () => {
-    if (authStore.role !== 'Admin') return
+    if (!authStore.isAdmin) return
     try {
-        const res = await axios.get('/api/Auth/reset-requests')
+        const res = await apiClient.get('/api/Auth/reset-requests')
         resetRequests.value = res.data
     } catch (err) {
         console.warn("Failed to fetch reset requests", err)
@@ -547,14 +563,14 @@ const fetchResetRequests = async () => {
 
 const handleProcessReset = async (id) => {
     try {
-        await axios.post('/api/Auth/process-reset', {
+        await apiClient.post('/api/Auth/process-reset', {
             id: id,
             newPassword: newPasswordForReset.value
         })
-        alert(`Đã cấp lại mật khẩu mới cho tài khoản. Mật khẩu mặc định là: ${newPasswordForReset.value}`)
+        toast.success(`Đã cấp lại mật khẩu mới cho tài khoản. Mật khẩu mặc định là: ${newPasswordForReset.value}`)
         fetchResetRequests()
     } catch (err) {
-        alert("Lỗi khi xử lý yêu cầu")
+        toast.error("Lỗi khi xử lý yêu cầu")
     }
 }
 
@@ -564,18 +580,17 @@ const fetchSearchData = async () => {
     try {
         const allEndpoints = [
             { key: 'companies', url: '/api/Companies', roles: ['Admin', 'ContractManager', 'MedicalStaff'] },
-            { key: 'contracts', url: '/api/HealthContracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
+            { key: 'contracts', url: '/api/Contracts', roles: ['Admin', 'ContractManager', 'Customer', 'MedicalStaff'] },
             { key: 'staff', url: '/api/Staffs', roles: ['Admin', 'PersonnelManager', 'MedicalGroupManager', 'MedicalStaff'] },
-            { key: 'groups', url: '/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] },
-            { key: 'supplies', url: '/api/Supplies', roles: ['Admin', 'WarehouseManager', 'MedicalStaff'] }
+            { key: 'groups', url: '/api/MedicalGroups', roles: ['Admin', 'MedicalGroupManager', 'MedicalStaff', 'Customer'] }
         ]
 
-        const userRole = authStore.role?.toLowerCase()
+        const userRole = authStore.userRole?.toLowerCase()
         const endpoints = allEndpoints.filter(ep => ep.roles.some(r => r.toLowerCase() === userRole))
 
         await Promise.all(endpoints.map(async (ep) => {
             try {
-                const res = await axios.get(ep.url)
+                const res = await apiClient.get(ep.url)
                 allData.value[ep.key] = res.data
             } catch (err) {
                 console.warn(`Could not sync ${ep.key} for search`, err)
@@ -618,11 +633,6 @@ const handleSearch = () => {
             if (matchesQuery(g.groupName)) matches.push({ id: g.medicalGroupId, name: g.groupName, type: 'group', target: 'groups' })
         })
     }
-    if (Array.isArray(allData.value.supplies)) {
-        allData.value.supplies.forEach(s => {
-            if (matchesQuery(s.supplyName)) matches.push({ id: s.supplyId, name: s.supplyName, type: 'supply', target: 'supplies' })
-        })
-    }
 
     searchResults.value = matches.slice(0, 8) 
 }
@@ -640,13 +650,12 @@ const getSearchIcon = (type) => {
         case 'contract': return FileText
         case 'staff': return UsersIcon
         case 'group': return Stethoscope
-        case 'supply': return Package
         default: return Bot
     }
 }
 
 const getResTypeName = (type) => {
-    const map = { company: 'Cơ quan/Đối tác', contract: 'Hợp đồng pháp lý', staff: 'Nhân sự y tế', group: 'Đoàn đang vận hành', supply: 'Vật tư trong kho' }
+    const map = { company: 'Cơ quan/Công ty', contract: 'Hợp đồng pháp lý', staff: 'Nhân sự y tế', group: 'Đoàn đang vận hành' }
     return map[type] || 'Dữ liệu hệ thống'
 }
 

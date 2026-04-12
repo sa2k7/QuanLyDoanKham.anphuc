@@ -20,14 +20,14 @@
       <form @submit.prevent="handleLogin" autocomplete="off" class="space-y-5">
         <!-- iOS-style Input: Email / Username -->
         <div class="relative group">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors duration-300">
             <User class="w-[18px] h-[18px]" />
           </div>
           <input 
             v-model="username"
             type="text" 
             autocomplete="off"
-            class="w-full h-[54px] pl-12 pr-4 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-emerald-300/50 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
+            class="w-full h-[54px] pl-12 pr-4 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-primary/30 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
             placeholder="Email hoặc Tên đăng nhập"
             required
           />
@@ -35,7 +35,7 @@
 
         <!-- iOS-style Input: Password -->
         <div class="relative group">
-          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-emerald-500 transition-colors duration-300">
+          <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-primary transition-colors duration-300">
             <Lock class="w-[18px] h-[18px]" />
           </div>
           <input 
@@ -43,14 +43,14 @@
             @input="password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
             :type="showPassword ? 'text' : 'password'" 
             autocomplete="new-password"
-            class="w-full h-[54px] pl-12 pr-12 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-emerald-300/50 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
+            class="w-full h-[54px] pl-12 pr-12 rounded-2xl bg-slate-50/50 border border-slate-200/80 hover:border-primary/30 focus:border-primary focus:ring-4 focus:ring-primary/10 focus:bg-white outline-none font-semibold text-slate-800 transition-all duration-300 placeholder:text-slate-400 placeholder:font-normal text-[14px]"
             placeholder="Mật khẩu bảo mật"
             required
           />
           <button 
             type="button"
             @click="showPassword = !showPassword"
-            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-emerald-600 transition-colors duration-300 outline-none"
+            class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-primary transition-colors duration-300 outline-none"
           >
             <Eye v-if="!showPassword" class="w-[18px] h-[18px]" />
             <EyeOff v-else class="w-[18px] h-[18px]" />

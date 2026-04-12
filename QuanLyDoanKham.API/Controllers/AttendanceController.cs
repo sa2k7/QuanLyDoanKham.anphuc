@@ -40,10 +40,8 @@ namespace QuanLyDoanKham.API.Controllers
             if (group.Status == "Locked" || group.Status == "Finished")
                 return BadRequest("Đoàn khám đã kết thúc, không thể mở QR chấm công.");
 
-            // Token = Base64(groupId + ":" + timestamp_unix) — hết hạn sau 12 giờ
-            var expiry = DateTimeOffset.UtcNow.AddHours(12).ToUnixTimeSeconds();
-            var raw = $"{groupId}:{expiry}";
-            var token = Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));
+            // Sử dụng QrService mới để tạo Token có chữ ký bảo mật
+            var token = qrService.GenerateSignedToken(groupId, 12);
 
             // URL trỏ về Frontend (CheckIn.vue)
             var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
@@ -57,47 +55,150 @@ namespace QuanLyDoanKham.API.Controllers
                 groupName = group.GroupName,
                 examDate = group.ExamDate,
                 qrToken = token,
-                expiresAt = DateTimeOffset.FromUnixTimeSeconds(expiry).LocalDateTime,
+                expiresAt = DateTime.Now.AddHours(12),
                 qrUrl = frontendUrl,
                 pngBase64 = pngBase64
             });
         }
 
         // ================================================================
+        // GET api/attendance/active-qr-today — Lấy QR cho đoàn khám đang diễn ra
+        // ================================================================
+        [HttpGet("active-qr-today")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.QR")]
+        public async Task<IActionResult> GetActiveQrToday([FromServices] Services.QrService qrService)
+        {
+            var today = DateTime.Today;
+            // 1. Tìm đoàn khám sẵn sàng (Open hoặc InProgress) cho hôm nay
+            var activeGroup = await _context.MedicalGroups
+                .OrderBy(g => g.GroupId)
+                .FirstOrDefaultAsync(g => g.ExamDate.Date == today && (g.Status == "Open" || g.Status == "InProgress"));
+
+            if (activeGroup == null) 
+            {
+                // 2. Chẩn đoán lý do nếu không tìm thấy đoàn phù hợp
+                var anyToday = await _context.MedicalGroups
+                    .FirstOrDefaultAsync(g => g.ExamDate.Date == today);
+                
+                if (anyToday != null)
+                {
+                    return NotFound(new { 
+                        message = $"Tìm thấy đoàn '{anyToday.GroupName}' cho hôm nay nhưng đang ở trạng thái '{anyToday.Status}'. Vui lòng chuyển trạng thái sang 'Open' để mở QR.",
+                        status = anyToday.Status
+                    });
+                }
+
+                var nextGroup = await _context.MedicalGroups
+                    .Where(g => g.ExamDate.Date > today)
+                    .OrderBy(g => g.ExamDate)
+                    .FirstOrDefaultAsync();
+
+                if (nextGroup != null)
+                {
+                    return NotFound(new { 
+                        message = $"Hôm nay không có đoàn khám. Đoàn tiếp theo diễn ra vào ngày {nextGroup.ExamDate:dd/MM/yyyy} ({nextGroup.GroupName})."
+                    });
+                }
+
+                return NotFound(new { message = "Hôm nay không có đoàn khám nào diễn ra." });
+            }
+
+            // Sinh token ngắn hạn (12h). Frontend sẽ lo việc làm mới link.
+            var token = qrService.GenerateSignedToken(activeGroup.GroupId, 12);
+            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = $"{baseUrl}/checkin?token={Uri.EscapeDataString(token)}";
+            var pngBase64 = qrService.GenerateQr(frontendUrl);
+
+            return Ok(new
+            {
+                groupId = activeGroup.GroupId,
+                groupName = activeGroup.GroupName,
+                qrToken = token,
+                qrUrl = frontendUrl,
+                pngBase64 = pngBase64,
+                expiresAt = DateTime.Now.AddHours(12)
+            });
+        }
+
+        // ================================================================
+        // GET api/attendance/patient-qr — Lấy QR cho link bệnh nhân tự báo danh
+        // ================================================================
+        [HttpGet("patient-qr")]
+        [AllowAnonymous]
+        public IActionResult GetPatientQr([FromServices] Services.QrService qrService)
+        {
+            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var frontendUrl = $"{baseUrl}/patient-checkin";
+            var pngBase64 = qrService.GenerateQr(frontendUrl);
+
+            return Ok(new
+            {
+                qrUrl = frontendUrl,
+                pngBase64 = pngBase64
+            });
+        }
+
+        // ================================================================
+        // GET api/attendance/recent-checkins — Lấy 5 người vừa check-in để hiện trên Kiosk
+        // ================================================================
+        [HttpGet("recent-checkins")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
+        public async Task<IActionResult> GetRecentCheckins()
+        {
+            var today = DateTime.Today;
+            var recent = await _context.ScheduleCalendars
+                .Include(sc => sc.Staff)
+                .Include(sc => sc.MedicalGroup)
+                .Where(sc => sc.ExamDate.Date == today && sc.CheckInTime != null)
+                .OrderByDescending(sc => sc.CheckInTime)
+                .Take(5)
+                .Select(sc => new
+                {
+                    sc.CalendarId,
+                    StaffName = sc.Staff != null ? sc.Staff.FullName : "N/A",
+                    CheckInTime = sc.CheckInTime,
+                    GroupName = sc.MedicalGroup != null ? sc.MedicalGroup.GroupName : "N/A"
+                })
+                .ToListAsync();
+
+            return Ok(recent);
+        }
+
+
+        // ================================================================
         // POST api/attendance/checkin — Nhân viên quét QR → check-in
         // ================================================================
         [HttpPost("checkin")]
-        [AllowAnonymous] // Nhân viên chưa đăng nhập vẫn có thể checkin qua QR
-        public async Task<IActionResult> CheckIn([FromBody] CheckInOutDto dto)
+        [Authorize] // Yêu cầu đăng nhập để biết danh tính người chấm công
+        public async Task<IActionResult> CheckIn([FromBody] CheckInOutDto dto, [FromServices] Services.QrService qrService)
         {
-            // Validate QR token
+            // 1. Validate QR token bằng QrService (HMAC check)
             if (string.IsNullOrEmpty(dto.QrToken))
-                return BadRequest("Thiếu QR token.");
+                return BadRequest(new { message = "Thiếu QR token." });
 
-            if (!TryDecodeQrToken(dto.QrToken, out var tokenGroupId, out var expiry))
-                return BadRequest("QR token không hợp lệ.");
-
-            if (DateTimeOffset.UtcNow.ToUnixTimeSeconds() > expiry)
-                return BadRequest("QR code đã hết hạn. Vui lòng yêu cầu trưởng đoàn tạo mã mới.");
+            if (!qrService.ValidateSignedToken(dto.QrToken, out var tokenGroupId, out var error))
+                return BadRequest(new { message = error });
 
             if (tokenGroupId != dto.GroupId)
-                return BadRequest("QR token không khớp với đoàn khám.");
+                return BadRequest(new { message = "Mã QR không khớp với đoàn khám đang chọn." });
 
             var group = await _context.MedicalGroups.FindAsync(dto.GroupId);
-            if (group == null) return NotFound("Không tìm thấy đoàn khám.");
+            if (group == null) return NotFound(new { message = "Không tìm thấy đoàn khám." });
 
-            // Xác định Staff từ token đăng nhập hoặc StaffId truyền vào
-            int staffId = dto.StaffId ?? 0;
-            if (staffId == 0)
+            // 2. Xác định Staff từ User hiện tại
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode != null && s.EmployeeCode.ToLower() == username.ToLower());
+            if (staff == null) return NotFound(new { message = "Không tìm thấy hồ sơ nhân sự liên kết với tài khoản này." });
+
+            int staffId = staff.StaffId;
+
+            // Chống gian lận: Nếu gửi StaffId khác trong DTO mà không phải Admin thì báo lỗi
+            if (dto.StaffId.HasValue && dto.StaffId.Value != staffId && !User.IsInRole("Admin"))
             {
-                var username = User.Identity?.Name;
-                if (!string.IsNullOrEmpty(username))
-                {
-                    var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode == username.ToUpper());
-                    staffId = staff?.StaffId ?? 0;
-                }
+                return BadRequest(new { message = "Bạn không thể chấm công hộ người khác." });
             }
-            if (staffId == 0) return BadRequest("Không xác định được nhân viên. Vui lòng đăng nhập.");
 
             // Kiểm tra nhân viên có trong đoàn không
             var groupDetail = await _context.GroupStaffDetails
@@ -119,9 +220,11 @@ namespace QuanLyDoanKham.API.Controllers
                     GroupId = dto.GroupId,
                     StaffId = staffId,
                     ExamDate = today,
+                    MedicalGroup = null!,
+                    Staff = null!,
                     CheckInTime = DateTime.Now,
                     IsConfirmed = false,
-                    Note = dto.Note
+                    Note = dto.Note ?? "Check-in QR"
                 });
                 await _context.SaveChangesAsync();
                 return Ok(new { message = "Check-in thành công!", action = "CheckIn", time = DateTime.Now });
@@ -132,7 +235,7 @@ namespace QuanLyDoanKham.API.Controllers
                 existing.CheckOutTime = DateTime.Now;
 
                 // Tính ShiftType: 0.5 nếu < 4h, 1.0 nếu >= 4h
-                var hours = (existing.CheckOutTime.Value - existing.CheckInTime.Value!).TotalHours;
+                var hours = (existing.CheckOutTime.Value - existing.CheckInTime!.Value).TotalHours;
                 var resolvedShift = hours >= 4 ? 1.0 : 0.5;
                 groupDetail.ShiftType = resolvedShift;
 
@@ -168,6 +271,8 @@ namespace QuanLyDoanKham.API.Controllers
                     GroupId = dto.GroupId,
                     StaffId = dto.StaffId,
                     ExamDate = today,
+                    MedicalGroup = null!,
+                    Staff = null!,
                     CheckInTime = DateTime.Now,
                     IsConfirmed = false,
                     Note = dto.Note ?? "Chấm công thủ công bởi trưởng đoàn"
@@ -178,7 +283,7 @@ namespace QuanLyDoanKham.API.Controllers
             else if (existing.CheckOutTime == null)
             {
                 existing.CheckOutTime = DateTime.Now;
-                var hours = (existing.CheckOutTime.Value - existing.CheckInTime.Value!).TotalHours;
+                var hours = (existing.CheckOutTime.Value - existing.CheckInTime!.Value).TotalHours;
                 groupDetail.ShiftType = hours >= 4 ? 1.0 : 0.5;
                 existing.IsConfirmed = true;
                 await _context.SaveChangesAsync();
@@ -234,7 +339,7 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 StaffId = staffId,
                 StaffName = staff.FullName,
-                EmployeeCode = staff.EmployeeCode,
+                EmployeeCode = staff.EmployeeCode ?? "",
                 Month = month,
                 Year = year,
                 TotalActualDays = totalDays,
@@ -253,7 +358,7 @@ namespace QuanLyDoanKham.API.Controllers
                 .Include(sc => sc.Staff)
                 .Include(sc => sc.MedicalGroup)
                 .Where(sc => sc.GroupId == groupId)
-                .OrderBy(sc => sc.ExamDate).ThenBy(sc => sc.Staff.FullName)
+                .OrderBy(sc => sc.ExamDate).ThenBy(sc => sc.Staff!.FullName)
                 .ToListAsync();
 
             return Ok(records.Select(sc => new
@@ -273,19 +378,6 @@ namespace QuanLyDoanKham.API.Controllers
         // ================================================================
         // HELPERS
         // ================================================================
-        private bool TryDecodeQrToken(string token, out int groupId, out long expiry)
-        {
-            groupId = 0; expiry = 0;
-            try
-            {
-                var raw = Encoding.UTF8.GetString(Convert.FromBase64String(token));
-                var parts = raw.Split(':');
-                if (parts.Length != 2) return false;
-                if (!int.TryParse(parts[0], out groupId)) return false;
-                if (!long.TryParse(parts[1], out expiry)) return false;
-                return true;
-            }
-            catch { return false; }
-        }
+        // Method TryDecodeQrToken cũ đã bị thay thế bởi QrService.ValidateSignedToken
     }
 }

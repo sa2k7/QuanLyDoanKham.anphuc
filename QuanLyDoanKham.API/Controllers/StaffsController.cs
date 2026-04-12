@@ -6,6 +6,7 @@ using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
 using QuanLyDoanKham.API.Helpers;
+using ClosedXML.Excel;
 
 namespace QuanLyDoanKham.API.Controllers
 {
@@ -29,8 +30,10 @@ namespace QuanLyDoanKham.API.Controllers
             var staffs = await _context.Staffs
                 .AsNoTracking()
                 .Where(s => s.IsActive)
-                .Include(s => s.GroupStaffDetails)
+                .Include(s => s.GroupStaffDetails!)
                     .ThenInclude(gsd => gsd.MedicalGroup)
+                        .ThenInclude(g => g!.HealthContract)
+                            .ThenInclude(c => c!.Company)
                 .ToListAsync();
 
             var users = await _context.Users
@@ -45,13 +48,13 @@ namespace QuanLyDoanKham.API.Controllers
 
                 // Ưu tiên tìm thông tin vai trò qua StaffId (liên kết mới)
                 var userAccount = users.FirstOrDefault(u => u.StaffId == s.StaffId) 
-                               ?? users.FirstOrDefault(u => string.Equals(u.Username, s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
+                               ?? users.FirstOrDefault(u => !string.IsNullOrEmpty(s.EmployeeCode) && string.Equals(u.Username, s.EmployeeCode, StringComparison.OrdinalIgnoreCase));
 
                 return new StaffDto
                 {
                     StaffId = s.StaffId,
                     EmployeeCode = s.EmployeeCode,
-                    FullName = s.FullName,
+                    FullName = s.FullName ?? "N/A",
                     FullNameUnsigned = s.FullNameUnsigned,
                     BirthYear = s.BirthYear,
                     Gender = s.Gender,
@@ -101,7 +104,7 @@ namespace QuanLyDoanKham.API.Controllers
                 ?? await _context.Users
                 .AsNoTracking()
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Username == staff.EmployeeCode.ToLower());
+                .FirstOrDefaultAsync(u => u.Username == (staff.EmployeeCode != null ? staff.EmployeeCode.ToLower() : ""));
 
             var dto = new StaffDetailDto
             {
@@ -206,7 +209,7 @@ namespace QuanLyDoanKham.API.Controllers
             
             if (userRole != null)
             {
-                var username = staff.EmployeeCode.ToLower();
+                var username = staff.EmployeeCode!.ToLower();
                 var initialPassword = "Password@123";
                 var newUser = new AppUser
                 {
@@ -316,7 +319,7 @@ namespace QuanLyDoanKham.API.Controllers
                         var initialPassword = "Password@123";
                         var newUser = new AppUser
                         {
-                            Username = staff.EmployeeCode.ToLower(),
+                            Username = staff.EmployeeCode!.ToLower(),
                             FullName = staff.FullName,
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                             RoleId = newRole.RoleId,
@@ -444,7 +447,7 @@ namespace QuanLyDoanKham.API.Controllers
                 using (var workbook = new ClosedXML.Excel.XLWorkbook(stream))
                 {
                     var worksheet = workbook.Worksheet(1);
-                    var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Bỏ qua header
+                    var rows = worksheet.RangeUsed()?.RowsUsed()?.Skip(1) ?? Enumerable.Empty<IXLRangeRow>(); // Bỏ qua header
 
                     var medicalStaffRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "MedicalStaff");
 
@@ -458,7 +461,7 @@ namespace QuanLyDoanKham.API.Controllers
 
                         var staff = new Staff
                         {
-                            EmployeeCode = string.IsNullOrEmpty(employeeCode) ? await GenerateNextEmployeeCode() : employeeCode,
+                            EmployeeCode = string.IsNullOrEmpty(employeeCode) ? (await GenerateNextEmployeeCode() ?? "NV_ERR") : employeeCode,
                             FullName = fullName,
                             FullNameUnsigned = StringHelper.RemoveVietnameseAccents(fullName).ToUpper(),
                             JobTitle = r.Cell(3).Value.ToString() ?? "Bác sĩ",
@@ -472,7 +475,7 @@ namespace QuanLyDoanKham.API.Controllers
                         // Tự động tạo tài khoản
                         if (medicalStaffRole != null)
                         {
-                            var username = staff.EmployeeCode.ToLower();
+                            var username = (staff.EmployeeCode ?? "").ToLower();
                             if (!await _context.Users.AnyAsync(u => u.Username == username))
                             {
                                 var newUser = new AppUser
@@ -493,17 +496,85 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Đã nhập dữ liệu nhân sự và tạo tài khoản thành công!" });
         }
 
+        // ================================================================
+        // GET: api/Staffs/{id}/payroll-summary — Tổng hợp lương nhân viên
+        // ================================================================
+        [HttpGet("{id}/payroll-summary")]
+        [AuthorizePermission("NhanSu.View")]
+        public async Task<IActionResult> GetPayrollSummary(int id)
+        {
+            var shifts = await _context.GroupStaffDetails
+                .Include(g => g.MedicalGroup)
+                .Where(g => g.StaffId == id && g.MedicalGroup != null)
+                .OrderByDescending(g => g.MedicalGroup.ExamDate)
+                .Select(g => new
+                {
+                    g.Id,
+                    GroupName = g.MedicalGroup.GroupName,
+                    ExamDate = g.MedicalGroup.ExamDate,
+                    g.WorkPosition,
+                    g.ShiftType,
+                    g.WorkStatus,
+                    g.CalculatedSalary,
+                    g.CheckInTime,
+                    g.CheckOutTime,
+                    g.Note
+                })
+                .ToListAsync();
+
+            var totalSalary = shifts.Sum(s => s.CalculatedSalary);
+            var totalShifts = shifts.Count;
+            var totalDays = shifts.Sum(s => s.ShiftType);
+
+            return Ok(new { totalSalary, totalShifts, totalDays, shifts });
+        }
+
+        // ================================================================
+        // GET: api/Staffs/{id}/attendance — Timeline chấm công nhân viên
+        // ================================================================
+        [HttpGet("{id}/attendance")]
+        [AuthorizePermission("NhanSu.View")]
+        public async Task<IActionResult> GetAttendance(int id, [FromQuery] int? year, [FromQuery] int? month)
+        {
+            var query = _context.GroupStaffDetails
+                .Include(g => g.MedicalGroup)
+                .Where(g => g.StaffId == id && g.MedicalGroup != null);
+
+            if (year.HasValue)
+                query = query.Where(g => g.MedicalGroup.ExamDate.Year == year.Value);
+            if (month.HasValue)
+                query = query.Where(g => g.MedicalGroup.ExamDate.Month == month.Value);
+
+            var records = await query
+                .OrderByDescending(g => g.MedicalGroup.ExamDate)
+                .Select(g => new
+                {
+                    GroupName = g.MedicalGroup.GroupName,
+                    ExamDate = g.MedicalGroup.ExamDate,
+                    g.WorkPosition,
+                    g.WorkStatus,
+                    g.CheckInTime,
+                    g.CheckOutTime,
+                    g.ShiftType,
+                    g.CalculatedSalary
+                })
+                .ToListAsync();
+
+            return Ok(records);
+        }
+
         private async Task<string> GenerateNextEmployeeCode()
         {
             // Lấy mã NV lớn nhất (bắt đầu bằng NV và theo sau là số)
             var lastStaff = await _context.Staffs
-                .Where(s => s.EmployeeCode.StartsWith("NV") && s.EmployeeCode.Length > 2)
+                .Where(s => s.EmployeeCode != null && s.EmployeeCode.StartsWith("NV") && s.EmployeeCode.Length > 2)
                 .OrderByDescending(s => s.EmployeeCode)
                 .FirstOrDefaultAsync();
 
             if (lastStaff == null) return "NV001";
 
             // Thử lấy phần số từ NVxxx
+            if (string.IsNullOrEmpty(lastStaff.EmployeeCode)) return "NV001";
             var currentCode = lastStaff.EmployeeCode.Substring(2);
             if (int.TryParse(currentCode, out int number))
             {

@@ -14,7 +14,8 @@ namespace QuanLyDoanKham.API.Services
         Task<DashboardKpiDto> GetDashboardKpisAsync(DateTime? startDate, DateTime? endDate);
         Task<FinancialReportDto> GetFinancialReportAsync(DateTime? startDate, DateTime? endDate);
         Task<List<StaffEfficiencyDto>> GetStaffEfficiencyAsync(DateTime? startDate, DateTime? endDate);
-        Task<List<InventoryAlertDto>> GetInventoryAlertsAsync();
+        Task<OperationalSummaryDto> GetOperationalSummaryAsync(int? year, int? month);
+        Task<List<StaffPayrollSummaryDto>> GetPayrollSummaryAsync(int? year, int? month);
     }
 
     public class ReportingService : IReportingService
@@ -31,74 +32,79 @@ namespace QuanLyDoanKham.API.Services
             var start = startDate ?? DateTime.Now.AddMonths(-1);
             var end = endDate ?? DateTime.Now;
 
-            // 1. Tổng lượt khám (Expected từ Hợp đồng)
-            var totalPatients = await _context.Contracts
-                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
-                .SumAsync(c => (int?)c.ExpectedQuantity) ?? 0;
+            var completedRecords = await _context.MedicalRecords
+                .Where(r => r.Status == "COMPLETED"
+                         && r.CheckInAt >= start && r.CheckInAt <= end
+                         && r.MedicalGroup != null
+                         && r.MedicalGroup.HealthContract != null)
+                .Select(r => new { r.MedicalGroup!.HealthContractId, r.MedicalGroup!.HealthContract!.UnitPrice })
+                .ToListAsync();
+            
+            var packageRevenue = completedRecords.Sum(r => r.UnitPrice);
 
-            // 2. Doanh thu (Tổng giá trị Hợp đồng)
-            var totalRevenue = await _context.Contracts
-                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
-                .SumAsync(c => (decimal?)c.TotalAmount) ?? 0;
+            // 1.1 Doanh thu phát sinh từ hợp đồng trong kỳ
+            var extraRevenue = await _context.Contracts
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .SumAsync(c => (decimal?)c.ExtraServiceRevenue) ?? 0;
 
-            // 3. Chi phí nhân sự (Từ GroupStaffDetail)
+            var totalRevenue = packageRevenue + extraRevenue;
+
+            // 2. Chi phí nhân sự (Từ GroupStaffDetail)
             var staffCost = await _context.GroupStaffDetails
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .SumAsync(g => (decimal?)g.CalculatedSalary) ?? 0;
-            
-            // 4. Chi phí vật tư (Từ SupplyInventoryDetail - EXPORT)
-            var supplyCost = await _context.SupplyInventoryDetails
-                .Include(d => d.Voucher)
-                .Where(d => d.Voucher.Type == "EXPORT" && d.Voucher.CreateDate >= start && d.Voucher.CreateDate <= end)
-                .SumAsync(d => (decimal?)(d.Quantity * d.Price)) ?? 0;
 
-            var netProfit = totalRevenue - staffCost - supplyCost;
-
-            // 5. Tỷ lệ hoàn thành (Số đoàn đã Finish / Tổng số đoàn)
+            var netProfit = totalRevenue - staffCost;
             var totalGroups = await _context.MedicalGroups
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .CountAsync();
             var finishedGroups = await _context.MedicalGroups
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end && g.Status == "Finished")
                 .CountAsync();
-            
             var completionRate = totalGroups > 0 ? (double)finishedGroups / totalGroups * 100 : 0;
 
-            // 6. Cảnh báo khẩn (Vật tư < MinStock + Hợp đồng Pending quá 7 ngày)
-            var lowStockCount = await _context.Supplies.CountAsync(s => s.TotalStock < s.MinStockLevel);
-            var overdueDate = DateTime.Now.AddDays(-7);
-            var overdueContracts = await _context.Contracts.CountAsync(c => c.Status == "Pending" && c.SigningDate <= overdueDate);
-
-            // 7. Biểu đồ doanh thu xu hướng (Theo tháng)
+            // 3. Xu hướng doanh thu (6 tháng gần nhất) - Tính trên Doanh thu thực tế (Billed)
             var trendStart = start.AddMonths(-5);
-            var revenueTrendRaw = await _context.Contracts
-                .Where(c => c.SigningDate >= trendStart && c.Status != "Rejected")
-                .GroupBy(c => new { c.SigningDate.Year, c.SigningDate.Month })
-                .Select(g => new 
-                { 
-                    Year = g.Key.Year, 
-                    Month = g.Key.Month, 
-                    Total = g.Sum(c => c.TotalAmount) 
-                })
+            
+            // Lấy doanh thu từ khám (Records)
+            var recordRevenueRaw = await _context.MedicalRecords
+                .Where(r => r.CheckInAt >= trendStart && r.CheckInAt <= end && r.Status == "COMPLETED")
+                .GroupBy(r => new { r.CheckInAt!.Value.Year, r.CheckInAt!.Value.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Type = "Record", Total = g.Sum(r => r.MedicalGroup!.HealthContract!.UnitPrice) })
                 .ToListAsync();
 
-            var revenueTrend = revenueTrendRaw
-                .Select(x => new ChartPointDto
-                {
-                    Label = $"{x.Month}/{x.Year}", // Định dạng chuỗi trong In-Memory sau khi ToListAsync
-                    Value = x.Total
+            // Lấy doanh thu phát sinh (Contract Extras)
+            var contractExtraRaw = await _context.Contracts
+                .Where(c => c.EndDate >= trendStart && c.EndDate <= end && c.Status != "Rejected")
+                .GroupBy(c => new { c.EndDate.Year, c.EndDate.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Type = "Extra", Total = g.Sum(c => c.ExtraServiceRevenue) })
+                .ToListAsync();
+
+            // Gộp và nhóm lại theo tháng
+            var revenueTrend = recordRevenueRaw.Concat(contractExtraRaw)
+                .GroupBy(x => new { x.Year, x.Month })
+                .Select(g => new ChartPointDto 
+                { 
+                    Label = $"{g.Key.Month}/{g.Key.Year}", 
+                    Value = g.Sum(x => x.Total) 
                 })
-                .OrderBy(x => x.Label)
+                .OrderBy(x => {
+                    var parts = x.Label.Split('/');
+                    return int.Parse(parts[1]) * 100 + int.Parse(parts[0]);
+                })
                 .ToList();
+
+            if (!revenueTrend.Any())
+            {
+                revenueTrend.Add(new ChartPointDto { Label = $"{DateTime.Now.Month}/{DateTime.Now.Year}", Value = 0 });
+            }
 
             return new DashboardKpiDto
             {
-                TotalPatients = totalPatients,
                 TotalRevenue = totalRevenue,
                 NetProfit = netProfit,
                 CompletionRate = Math.Round(completionRate, 1),
                 ActiveGroupsCount = await _context.MedicalGroups.CountAsync(g => g.Status == "Open"),
-                CriticalAlertsCount = lowStockCount + overdueContracts,
                 RevenueTrend = revenueTrend
             };
         }
@@ -108,18 +114,40 @@ namespace QuanLyDoanKham.API.Services
             var start = startDate ?? DateTime.Now.AddMonths(-1);
             var end = endDate ?? DateTime.Now;
 
-            var revenue = await _context.Contracts
+            // Doanh thu thực tế: số ca COMPLETED × đơn giá + Extra Services
+            var completedRevenueItems = await _context.MedicalRecords
+                .Where(r => r.Status == "COMPLETED"
+                         && r.CheckInAt >= start && r.CheckInAt <= end
+                         && r.MedicalGroup != null
+                         && r.MedicalGroup.HealthContract != null)
+                .Select(r => r.MedicalGroup!.HealthContract!.UnitPrice)
+                .ToListAsync();
+            
+            var packageRevenue = completedRevenueItems.Sum();
+            
+            var extraRevenue = await _context.Contracts
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .SumAsync(c => (decimal?)c.ExtraServiceRevenue) ?? 0;
+
+            var revenue = packageRevenue + extraRevenue;
+
+            // Doanh thu kế hoạch (để tính variance)
+            var plannedRevenue = await _context.Contracts
                 .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
                 .SumAsync(c => (decimal?)c.TotalAmount) ?? 0;
+
+            int actualQty = completedRevenueItems.Count;
+            int plannedQty = await _context.Contracts
+                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
+                .SumAsync(c => (int?)c.ExpectedQuantity) ?? 0;
 
             var staffCost = await _context.GroupStaffDetails
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .SumAsync(g => (decimal?)g.CalculatedSalary) ?? 0;
 
-            var supplyCost = await _context.SupplyInventoryDetails
-                .Include(d => d.Voucher)
-                .Where(d => d.Voucher.Type == "EXPORT" && d.Voucher.CreateDate >= start && d.Voucher.CreateDate <= end)
-                .SumAsync(d => (decimal?)(d.Quantity * d.Price)) ?? 0;
+            var supplyCost = await _context.StockMovements
+                .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "OUT")
+                .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
 
             var topContracts = await _context.Contracts
                 .Include(c => c.Company)
@@ -137,10 +165,14 @@ namespace QuanLyDoanKham.API.Services
             return new FinancialReportDto
             {
                 Revenue = revenue,
+                PlannedRevenue = plannedRevenue,
+                ActualQuantity = actualQty,
+                PlannedQuantity = plannedQty,
+                VarianceQuantity = actualQty - plannedQty,
+                VarianceRevenue = revenue - plannedRevenue,
                 StaffCost = staffCost,
-                SupplyCost = supplyCost,
-                OtherCost = revenue * 0.05m, 
-                Margin = revenue > 0 ? (revenue - staffCost - supplyCost) / revenue * 100 : 0,
+                OtherCost = revenue * 0.05m,
+                Margin = revenue > 0 ? (revenue - staffCost) / revenue * 100 : 0,
                 TopContracts = topContracts
             };
         }
@@ -163,8 +195,7 @@ namespace QuanLyDoanKham.API.Services
                     Role = g.Key.Type,
                     TotalGroups = g.Count(),
                     DaysWorked = g.Select(d => d.ExamDate.Date).Distinct().Count(),
-                    TotalSalary = g.Sum(d => d.CalculatedSalary),
-                    EfficiencyScore = 0
+                    TotalSalary = g.Sum(d => d.CalculatedSalary)
                 })
                 .OrderByDescending(s => s.TotalGroups)
                 .ToList();
@@ -172,22 +203,63 @@ namespace QuanLyDoanKham.API.Services
             return staffPerformance;
         }
 
-        public async Task<List<InventoryAlertDto>> GetInventoryAlertsAsync()
+        public async Task<OperationalSummaryDto> GetOperationalSummaryAsync(int? year, int? month)
         {
-            var supplies = await _context.Supplies
-                .Where(s => s.TotalStock < s.MinStockLevel)
-                .Select(s => new InventoryAlertDto
+            var targetYear = year ?? DateTime.Now.Year;
+            var targetMonth = month ?? DateTime.Now.Month;
+
+            var startDate = new DateTime(targetYear, targetMonth, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            var totalGroups = await _context.MedicalGroups
+                .Where(g => g.ExamDate >= startDate && g.ExamDate <= endDate)
+                .CountAsync();
+
+            var totalPatients = await _context.MedicalRecords
+                .Where(r => r.CheckInAt >= startDate && r.CheckInAt <= endDate)
+                .CountAsync();
+
+            var totalStaffDeployed = await _context.GroupStaffDetails
+                .Where(g => g.ExamDate >= startDate && g.ExamDate <= endDate && g.WorkStatus == "Joined")
+                .CountAsync();
+
+            var pendingContracts = await _context.Contracts
+                .Where(c => c.Status == "Pending" || c.Status == "Draft")
+                .CountAsync();
+
+            return new OperationalSummaryDto
+            {
+                TotalMedicalGroupsThisMonth = totalGroups,
+                TotalPatientsThisMonth = totalPatients,
+                TotalStaffDeployedThisMonth = totalStaffDeployed,
+                PendingContractsCount = pendingContracts
+            };
+        }
+
+        public async Task<List<StaffPayrollSummaryDto>> GetPayrollSummaryAsync(int? year, int? month)
+        {
+            var targetYear = year ?? DateTime.Now.Year;
+            var targetMonth = month ?? DateTime.Now.Month;
+
+            var startDate = new DateTime(targetYear, targetMonth, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            var staffData = await _context.Staffs
+                .Include(s => s.GroupStaffDetails)
+                .Select(s => new StaffPayrollSummaryDto
                 {
-                    SupplyId = s.SupplyId,
-                    SupplyName = s.SupplyName,
-                    CurrentStock = s.TotalStock,
-                    MinStockLevel = s.MinStockLevel,
-                    Status = s.TotalStock == 0 ? "OutOfStock" : (s.TotalStock < s.MinStockLevel / 2 ? "Critical" : "Low"),
-                    DaysUntilExpired = s.ExpirationDate.HasValue ? (s.ExpirationDate.Value - DateTime.Now).Days : 999
+                    StaffId = s.StaffId,
+                    StaffName = s.FullName,
+                    JobTitle = s.JobTitle ?? s.StaffType,
+                    BaseSalary = s.BaseSalary,
+                    TotalShifts = s.GroupStaffDetails.Count(sh => sh.ExamDate >= startDate && sh.ExamDate <= endDate && sh.WorkStatus == "Joined" && sh.MedicalGroup.Status == "Locked"),
+                    TotalDays = s.GroupStaffDetails.Where(sh => sh.ExamDate >= startDate && sh.ExamDate <= endDate && sh.WorkStatus == "Joined" && sh.MedicalGroup.Status == "Locked").Select(sh => sh.ExamDate.Date).Distinct().Count(),
+                    TotalSalary = s.GroupStaffDetails.Where(sh => sh.ExamDate >= startDate && sh.ExamDate <= endDate && sh.WorkStatus == "Joined" && sh.MedicalGroup.Status == "Locked").Sum(sh => sh.CalculatedSalary)
                 })
                 .ToListAsync();
 
-            return supplies;
+            return staffData.OrderByDescending(x => x.TotalSalary).ToList();
         }
+
     }
 }

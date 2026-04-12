@@ -14,9 +14,11 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@microsoft/signalr": "^10.0.0",
     "@tailwindcss/vite": "^4.1.18",
     "@vitejs/plugin-vue": "^6.0.3",
     "axios": "^1.13.3",
+    "html5-qrcode": "^2.3.8",
     "lucide-vue-next": "^0.563.0",
     "pinia": "^3.0.4",
     "vite": "^7.3.1",

@@ -1,259 +1,204 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-20">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-      <div>
-        <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-emerald-600 text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <Wallet class="w-6 h-6" />
-          </div>
-          Bảng lương & Thù lao
-        </h2>
-        <p class="text-slate-400 font-black uppercase tracking-widest text-[9px] mt-2">Nội bộ: Tổng hợp lương cố định & Thù lao đi đoàn</p>
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
+    
+    <!-- Top Bar -->
+    <div class="sticky top-0 z-40 glass-header p-6 mb-8 flex flex-wrap items-center justify-between gap-6 shadow-sm">
+      <div class="flex items-center gap-4">
+        <div class="p-4 bg-emerald-50 rounded-2xl shadow-inner border border-emerald-100">
+          <Wallet class="w-8 h-8 text-emerald-600" />
+        </div>
+        <div>
+          <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1">Bảng Lương Tổng Hợp</h2>
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quản lý lương và thù lao nhân sự toàn tuyến</p>
+        </div>
       </div>
-      
-      <div class="flex items-center gap-3 bg-white p-2 rounded-2xl shadow-sm border border-slate-100">
-        <select v-model="selectedMonth" class="bg-slate-50 px-4 py-2 rounded-xl font-black text-xs outline-none">
-            <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
-        </select>
-        <input type="number" v-model="selectedYear" class="w-20 bg-slate-50 px-4 py-2 rounded-xl font-black text-xs outline-none" />
-        <button @click="fetchPayroll" class="bg-slate-900 text-white p-2 rounded-xl hover:bg-slate-800 transition-all"><RefreshCcw class="w-4 h-4" :class="loading ? 'animate-spin' : ''" /></button>
-        <div v-if="isManager" class="w-px h-6 bg-slate-200 mx-2"></div>
-        <button v-if="isManager" @click="exportExcel" class="bg-emerald-50 text-emerald-600 px-4 py-2 rounded-xl font-black text-xs uppercase tracking-widest border border-emerald-100 hover:bg-emerald-100 transition-all flex items-center gap-2">
-            <Download class="w-4 h-4" />
-            Excel
+
+      <div class="flex items-center gap-3">
+        <!-- Date Pickers -->
+        <div class="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
+            <select v-model="selectedYear" @change="loadPayroll" class="px-4 py-2 bg-transparent border-none font-black text-xs text-slate-600 outline-none cursor-pointer">
+                <option v-for="y in yearOptions" :key="y" :value="y">Năm {{ y }}</option>
+            </select>
+            <div class="w-px h-6 bg-slate-200"></div>
+            <select v-model="selectedMonth" @change="loadPayroll" class="px-4 py-2 bg-transparent border-none font-black text-xs text-emerald-600 outline-none cursor-pointer">
+                <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+            </select>
+        </div>
+        <button @click="loadPayroll" class="w-10 h-10 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all flex items-center justify-center shadow-sm">
+          <RefreshCw class="w-4 h-4 text-slate-500" :class="{ 'animate-spin': loading }" />
+        </button>
+        <button @click="exportExcel" class="btn-premium primary">
+          <Download class="w-3.5 h-3.5" /> Xuất Excel
         </button>
       </div>
     </div>
 
-
-
-    <!-- My Salary Card (Only for MedicalStaff) -->
-    <div v-if="!isManager && mySalary" class="premium-card p-10 bg-white border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] rounded-[2rem] mb-8">
-        <div class="flex items-center gap-4 mb-6">
-            <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner border border-emerald-100">
-                <Wallet class="w-7 h-7" />
-            </div>
-            <div>
-                <h3 class="text-xl font-black text-slate-800">{{ mySalary.fullName }}</h3>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ mySalary.employeeCode }} • {{ mySalary.jobTitle }}</p>
-            </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Lương định mức</p>
-                <p class="text-xl font-black text-slate-700">{{ formatPrice(mySalary.baseSalary) }}</p>
-            </div>
-            <div class="bg-emerald-50 p-5 rounded-2xl border border-emerald-100">
-                <p class="text-[9px] font-black text-emerald-500 uppercase tracking-widest mb-1">Thù lao đoàn</p>
-                <p class="text-xl font-black text-emerald-600">+ {{ formatPrice(mySalary.groupEarnings) }}</p>
-            </div>
-            <div class="bg-indigo-50 p-5 rounded-2xl border border-indigo-100">
-                <p class="text-[9px] font-black text-indigo-500 uppercase tracking-widest mb-1">Số ngày công</p>
-                <p class="text-xl font-black text-indigo-600">{{ mySalary.totalDays }} <span class="text-xs text-indigo-400">ngày</span></p>
-            </div>
-            <div class="bg-slate-900 p-5 rounded-2xl">
-                <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">THỰC LÃNH</p>
-                <p class="text-xl font-black text-emerald-400">{{ formatPrice(mySalary.totalSalary) }}</p>
-            </div>
-        </div>
-        <div v-if="mySalary.details?.length" class="mt-6 space-y-2">
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi tiết đoàn tham gia</p>
-            <div v-for="d in mySalary.details" :key="d.groupId" class="flex justify-between items-center p-4 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl">
-                <div>
-                    <p class="font-black text-slate-700 text-sm">{{ d.groupName }}</p>
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ formatDate(d.examDate) }} • Hệ số: {{ d.shiftType }}</p>
-                </div>
-                <p class="font-black text-emerald-600">{{ formatPrice(d.calculatedSalary) }}</p>
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Payroll List (Only for Admin/PayrollManager) -->
-    <div v-if="isManager" class="premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden">
-        <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
-            <div class="relative flex-1">
-                <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
-                <input v-model="searchQuery" placeholder="Tìm tên nhân viên..." class="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-xs font-black outline-none" />
-            </div>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <tr>
-                        <th class="p-4">Nhân viên</th>
-                        <th class="p-4">Chức danh</th>
-                        <th class="p-4 text-right">Lương Định mức</th>
-                        <th class="p-4 text-center">Số ngày công</th>
-                        <th class="p-4 text-right">Thù lao đoàn</th>
-                        <th class="p-4 text-right">Thực lãnh</th>
-                        <th class="p-4 text-center">Tác vụ</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                    <tr v-for="item in filteredList" :key="item.staffId" class="text-xs hover:bg-slate-50/50 transition-all">
-                        <td class="p-4">
-                            <div class="font-black text-slate-800">{{ item.fullName }}</div>
-                            <div class="text-[9px] text-slate-400">{{ item.employeeCode }}</div>
-                        </td>
-                        <td class="p-4 font-black text-slate-500">{{ item.jobTitle }}</td>
-                        <td class="p-4 text-right font-black">{{ formatPrice(item.baseSalary) }}</td>
-                        <td class="p-4 text-center">
-                            <span class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg font-black">{{ item.totalDays }}</span>
-                        </td>
-                        <td class="p-4 text-right font-black text-emerald-600">+ {{ formatPrice(item.groupEarnings) }}</td>
-                        <td class="p-4 text-right">
-                            <span class="px-4 py-2 bg-slate-900 text-white rounded-xl font-black">{{ formatPrice(item.totalSalary) }}</span>
-                        </td>
-                        <td class="p-4 text-center">
-                            <button @click="showDetails(item)" class="text-indigo-600 hover:underline font-black uppercase tracking-widest text-[10px]">Cơ cấu</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- Detail Modal -->
-    <Teleport to="body">
-      <div v-if="detailItem" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
-          <div class="bg-white w-full max-w-2xl rounded-[2.5rem] border-2 border-slate-900 shadow-2xl overflow-hidden flex flex-col animate-fade-in-up relative mt-auto mb-auto">
-              <!-- Border Overlay -->
-              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
-              
-              <!-- Header Accent Line -->
-              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-emerald-400 to-emerald-600 z-0"></div>
-
-              <div class="p-10 pb-6 relative z-10 pt-12 flex justify-between items-center">
-                  <div class="flex items-center gap-4">
-                      <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner border border-emerald-100">
-                          <Wallet class="w-7 h-7" />
-                      </div>
-                      <div>
-                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest ">Cơ cấu lương</h3>
-                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ detailItem.fullName }} — {{ detailItem.employeeCode }}</p>
-                      </div>
-                  </div>
-                  <button @click="detailItem = null" class="bg-slate-100 p-2 rounded-full hover:bg-slate-200 transition-all text-slate-500">
-                      <X class="w-5 h-5" />
-                  </button>
+    <!-- Main Content -->
+    <div class="px-6 max-w-7xl mx-auto w-full">
+      
+      <!-- Summaries -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <!-- Total Payout -->
+          <div class="bg-slate-900 border border-slate-800 p-8 rounded-[2rem] shadow-xl relative overflow-hidden group">
+              <Wallet class="absolute -right-4 -bottom-4 w-32 h-32 text-indigo-500/10 group-hover:scale-110 transition-transform duration-500 rotate-12" />
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tổng quỹ lương đợt này</p>
+              <h3 class="text-4xl font-black text-white tabular-nums mb-2">{{ formatCurrency(totalPayout) }}</h3>
+              <p class="text-xs text-indigo-300 font-black">+ Thanh toán qua chuyển khoản 100%</p>
+          </div>
+          <!-- Total Staff -->
+          <div class="premium-card p-8 flex flex-col justify-center">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Số lượng nhân sự</p>
+              <div class="flex items-baseline gap-3">
+                  <h3 class="text-4xl font-black text-slate-800 tabular-nums">{{ payoutList.length }}</h3>
+                  <span class="text-sm font-bold text-slate-400">người</span>
               </div>
-              
-              <div class="p-8 space-y-6 overflow-y-auto max-h-[60vh]">
-                  <div class="bg-slate-50 p-6 rounded-2xl grid grid-cols-2 gap-4">
-                      <div>
-                          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Lương cố định</p>
-                          <p class="text-lg font-black text-slate-700">{{ formatPrice(detailItem.baseSalary) }}</p>
-                      </div>
-                      <div>
-                          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Số ngày đi đoàn</p>
-                          <p class="text-lg font-black text-indigo-600">{{ detailItem.totalDays }} Ngày</p>
-                      </div>
-                  </div>
-
-                  <div class="space-y-4">
-                      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi tiết các đoàn đã tham gia</p>
-                      <div class="space-y-2">
-                          <div v-for="d in detailItem.details" :key="d.groupId" class="flex justify-between items-center p-4 bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a] rounded-xl">
-                              <div>
-                                  <p class="font-black text-slate-700 text-sm">{{ d.groupName }}</p>
-                                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ formatDate(d.examDate) }} • Hệ số: {{ d.shiftType }}</p>
-                              </div>
-                              <p class="font-black text-emerald-600">{{ formatPrice(d.calculatedSalary) }}</p>
-                          </div>
-                          <p v-if="!detailItem.details.length" class="text-center py-4 text-slate-300 italic text-xs">Không tham gia đoàn nào trong tháng</p>
-                      </div>
-                  </div>
-              </div>
-
-              <div class="p-8 bg-slate-900 text-white flex justify-between items-center">
-                  <div>
-                      <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Tổng cộng Thực lãnh</p>
-                      <p class="text-3xl font-black text-emerald-400 ">{{ formatPrice(detailItem.totalSalary) }}</p>
-                  </div>
-                  <button @click="detailItem = null" class="px-8 py-3 bg-slate-800 text-white rounded-xl font-black text-xs uppercase tracking-widest">ĐÓNG</button>
+          </div>
+          <!-- Total Days -->
+          <div class="premium-card p-8 flex flex-col justify-center">
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Tổng ngày công toàn tuyến</p>
+              <div class="flex items-baseline gap-3">
+                  <h3 class="text-4xl font-black text-emerald-600 tabular-nums">{{ totalDaysWorked }}</h3>
+                  <span class="text-sm font-bold text-slate-400">ngày</span>
               </div>
           </div>
       </div>
-    </Teleport>
+
+      <!-- Detail Table -->
+      <div class="premium-card overflow-hidden flex flex-col">
+          <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
+            <div>
+              <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Bảng Chi Tiết Thù Lao</h3>
+              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Đã tự động tổng hợp từ dữ liệu chấm công</p>
+            </div>
+            
+            <div class="relative w-64">
+                <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input v-model="searchQuery" type="text" placeholder="Tìm tên nhân viên..." class="w-full bg-white border border-slate-200 rounded-xl py-2.5 pl-10 pr-4 text-xs font-bold text-slate-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-50 transition-all shadow-sm">
+            </div>
+          </div>
+          
+          <div class="overflow-x-auto">
+              <table class="w-full text-left">
+                  <thead class="bg-slate-50/50">
+                      <tr>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 w-16 text-center">STT</th>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100">Cán bộ / Nhân sự</th>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 text-center">Lượt tham gia</th>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 text-center">Ngày công quy đổi</th>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 text-right">Lương cơ bản</th>
+                          <th class="px-6 py-5 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-100 text-right">Thực Lãnh</th>
+                      </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-100">
+                      <tr v-if="loading">
+                          <td colspan="6" class="py-16 text-center">
+                              <Loader2 class="w-8 h-8 animate-spin text-emerald-400 mx-auto mb-3" />
+                              <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Đang tải bảng lương...</p>
+                          </td>
+                      </tr>
+                      <tr v-else-if="filteredList.length === 0">
+                          <td colspan="6" class="py-16 text-center">
+                              <FileText class="w-12 h-12 text-slate-200 mx-auto mb-3" />
+                              <p class="text-xs font-black text-slate-400 uppercase tracking-widest">Không có dữ liệu lương</p>
+                          </td>
+                      </tr>
+                      <tr v-for="(staff, idx) in filteredList" :key="staff.staffId" class="hover:bg-slate-50/50 transition-colors group">
+                          <td class="px-6 py-4 text-center font-black text-slate-400 text-xs">{{ idx + 1 }}</td>
+                          <td class="px-6 py-4">
+                              <p class="font-black text-slate-800 text-sm group-hover:text-emerald-600 transition-colors">{{ staff.staffName }}</p>
+                              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ staff.jobTitle }}</p>
+                          </td>
+                          <td class="px-6 py-4 text-center">
+                              <span class="inline-flex items-center justify-center px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-black w-12">{{ staff.totalShifts }}</span>
+                          </td>
+                          <td class="px-6 py-4 text-center">
+                              <span class="inline-flex items-center justify-center px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-xs font-black w-12">{{ staff.totalDays }}</span>
+                          </td>
+                          <td class="px-6 py-4 text-right font-bold text-slate-400 text-xs tabular-nums">
+                              {{ formatCurrency(staff.baseSalary) }}
+                          </td>
+                          <td class="px-6 py-4 text-right">
+                              <span class="font-black text-emerald-600 text-sm tracking-tighter tabular-nums px-3 py-1.5 rounded-xl border border-emerald-100 bg-white group-hover:bg-emerald-50 transition-colors shadow-sm">{{ formatCurrency(staff.totalSalary) }}</span>
+                          </td>
+                      </tr>
+                  </tbody>
+              </table>
+          </div>
+      </div>
+
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { Wallet, Download, Search, RefreshCw, FileText, Loader2 } from 'lucide-vue-next'
 import apiClient from '../services/apiClient'
-import { parseApiError } from '../services/errorHelper'
-import { Wallet, RefreshCcw, Download, Search, X, Layers, FileText } from 'lucide-vue-next'
-import { useAuthStore } from '../stores/auth'
-import { usePermission } from '../composables/usePermission'
 import { useToast } from '../composables/useToast'
+import { parseApiError } from '../services/errorHelper'
 
-const authStore = useAuthStore()
-const { can } = usePermission()
 const toast = useToast()
 const loading = ref(false)
-const selectedMonth = ref(new Date().getMonth() + 1)
-const selectedYear = ref(new Date().getFullYear())
-const payrollList = ref([])
-const mySalary = ref(null)
+
+// Selectors
+const currentDt = new Date()
+const selectedMonth = ref(currentDt.getMonth() + 1)
+const selectedYear = ref(currentDt.getFullYear())
+const yearOptions = Array.from({ length: 5 }, (_, i) => currentDt.getFullYear() - i)
+
 const searchQuery = ref('')
-const detailItem = ref(null)
+const payoutList = ref([])
 
-const isManager = computed(() => can('Luong.Manage'))
-
-const totalPayroll = computed(() => payrollList.value.reduce((sum, item) => sum + item.totalSalary, 0))
-
-const filteredList = computed(() => {
-    let list = payrollList.value
-    if (searchQuery.value) {
-        const q = searchQuery.value.toLowerCase()
-        list = list.filter(p => p.fullName.toLowerCase().includes(q) || p.employeeCode?.toLowerCase().includes(q))
-    }
-    return list
-})
-
-const fetchPayroll = async () => {
+const loadPayroll = async () => {
     loading.value = true
     try {
-        if (isManager.value) {
-            // Admin/PayrollManager: xem bảng lương toàn bộ
-            const res = await apiClient.get(`/api/Payroll/monthly`, {
-                params: { month: selectedMonth.value, year: selectedYear.value }
-            })
-            payrollList.value = res.data
-        } else {
-            // MedicalStaff: xem lương cá nhân
-            const res = await apiClient.get(`/api/Payroll/my-salary`, {
-                params: { month: selectedMonth.value, year: selectedYear.value }
-            })
-            mySalary.value = res.data
-        }
-    } catch (e) { toast.error(parseApiError(e)) }
-    finally { loading.value = false }
-}
-
-const exportExcel = async () => {
-    try {
-        const res = await apiClient.get(`/api/Payroll/export-monthly`, {
-            params: { month: selectedMonth.value, year: selectedYear.value },
-            responseType: 'blob'
+        const res = await apiClient.get('/api/Reports/payroll-summary', {
+            params: { month: selectedMonth.value, year: selectedYear.value }
         })
-        const url = window.URL.createObjectURL(new Blob([res.data]))
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', `BangLuong_${selectedMonth.value}_${selectedYear.value}.xlsx`)
-        document.body.appendChild(link)
-        link.click()
-        toast.success("Đã xuất file bảng lương!")
-    } catch (e) { toast.error(parseApiError(e)) }
+        payoutList.value = res.data || []
+    } catch (err) {
+        console.error('Lỗi tải bảng lương', err)
+        toast.show(parseApiError(err), 'error')
+    } finally {
+        loading.value = false
+    }
 }
 
-const showDetails = (item) => { detailItem.value = item }
-const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
-const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + ' đ'
+// Computed
+const filteredList = computed(() => {
+    if (!searchQuery.value) return payoutList.value
+    const q = searchQuery.value.toLowerCase()
+    return payoutList.value.filter(s => s.staffName.toLowerCase().includes(q) || s.jobTitle.toLowerCase().includes(q))
+})
 
-onMounted(fetchPayroll)
-watch([selectedMonth, selectedYear], fetchPayroll)
+const totalPayout = computed(() => payoutList.value.reduce((sum, s) => sum + s.totalSalary, 0))
+const totalDaysWorked = computed(() => payoutList.value.reduce((sum, s) => sum + s.totalDays, 0))
+
+// Utils
+const formatCurrency = (val) => {
+    if (!val) return '0 đ'
+    return val.toLocaleString('vi-VN') + ' đ'
+}
+
+const exportExcel = () => {
+    toast.show('Đang xuất bảng lương ra file Excel...', 'success')
+    setTimeout(() => {
+        // Giả lập redirect file
+        window.open(`/api/Reports/export-excel?startDate=${selectedYear.value}-${String(selectedMonth.value).padStart(2,'0')}-01`, '_blank')
+    }, 1000)
+}
+
+onMounted(() => {
+    loadPayroll()
+})
+
 </script>
+
+<style scoped>
+@reference "tailwindcss";
+
+.scrollbar-premium::-webkit-scrollbar { width: 6px; }
+.scrollbar-premium::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-premium::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+.scrollbar-premium::-webkit-scrollbar-thumb:hover { background: #cbd5e1; }
+</style>

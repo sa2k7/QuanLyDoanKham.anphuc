@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.3.5] - 2026-04-10
+### Added
+- **Medical Record State Machine**: Triển khai cơ chế quản lý trạng thái hồ sơ nghiêm ngặt (Ready -> CheckedIn -> WaitingForQC -> Completed).
+- **Strict State Validation**: Chặn đứng việc Finalize hồ sơ khi chưa hoàn tất quy trình (Bypass protection).
+
+### Changed
+- **ServiceResult Pattern**: Chuyển đổi toàn bộ `MedicalRecordStateMachine` sang trả về `ServiceResult` thay vì dùng raw Exceptions, giúp API ổn định và trả về HTTP 400 chuẩn.
+- **EF Synchronization**: Tối ưu hóa thứ tự `SaveChangesAsync` để đảm bảo dữ liệu luôn nhất quán khi kiểm đếm trạng thái đồng bộ.
+
+### Fixed
+- **Foreign Key Constraint**: Sửa lỗi sập API khi `TaskId` bị gán giá trị 0.
+- **AnyAsync Stale Read Bug**: Sửa lỗi hồ sơ bị kẹt trạng thái do đọc dữ liệu cũ từ Database.
+
+---
+
 ## [QuanLyDoanKham - 1.0.0-beta] - 2026-04-01
 ### Added
 - **Centralized Error Handling**: Tích hợp cơ chế chiết xuất lỗi từ API tập trung trong `authStore.js` và `useToast.js`, giúp hiển thị thông báo lỗi thân thiện thay vì đối tượng JSON.

@@ -23,16 +23,15 @@ namespace QuanLyDoanKham.API.Services.Auth
             _tokenService = tokenService;
         }
 
-        public async Task<(bool IsSuccess, string Message, AuthResponseDto Data)> LoginAsync(LoginDto request)
+        public async Task<(bool IsSuccess, string Message, AuthResponseDto? Data)> LoginAsync(LoginDto request)
         {
             try
             {
                 var loginId = request.Username?.Trim();
                 var user = await _context.Users
-                    .Include(u => u.Role).ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
-                    .Include(u => u.Department)
+                    .Include(u => u.Role).ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                     .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-                        .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
+                        .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                     .FirstOrDefaultAsync(u => u.Username == loginId || u.Email == loginId);
 
                 const string generalAuthError = "Thông tin đăng nhập không hợp lệ.";
@@ -50,10 +49,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                 if (!isValid)
                     return (false, generalAuthError, null);
 
-                // Đảm bảo primary role luôn có
-                if (user.Role == null && user.Username == "admin")
-                    user.Role = await _context.Roles.FindAsync(1);
-
+                // Đảm bảo primary role luôn có (Đã được seed trong DB, không hard-code ID)
                 if (user.Role == null)
                     return (false, "Tài khoản chưa được phân quyền. Vui lòng liên hệ Admin.", null);
 
@@ -75,12 +71,10 @@ namespace QuanLyDoanKham.API.Services.Auth
                     RefreshToken = originalRefreshToken,
                     Username = user.Username,
                     FullName = user.FullName,
-                    Role = user.Role.RoleName,
+                    Role = user.Role!.RoleName,
                     Roles = allRoles,
                     Permissions = allPermissions,
                     CompanyId = user.CompanyId,
-                    DepartmentId = user.DepartmentId,
-                    DepartmentName = user.Department?.DepartmentName,
                     AvatarPath = user.AvatarPath
                 });
             }
@@ -91,15 +85,14 @@ namespace QuanLyDoanKham.API.Services.Auth
             }
         }
 
-        public async Task<(bool IsSuccess, string Message, AuthResponseDto Data)> RefreshTokenAsync(RefreshTokenDto request)
+        public async Task<(bool IsSuccess, string Message, AuthResponseDto? Data)> RefreshTokenAsync(RefreshTokenDto request)
         {
             var hashedInputToken = _tokenService.HashRefreshToken(request.RefreshToken);
 
             var user = await _context.Users
-                .Include(u => u.Role).ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
-                .Include(u => u.Department)
+                .Include(u => u.Role).ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-                    .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
+                    .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.RefreshToken == hashedInputToken);
 
             if (user == null || user.RefreshTokenExpiry < DateTime.Now)
@@ -125,12 +118,10 @@ namespace QuanLyDoanKham.API.Services.Auth
                 RefreshToken = newOriginalRefreshToken,
                 Username = user.Username,
                 FullName = user.FullName,
-                Role = user.Role.RoleName,
+                Role = user.Role!.RoleName,
                 Roles = allRoles,
                 Permissions = allPermissions,
                 CompanyId = user.CompanyId,
-                DepartmentId = user.DepartmentId,
-                DepartmentName = user.Department?.DepartmentName,
                 AvatarPath = user.AvatarPath
             });
         }
@@ -186,7 +177,7 @@ namespace QuanLyDoanKham.API.Services.Auth
             user.RefreshToken = null;
             user.RefreshTokenExpiry = null;
             req.IsProcessed = true;
-            req.NewPassword = null;
+            req.NewPassword = string.Empty;
 
             await _context.SaveChangesAsync();
             return (true, $"Đã cấp lại mật khẩu cho {req.Username} thành công!");

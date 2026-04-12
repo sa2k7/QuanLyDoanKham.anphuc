@@ -23,6 +23,12 @@ const routes = [
         component: () => import('../views/CheckIn.vue'),
         meta: { guest: true }
     },
+    {
+        path: '/patient-checkin',
+        name: 'PatientCheckIn',
+        component: () => import('../views/PatientSelfCheckIn.vue'),
+        meta: { guest: true }
+    },
 
     // ── Dashboard ────────────────────────────────────────────────────
     {
@@ -62,13 +68,43 @@ const routes = [
         meta: { requiresAuth: true, permission: 'DoanKham.View' }
     },
 
-
-    // ── Lâm sàng B2C ────────────────────────────────────────────────
+    // ── Bệnh nhân ────────────────────────────────────────────────────
     {
         path: '/patients',
         name: 'Patients',
         component: () => import('../views/Patients.vue'),
+        meta: { requiresAuth: true, permission: 'DoanKham.View' }
+    },
+
+    // ── OMS Operations ───────────────────────────────────────────────
+    {
+        path: '/oms/dashboard',
+        name: 'OmsDashboard',
+        component: () => import('../views/oms/QueueDashboard.vue'),
         meta: { requiresAuth: true }
+    },
+
+    {
+        path: '/oms/station/:code',
+        name: 'OmsStation',
+        component: () => import('../views/oms/StationCoordinator.vue'),
+        meta: { requiresAuth: true }
+    },
+
+    {
+        path: '/oms/qc',
+        name: 'OmsQcReview',
+        component: () => import('../views/oms/QcReview.vue'),
+        meta: { requiresAuth: true, permission: 'KetQua.QCApprove' }
+    },
+
+
+    // ── Quyết toán ────────────────────────────────────────────────
+    {
+        path: '/settlement-report',
+        name: 'SettlementReport',
+        component: () => import('../views/SettlementReport.vue'),
+        meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
 
     // ── Nhân sự ──────────────────────────────────────────────────────
@@ -78,16 +114,12 @@ const routes = [
         component: () => import('../views/Staff.vue'),
         meta: { requiresAuth: true, permission: 'NhanSu.View' }
     },
-
-    // ── Phòng ban ────────────────────────────────────────────────────
     {
-        path: '/departments',
-        name: 'Departments',
-        component: () => import('../views/Departments.vue'),
-        meta: { requiresAuth: true, roles: ['Admin', 'PersonnelManager'] }
+        path: '/payroll',
+        name: 'Payroll',
+        component: () => import('../views/Payroll.vue'),
+        meta: { requiresAuth: true, permission: 'Luong.View' }
     },
-
-    // ── Kho vật tư ──────────────────────────────────────────────────
     {
         path: '/supplies',
         name: 'Supplies',
@@ -95,13 +127,7 @@ const routes = [
         meta: { requiresAuth: true, permission: 'Kho.View' }
     },
 
-    // ── Lương ────────────────────────────────────────────────────────
-    {
-        path: '/payroll',
-        name: 'Payroll',
-        component: () => import('../views/Payroll.vue'),
-        meta: { requiresAuth: true, permission: 'Luong.View' }
-    },
+
 
     // ── Báo cáo ──────────────────────────────────────────────────────
     {
@@ -125,13 +151,6 @@ const routes = [
         meta: { requiresAuth: true, permission: 'HeThong.RoleManage' }
     },
 
-    // ── Lịch cá nhân ────────────────────────────────────────────────
-    {
-        path: '/my-schedule',
-        name: 'MySchedule',
-        component: () => import('../views/MySchedule.vue'),
-        meta: { requiresAuth: true, permission: 'LichKham.ViewOwn' }
-    },
 
     // ── 404 ─────────────────────────────────────────────────────────
     {

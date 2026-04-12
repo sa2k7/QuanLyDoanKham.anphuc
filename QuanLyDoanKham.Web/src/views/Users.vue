@@ -8,8 +8,6 @@
             <ShieldCheck class="w-6 h-6" />
           </div>
           {{ isAdmin ? i18n.t('users.title') : i18n.t('users.profileTitle') }}
-          <span v-if="isAdmin" class="text-slate-200 ml-2 font-black">/</span>
-          <span v-if="isAdmin" class="text-primary font-black tabular-nums">{{ String(users.length).padStart(3, '0') }}</span>
         </h2>
         <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
       </div>
@@ -47,7 +45,7 @@
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ u.fullName || i18n.t('users.unnamed') }}</h4>
+                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ fixEncoding(u.fullName) || i18n.t('users.unnamed') }}</h4>
                                     <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1 flex items-center gap-1">
                                         <AtSign class="w-3 h-3 text-indigo-400" /> {{ u.username }}
                                     </p>
@@ -104,7 +102,7 @@
                         <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${profile.username}`" class="w-full h-full object-cover rounded-[2.5rem] bg-slate-50" />
                     </div>
                     <div class="mb-4">
-                        <h3 class="text-4xl font-black text-white ">{{ profile.fullName }}</h3>
+                        <h3 class="text-4xl font-black text-white ">{{ fixEncoding(profile.fullName) }}</h3>
                         <div class="flex items-center gap-3 mt-2">
                             <span class="bg-white/20 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] font-black text-white uppercase tracking-widest border border-white/20">{{ profile.roleName }}</span>
                             <span class="text-white/60 text-xs font-black uppercase tracking-widest ">@{{ profile.username }}</span>
@@ -335,6 +333,15 @@ const onFileChange = (e) => {
     if (!file) return
     selectedFile.value = file
     avatarPreview.value = URL.createObjectURL(file)
+}
+
+const fixEncoding = (str) => {
+    if (!str) return str
+    try {
+        return decodeURIComponent(escape(str))
+    } catch (e) {
+        return str
+    }
 }
 
 const fetchUsers = async () => {

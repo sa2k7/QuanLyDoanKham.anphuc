@@ -1,58 +1,26 @@
-# QuanLyDoanKham.anphuc — Project Memory
+# AGENTS Adapter (Cursor/Windsurf/Cline)
 
-> Auto-synced | 869 observations
+Canonical instructions live in `AI_SYSTEM.md`.
 
-**Stack:** JavaScript/Python/TypeScript · Express + React + Tailwind + Vue · DB: SQLite
+## Startup Checklist
 
-## 🏛️ CORE ARCHITECTURE
+1. Read `AI_SYSTEM.md`.
+2. Read `.cursor/active-context.md`.
+3. Use project-memory tools on-demand only.
 
-> **CRITICAL:** The following rules represent strict architectural boundaries defined by the user. NEVER violate them in your generated code or explanations.
+## Cursor-Style Tool Names
 
-# Intellectual Property & Architecture Rules
-Write your strict architectural boundaries here. 
-BrainSync will automatically enforce these rules across all agents (Cursor, Windsurf, Cline) 
-and inject them into the memory context.
+- `save(title, content, category)`
+- `batch_save(items[])`
+- `query(text)`
+- `search(text)`
+- `check_errors()`
 
-Example:
-- NEVER use TailwindCSS. Only use vanilla CSS.
-- NEVER write class components. Only use functional React components.
+## Must-Keep Guardrails
 
-## 🛡️ GLOBAL SAFETY RULES
+- Do not mix contradictory stack assumptions from legacy memory.
+- Do not bypass active-context instructions for the file being edited.
 
-- **NEVER** run `git clean -fd` or `git reset --hard` without checking `git log` and verifying commits exist.
-- **NEVER** delete untracked files or folders blindly. Always backup or stash before bulk edits.
+## Conflict Rule
 
-## 🧭 ACTIVE CONTEXT
-
-> Always read `.cursor/active-context.md` for exact instructions on the specific file you are currently editing. It updates dynamically.
-
-## 🔴 STOP — READ THESE FIRST
-
-- **Don't mix Tailwind with inline styles** — Don't mix Tailwind with inline styles
-- **Use async error handler middleware — don't let errors crash server** — Use async error handler middleware — don't let errors crash server
-- **Don't mutate props directly — emit events to parent** — Don't mutate props directly — emit events to parent
-- **Always use :key with v-for directives** — Always use :key with v-for directives
-- **Clean up effects — return cleanup function from useEffect** — Clean up effects — return cleanup function from useEffect
-
-## 📐 Conventions
-
-- Quy chuẩn Thiết kế Giao diện Premium (komi style)
-- Extract repeated class patterns into components
-- Use responsive prefixes consistently (sm:, md:, lg:, xl:)
-- Don't use arbitrary values when a utility class exists
-- Rate limit API endpoints to prevent abuse
-- Validate request body with a schema validator (Joi, Zod)
-- Use helmet for security headers
-- Use computed properties for derived state
-
-## ⚡ Available Tools (ON-DEMAND only)
-- `save(title, content, category)` — Save a note + auto-detect conflicts
-- `batch_save(items[])` — Save multiple notes in 1 call
-- `query(text)` — Search memory for architecture, past fixes, decisions
-- `search(text)` — Full-text search for details
-- `check_errors()` — Check compiler errors after edits
-
-> ℹ️ DO NOT call get_context() or get_gotchas() at startup — context above IS your context.
-
----
-*Auto-synced | 2026-04-01*
+If this file conflicts with `AI_SYSTEM.md`, always follow `AI_SYSTEM.md`.

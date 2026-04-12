@@ -47,7 +47,7 @@ apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
         if (error.response) {
-            console.error(`[API Error] ${error.config.url}: Status ${error.status}`, error.response.data);
+            console.error(`[API Error] ${error.config?.url}: Status ${error.response.status}`, error.response.data);
         } else {
             console.error(`[Network Error] Không thể kết nối tới server`);
         }

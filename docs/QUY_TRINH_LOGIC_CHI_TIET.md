@@ -809,6 +809,50 @@ async Task<SupplyInventoryVoucher> ExportSupplies(int groupId, List<ExportItem> 
 
 ---
 
+### 2.7 Module Khám Bệnh (OMS - Operations Management System)
+
+#### 2.7.1 Medical Record State Machine
+
+Hồ sơ khám bệnh (`MedicalRecord`) vận hành theo máy trạng thái nghiêm ngặt để đảm bảo tính toàn vẹn dữ liệu lâm sàng:
+
+```
+┌───────────┐   Check-in   ┌─────────────┐   Khám xong   ┌───────────────┐
+│   READY   │ ───────────► │ CHECKED_IN  │ ────────────► │ WAITING_FOR_QC│
+└───────────┘ (tạo tasks)  └─────────────┘ (tất cả trạm) └───────┬───────┘
+     │                            │                             │
+     │ Cancel                     │ No-show                     │ Finalize
+     ▼                            ▼                             ▼
+┌───────────┐              ┌─────────────┐               ┌───────────────┐
+│ CANCELLED │              │   NO_SHOW   │               │   COMPLETED   │
+└───────────┘              └─────────────┘               └───────────────┘
+```
+
+#### 2.7.2 Business Rules & Defensive Coding
+
+| # | Rule | Validation | Logic Xử Lý |
+|---|------|------------|-------------|
+| 1 | Check-in phải có trạm | `ActiveStations.Any()` | Trả về `ServiceResult.Failure` nếu trạm chưa mở. Tránh FK_TaskId = 0. |
+| 2 | Chặn Bypass quy trình | `record.Status == "WAITING_FOR_QC"` | Chỉ cho phép gọi `Finalize` khi đã hoàn tất tất cả trạm khám. |
+| 3 | Đồng bộ hóa EF Core | Option B: Double `SaveChanges` | Luôn gọi `SaveChangesAsync` sau khi đổi Status Task trước khi kiểm đếm `AnyAsync`. |
+| 4 | Trả về chuẩn RESTful | `ServiceResult<T>` | Mọi lỗi nghiệp vụ trả về `HTTP 400` kèm JSON `{ message: "..." }`. |
+
+#### 2.7.3 Quy Trình Hoàn Tất (Finalize Logic)
+
+```csharp
+// Logic chuẩn hóa architect
+if (record.Status != "WAITING_FOR_QC")
+    return ServiceResult.Failure("Chưa hoàn tất các trạm khám.");
+
+record.Status = "COMPLETED";
+var lastTask = await GetLastCompletedTask(recordId);
+if (lastTask == null) return ServiceResult.Failure("Thiếu lịch sử khám.");
+
+recordEvent.TaskId = lastTask.TaskId; // Luôn đảm bảo TaskId hợp lệ
+await SaveChangesAsync();
+```
+
+---
+
 ## 3. Ma Trận Phân Quyền
 
 ### 3.1 Permission Definitions
@@ -874,6 +918,10 @@ async Task<SupplyInventoryVoucher> ExportSupplies(int groupId, List<ExportItem> 
 | 8 | Xuất kho khi tồn kho không đủ | Validation: TotalStock >= RequestQuantity |
 | 9 | Thêm nhân viên vào đoàn đã khóa | Validation: Status != "Locked" && Status != "Finished" |
 | 10 | Chấm công thủ công khi đã có QR check | Ghi đè hoặc báo lỗi tùy policy |
+| 11 | Check-in MedicalRecord nhưng không có cấu hình trạm | Trả về ServiceResult.Failure thay vì throw Exception |
+| 12 | Gọi Finalize Record khi chưa qua bước QC | Chặn bằng logic status != "WAITING_FOR_QC" |
+| 13 | Lỗi DB Foreign Key do TaskId = 0 | Validation chặn đứng trước khi SaveChangesAsync |
+| 14 | Lỗi đếm Task hoàn tất bị chậm (Stale Read) | Gọi SaveChangesAsync ngay sau khi update task status |
 
 ### 4.2 Error Handling Pattern
 

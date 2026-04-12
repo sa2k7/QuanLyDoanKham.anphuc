@@ -51,8 +51,7 @@ Thumbs.db
 .brainsync/
 .cursor/
 *.log
-AGENT.md
-CLAUDE.md
+# Keep shared AI adapter docs versioned
 
 # ======================
 # Project specific
@@ -62,6 +61,8 @@ wwwroot/uploads/
 *.pdf
 .env*
 !.env.example
+appsettings.json
+appsettings.*.json
 
 # ======================
 # File tạm / báo cáo tự sinh
@@ -80,3 +81,6 @@ BAO_CAO_*.csv
 .clineRules
 .windsurfrules
 .cline/
+
+AGENT.md
+CLAUDE.md

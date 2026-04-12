@@ -8,12 +8,15 @@ export const useI18nStore = defineStore('i18n', () => {
         vi: {
             nav: {
                 dashboard: 'Tổng quan',
-                companies: 'Công ty',
-                contracts: 'Hợp đồng',
-                groups: 'Đoàn khám',
-                staff: 'Nhân sự',
-                supplies: 'Kho vật tư',
-                accounts: 'Tài khoản',
+                companies: 'Quản lý Công ty',
+                contracts: 'Hợp đồng & Ký kết',
+                groups: 'Quản lý Đoàn khám',
+                patients: 'Hồ sơ Bệnh nhân',
+                staff: 'Nhân sự & Chấm công',
+                payroll: 'Bảng lương Tháng',
+                reports: 'Thống kê & Báo cáo',
+                accounts: 'Tài khoản Hệ thống',
+                permissions: 'Quyền hạn & Bảo mật',
                 logout: 'Đăng xuất'
             },
             common: {
@@ -32,21 +35,21 @@ export const useI18nStore = defineStore('i18n', () => {
                 actions: 'Tác vụ'
             },
             companies: {
-                title: 'Công ty Đối tác',
-                subtitle: 'Nội bộ: Quản lý thông tin pháp nhân khách hàng',
+                title: 'Danh sách Công ty',
+                subtitle: 'Quản lý thông tin các công ty và đối tác doanh nghiệp',
                 addBtn: 'THÊM CÔNG TY',
                 cancelBtn: 'HỦY BỎ',
                 formTitle: 'Khai báo Công ty mới',
-                formSubtitle: 'Thêm mới đối tác pháp nhân vào hệ thống',
+                formSubtitle: 'Thêm mới thông tin công ty vào hệ thống',
                 inputs: {
-                    name: 'Tên pháp nhân công ty',
+                    name: 'Tên pháp nhân doanh nghiệp',
                     taxCode: 'Mã số thuế',
-                    companyPhone: 'SĐT liên hệ công ty',
+                    companyPhone: 'SĐT liên hệ doanh nghiệp',
                     representativePhone: 'SĐT người đại diện',
                     address: 'Địa chỉ trụ sở'
                 },
                 table: {
-                    info: 'THÔNG TIN CÔNG TY',
+                    info: 'THÔNG TIN DOANH NGHIỆP',
                     taxCode: 'MÃ THUẾ',
                     contact: 'THÔNG TIN LIÊN HỆ',
                     address: 'ĐỊA CHỈ'
@@ -102,35 +105,25 @@ export const useI18nStore = defineStore('i18n', () => {
                 formSubtitle: 'Thiết lập thông tin thương mại',
                 table: {
                     client: 'ĐẠI DIỆN HỢP ĐỒNG',
-                    date: 'NGÀY KHÁM (DỰ KIẾN)',
                     value: 'TỔNG GIÁ TRỊ',
-                    discount: 'CHIẾT KHẤU'
+                    discount: 'CHIẾT KHẤU',
+                    expected: 'QUY MÔ DỰ KIẾN',
+                    actual: 'QUY MÔ THỰC TẾ',
+                    date: 'NGÀY KẾT THÚC'
                 }
             },
             permissions: {
-      title: "Quản lý Phân quyền",
-      subtitle: "Cấu hình permissions cho từng Role hệ thống",
-      list: "Danh sách đặc quyền được cấp cho vai trò",
-      selectAll: "Chọn tất cả",
-      deselect: "Bỏ chọn",
-      restore: "Trở về mặc định",
-      save: "Lưu thay đổi",
-      saving: "Đang lưu...",
-      restoring: "Đang khôi phục...",
-      all: "Tất cả",
-    },
-    permissions: {
-      title: "Permissions Management",
-      subtitle: "Configure permissions for system Roles",
-      list: "List of privileges granted to the role",
-      selectAll: "Select All",
-      deselect: "Deselect",
-      restore: "Restore Defaults",
-      save: "Save Changes",
-      saving: "Saving...",
-      restoring: "Restoring...",
-      all: "All",
-    },
+                title: 'Quản trị Phân quyền',
+                subtitle: 'Cấu hình đặc quyền truy cập cho từng vai trò nhân sự',
+                list: 'Danh sách đặc quyền theo nhóm chức năng',
+                selectAll: 'Quyết định Tất cả',
+                deselect: 'Hủy chọn Toàn bộ',
+                restore: 'Khôi phục Mặc định',
+                save: 'Lưu Cấu hình',
+                saving: 'Đang ghi nhận...',
+                restoring: 'Đang thiết lập lại...',
+                all: 'Toàn quyền nhóm'
+            },
     departments: {
                 title: 'Quản lý Trạm Khám & Chuyên Khoa',
                 subtitle: '{0} trạm khám / đơn vị chuyên môn đang hoạt động',
@@ -179,7 +172,7 @@ export const useI18nStore = defineStore('i18n', () => {
                 WarehouseManager: 'Quản lý Kho',
                 PayrollManager: 'Quản lý tính lương',
                 MedicalStaff: 'Nhân sự đi đoàn',
-                Customer: 'Tài khoản đối tác'
+                Customer: 'Tài khoản Công ty'
             },
             schedule: {
                 title: 'Lịch khám của tôi',
@@ -313,25 +306,25 @@ export const useI18nStore = defineStore('i18n', () => {
                 formSubtitle: 'Specialized medical unit in the health check group system'
             },
             users: {
-                title: 'System Account Management',
-                subtitle: '{0} accounts with access rights',
-                addBtn: 'Grant New Account',
-                filterAll: 'All ({0})',
-                filterAdmin: 'Administrators ({0})',
-                filterDoctor: 'Medical Experts ({0})',
-                filterDirector: 'Board of Directors ({0})',
-                filterStaff: 'Staff ({0})',
-                profileTitle: 'Account Profile',
-                profileSubtitle: 'Personal Info & Activity Logs',
+                title: 'Quản lý Tài khoản Hệ thống',
+                subtitle: '{0} tài khoản đang hoạt động',
+                addBtn: 'Cấp tài khoản mới',
+                filterAll: 'Tất cả ({0})',
+                filterAdmin: 'Ban Quản trị ({0})',
+                filterDoctor: 'Chuyên gia Y tế ({0})',
+                filterDirector: 'Ban Giám đốc ({0})',
+                filterStaff: 'Nhân viên vận hành ({0})',
+                profileTitle: 'Hồ sơ tài khoản',
+                profileSubtitle: 'Thông tin cá nhân & Nhật ký hoạt động',
                 table: {
-                    account: 'Account',
-                    role: 'Role'
+                    account: 'Tài khoản',
+                    role: 'Vai trò'
                 },
-                unnamed: 'Unnamed',
-                empty: 'No account data found',
-                formTitleEdit: 'Update Account',
-                formTitleAdd: 'Create New Account',
-                formSubtitle: 'Manage permissions & system access'
+                unnamed: 'Chưa đặt tên',
+                empty: 'Không tìm thấy dữ liệu tài khoản',
+                formTitleEdit: 'Cập nhật tài khoản',
+                formTitleAdd: 'Cấp tài khoản mới',
+                formSubtitle: 'Quản lý phân quyền & truy cập hệ thống'
             },
             supplies: {
                 title: 'Medical Supplies Inventory',
@@ -340,14 +333,14 @@ export const useI18nStore = defineStore('i18n', () => {
                 cancelBtn: 'CANCEL'
             },
             roles: {
-                Admin: 'Admin',
-                PersonnelManager: 'HR Manager',
-                ContractManager: 'Sales Manager',
-                MedicalGroupManager: 'Operations',
-                WarehouseManager: 'Stock Manager',
-                PayrollManager: 'Accounting',
-                MedicalStaff: 'Medical Team',
-                Customer: 'Partner'
+                Admin: 'Quản trị hệ thống',
+                PersonnelManager: 'Quản lý Nhân sự',
+                ContractManager: 'Quản lý Hợp đồng',
+                MedicalGroupManager: 'Quản lý Đoàn khám',
+                WarehouseManager: 'Quản lý Kho vật tư',
+                PayrollManager: 'Quản lý Tiền lương',
+                MedicalStaff: 'Nhân viên Y tế',
+                Customer: 'Đại diện Công ty'
             },
             schedule: {
                 title: 'My Schedule',

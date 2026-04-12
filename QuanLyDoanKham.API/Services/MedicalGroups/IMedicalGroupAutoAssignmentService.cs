@@ -11,10 +11,10 @@ namespace QuanLyDoanKham.API.Services.MedicalGroups
     public class ApiResult<T>
     {
         public bool IsSuccess { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
+        public string? Message { get; set; }
+        public T? Data { get; set; }
 
-        public static ApiResult<T> Success(T data, string message = null) 
+        public static ApiResult<T> Success(T data, string? message = null) 
             => new ApiResult<T> { IsSuccess = true, Data = data, Message = message };
             
         public static ApiResult<T> Failure(string message) 

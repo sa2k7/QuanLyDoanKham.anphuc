@@ -130,7 +130,7 @@ namespace QuanLyDoanKham.API.Services.MedicalGroups
                     {
                         GroupId = newGroup.GroupId,
                         StaffId = staff.StaffId,
-                        WorkPosition = staff.WorkPosition,
+                        WorkPosition = staff.WorkPosition ?? "Unknown",
                         ShiftType = staff.ShiftType,
                         ExamDate = request.ExamDate, // Ensure ExamDate is set
                         WorkStatus = "Đang chờ",

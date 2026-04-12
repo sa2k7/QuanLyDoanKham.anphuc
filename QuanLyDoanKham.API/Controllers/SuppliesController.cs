@@ -1,14 +1,20 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
-using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.DTOs;
 
 namespace QuanLyDoanKham.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     [Authorize]
     public class SuppliesController : ControllerBase
     {
@@ -19,225 +25,123 @@ namespace QuanLyDoanKham.API.Controllers
             _context = context;
         }
 
-        // GET: api/Supplies — Chỉ Admin, WarehouseManager, MedicalGroupManager được xem
+        // GET: api/Supplies
         [HttpGet]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.View")]
-        public async Task<ActionResult<IEnumerable<SupplyDto>>> GetSupplies()
+        [AuthorizePermission("Kho.View")]
+        public async Task<IActionResult> GetSupplies()
         {
-            var today = DateTime.Today;
-            return await _context.Supplies
-                .Select(s => new SupplyDto
-                {
-                    SupplyId = s.SupplyId,
-                    SupplyName = s.SupplyName,
-                    Unit = s.Unit,
-                    IsFixedAsset = s.IsFixedAsset,
-                    Category = s.Category,
-                    LotNumber = s.LotNumber,
-                    ExpirationDate = s.ExpirationDate,
-                    ManufactureDate = s.ManufactureDate,
-                    MinStockLevel = s.MinStockLevel,
-                    UnitPrice = s.UnitPrice,
-                    TotalStock = s.TotalStock,
-                    // Canh bao HSD con < 30 ngay
-                    IsExpiringSoon = s.ExpirationDate.HasValue && s.ExpirationDate.Value <= today.AddDays(30),
-                    // Canh bao ton kho duoi nguong toi thieu
-                    IsLowStock = s.TotalStock <= s.MinStockLevel
-                })
+            var supplies = await _context.SupplyItems
+                .OrderBy(s => s.ItemName)
                 .ToListAsync();
+            return Ok(supplies);
         }
 
-
-        // PUT: api/Supplies/{id}
-        [HttpPut("{id}")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
-        public async Task<IActionResult> PutSupply(int id, SupplyDto dto)
-        {
-            if (id != dto.SupplyId) return BadRequest("ID không khớp.");
-
-            var supply = await _context.Supplies.FindAsync(id);
-            if (supply == null) return NotFound("Không tìm thấy vật tư.");
-
-            supply.SupplyName = dto.SupplyName;
-            supply.Unit = dto.Unit;
-            supply.Category = dto.Category;
-            supply.IsFixedAsset = dto.IsFixedAsset;
-            supply.UnitPrice = dto.UnitPrice;
-            supply.MinStockLevel = dto.MinStockLevel;
-            // Lưu ý: Không cập nhật TotalStock tại đây để đảm bảo tính nhất quán (quản lý qua phiếu)
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!await _context.Supplies.AnyAsync(s => s.SupplyId == id))
-                    return NotFound();
-                else
-                    throw;
-            }
-
-            return Ok("Dữ liệu vật tư đã được cập nhật thành công.");
-        }
-
-        // DELETE: api/Supplies/{id}
-        [HttpDelete("{id}")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
-        public async Task<IActionResult> DeleteSupply(int id)
-        {
-            var supply = await _context.Supplies.FindAsync(id);
-            if (supply == null) return NotFound("Không tìm thấy vật tư.");
-
-            var isUsed = await _context.SupplyInventoryDetails.AnyAsync(d => d.SupplyId == id);
-            if (isUsed) return BadRequest("Vật tư này đã phát sinh giao dịch phiếu kho, không thể xóa.");
-
-            _context.Supplies.Remove(supply);
-            await _context.SaveChangesAsync();
-            return Ok("Đã xóa vật tư thành công.");
-        }
-
-        // POST: api/Supplies (Tạo mới loại vật tư)
+        // POST: api/Supplies
         [HttpPost]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Import")]
-        public async Task<ActionResult<Supply>> PostSupply(SupplyDto dto)
+        [AuthorizePermission("Kho.Edit")]
+        public async Task<IActionResult> CreateSupply([FromBody] SupplyItem item)
         {
-            if (await _context.Supplies.AnyAsync(s => s.SupplyName == dto.SupplyName))
-                return BadRequest($"Vật tư '{dto.SupplyName}' đã tồn tại trong danh mục.");
+            _context.SupplyItems.Add(item);
+            await _context.SaveChangesAsync();
+            return Ok(item);
+        }
 
-            var supply = new Supply
+        // POST: api/Supplies/import
+        [HttpPost("import")]
+        [AuthorizePermission("Kho.Edit")]
+        public async Task<IActionResult> ImportStock([FromBody] StockMovementDto dto)
+        {
+            var item = await _context.SupplyItems.FindAsync(dto.SupplyId);
+            if (item == null) return NotFound("Không tìm thấy vật tư");
+
+            var userId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : (int?)null;
+
+            var movement = new StockMovement
             {
-                SupplyName = dto.SupplyName,
-                Unit = dto.Unit,
-                IsFixedAsset = dto.IsFixedAsset,
+                SupplyId = dto.SupplyId,
+                Quantity = dto.Quantity,
                 UnitPrice = dto.UnitPrice,
-                TotalStock = 0
+                Note = dto.Note ?? "",
+                MovementType = "IN",
+                MovementDate = DateTime.Now,
+                TotalValue = dto.Quantity * dto.UnitPrice,
+                ItemName = item.ItemName,
+                Unit = item.Unit,
+                RecordedByUserId = userId
             };
 
-            _context.Supplies.Add(supply);
+            item.CurrentStock += dto.Quantity;
+            item.UpdatedAt = DateTime.Now;
+
+            _context.StockMovements.Add(movement);
             await _context.SaveChangesAsync();
-            return Ok(supply);
+
+            return Ok(new { message = "Nhập kho thành công", currentStock = item.CurrentStock });
         }
 
-        // GET: api/Supplies/vouchers
-        [HttpGet("vouchers")]
-        public async Task<ActionResult<IEnumerable<SupplyInventoryVoucherDto>>> GetVouchers()
+        // POST: api/Supplies/export
+        [HttpPost("export")]
+        [AuthorizePermission("Kho.Edit")]
+        public async Task<IActionResult> ExportStock([FromBody] StockMovementDto dto)
         {
-            return await _context.SupplyInventoryVouchers
-                .Include(v => v.MedicalGroup)
-                .Include(v => v.CreatedByUser)
-                .OrderByDescending(v => v.CreateDate)
-                .Select(v => new SupplyInventoryVoucherDto
-                {
-                    VoucherId = v.VoucherId,
-                    VoucherCode = v.VoucherCode,
-                    CreateDate = v.CreateDate,
-                    Type = v.Type,
-                    GroupId = v.GroupId,
-                    GroupName = v.MedicalGroup != null ? v.MedicalGroup.GroupName : null,
-                    CreatedBy = v.CreatedByUser.FullName,
-                    Note = v.Note
-                })
+            var item = await _context.SupplyItems.FindAsync(dto.SupplyId);
+            if (item == null) return NotFound("Không tìm thấy vật tư");
+
+            if (item.CurrentStock < dto.Quantity)
+                return BadRequest("Số lượng tồn kho không đủ");
+
+            var userId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : (int?)null;
+
+            var movement = new StockMovement
+            {
+                SupplyId = dto.SupplyId,
+                MedicalGroupId = dto.MedicalGroupId,
+                Quantity = dto.Quantity,
+                UnitPrice = dto.UnitPrice,
+                Note = dto.Note ?? "",
+                MovementType = "OUT",
+                MovementDate = DateTime.Now,
+                TotalValue = dto.Quantity * dto.UnitPrice,
+                ItemName = item.ItemName,
+                Unit = item.Unit,
+                RecordedByUserId = userId
+            };
+
+            item.CurrentStock -= dto.Quantity;
+            item.UpdatedAt = DateTime.Now;
+
+            _context.StockMovements.Add(movement);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Xuất kho thành công", currentStock = item.CurrentStock });
+        }
+
+        // GET: api/Supplies/movements
+        [HttpGet("movements")]
+        [AuthorizePermission("Kho.View")]
+        public async Task<IActionResult> GetAllMovements()
+        {
+            var movements = await _context.StockMovements
+                .OrderByDescending(m => m.MovementDate)
+                .Include(m => m.RecordedByUser)
+                .Include(m => m.MedicalGroup)
+                .Take(500) // Limit to latest 500
                 .ToListAsync();
+            return Ok(movements);
         }
 
-        // POST: api/Supplies/vouchers (Tạo phiếu nhập/xuất)
-        [HttpPost("vouchers")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Export")]
-        public async Task<IActionResult> CreateVoucher(CreateVoucherDto dto)
+        // GET: api/Supplies/movements/{supplyId}
+        [HttpGet("movements/{supplyId}")]
+        [AuthorizePermission("Kho.View")]
+        public async Task<IActionResult> GetMovements(int supplyId)
         {
-            var username = User.Identity.Name;
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
-
-            var voucher = new SupplyInventoryVoucher
-            {
-                VoucherCode = (dto.Type == "IMPORT" ? "NK" : "XK") + DateTime.Now.ToString("yyyyMMddHHmmss"),
-                CreateDate = DateTime.Now,
-                Type = dto.Type,
-                GroupId = dto.GroupId,
-                CreatedByUserId = user.UserId,
-                Note = dto.Note
-            };
-
-            foreach (var item in dto.Details)
-            {
-                var supply = await _context.Supplies.FindAsync(item.SupplyId);
-                if (supply == null) continue;
-
-                if (dto.Type == "EXPORT" && supply.TotalStock < item.Quantity)
-                    return BadRequest($"Vật tư {supply.SupplyName} không đủ tồn kho.");
-
-                voucher.Details.Add(new SupplyInventoryDetail
-                {
-                    SupplyId = item.SupplyId,
-                    Quantity = item.Quantity,
-                    Price = supply.UnitPrice
-                });
-
-                // Cập nhật tồn kho thực tế
-                if (dto.Type.ToUpper() == "IMPORT") 
-                {
-                    supply.TotalStock += item.Quantity;
-                }
-                else if (dto.Type.ToUpper() == "EXPORT")
-                {
-                    supply.TotalStock -= item.Quantity;
-                }
-            }
-
-            _context.SupplyInventoryVouchers.Add(voucher);
-            await _context.SaveChangesAsync();
-
-            // Ghi Audit Log
-            if (user != null)
-            {
-                _context.AuditLogs.Add(new AuditLog
-                {
-                    UserId = user.UserId,
-                    Action = dto.Type == "IMPORT" ? "IMPORT_SUPPLY" : "EXPORT_SUPPLY",
-                    EntityType = "SupplyInventoryVoucher",
-                    EntityId = voucher.VoucherId,
-                    OldValue = null,
-                    NewValue = $"Phiếu {voucher.VoucherCode}: {dto.Details.Count} loại vật tư" + (dto.GroupId.HasValue ? $" cho đoàn #{dto.GroupId}" : ""),
-                    Timestamp = DateTime.Now,
-                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
-                });
-                await _context.SaveChangesAsync();
-            }
-
-            return Ok(new { message = "Tạo phiếu thành công", voucherCode = voucher.VoucherCode });
-        }
-        // DELETE: api/Supplies/vouchers/{id}
-        [HttpDelete("vouchers/{id}")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("Kho.Export")]
-        public async Task<IActionResult> DeleteVoucher(int id)
-        {
-            var voucher = await _context.SupplyInventoryVouchers
-                .Include(v => v.Details)
-                .FirstOrDefaultAsync(v => v.VoucherId == id);
-
-            if (voucher == null) return NotFound("Không tìm thấy phiếu kho.");
-
-            // Hoàn tác tồn kho
-            foreach (var detail in voucher.Details)
-            {
-                var supply = await _context.Supplies.FindAsync(detail.SupplyId);
-                if (supply != null)
-                {
-                    if (voucher.Type.ToUpper() == "IMPORT")
-                    {
-                        supply.TotalStock -= detail.Quantity;
-                    }
-                    else if (voucher.Type.ToUpper() == "EXPORT")
-                    {
-                        supply.TotalStock += detail.Quantity;
-                    }
-                }
-            }
-
-            _context.SupplyInventoryVouchers.Remove(voucher);
-            await _context.SaveChangesAsync();
-            return Ok("Đã xóa phiếu kho và hoàn tác tồn kho thành công.");
+            var movements = await _context.StockMovements
+                .Where(m => m.SupplyId == supplyId)
+                .OrderByDescending(m => m.MovementDate)
+                .Include(m => m.RecordedByUser)
+                .Include(m => m.MedicalGroup)
+                .ToListAsync();
+            return Ok(movements);
         }
     }
 }

@@ -23,9 +23,26 @@ namespace QuanLyDoanKham.API.Controllers
         // GET: api/Companies — Admin, ContractManager và MedicalStaff được xem
         [HttpGet]
         [AuthorizePermission("HopDong.View")] // Cho phép MedicalGroupManager xem để điều phối đoàn
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompanies()
+        public async Task<ActionResult<IEnumerable<CompanyDto>>> GetCompanies()
         {
-            return await _context.Companies.ToListAsync();
+            return await _context.Companies
+                .AsNoTracking()
+                .Select(c => new CompanyDto
+                {
+                    CompanyId = c.CompanyId,
+                    ShortName = c.ShortName,
+                    CompanyName = c.CompanyName,
+                    TaxCode = c.TaxCode,
+                    Address = c.Address,
+                    PhoneNumber = c.PhoneNumber,
+                    Email = c.Email,
+                    ContactPerson = c.ContactPerson,
+                    ContactPhone = c.ContactPhone,
+                    CompanySize = c.CompanySize,
+                    Industry = c.Industry,
+                    Notes = c.Notes
+                })
+                .ToListAsync();
         }
 
         // POST: api/Companies — Admin và ContractManager được tạo mới
@@ -33,6 +50,10 @@ namespace QuanLyDoanKham.API.Controllers
         [AuthorizePermission("HopDong.Create")]
         public async Task<ActionResult<Company>> PostCompany(CompanyDto dto)
         {
+            // Kiểm tra trùng lặp
+            if (await _context.Companies.AnyAsync(c => c.CompanyName == dto.CompanyName))
+                return BadRequest("Tên công ty đã tồn tại trong hệ thống.");
+            if (await _context.Companies.AnyAsync(c => c.TaxCode == dto.TaxCode))
             // Kiểm tra trùng lặp
             if (await _context.Companies.AnyAsync(c => c.CompanyName == dto.CompanyName))
                 return BadRequest("Tên công ty đã tồn tại trong hệ thống.");
@@ -49,7 +70,13 @@ namespace QuanLyDoanKham.API.Controllers
                 CompanyName = dto.CompanyName,
                 Address = dto.Address,
                 TaxCode = dto.TaxCode,
-                PhoneNumber = dto.PhoneNumber
+                PhoneNumber = dto.PhoneNumber,
+                Email = dto.Email,
+                ContactPerson = dto.ContactPerson,
+                ContactPhone = dto.ContactPhone,
+                CompanySize = dto.CompanySize,
+                Industry = dto.Industry,
+                Notes = dto.Notes
             };
 
             _context.Companies.Add(company);
@@ -81,6 +108,12 @@ namespace QuanLyDoanKham.API.Controllers
             company.TaxCode = dto.TaxCode;
             company.Address = dto.Address;
             company.PhoneNumber = dto.PhoneNumber;
+            company.Email = dto.Email;
+            company.ContactPerson = dto.ContactPerson;
+            company.ContactPhone = dto.ContactPhone;
+            company.CompanySize = dto.CompanySize;
+            company.Industry = dto.Industry;
+            company.Notes = dto.Notes;
 
             await _context.SaveChangesAsync();
             return Ok(company);

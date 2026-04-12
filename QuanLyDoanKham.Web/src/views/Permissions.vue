@@ -158,20 +158,14 @@ const toggleAll = (val) => {
 }
 
 const getRoleLabel = (name) => {
-  const map = {
-    Admin: '👑 Admin', PersonnelManager: '👤 Nhân sự', ContractManager: '📄 Hợp đồng',
-    PayrollManager: '💰 Kế toán lương', MedicalGroupManager: '🩺 Quản lý đoàn',
-    WarehouseManager: '📦 Kho vật tư', GroupLeader: '🎯 Trưởng đoàn',
-    MedicalStaff: '💊 Nhân viên khám', Accountant: '📊 Kế toán', Customer: '🏢 Khách hàng'
-  }
-  return map[name] || name
+  return i18n.t('roles.' + name)
 }
 
 const getModuleLabel = (m) => {
   const map = {
-    HopDong: '📄 Hợp đồng', DoanKham: '🩺 Đoàn khám', LichKham: '📅 Lịch khám',
-    ChamCong: '✅ Chấm công', Kho: '📦 Kho vật tư', Luong: '💰 Lương',
-    NhanSu: '👤 Nhân sự', BaoCao: '📊 Báo cáo', HeThong: '⚙️ Hệ thống'
+    HopDong: '📄 Hợp đồng & Doanh nghiệp', DoanKham: '🩺 Vận hành Đoàn khám', LichKham: '📅 Lịch khám & Điều phối',
+    ChamCong: '✅ Chấm công & Lương', Kho: '📦 Kho dược & Vật tư', Luong: '💰 Kế toán Tài chính',
+    NhanSu: '👤 Quản trị Nhân lực', BaoCao: '📊 Hệ thống Báo cáo', HeThong: '⚙️ Cấu hình Hệ thống'
   }
   return map[m] || m
 }

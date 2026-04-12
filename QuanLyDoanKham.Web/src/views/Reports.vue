@@ -1,28 +1,48 @@
 <template>
   <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in-up">
     <!-- Header Mềm mại bo tròn -->
-    <div class="flex-shrink-0 mb-8 p-10 bg-white rounded-[3rem] shadow-sm border-2 border-slate-50 flex items-center justify-between">
+    <div class="flex-shrink-0 mb-8 p-10 bg-white rounded-[3rem] shadow-sm border-2 border-slate-50 flex flex-wrap items-center justify-between gap-6">
       <div>
         <h2 class="text-3xl font-black text-slate-800 tracking-tight leading-none mb-2">{{ i18n.locale === 'vi' ? 'Báo Cáo Thống Kê' : 'Analytics & Reports' }}</h2>
         <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">{{ i18n.locale === 'vi' ? 'TỔNG QUAN HIỆU SUẤT VÀ DOANH THU' : 'OVERVIEW OF PERFORMANCE AND REVENUE' }}</p>
       </div>
-      <button @click="fetchStats" class="px-6 py-4 bg-primary/10 text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2">
-        <RefreshCw :class="{'animate-spin': isRefreshing}" class="w-4 h-4" />
-        {{ i18n.locale === 'vi' ? 'Cập Nhật' : 'Refresh' }}
-      </button>
+      
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100 shadow-inner">
+            <input type="date" v-model="startDate" class="bg-transparent border-none text-[10px] font-black text-slate-600 outline-none" />
+            <span class="text-slate-300">→</span>
+            <input type="date" v-model="endDate" class="bg-transparent border-none text-[10px] font-black text-slate-600 outline-none" />
+        </div>
+        <button @click="fetchStats" class="px-6 py-4 bg-primary/10 text-primary rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-primary/20 transition-all flex items-center gap-2">
+            <RefreshCw :class="{'animate-spin': isRefreshing}" class="w-4 h-4" />
+            {{ i18n.locale === 'vi' ? 'Cập Nhật' : 'Refresh' }}
+        </button>
+      </div>
     </div>
 
     <!-- Stats Grid -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-10">
-        <!-- Revenue Card -->
+        <!-- Revenue Card (Estimated) -->
         <div class="bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-[2rem] p-6 text-white relative overflow-hidden shadow-2xl shadow-indigo-200 group flex flex-col justify-between">
             <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
             <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
                 <CircleDollarSign class="w-6 h-6 text-white" />
             </div>
             <div>
-                <p class="text-[10px] font-black uppercase tracking-wider text-indigo-200 mb-1 leading-tight">{{ i18n.locale === 'vi' ? 'Tổng Doanh Thu (Dự kiến)' : 'Total Revenue (Est)' }}</p>
+                <p class="text-[10px] font-black uppercase tracking-wider text-indigo-200 mb-1 leading-tight">{{ i18n.locale === 'vi' ? 'Tổng Doanh Thu (Giá gốc)' : 'Total Revenue (Contract)' }}</p>
                 <h3 class="text-2xl font-black break-words leading-none">{{ formatCurrency(totalRevenue) }}</h3>
+            </div>
+        </div>
+
+        <!-- Revenue Card (Actual) -->
+        <div class="bg-gradient-to-br from-emerald-600 to-teal-800 rounded-[2rem] p-6 text-white relative overflow-hidden shadow-2xl shadow-emerald-200 group flex flex-col justify-between">
+            <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-white/10 rounded-full blur-xl group-hover:bg-white/20 transition-all duration-500"></div>
+            <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center mb-4">
+                <TrendingUp class="w-6 h-6 text-white" />
+            </div>
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-wider text-emerald-200 mb-1 leading-tight">{{ i18n.locale === 'vi' ? 'Lợi Nhuận Gộp (Dự kiến)' : 'Gross Profit (Est)' }}</p>
+                <h3 class="text-2xl font-black break-words leading-none">{{ formatCurrency(actualRevenue) }}</h3>
             </div>
         </div>
 
@@ -53,13 +73,22 @@
             <h3 class="text-3xl font-black text-slate-800">{{ totalDepartments }} <span class="text-xs text-slate-300 font-bold ml-1">trạm</span></h3>
         </div>
 
-        <!-- Users Card -->
+        <!-- Patients Card -->
         <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
-            <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
                 <Users2 class="w-6 h-6" />
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Tài Khoản Hệ Thống' : 'System Accounts' }}</p>
-            <h3 class="text-3xl font-black text-slate-800">{{ totalUsers }} <span class="text-xs text-slate-300 font-bold ml-1">user</span></h3>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Tổng Bệnh Nhân' : 'Total Patients' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalPatients }} <span class="text-xs text-slate-300 font-bold ml-1">hồ sơ</span></h3>
+        </div>
+
+        <!-- Staff Card -->
+        <div class="bg-white rounded-[2rem] p-6 border-2 border-slate-50 relative overflow-hidden premium-card group">
+            <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
+                <ShieldCheck class="w-6 h-6" />
+            </div>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Đội Ngũ Nhân Sự' : 'Medical Staff' }}</p>
+            <h3 class="text-3xl font-black text-slate-800">{{ totalStaff }} <span class="text-xs text-slate-300 font-bold ml-1">nhân sự</span></h3>
         </div>
 
         <!-- Supplies Card -->
@@ -67,7 +96,7 @@
             <div class="w-12 h-12 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mb-4 group-hover:-translate-y-1 transition-transform duration-500">
                 <Box class="w-6 h-6" />
             </div>
-            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Danh Mục Vật Tư' : 'Supply Categories' }}</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">{{ i18n.locale === 'vi' ? 'Vật Tư Y Tế' : 'Medical Supplies' }}</p>
             <h3 class="text-3xl font-black text-slate-800">{{ totalSupplies }} <span class="text-xs text-slate-300 font-bold ml-1">mục</span></h3>
         </div>
     </div>
@@ -158,7 +187,7 @@ import apiClient from '../services/apiClient'
 import { 
     RefreshCw, CircleDollarSign, FileCheck2, Stethoscope, 
     Users2, PieChart, AlertTriangle, ShieldCheck, PackageX,
-    Layers, Box
+    Layers, Box, TrendingUp
 } from 'lucide-vue-next'
 import { parseApiError } from '../services/errorHelper'
 import { useToast } from '../composables/useToast'
@@ -167,11 +196,16 @@ const i18n = useI18nStore()
 const toast = useToast()
 const isRefreshing = ref(false)
 
+const startDate = ref(new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0])
+const endDate = ref(new Date().toISOString().split('T')[0])
+
 const totalRevenue = ref(0)
+const actualRevenue = ref(0)
 const totalContracts = ref(0)
 const totalGroups = ref(0)
 const totalDepartments = ref(0)
-const totalUsers = ref(0)
+const totalStaff = ref(0)
+const totalPatients = ref(0)
 const totalSupplies = ref(0)
 
 const contractStats = ref({
@@ -190,13 +224,19 @@ const fetchStats = async () => {
     isRefreshing.value = true
     try {
         // Fetch Contracts for Revenue and Stats
-        const reqContracts = apiClient.get('/api/HealthContracts')
+        const params = { startDate: startDate.value, endDate: endDate.value }
+        
+        const reqContracts = apiClient.get('/api/Contracts')
         const reqGroups = apiClient.get('/api/MedicalGroups')
         const reqSupplies = apiClient.get('/api/Supplies')
         const reqDepts = apiClient.get('/api/Departments')
-        const reqUsers = apiClient.get('/api/Users')
+        const reqStaff = apiClient.get('/api/Staff')
+        const reqPatients = apiClient.get('/api/Patients')
+        const reqFinancial = apiClient.get('/api/Reports/financial', { params })
 
-        const [resContracts, resGroups, resSupplies, resDepts, resUsers] = await Promise.all([reqContracts, reqGroups, reqSupplies, reqDepts, reqUsers])
+        const [resContracts, resGroups, resSupplies, resDepts, resStaff, resPatients, resFinancial] = await Promise.all([
+            reqContracts, reqGroups, reqSupplies, reqDepts, reqStaff, reqPatients, reqFinancial
+        ])
 
         // Process Contracts
         const contracts = resContracts.data || []
@@ -216,8 +256,14 @@ const fetchStats = async () => {
         // Process Departments
         totalDepartments.value = resDepts.data ? resDepts.data.length : 0
 
-        // Process Users
-        totalUsers.value = resUsers.data ? resUsers.data.length : 0
+        // Process Staff
+        totalStaff.value = resStaff.data ? resStaff.data.length : 0
+
+        // Process Patients
+        totalPatients.value = resPatients.data ? resPatients.data.length : 0
+
+        // Process Financial (Gross Profit)
+        actualRevenue.value = resFinancial.data?.totalGrossProfit || 0
 
         // Process Supplies
         const supplies = resSupplies.data || []

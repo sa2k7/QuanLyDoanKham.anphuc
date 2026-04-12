@@ -54,7 +54,6 @@ namespace QuanLyDoanKham.API.Controllers
             var users = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Company)
-                .Include(u => u.Department)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .OrderBy(u => u.FullName)
                 .ToListAsync();
@@ -66,11 +65,9 @@ namespace QuanLyDoanKham.API.Controllers
                 FullName = u.FullName,
                 RoleName = u.Role?.RoleName,
                 RoleId = u.RoleId,
-                Roles = u.UserRoles.Select(ur => ur.Role?.RoleName).Where(r => r != null).ToList(),
+                Roles = u.UserRoles.Select(ur => ur.Role?.RoleName).OfType<string>().ToList(),
                 CompanyId = u.CompanyId,
                 CompanyName = u.Company?.CompanyName,
-                DepartmentId = u.DepartmentId,
-                DepartmentName = u.Department?.DepartmentName,
                 Email = u.Email,
                 AvatarPath = u.AvatarPath,
                 IsActive = u.IsActive
@@ -89,11 +86,10 @@ namespace QuanLyDoanKham.API.Controllers
 
             var user = await _context.Users
                 .Include(u => u.Role)
-                    .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
+                    .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .Include(u => u.Company)
-                .Include(u => u.Department)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-                    .ThenInclude(r => r.RolePermissions).ThenInclude(rp => rp.Permission)
+                    .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
 
             if (user == null) return NotFound();
@@ -125,8 +121,6 @@ namespace QuanLyDoanKham.API.Controllers
                 Permissions = allPerms.ToList(),
                 CompanyId = user.CompanyId,
                 CompanyName = user.Company?.CompanyName,
-                DepartmentId = user.DepartmentId,
-                DepartmentName = user.Department?.DepartmentName,
                 Email = user.Email,
                 AvatarPath = user.AvatarPath,
                 IsActive = user.IsActive
@@ -143,9 +137,8 @@ namespace QuanLyDoanKham.API.Controllers
 
             var oldRoleId = user.RoleId;
             user.FullName = dto.FullName ?? user.FullName;
-            user.RoleId = dto.RoleId > 0 ? dto.RoleId : user.RoleId;
+            user.RoleId = (dto.RoleId.HasValue && dto.RoleId.Value > 0) ? dto.RoleId.Value : user.RoleId;
             user.CompanyId = dto.CompanyId;
-            user.DepartmentId = dto.DepartmentId;
             user.Email = dto.Email;
             user.AvatarPath = dto.AvatarPath ?? user.AvatarPath;
             if (dto.IsActive.HasValue) user.IsActive = dto.IsActive.Value;
@@ -165,7 +158,7 @@ namespace QuanLyDoanKham.API.Controllers
                         UserId = user.UserId,
                         RoleId = rid,
                         AssignedAt = DateTime.Now,
-                        AssignedBy = User.Identity?.Name
+                        AssignedBy = User.Identity?.Name ?? "system"
                     });
                 }
             }
@@ -219,7 +212,7 @@ namespace QuanLyDoanKham.API.Controllers
                     UserId = dto.UserId,
                     RoleId = roleId,
                     AssignedAt = DateTime.Now,
-                    AssignedBy = User.Identity?.Name
+                    AssignedBy = User.Identity?.Name ?? "system"
                 });
             }
 
@@ -242,7 +235,7 @@ namespace QuanLyDoanKham.API.Controllers
             var perms = await _context.RolePermissions
                 .Include(rp => rp.Permission)
                 .Where(rp => rp.RoleId == roleId)
-                .Select(rp => new { rp.Permission.PermissionId, rp.Permission.PermissionKey, rp.Permission.PermissionName, rp.Permission.Module })
+                .Select(rp => new { rp.Permission!.PermissionId, rp.Permission.PermissionKey, rp.Permission.PermissionName, rp.Permission.Module })
                 .ToListAsync();
 
             return Ok(perms);
@@ -370,7 +363,7 @@ namespace QuanLyDoanKham.API.Controllers
             if (!result.IsSuccess)
                 return Unauthorized(new { message = result.Message });
 
-            return Ok(result.Data);
+            return Ok(result.Data!);
         }
 
         // GET: api/Auth/verify-token
@@ -413,7 +406,7 @@ namespace QuanLyDoanKham.API.Controllers
                         UserId = newUser.UserId,
                         RoleId = rid,
                         AssignedAt = DateTime.Now,
-                        AssignedBy = User.Identity?.Name
+                        AssignedBy = User.Identity?.Name ?? "system"
                     });
                 }
                 await _context.SaveChangesAsync();
@@ -463,7 +456,7 @@ namespace QuanLyDoanKham.API.Controllers
             if (!result.IsSuccess)
                 return Unauthorized(new { message = result.Message });
 
-            return Ok(result.Data);
+            return Ok(result.Data!);
         }
 
         // POST: api/Auth/change-password
@@ -519,27 +512,13 @@ namespace QuanLyDoanKham.API.Controllers
 
             return Ok(new { message = result.Message });
         }
-        [HttpPost("seed-mock-data")]
-        [AllowAnonymous]
+        // GET: api/Auth/seed-mock-data
+        [HttpGet("seed-mock-data")]
+        [AllowAnonymous] // Cho phép chạy Tool Seed mà không cần login (Dành cho Dev)
         public async Task<IActionResult> SeedMockData()
         {
             try
             {
-                // 1. Seed Departments
-                var deptSieuAm = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentCode == "SIEU_AM");
-                if (deptSieuAm == null)
-                {
-                    deptSieuAm = new Department { DepartmentName = "Trạm Siêu Âm", DepartmentCode = "SIEU_AM", Description = "Siêu âm y tế" };
-                    _context.Departments.Add(deptSieuAm);
-                }
-                
-                var deptKhamNoi = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentCode == "KHAM_NOI");
-                if (deptKhamNoi == null)
-                {
-                    deptKhamNoi = new Department { DepartmentName = "Khám Nội", DepartmentCode = "KHAM_NOI", Description = "Khám lâm sàng" };
-                    _context.Departments.Add(deptKhamNoi);
-                }
-
                 await _context.SaveChangesAsync();
 
                 // 2. Seed Staff (Admin)
@@ -552,7 +531,7 @@ namespace QuanLyDoanKham.API.Controllers
                         EmployeeCode = "admin",
                         Email = "admin@anphuc.vn",
                         PhoneNumber = "0901234567",
-                        DepartmentId = deptSieuAm.DepartmentId,
+                        DepartmentName = "Trạm Siêu Âm",
                         BaseSalary = 15000000,
                         CreatedDate = DateTime.Now.Date,
                         IsActive = true
@@ -590,7 +569,7 @@ namespace QuanLyDoanKham.API.Controllers
                 var dummyContract = await _context.Contracts.FirstOrDefaultAsync(c => c.ContractCode == "HD_MAU_2026");
                 if (dummyContract == null)
                 {
-                    dummyContract = new HealthContract { ContractCode = "HD_MAU_2026", CompanyId = dummyCompany.CompanyId, ExpectedQuantity = 100, StartDate = DateTime.Now.Date.AddDays(-30), EndDate = DateTime.Now.Date.AddDays(30), Status = "Active", TotalAmount = 100000000 };
+                    dummyContract = new HealthContract { ContractCode = "HD_MAU_2026", ContractName = "Hợp đồng Mẫu 2026", CompanyId = dummyCompany.CompanyId, ExpectedQuantity = 100, StartDate = DateTime.Now.Date.AddDays(-30), EndDate = DateTime.Now.Date.AddDays(30), Status = "Active", TotalAmount = 100000000 };
                     _context.Contracts.Add(dummyContract);
                     await _context.SaveChangesAsync();
                 }

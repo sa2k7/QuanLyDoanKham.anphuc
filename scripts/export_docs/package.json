@@ -1,0 +1,18 @@
+{
+  "name": "export_docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "export.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "docx": "^9.6.1",
+    "exceljs": "^4.4.0",
+    "marked": "^17.0.6"
+  }
+}

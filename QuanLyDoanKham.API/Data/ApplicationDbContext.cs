@@ -16,8 +16,6 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<UserRole> UserRoles { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
 
-        // DEPARTMENTS
-        public DbSet<Department> Departments { get; set; }
 
         // COMPANIES & CONTRACTS
         public DbSet<Company> Companies { get; set; }
@@ -42,30 +40,31 @@ namespace QuanLyDoanKham.API.Data
         // SCHEDULE
         public DbSet<ScheduleCalendar> ScheduleCalendars { get; set; }
 
-        // SUPPLIES & WAREHOUSE
-        public DbSet<Supply> Supplies { get; set; }
-        public DbSet<SupplyInventoryVoucher> SupplyInventoryVouchers { get; set; }
-        public DbSet<SupplyInventoryDetail> SupplyInventoryDetails { get; set; }
+
+        // EXAMINATIONS
+        public DbSet<Patient> Patients { get; set; }
+        public DbSet<ExamResult> ExamResults { get; set; }
+
 
         // COST & REVENUE
         public DbSet<GroupCost> GroupCosts { get; set; }
+        public DbSet<CostSnapshot> CostSnapshots { get; set; }
+        public DbSet<Overhead> Overheads { get; set; }
+        public DbSet<SupplyItem> SupplyItems { get; set; }
+        public DbSet<StockMovement> StockMovements { get; set; }
         public DbSet<ContractRevenueSummary> ContractRevenueSummaries { get; set; }
         public DbSet<ContractFinancialSummary> ContractFinancialSummaries { get; set; }
 
-        // PAYROLL
-        public DbSet<PayrollRecord> PayrollRecords { get; set; }
 
         // SYSTEM
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<PasswordResetRequest> PasswordResetRequests { get; set; }
         public DbSet<Notification> Notifications { get; set; }
-
-        // B2C CLINICAL & B2B FINANCIAL MODULES
-        public DbSet<Patient> Patients { get; set; }
+        public DbSet<Station> Stations { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
-        public DbSet<ExamService> ExamServices { get; set; }
-        public DbSet<MedicalRecordService> MedicalRecordServices { get; set; }
-        public DbSet<ContractPackage> ContractPackages { get; set; }
+        public DbSet<RecordStationTask> RecordStationTasks { get; set; }
+        public DbSet<StationTaskEvent> StationTaskEvents { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -77,14 +76,6 @@ namespace QuanLyDoanKham.API.Data
 
             modelBuilder.Entity<Permission>()
                 .HasIndex(p => p.PermissionKey).IsUnique();
-
-            // ---- RELATIONSHIPS ----
-            // Trành cascade kép: AppUser -> Department
-            modelBuilder.Entity<AppUser>()
-                .HasOne(u => u.Department)
-                .WithMany(d => d.Users)
-                .HasForeignKey(u => u.DepartmentId)
-                .OnDelete(DeleteBehavior.SetNull);
 
             // AppUser -> Company (no cascade to avoid multi-path)
             modelBuilder.Entity<AppUser>()
@@ -218,6 +209,15 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(g => g.GroupPositionQuotaId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            // PHASE 1 HARDENING: Prevent double-booking a staff on the same exam date.
+            // The partial filter excludes records where the staff was marked Absent,
+            // so a legitimate absence does not block re-assignment on the same day.
+            modelBuilder.Entity<GroupStaffDetail>()
+                .HasIndex(g => new { g.StaffId, g.ExamDate })
+                .IsUnique()
+                .HasFilter("[WorkStatus] != 'Absent'")
+                .HasDatabaseName("IX_GroupStaffDetail_StaffId_ExamDate_NoConflict");
+
             modelBuilder.Entity<GroupPositionQuota>()
                 .HasOne(q => q.MedicalGroup)
                 .WithMany()
@@ -251,13 +251,6 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(sc => sc.StaffId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // SupplyInventoryDetail -> Voucher
-            modelBuilder.Entity<SupplyInventoryDetail>()
-                .HasOne(d => d.Voucher)
-                .WithMany(v => v.Details)
-                .HasForeignKey(d => d.VoucherId)
-                .OnDelete(DeleteBehavior.Cascade);
-
             // GroupCost -> HealthContract (via MedicalGroup)
             modelBuilder.Entity<GroupCost>()
                 .HasOne(gc => gc.MedicalGroup)
@@ -271,31 +264,114 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(gc => gc.CalculatedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Staff -> Department (set null)
-            modelBuilder.Entity<Staff>()
-                .HasOne(s => s.Department)
-                .WithMany(d => d.Staffs)
-                .HasForeignKey(s => s.DepartmentId)
+            // CostSnapshots
+            modelBuilder.Entity<CostSnapshot>()
+                .HasOne(cs => cs.HealthContract)
+                .WithMany()
+                .HasForeignKey(cs => cs.HealthContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CostSnapshot>()
+                .HasOne(cs => cs.CreatedByUser)
+                .WithMany()
+                .HasForeignKey(cs => cs.CreatedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // B2C & B2B Financial Relationships
+            // Overheads
+            modelBuilder.Entity<Overhead>()
+                .HasOne(o => o.HealthContract)
+                .WithMany()
+                .HasForeignKey(o => o.HealthContractId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Overhead>()
+                .HasOne(o => o.RecordedByUser)
+                .WithMany()
+                .HasForeignKey(o => o.RecordedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // StockMovements
+            modelBuilder.Entity<StockMovement>()
+                .HasOne(sm => sm.MedicalGroup)
+                .WithMany()
+                .HasForeignKey(sm => sm.MedicalGroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StockMovement>()
+                .HasOne(sm => sm.RecordedByUser)
+                .WithMany()
+                .HasForeignKey(sm => sm.RecordedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // MedicalRecord configurations
+            modelBuilder.Entity<MedicalRecord>()
+                .HasIndex(m => new { m.GroupId, m.Status });
+            modelBuilder.Entity<MedicalRecord>()
+                .HasIndex(m => m.QrToken).IsUnique();
+            modelBuilder.Entity<MedicalRecord>()
+                .HasIndex(m => new { m.IDCardNumber, m.GroupId })
+                .HasFilter("[IDCardNumber] IS NOT NULL") // Index uniqueness only for non-null IDCards
+                .IsUnique();
+
+            modelBuilder.Entity<MedicalRecord>()
+                .HasOne(m => m.MedicalGroup)
+                .WithMany()
+                .HasForeignKey(m => m.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<MedicalRecord>()
                 .HasOne(m => m.Patient)
-                .WithMany(p => p.MedicalRecords)
+                .WithMany()
                 .HasForeignKey(m => m.PatientId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // RecordStationTask configurations
+            modelBuilder.Entity<RecordStationTask>()
+                .HasOne(t => t.MedicalRecord)
+                .WithMany(m => m.StationTasks)
+                .HasForeignKey(t => t.MedicalRecordId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<MedicalRecordService>()
-                .HasOne(ms => ms.MedicalRecord)
-                .WithMany(m => m.Services)
-                .HasForeignKey(ms => ms.RecordId)
+            modelBuilder.Entity<RecordStationTask>()
+                .HasOne(t => t.Station)
+                .WithMany(s => s.Tasks)
+                .HasForeignKey(t => t.StationCode)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Performance index for queue queries (plan section 4.5)
+            modelBuilder.Entity<RecordStationTask>()
+                .HasIndex(t => new { t.StationCode, t.Status });
+
+            // StationTaskEvent configurations
+            modelBuilder.Entity<StationTaskEvent>()
+                .HasOne(e => e.Task)
+                .WithMany(t => t.Events)
+                .HasForeignKey(e => e.TaskId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<ContractPackage>()
-                .HasOne(cp => cp.HealthContract)
-                .WithMany(hc => hc.ContractPackages)
-                .HasForeignKey(cp => cp.HealthContractId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<StationTaskEvent>()
+                .HasOne(e => e.ActorUser)
+                .WithMany()
+                .HasForeignKey(e => e.ActorUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            modelBuilder.Entity<Station>()
+                .Property(s => s.DefaultMinutesPerPatient)
+                .HasPrecision(18, 2);
+
+            modelBuilder.Entity<Station>().HasData(
+                new Station { StationCode = "CHECKIN", StationName = "Tiếp đón & Cấp số", ServiceType = "ADMIN", SortOrder = 1 },
+                new Station { StationCode = "SINH_HIEU", StationName = "Đo sinh hiệu", ServiceType = "CLINICAL", SortOrder = 2 },
+                new Station { StationCode = "LAY_MAU", StationName = "Lấy mẫu xét nghiệm", ServiceType = "LAB", SortOrder = 3 },
+                new Station { StationCode = "XQUANG", StationName = "Chụp X-Quang", ServiceType = "IMAGING", SortOrder = 4 },
+                new Station { StationCode = "SIEU_AM", StationName = "Siêu âm", ServiceType = "IMAGING", SortOrder = 5 },
+                new Station { StationCode = "NOI_KHOA", StationName = "Khám Nội khoa", ServiceType = "CLINICAL", SortOrder = 6 },
+                new Station { StationCode = "MAT_TAI_MUI_HONG", StationName = "Mắt - Tai Mũi Họng", ServiceType = "CLINICAL", SortOrder = 7 },
+                new Station { StationCode = "QC", StationName = "Kiểm tra hồ sơ (QC)", ServiceType = "ADMIN", SortOrder = 99 }
+            );
+
+            // B2C & B2B Financial Relationships
+            // ---- SEED DATA ----
 
             // ---- SEED DATA ----
 
@@ -310,7 +386,8 @@ namespace QuanLyDoanKham.API.Data
                 new AppRole { RoleId = 7, RoleName = "GroupLeader", Description = "Trưởng đoàn khám" },
                 new AppRole { RoleId = 8, RoleName = "MedicalStaff", Description = "Nhân viên đi đoàn" },
                 new AppRole { RoleId = 9, RoleName = "Accountant", Description = "Kế toán" },
-                new AppRole { RoleId = 10, RoleName = "Customer", Description = "Đại diện doanh nghiệp đối tác" }
+                new AppRole { RoleId = 10, RoleName = "Customer", Description = "Đại diện doanh nghiệp đối tác" },
+                new AppRole { RoleId = 11, RoleName = "QA", Description = "Quản lý chất lượng (QC/QA)" }
             );
 
             // Seed Default Admin User (Pass: admin123)
@@ -343,6 +420,7 @@ namespace QuanLyDoanKham.API.Data
                 new Permission { PermissionId = 13, PermissionKey = "DoanKham.SetPosition", PermissionName = "Thiết lập vị trí đoàn", Module = "DoanKham" },
                 new Permission { PermissionId = 14, PermissionKey = "DoanKham.AssignStaff", PermissionName = "Phân công nhân sự đoàn", Module = "DoanKham" },
                 new Permission { PermissionId = 15, PermissionKey = "DoanKham.ManageOwn", PermissionName = "Quản lý đoàn mình phụ trách", Module = "DoanKham" },
+                new Permission { PermissionId = 16, PermissionKey = "DoanKham.Lock", PermissionName = "Khóa sổ đoàn khám", Module = "DoanKham" },
                 // LichKham module
                 new Permission { PermissionId = 20, PermissionKey = "LichKham.ViewOwn", PermissionName = "Xem lịch của mình", Module = "LichKham" },
                 new Permission { PermissionId = 21, PermissionKey = "LichKham.ViewAll", PermissionName = "Xem toàn bộ lịch khám", Module = "LichKham" },
@@ -350,27 +428,24 @@ namespace QuanLyDoanKham.API.Data
                 new Permission { PermissionId = 30, PermissionKey = "ChamCong.QR", PermissionName = "Mở QR chấm công", Module = "ChamCong" },
                 new Permission { PermissionId = 31, PermissionKey = "ChamCong.CheckInOut", PermissionName = "Check-in/out nhân viên", Module = "ChamCong" },
                 new Permission { PermissionId = 32, PermissionKey = "ChamCong.ViewAll", PermissionName = "Xem toàn bộ chấm công", Module = "ChamCong" },
-                // Kho module
-                new Permission { PermissionId = 40, PermissionKey = "Kho.View", PermissionName = "Xem kho vật tư", Module = "Kho" },
-                new Permission { PermissionId = 41, PermissionKey = "Kho.Import", PermissionName = "Nhập kho", Module = "Kho" },
-                new Permission { PermissionId = 42, PermissionKey = "Kho.Export", PermissionName = "Xuất kho", Module = "Kho" },
-                // Luong module
-                new Permission { PermissionId = 50, PermissionKey = "Luong.View", PermissionName = "Xem bảng lương", Module = "Luong" },
-                new Permission { PermissionId = 51, PermissionKey = "Luong.Manage", PermissionName = "Tính và duyệt lương", Module = "Luong" },
-                // NhanSu module
-                new Permission { PermissionId = 60, PermissionKey = "NhanSu.View", PermissionName = "Xem nhân sự", Module = "NhanSu" },
-                new Permission { PermissionId = 61, PermissionKey = "NhanSu.Manage", PermissionName = "Quản lý nhân sự", Module = "NhanSu" },
                 // BaoCao module
-                new Permission { PermissionId = 70, PermissionKey = "BaoCao.View", PermissionName = "Xem báo cáo", Module = "BaoCao" },
-                new Permission { PermissionId = 71, PermissionKey = "BaoCao.Export", PermissionName = "Xuất báo cáo", Module = "BaoCao" },
-                // HeThong module
-                new Permission { PermissionId = 80, PermissionKey = "HeThong.UserManage", PermissionName = "Quản lý tài khoản", Module = "HeThong" },
-                new Permission { PermissionId = 81, PermissionKey = "HeThong.RoleManage", PermissionName = "Quản lý phân quyền", Module = "HeThong" }
+                new Permission { PermissionId = 40, PermissionKey = "BaoCao.View", PermissionName = "Xem báo cáo", Module = "BaoCao" },
+                new Permission { PermissionId = 41, PermissionKey = "BaoCao.QC", PermissionName = "Thực hiện QC hồ sơ", Module = "BaoCao" },
+                // Kho module
+                new Permission { PermissionId = 50, PermissionKey = "Kho.View", PermissionName = "Xem kho vật tư", Module = "Kho" },
+                new Permission { PermissionId = 51, PermissionKey = "Kho.Edit", PermissionName = "Nhập xuất kho", Module = "Kho" },
+                // Operational module
+                new Permission { PermissionId = 60, PermissionKey = "QuyetToan.Edit", PermissionName = "Sửa phát sinh quyết toán", Module = "TaiChinh" },
+                new Permission { PermissionId = 61, PermissionKey = "DieuPhoi.Edit", PermissionName = "Hủy ca điều phối", Module = "DieuPhoi" },
+                // PHASE 1: New fine-grained financial permissions
+                new Permission { PermissionId = 62, PermissionKey = "QuyetToan.Calculate", PermissionName = "Tính toán quyết toán", Module = "TaiChinh" },
+                new Permission { PermissionId = 63, PermissionKey = "QuyetToan.Finalize", PermissionName = "Chốt xác nhận quyết toán", Module = "TaiChinh" },
+                new Permission { PermissionId = 64, PermissionKey = "BaoCao.ViewFinance", PermissionName = "Xem báo cáo tài chính P&L", Module = "BaoCao" },
+                new Permission { PermissionId = 65, PermissionKey = "BaoCao.Export", PermissionName = "Xuất báo cáo", Module = "BaoCao" }
             );
 
-            // Seed RolePermissions - Admin gets all
-            // Admin: chÆ°a phÃ©p thao tÃ¡c nghiá»‡p vá»¥ trá»±c tiáº¿p (PoLP) â†’ chá»‰ quyá»n xem + cáº¥u hÃ¬nh há»‡ thá»‘ng
-            var adminPermissions = new int[] { 1, 10, 21, 32, 40, 50, 60, 70, 80, 81 };
+            // Seed RolePermissions - Admin gets all (including Phase 1 new permissions)
+            var adminPermissions = new int[] { 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 20, 21, 30, 31, 32, 40, 41, 50, 51, 60, 61, 62, 63, 64, 65 };
             var adminRolePerms = adminPermissions.Select((pid, idx) =>
                 new RolePermission { Id = idx + 1, RoleId = 1, PermissionId = pid }).ToList();
 
@@ -380,82 +455,40 @@ namespace QuanLyDoanKham.API.Data
                 new RolePermission { Id = 100 + idx, RoleId = 3, PermissionId = pid }).ToList();
 
             // Medical Group Manager
-            var mgPermissions = new int[] { 10, 11, 12, 13, 14, 15, 21 };
+            var mgPermissions = new int[] { 10, 11, 12, 13, 14, 15, 16, 21 };
             var mgRolePerms = mgPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 200 + idx, RoleId = 5, PermissionId = pid }).ToList();
 
             // Personnel Manager
-            var hrPermissions = new int[] { 60, 61, 14, 21 };
+            var hrPermissions = new int[] { 14, 21, 32 };
             var hrRolePerms = hrPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 300 + idx, RoleId = 2, PermissionId = pid }).ToList();
 
-            // Payroll Manager
-            var payrollPermissions = new int[] { 50, 51, 60, 21, 32 };
-            var payrollRolePerms = payrollPermissions.Select((pid, idx) =>
-                new RolePermission { Id = 400 + idx, RoleId = 4, PermissionId = pid }).ToList();
+            // Accountant Role - can calculate and view financial reports
+            var accountantPermissions = new int[] { 1, 40, 60, 62, 63, 64, 65 };
+            var accountantRolePerms = accountantPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 600 + idx, RoleId = 9, PermissionId = pid }).ToList();
+
+            // QA Role
+            var qaPermissions = new int[] { 10, 21, 40, 41 };
+            var qaRolePerms = qaPermissions.Select((pid, idx) =>
+                new RolePermission { Id = 400 + idx, RoleId = 11, PermissionId = pid }).ToList();
 
             // Warehouse Manager
-            var warehousePermissions = new int[] { 40, 41, 42 };
-            var warehouseRolePerms = warehousePermissions.Select((pid, idx) =>
+            var whPermissions = new int[] { 50, 51 };
+            var whRolePerms = whPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 500 + idx, RoleId = 6, PermissionId = pid }).ToList();
-
-            // Group Leader
-            var leaderPermissions = new int[] { 10, 30, 31, 21 };
-            var leaderRolePerms = leaderPermissions.Select((pid, idx) =>
-                new RolePermission { Id = 600 + idx, RoleId = 7, PermissionId = pid }).ToList();
-
-            // Medical Staff
-            var staffPermissions = new int[] { 20 };
-            var staffRolePerms = staffPermissions.Select((pid, idx) =>
-                new RolePermission { Id = 700 + idx, RoleId = 8, PermissionId = pid }).ToList();
-
-            // Accountant
-            var accountantPermissions = new int[] { 70, 71, 50, 1 };
-            var accountantRolePerms = accountantPermissions.Select((pid, idx) =>
-                new RolePermission { Id = 800 + idx, RoleId = 9, PermissionId = pid }).ToList();
 
             var allSeedPerms = new List<RolePermission>();
             allSeedPerms.AddRange(adminRolePerms);
             allSeedPerms.AddRange(contractRolePerms);
+            allSeedPerms.AddRange(accountantRolePerms);
             allSeedPerms.AddRange(mgRolePerms);
             allSeedPerms.AddRange(hrRolePerms);
-            allSeedPerms.AddRange(payrollRolePerms);
-            allSeedPerms.AddRange(warehouseRolePerms);
-            allSeedPerms.AddRange(leaderRolePerms);
-            allSeedPerms.AddRange(staffRolePerms);
-            allSeedPerms.AddRange(accountantRolePerms);
+            allSeedPerms.AddRange(qaRolePerms);
+            allSeedPerms.AddRange(whRolePerms);
 
             modelBuilder.Entity<RolePermission>().HasData(allSeedPerms);
-
-            // Seed ContractApprovalSteps (default 2-level workflow)
-            modelBuilder.Entity<ContractApprovalStep>().HasData(
-                new ContractApprovalStep
-                {
-                    StepId = 1,
-                    StepOrder = 1,
-                    StepName = "Trưởng phòng xem xét",
-                    RequiredPermission = "HopDong.Approve",
-                    IsActive = true
-                },
-                new ContractApprovalStep
-                {
-                    StepId = 2,
-                    StepOrder = 2,
-                    StepName = "Ban giám đốc phê duyệt",
-                    RequiredPermission = "HopDong.Approve",
-                    IsActive = true
-                }
-            );
-
-            // Seed Default Departments
-            modelBuilder.Entity<Department>().HasData(
-                new Department { DepartmentId = 1, DepartmentName = "Hành chính - Nhân sự", DepartmentCode = "HCNS", CreatedAt = new DateTime(2024, 1, 1) },
-                new Department { DepartmentId = 2, DepartmentName = "Điều hành đoàn khám", DepartmentCode = "DHDK", CreatedAt = new DateTime(2024, 1, 1) },
-                new Department { DepartmentId = 3, DepartmentName = "Kho - Vật tư", DepartmentCode = "KVT", CreatedAt = new DateTime(2024, 1, 1) },
-                new Department { DepartmentId = 4, DepartmentName = "Kế toán", DepartmentCode = "KT", CreatedAt = new DateTime(2024, 1, 1) },
-                new Department { DepartmentId = 5, DepartmentName = "Thống kê - Báo cáo", DepartmentCode = "TKBC", CreatedAt = new DateTime(2024, 1, 1) },
-                new Department { DepartmentId = 6, DepartmentName = "Nhân viên đi khám", DepartmentCode = "NVDK", CreatedAt = new DateTime(2024, 1, 1) }
-            );
         }
     }
 }

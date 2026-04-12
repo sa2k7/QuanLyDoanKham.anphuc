@@ -26,7 +26,7 @@ namespace QuanLyDoanKham.API.Services
             if (string.IsNullOrEmpty(apiKey))
                 throw new Exception("Gemini API Key is missing in configuration.");
 
-            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={apiKey}";
+            var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
 
             var requestBody = new
             {
@@ -68,7 +68,7 @@ namespace QuanLyDoanKham.API.Services
                 .GetProperty("content")
                 .GetProperty("parts")[0]
                 .GetProperty("text")
-                .GetString();
+                .GetString() ?? "";
 
             return text;
         }

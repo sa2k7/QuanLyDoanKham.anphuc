@@ -1,590 +1,691 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-20">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans p-6">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
       <div>
         <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
             <Package class="w-6 h-6" />
           </div>
-          {{ i18n.t('supplies.title') }}
-          <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-primary font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
+          {{ i18n.t('supplies.title') || 'Kho Vật Tư Y Tế' }}
         </h2>
-        <div class="flex items-center gap-4 mt-2">
-            <button @click="activeTab = 'inventory'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'inventory' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
-                <span class="tracking-[0.3em]">Tồn kho hiện tại</span>
+        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px] mt-2">Quản lý nhập xuất & theo dõi tồn kho tiêu hao</p>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Tab Switcher -->
+        <div class="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 shadow-inner">
+            <button @click="activeTab = 'inventory'" :class="['px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2', activeTab === 'inventory' ? 'bg-white text-primary shadow-sm scale-105' : 'text-slate-400 hover:text-slate-600']">
+                <Box class="w-4 h-4" />
+                Tồn Kho
             </button>
-            <button @click="activeTab = 'vouchers'" :class="['text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full transition-all', activeTab === 'vouchers' ? 'bg-slate-800 text-white shadow-lg shadow-slate-200' : 'bg-slate-100 text-slate-400 hover:bg-slate-200']">
-                <span class="tracking-[0.3em]">Lịch sử Phiếu kho</span>
+            <button @click="activeTab = 'history'" :class="['px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2', activeTab === 'history' ? 'bg-white text-primary shadow-sm scale-105' : 'text-slate-400 hover:text-slate-600']">
+                <History class="w-4 h-4" />
+                Lịch Sử
             </button>
         </div>
-      </div>
-      <div class="flex gap-3">
-        <button v-if="can('Kho.Export')" 
-                @click="openVoucherModal()" 
-                class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50 transition-all">
-          <ClipboardList class="w-4 h-4 mr-2" />
-          <span class="text-[10px] uppercase tracking-widest font-black ">LẬP PHIẾU MỚI</span>
-        </button>
-        <button v-if="can('Kho.Import')" 
-                @click="openModal()" 
-                class="btn-premium bg-primary text-white px-8 py-3 shadow-lg transition-all">
-          <Plus class="w-5 h-5 mr-2" />
-          <span class="text-[10px] uppercase tracking-widest font-black ">{{ i18n.t('supplies.addBtn') }}</span>
+
+        <button v-if="can('Kho.Edit') && activeTab === 'inventory'" 
+                @click="openAddModal" class="btn-premium primary">
+            <Plus class="w-5 h-5" />
+            <span>Thêm Vật Tư</span>
         </button>
       </div>
     </div>
 
-    <!-- Active View: INVENTORY -->
-    <div v-if="activeTab === 'inventory'" class="space-y-6 animate-fade-in">
-
-
-        <!-- Search & Table -->
-        <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mt-8">
-            <div class="p-6 border-b border-slate-50 flex items-center gap-4 bg-slate-50/30">
-                <div class="relative group flex-1">
-                    <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
-                    <input v-model="searchQuery" placeholder="Tìm tên mặt hàng, phân loại, mã vật tư..." 
-                        class="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-slate-200 focus:border-violet-600/20 outline-none font-black text-xs text-slate-600 shadow-sm transition-all" />
-                </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+        <div class="premium-card p-8 bg-white/80 backdrop-blur-md border border-slate-100 flex items-center gap-6">
+            <div class="w-16 h-16 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner">
+                <Box class="w-8 h-8" />
             </div>
-
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <tr>
-                            <th class="p-5 text-center w-20">STT</th>
-                            <th class="p-5">Mục vật tư</th>
-                            <th class="p-5">Phân loại</th>
-                            <th class="p-5 text-right">Đơn giá</th>
-                            <th class="p-5 text-center">Tồn kho hiện thời</th>
-                            <th class="p-5 text-center">Tác vụ</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50">
-                        <tr v-for="(item, index) in filteredList" :key="item.supplyId" 
-                            class="text-xs hover:bg-slate-50/50 transition-all cursor-pointer group" @click="openModal(item)">
-                            <td class="p-5 text-center font-black text-slate-300 group-hover:text-violet-600 tabular-nums">{{ String(index + 1).padStart(3, '0') }}</td>
-                            <td class="p-5">
-                                <div class="flex items-center gap-4">
-                                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center font-black shadow-lg', 
-                                                item.isLowStock ? 'bg-rose-50 text-rose-600' : 'bg-violet-50 text-violet-600']">
-                                        {{ item.supplyName.charAt(0) }}
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="font-black text-slate-800 uppercase tracking-widest group-hover:text-violet-600">{{ item.supplyName }}</span>
-                                        <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">VT{{ String(item.supplyId).padStart(4, '0') }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="p-5">
-                                <span class="px-3 py-1.5 bg-slate-100 rounded-lg font-black text-slate-500 uppercase tracking-widest text-[9px] ">{{ item.category || 'VTYT' }}</span>
-                            </td>
-                            <td class="p-5 text-right font-black text-slate-700 ">{{ formatCurrency(item.unitPrice) }}</td>
-                            <td class="p-5 text-center border-l border-slate-50">
-                                <div class="flex flex-col items-center">
-                                    <div class="flex items-center gap-1.5">
-                                        <span :class="['text-sm font-black ', item.isLowStock ? 'text-rose-600' : 'text-slate-900']">{{ formatNumber(item.totalStock) }}</span>
-                                        <AlertCircle v-if="item.isLowStock" class="w-3 h-3 text-rose-500 animate-pulse" />
-                                    </div>
-                                    <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ item.unit || 'Đơn vị' }}</span>
-                                    <span v-if="item.isLowStock" class="text-[7px] font-black text-rose-400 uppercase tracking-tighter mt-0.5 bg-rose-50 px-1 rounded">Sắp hết</span>
-                                </div>
-                            </td>
-                            <td class="p-5 text-center">
-                                <button v-if="can('Kho.Import')" 
-                                        @click.stop="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Sửa hàng">
-                                    <Edit3 class="w-5 h-5" />
-                                </button>
-                            </td>
-                        </tr>
-                        <tr v-if="filteredList.length === 0">
-                            <td colspan="6" class="py-24 text-center opacity-20">
-                                <PackageSearch class="w-16 h-16 mx-auto mb-4" />
-                                <p class="text-xs font-black uppercase tracking-[0.3em]">Kho dữ liệu trống</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng loại vật tư</p>
+                <h3 class="text-3xl font-black text-slate-800 tabular-nums">{{ supplies.length }}</h3>
+            </div>
+        </div>
+        <div class="premium-card p-8 bg-white/80 backdrop-blur-md border border-slate-100 flex items-center gap-6">
+            <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-3xl flex items-center justify-center shadow-inner">
+                <AlertTriangle class="w-8 h-8" />
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Sắp hết hàng</p>
+                <h3 class="text-3xl font-black text-rose-600 tabular-nums">{{ lowStockItems.length }}</h3>
+            </div>
+        </div>
+        <div class="premium-card p-8 bg-white/80 backdrop-blur-md border border-slate-100 flex items-center gap-6">
+            <div class="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center shadow-inner">
+                <TrendingUp class="w-8 h-8" />
+            </div>
+            <div>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Giá trị kho ước tính</p>
+                <h3 class="text-3xl font-black text-emerald-600 tabular-nums">{{ formatCurrency(totalValue) }}</h3>
             </div>
         </div>
     </div>
 
-    <!-- Active View: VOUCHERS -->
-    <div v-else class="space-y-6 animate-fade-in">
-        <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
-            <div class="p-6 border-b border-slate-50 flex items-center justify-between bg-slate-50/20">
-                <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Lịch sử giao dịch kho</h3>
-                <div class="flex items-center gap-3">
-                    <button @click="fetchVouchers" class="p-2 text-slate-400 hover:text-violet-600"><RefreshCw class="w-4 h-4" /></button>
+    <!-- Main Content Section -->
+    <div v-if="activeTab === 'inventory'" class="premium-card bg-white border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Danh mục tồn kho thực tế</h4>
+            <div class="flex items-center gap-3">
+                <div class="relative">
+                    <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                    <input type="text" v-model="searchQuery" placeholder="Tìm kiếm vật tư..." class="pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs outline-none focus:border-primary transition-all w-64" />
                 </div>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left">
-                    <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
-                        <tr>
-                            <th class="p-5 w-32">Mã phiếu</th>
-                            <th class="p-5">Loại</th>
-                            <th class="p-5 text-center w-40">Ngày tạo</th>
-                            <th class="p-5">Đoàn khám / Đơn vị</th>
-                            <th class="p-5">Người lập</th>
-                            <th class="p-5">Ghi chú</th>
-                            <th class="p-5 text-center">Tác vụ</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-50 text-xs text-slate-600">
-                        <tr v-for="v in vouchers" :key="v.voucherId" class="hover:bg-slate-50/50 transition-colors group">
-                            <td class="p-5 font-black text-slate-900">{{ v.voucherCode }}</td>
-                            <td class="p-5">
-                                <span :class="['px-3 py-1.5 rounded-lg font-black uppercase tracking-widest text-[9px] whitespace-nowrap inline-flex items-center gap-2', v.type === 'IMPORT' ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600']">
-                                    <ArrowDownLeft v-if="v.type === 'IMPORT'" class="w-3 h-3" />
-                                    <ArrowUpRight v-else class="w-3 h-3" />
-                                    {{ v.type === 'IMPORT' ? 'Nhập kho' : 'Xuất kho' }}
+        </div>
+        
+        <div class="overflow-x-auto scrollbar-premium">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-6">Vật Tư & Phân Loại</th>
+                        <th class="p-6 text-center">Đơn Vị</th>
+                        <th class="p-6 text-center">Tồn Kho</th>
+                        <th class="p-6 text-center">Trạng Thái</th>
+                        <th class="p-6 text-right">Giá Tham Khảo</th>
+                        <th class="p-6 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="s in filteredSupplies" :key="s.supplyId" class="hover:bg-slate-50/50 transition-all group">
+                        <td class="p-6">
+                            <div class="flex items-center gap-4">
+                                <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shadow-sm border border-slate-100', getCategoryBg(s.category)]">
+                                    <component :is="getCategoryIcon(s.category)" class="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p class="font-black text-slate-800 uppercase tracking-widest text-sm">{{ s.itemName }}</p>
+                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ s.category }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="p-6 text-center">
+                            <span class="text-[10px] font-black text-slate-500 uppercase">{{ s.unit }}</span>
+                        </td>
+                        <td class="p-6 text-center">
+                            <div class="flex flex-col items-center gap-1">
+                                <span :class="['text-lg font-black tabular-nums', s.currentStock <= s.minStockLevel ? 'text-rose-600' : 'text-slate-800']">
+                                    {{ s.currentStock }}
                                 </span>
-                            </td>
-                            <td class="p-5 text-center font-black text-slate-400">{{ new Date(v.createDate).toLocaleString('vi-VN') }}</td>
-                            <td class="p-5">
-                                <span class="font-black text-slate-700 uppercase tracking-widest">{{ v.groupName || 'KHO TỔNG' }}</span>
-                            </td>
-                            <td class="p-5 font-black text-slate-500">{{ v.createdBy }}</td>
-                            <td class="p-5 text-slate-400 font-medium italic truncate max-w-[200px]">{{ v.note || '---' }}</td>
-                            <td class="p-5 text-center">
-                                <button v-if="can('HeThong.UserManage')" @click="deleteVoucher(v.voucherId)" class="p-2 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-xl transition-all opacity-0 group-hover:opacity-100">
+                                <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest">Ngưỡng: {{ s.minStockLevel }}</span>
+                            </div>
+                        </td>
+                        <td class="p-6">
+                            <div class="flex flex-col gap-2 w-32 mx-auto">
+                                <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                    <div :class="['h-full rounded-full transition-all duration-1000', getStockColor(s)]" 
+                                         :style="{ width: Math.min((s.currentStock / 100) * 100, 100) + '%' }"></div>
+                                </div>
+                                <p :class="['text-[8px] font-black uppercase tracking-widest text-center italic', getStockTextClass(s)]">
+                                    {{ getStockLabel(s) }}
+                                </p>
+                            </div>
+                        </td>
+                        <td class="p-6 text-right">
+                            <p class="font-black text-slate-700 tabular-nums">{{ formatCurrency(s.typicalUnitPrice) }}</p>
+                        </td>
+                        <td class="p-6">
+                            <div class="flex items-center justify-center gap-2 transition-all">
+                                <button @click="openHistory(s)" class="p-2.5 rounded-xl hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-all hover:scale-110 group/btn" title="Lịch sử">
+                                    <History class="w-4 h-4" />
+                                </button>
+                                <button v-if="can('Kho.Edit')" @click="openImportModal(s)" class="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all hover:scale-110 shadow-sm border border-emerald-100" title="Nhập bổ sung">
+                                    <ArrowDownLeft class="w-4 h-4" />
+                                </button>
+                                <button v-if="can('Kho.Edit')" @click="openExportModal(s)" class="p-2.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all hover:scale-110 shadow-sm border border-rose-100" title="Xuất cho đoàn">
+                                    <ArrowUpRight class="w-4 h-4" />
+                                </button>
+                                <button v-if="can('Kho.Edit')" @click="confirmDelete(s)" class="p-2.5 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all hover:scale-110" title="Xóa">
                                     <Trash2 class="w-4 h-4" />
                                 </button>
-                            </td>
-                        </tr>
-                        <tr v-if="vouchers.length === 0">
-                            <td colspan="6" class="py-24 text-center opacity-10 font-black uppercase tracking-widest ">Chưa có giao dịch phát sinh</td>
-                        </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr v-if="filteredSupplies.length === 0">
+                        <td colspan="6" class="p-20 text-center">
+                            <div class="flex flex-col items-center justify-center text-slate-300">
+                                <Inbox class="w-16 h-16 mb-4 opacity-10" />
+                                <p class="text-xs font-black uppercase tracking-[0.2em]">{{ searchQuery ? 'Không tìm thấy vật tư phù hợp' : 'Chưa có dữ liệu vật tư' }}</p>
+                                <button v-if="!searchQuery && can('Kho.Edit')" @click="openAddModal" class="mt-6 btn-premium secondary">Thêm vật tư đầu tiên</button>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Global History Section -->
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up">
+        <!-- Import History (Left) -->
+        <div class="premium-card bg-white border border-slate-100 overflow-hidden flex flex-col h-[700px]">
+            <div class="p-6 border-b border-emerald-50 bg-emerald-50/20 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <ArrowDownLeft class="w-5 h-5" />
+                    </div>
+                    <h4 class="text-xs font-black text-emerald-800 uppercase tracking-widest">Lịch sử Nhập kho bổ sung</h4>
+                </div>
+                <span class="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black tabular-nums">{{ importHistory.length }} bản ghi</span>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-premium p-4 space-y-3">
+                <div v-for="m in importHistory" :key="m.movementId" class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-emerald-200 transition-all group">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-black text-slate-800 uppercase tracking-widest text-[11px]">{{ m.itemName }}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ formatDate(m.movementDate, true) }}</p>
+                        </div>
+                        <div class="text-right text-emerald-600">
+                            <p class="text-sm font-black tabular-nums">+{{ m.quantity }}</p>
+                            <p class="text-[8px] font-black uppercase tracking-widest opacity-60">{{ m.unit }}</p>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-slate-100/50 text-[9px] font-black uppercase tracking-widest text-slate-400">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-300">Ghi chú:</span>
+                            <span class="text-slate-500 italic">"{{ m.note || 'Không có' }}"</span>
+                        </div>
+                        <span class="text-slate-300">Bởi: {{ m.recordedByUser?.username || 'Hệ thống' }}</span>
+                    </div>
+                </div>
+                <div v-if="importHistory.length === 0" class="h-full flex flex-col items-center justify-center opacity-20 py-20">
+                    <Inbox class="w-12 h-12 mb-4" />
+                    <p class="text-[10px] font-black uppercase tracking-widest">Chưa có dữ liệu nhập</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export History (Right) -->
+        <div class="premium-card bg-white border border-slate-100 overflow-hidden flex flex-col h-[700px]">
+            <div class="p-6 border-b border-rose-50 bg-rose-50/20 flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-rose-100 text-rose-600 rounded-lg flex items-center justify-center shadow-sm">
+                        <ArrowUpRight class="w-5 h-5" />
+                    </div>
+                    <h4 class="text-xs font-black text-rose-800 uppercase tracking-widest">Lịch sử Xuất kho cho đoàn</h4>
+                </div>
+                <span class="px-3 py-1 bg-rose-50 text-rose-600 rounded-full text-[10px] font-black tabular-nums">{{ exportHistory.length }} bản ghi</span>
+            </div>
+            <div class="flex-1 overflow-y-auto scrollbar-premium p-4 space-y-3">
+                <div v-for="m in exportHistory" :key="m.movementId" class="p-4 bg-slate-50/50 rounded-2xl border border-slate-100 hover:border-rose-200 transition-all group">
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <p class="font-black text-slate-800 uppercase tracking-widest text-[11px]">{{ m.itemName }}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ formatDate(m.movementDate, true) }}</p>
+                        </div>
+                        <div class="text-right text-rose-600">
+                            <p class="text-sm font-black tabular-nums">-{{ m.quantity }}</p>
+                            <p class="text-[8px] font-black uppercase tracking-widest opacity-60">{{ m.unit }}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-3 pt-3 border-t border-slate-100/50">
+                        <div v-if="m.medicalGroup" class="flex items-center gap-2">
+                            <span class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Cấp cho:</span>
+                            <span class="text-[10px] font-black text-rose-500 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded-md border border-rose-100">{{ m.medicalGroup.groupName }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest text-slate-400">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-300">Ghi chú:</span>
+                                <span class="text-slate-500 italic">"{{ m.note || 'Không có' }}"</span>
+                            </div>
+                            <span class="text-slate-300">Bởi: {{ m.recordedByUser?.username || 'Hệ thống' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="exportHistory.length === 0" class="h-full flex flex-col items-center justify-center opacity-20 py-20">
+                    <Inbox class="w-12 h-12 mb-4" />
+                    <p class="text-[10px] font-black uppercase tracking-widest">Chưa có dữ liệu xuất</p>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Modal: Thêm/Sửa mặt hàng -->
+    <!-- Modals -->
     <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/60 backdrop-blur-xl p-6 animate-fade-in overflow-y-auto">
-          <div class="bg-white w-full max-w-xl rounded-[3.5rem] shadow-2xl animate-scale-up border-2 border-slate-900 relative overflow-hidden mt-auto mb-auto">
-              <!-- Border Overlay -->
-              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
-              
-              <!-- Header Accent Line -->
-              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-violet-500 to-violet-700 z-0"></div>
-              
-              <!-- Close Button -->
-              <button @click="showModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
-                  <X class="w-5 h-5" />
-              </button>
-
-              <div class="relative z-10 pt-12">
-                  <div class="p-12 pb-6">
-                      <div class="flex items-center gap-4 mb-8">
-                          <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-3xl flex items-center justify-center shadow-inner border border-violet-100">
-                              <Edit3 class="w-7 h-7" />
-                          </div>
-                          <div>
-                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">Thành phần Vật tư</h3>
-                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Hệ thống kho & điều phối</p>
-                          </div>
-                      </div>
-              
-              <form id="supplyForm" @submit.prevent="saveItem" class="space-y-8">
-                  <div class="grid grid-cols-2 gap-8">
-                    <div class="flex flex-col gap-2 col-span-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Tên định danh mặt hàng *</label>
-                        <input v-model="currentItem.supplyName" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full" placeholder="Ví dụ: Thuốc giảm đau..." />
+        <!-- Add New Modal -->
+        <div v-if="modals.add.show" class="modal-overlay" @click.self="modals.add.show = false">
+            <div class="modal-box max-w-lg">
+                <div class="p-10 relative">
+                    <button @click="modals.add.show = false" class="absolute top-8 right-8 text-slate-400 hover:rotate-90 transition-all duration-300">
+                        <X class="w-6 h-6" />
+                    </button>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest mb-1">Thêm Vật Tư Mới</h3>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Định nghĩa danh mục vật tư tiêu hao chuẩn hệ thống</p>
                     </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Phân nhóm mục</label>
-                        <select v-model="currentItem.category" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black">
-                          <option value="VTYT">Vật tư y tế</option>
-                          <option value="Thuốc">Thuốc / Dược phẩm</option>
-                          <option value="CCDC">Công cụ dụng cụ</option>
-                          <option value="Khác">Phân loại khác</option>
-                        </select>
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đơn vị tính</label>
-                        <input v-model="currentItem.unit" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black" placeholder="Lọ, Cái..." />
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đơn giá niêm yết (VNĐ)</label>
-                        <CurrencyInput v-model="currentItem.unitPrice" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="0" />
-                    </div>
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ngưỡng tồn tối thiểu</label>
-                        <CurrencyInput v-model="currentItem.minStockLevel" required class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full text-right font-black" placeholder="5" />
-                    </div>
-                  </div>
+                    
+                    <form @submit.prevent="saveNewSupply" class="space-y-6">
+                        <div class="form-group">
+                            <label>Tên vật tư <span class="text-rose-500">*</span></label>
+                            <input v-model="modals.add.data.itemName" required placeholder="VD: Kim tiêm G23, Cồn 70 độ..." class="form-input" />
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Phân loại</label>
+                                <select v-model="modals.add.data.category" class="form-input">
+                                    <option value="Thuốc">Thuốc</option>
+                                    <option value="Vật tư y tế">Vật tư y tế</option>
+                                    <option value="Thiết bị">Thiết bị</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Đơn vị <span class="text-rose-500">*</span></label>
+                                <input v-model="modals.add.data.unit" placeholder="Cái, Hộp, Lọ..." required class="form-input" />
+                            </div>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Ngưỡng báo động</label>
+                                <input type="number" v-model="modals.add.data.minStockLevel" class="form-input" />
+                            </div>
+                            <div class="form-group">
+                                <label>Giá nhập (VND)</label>
+                                <input type="number" v-model="modals.add.data.typicalUnitPrice" class="form-input" />
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-3 mt-8 border-t pt-6">
+                            <button type="button" @click="modals.add.show = false" class="btn-premium secondary">Hủy bỏ</button>
+                            <button type="submit" :disabled="saving" class="btn-premium primary">
+                                <RefreshCw v-if="saving" class="w-4 h-4 animate-spin" />
+                                <Save v-else class="w-4 h-4" />
+                                <span>Xác Nhận Lưu</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-                  </form>
-                  </div>
+        <!-- Import Modal -->
+        <div v-if="modals.import.show" class="modal-overlay" @click.self="modals.import.show = false">
+            <div class="modal-box max-w-md">
+                <div class="p-10 relative">
+                    <button @click="modals.import.show = false" class="absolute top-8 right-8 text-slate-400 hover:rotate-90 transition-all duration-300">
+                        <X class="w-6 h-6" />
+                    </button>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-black text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-3">
+                            <ArrowDownLeft class="w-6 h-6" /> Nhập Kho
+                        </h3>
+                        <p class="text-[11px] font-black text-slate-800 mt-1 italic uppercase tracking-widest">{{ modals.import.supply?.itemName }}</p>
+                    </div>
+                    
+                    <form @submit.prevent="processImport" class="space-y-6">
+                        <div class="form-group">
+                            <label>Số lượng nhập</label>
+                            <input type="number" v-model="modals.import.data.quantity" required class="form-input !border-emerald-100 focus:!border-emerald-500" />
+                        </div>
+                        <div class="form-group">
+                            <label>Giá nhập thực tế / Đơn vị</label>
+                            <input type="number" v-model="modals.import.data.unitPrice" required class="form-input !border-emerald-100 focus:!border-emerald-500" />
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea v-model="modals.import.data.note" class="form-input min-h-[100px] !border-emerald-100 focus:!border-emerald-500" placeholder="Nhập từ NCC, Lô số..."></textarea>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-8">
+                            <button type="button" @click="modals.import.show = false" class="btn-premium secondary">Hủy</button>
+                            <button type="submit" :disabled="saving" class="btn-premium primary !bg-emerald-600 !shadow-emerald-100">
+                                <RefreshCw v-if="saving" class="w-4 h-4 animate-spin" />
+                                <CheckCircle v-else class="w-4 h-4" />
+                                <span>Xác Nhận Nhập</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-                  <div class="px-12 pb-12 pt-4 bg-white relative z-20">
-                      <div class="flex gap-4">
-                          <button v-if="currentItem.supplyId && can('Kho.Import')" type="button" @click="deleteItem" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
-                              <Trash2 class="w-5 h-5" />
-                          </button>
-                          <div class="flex-1"></div>
-                          <button type="button" @click="showModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy</button>
-                          <button v-if="can('Kho.Import')" form="supplyForm" type="submit" class="bg-slate-900 text-white px-12 py-4 rounded-2xl font-black shadow-xl shadow-slate-200 uppercase text-[10px] tracking-[0.2em]">Cập nhật hàng</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-    </Teleport>
+        <!-- Export Modal -->
+        <div v-if="modals.export.show" class="modal-overlay" @click.self="modals.export.show = false">
+            <div class="modal-box max-w-md">
+                <div class="p-10 relative">
+                    <button @click="modals.export.show = false" class="absolute top-8 right-8 text-slate-400 hover:rotate-90 transition-all duration-300">
+                        <X class="w-6 h-6" />
+                    </button>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-black text-rose-600 uppercase tracking-widest mb-1 flex items-center gap-3">
+                            <ArrowUpRight class="w-6 h-6" /> Xuất Kho Đoàn
+                        </h3>
+                        <p class="text-[11px] font-black text-slate-800 mt-1 italic uppercase tracking-widest">{{ modals.export.supply?.itemName }}</p>
+                    </div>
+                    
+                    <form @submit.prevent="processExport" class="space-y-6">
+                        <div class="form-group">
+                            <label>Đoàn khám thụ hưởng</label>
+                            <select v-model="modals.export.data.medicalGroupId" required class="form-input !border-rose-100 focus:!border-rose-500">
+                                <option v-for="g in activeGroups" :key="g.groupId" :value="g.groupId">{{ g.groupName }} ({{ g.companyName }})</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Số lượng xuất</label>
+                            <input type="number" v-model="modals.export.data.quantity" :max="modals.export.supply?.currentStock" required class="form-input !border-rose-100 focus:!border-rose-500" />
+                            <p class="text-[9px] font-black text-rose-400 uppercase mt-1">Tồn hàng tối đa: {{ modals.export.supply?.currentStock }}</p>
+                        </div>
+                        <div class="form-group">
+                            <label>Ghi chú</label>
+                            <textarea v-model="modals.export.data.note" class="form-input min-h-[100px] !border-rose-100 focus:!border-rose-500" placeholder="Cấp cho đoàn..."></textarea>
+                        </div>
+                        <div class="flex justify-end gap-3 mt-8">
+                            <button type="button" @click="modals.export.show = false" class="btn-premium secondary">Hủy</button>
+                            <button type="submit" :disabled="saving" class="btn-premium primary !bg-rose-600 !shadow-rose-100">
+                                <RefreshCw v-if="saving" class="w-4 h-4 animate-spin" />
+                                <CheckCircle v-else class="w-4 h-4" />
+                                <span>Xác Nhận Xuất</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    <!-- Modal: Lập Phiếu Kho (Nghiệp vụ quan trọng) -->
-    <Teleport to="body">
-      <div v-if="showVoucherModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-xl p-6 animate-fade-in overflow-y-auto">
-          <div class="bg-white w-full max-w-4xl p-12 rounded-[3.5rem] shadow-2xl animate-scale-up border-2 border-slate-900 overflow-hidden relative mt-auto mb-auto">
-              <!-- Border Overlay -->
-              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
-              
-              <!-- Header Accent Line -->
-              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-violet-500 to-violet-700 z-0"></div>
-              
-              <!-- Close Button -->
-              <button @click="showVoucherModal = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
-                  <X class="w-5 h-5" />
-              </button>
+        <!-- History Modal -->
+        <div v-if="modals.history.show" class="modal-overlay" @click.self="modals.history.show = false">
+            <div class="modal-box max-w-2xl h-[85vh] flex flex-col">
+                <div class="p-10 relative flex-1 flex flex-col min-h-0">
+                    <button @click="modals.history.show = false" class="absolute top-8 right-8 text-slate-400 hover:rotate-90 transition-all duration-300">
+                        <X class="w-6 h-6" />
+                    </button>
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest mb-1">{{ modals.history.supply?.itemName }}</h3>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic">Nhật ký biến động kho chi tiết</p>
+                    </div>
 
-              <div class="relative z-10 pt-6">
-                  <div class="px-2">
-                      <div class="flex justify-between items-center mb-8">
-                          <div class="flex items-center gap-4">
-                              <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-3xl flex items-center justify-center shadow-inner border border-violet-100">
-                                  <ClipboardList class="w-7 h-7" />
-                              </div>
-                              <div>
-                                  <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">Lập Giao dịch Kho</h3>
-                                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phiếu xuất nhập điều phối vật tư</p>
-                              </div>
-                          </div>
-                  <div class="flex gap-2">
-                      <button @click="newVoucher.type = 'IMPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'IMPORT' ? 'bg-emerald-600 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Nhập kho</button>
-                      <button @click="newVoucher.type = 'EXPORT'" :class="['px-6 py-3 rounded-xl font-black uppercase text-[10px] tracking-[0.2em] transition-all', newVoucher.type === 'EXPORT' ? 'bg-orange-500 text-white shadow-lg' : 'bg-slate-100 text-slate-400']">Xuất kho</button>
-                  </div>
-              </div>
-              
-              <div class="pr-2 space-y-8 pb-4">
-                  <!-- Voucher Header Info -->
-                  <div class="grid grid-cols-2 gap-8">
-                        <div v-if="newVoucher.type === 'EXPORT'" class="flex flex-col gap-2 relative">
-                            <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Đoàn khám tiếp nhận *</label>
-                            
-                            <!-- Custom Select UI Premium -->
-                            <div class="relative group/select">
-                                <button type="button" @click="isGroupDropdownOpen = !isGroupDropdownOpen" 
-                                    class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all hover:border-violet-300 focus:border-violet-300 focus:bg-white w-full font-black flex items-center justify-between text-left shadow-sm">
-                                    <div v-if="newVoucher.groupId" class="flex items-center gap-3">
-                                        <div class="px-2 py-1 bg-violet-600 text-white text-[9px] rounded-lg">
-                                            {{ groups.find(g => g.groupId === newVoucher.groupId)?.groupCode || 'ĐOÀN' }}
-                                        </div>
-                                        <span class="truncate">{{ groups.find(g => g.groupId === newVoucher.groupId)?.groupName }}</span>
+                    <div class="flex-1 overflow-y-auto scrollbar-premium pr-2 space-y-4">
+                        <div v-for="m in modals.history.list" :key="m.movementId" class="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-6 group hover:border-primary/20 transition-all">
+                            <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm', m.movementType === 'IN' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600']">
+                                <ArrowDownLeft v-if="m.movementType === 'IN'" class="w-6 h-6" />
+                                <ArrowUpRight v-else class="w-6 h-6" />
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="font-black text-slate-800 uppercase tracking-widest text-xs">{{ m.movementType === 'IN' ? 'Nhập kho bổ sung' : 'Xuất kho sử dụng' }}</p>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ formatDate(m.movementDate, true) }}</p>
                                     </div>
-                                    <span v-else class="text-slate-400">-- Chọn đoàn khám đang hoạt động --</span>
-                                    <ChevronDown :class="['w-4 h-4 text-slate-400 transition-transform', isGroupDropdownOpen ? 'rotate-180' : '']" />
-                                </button>
-
-                                <!-- Dropdown Menu -->
-                                <div v-if="isGroupDropdownOpen" class="absolute top-full left-0 right-0 mt-2 bg-white/80 backdrop-blur-xl border-2 border-slate-900 rounded-[2rem] shadow-2xl z-[70] overflow-hidden animate-scale-up">
-                                    <div class="max-h-[300px] overflow-y-auto p-4 space-y-2">
-                                        <div v-for="g in groups" :key="g.groupId" 
-                                            @click="newVoucher.groupId = g.groupId; isGroupDropdownOpen = false"
-                                            class="p-4 rounded-2xl hover:bg-violet-600 hover:text-white transition-all cursor-pointer group/item border border-transparent hover:border-slate-900 shadow-sm">
-                                            <div class="flex items-baseline gap-2">
-                                                <span class="text-[9px] font-black px-1.5 py-0.5 bg-slate-100 group-hover/item:bg-white/20 rounded text-slate-500 group-hover/item:text-white">{{ g.groupCode }}</span>
-                                                <div class="font-black text-xs uppercase tracking-widest">{{ g.groupName }}</div>
-                                            </div>
-                                            <div class="text-[9px] font-black text-slate-400 group-hover/item:text-white/70 mt-1 uppercase tracking-tighter">
-                                                {{ g.shortName || g.companyName }} • {{ new Date(g.examDate).toLocaleDateString('vi-VN') }}
-                                            </div>
-                                        </div>
-                                        <div v-if="groups.length === 0" class="p-8 text-center text-slate-300 font-black uppercase text-[10px] tracking-widest">
-                                            Không có đoàn hoạt động
-                                        </div>
+                                    <div class="text-right">
+                                        <p :class="['text-xl font-black tabular-nums', m.movementType === 'IN' ? 'text-emerald-600' : 'text-rose-600']">
+                                            {{ m.movementType === 'IN' ? '+' : '-' }}{{ m.quantity }}
+                                        </p>
+                                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ formatCurrency(m.unitPrice) }} / đơn vị</p>
                                     </div>
+                                </div>
+                                <div class="mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-4">
+                                    <span v-if="m.medicalGroup" class="text-[9px] font-black text-primary uppercase tracking-widest bg-blue-50 px-2 py-1 rounded-md">Đoàn: {{ m.medicalGroup.groupName }}</span>
+                                    <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic" v-if="m.note">"{{ m.note }}"</span>
+                                    <p class="text-[8px] font-black text-slate-300 uppercase tracking-widest ml-auto">Thực hiện: {{ m.recordedByUser?.username || 'Hệ thống' }}</p>
                                 </div>
                             </div>
                         </div>
-                      <div class="flex flex-col gap-2" :class="{'col-span-2': newVoucher.type === 'IMPORT'}">
-                          <label class="text-[10px] font-black uppercase text-slate-400 tracking-[0.2em] ml-2">Ghi chú nội dung phiếu</label>
-                          <input v-model="newVoucher.note" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black" placeholder="Lý do nhập/xuất, chứng từ đính kèm..." />
-                      </div>
-                  </div>
-
-                  <!-- Voucher Details -->
-                  <div class="space-y-4">
-                      <div class="flex items-center justify-between">
-                          <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Danh mục hàng hóa chuyển kho</p>
-                          <button @click="addDetailRow" class="text-[9px] font-black text-violet-600 uppercase tracking-widest flex items-center gap-2 hover:bg-violet-50 px-3 py-1.5 rounded-lg transition-all">
-                              <PlusCircle class="w-4 h-4" /> Thêm dòng hàng
-                          </button>
-                      </div>
-
-                      <div class="space-y-4">
-                          <div v-for="(row, idx) in newVoucher.details" :key="idx" class="grid grid-cols-12 gap-4 items-end bg-slate-50/50 p-4 rounded-3xl border border-slate-100 animate-fade-in-up">
-                              <div class="col-span-6 flex flex-col gap-2">
-                                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Vật tư / Thuốc</label>
-                                  <select v-model="row.supplyId" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-xs">
-                                      <option :value="null" disabled>-- Chọn vật tư / thuốc --</option>
-                                      <option v-for="s in list" :key="s.supplyId" :value="s.supplyId">
-                                          [{{ s.category || 'VTYT' }}] {{ s.supplyName }} • Tồn: {{ formatNumber(s.totalStock) }} {{ s.unit }} {{ s.isLowStock ? '⚠️' : '' }}
-                                      </option>
-                                  </select>
-                                  <!-- Info Badge when selected -->
-                                  <div v-if="row.supplyId && list.find(s => s.supplyId === row.supplyId)" class="mt-1 px-3 py-1.5 bg-violet-50 rounded-xl border border-violet-100 flex items-center justify-between animate-fade-in">
-                                      <div class="flex items-center gap-3">
-                                          <div class="w-1.5 h-1.5 rounded-full bg-violet-400"></div>
-                                          <span class="text-[9px] font-black text-violet-600 uppercase tracking-widest">
-                                              Đơn giá: {{ formatCurrency(list.find(s => s.supplyId === row.supplyId).unitPrice) }}
-                                          </span>
-                                      </div>
-                                      <span class="text-[8px] font-black text-violet-400 uppercase tracking-tighter italic">VT-{{ String(row.supplyId).padStart(4, '0') }}</span>
-                                  </div>
-                              </div>
-                              <div class="col-span-4 flex flex-col gap-2">
-                                  <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest ml-1">Số lượng {{ newVoucher.type === 'IMPORT' ? 'nhập' : 'xuất' }}</label>
-                                  <CurrencyInput v-model="row.quantity" class="bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-black text-slate-700 outline-none transition-all focus:border-violet-300 focus:bg-white w-full font-black text-right" placeholder="0" />
-                              </div>
-                              <div class="col-span-2 flex justify-center pb-1">
-                                  <button @click="removeDetailRow(idx)" class="p-4 text-rose-300 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all"><Trash2 class="w-5 h-5" /></button>
-                              </div>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-                  </div>
-
-                  <div class="px-12 pb-12 pt-4 bg-white relative z-20">
-                      <div class="flex gap-4">
-                          <button type="button" @click="showVoucherModal = false" class="px-8 py-4 text-slate-400 font-black uppercase tracking-widest text-[10px] underline">Hủy bỏ</button>
-                          <div class="flex-1"></div>
-                          <button @click="saveVoucher" :disabled="!isVoucherValid" class="bg-slate-900 text-white px-14 py-4 rounded-2xl font-black shadow-2xl flex items-center gap-4 uppercase text-[10px] tracking-[0.3em] disabled:opacity-30 disabled:scale-100 transform hover:-translate-y-1 active:scale-95 transition-all">
-                              Xác nhận chốt phiếu
-                          </button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-      </div>
+                        <div v-if="modals.history.list.length === 0" class="h-full flex flex-col items-center justify-center opacity-30 py-20">
+                            <Inbox class="w-16 h-16 mb-4" />
+                            <p class="font-black uppercase tracking-widest text-xs">Chưa có dữ liệu biến động</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
-import apiClient from '../services/apiClient'
-import { parseApiError } from '../services/errorHelper'
+import { ref, computed, onMounted } from 'vue'
 import { 
-    Package, Plus, Search, RefreshCw, Layers, AlertCircle, Clock, Edit3, 
-    PackageSearch, ClipboardList, PlusCircle, Trash2, ChevronRight, ChevronDown,
-    ArrowDownLeft, ArrowUpRight, X
+    Package, Box, AlertTriangle, TrendingUp, Search, Plus, 
+    X, History, ArrowDownLeft, ArrowUpRight, Stethoscope,
+    FlaskConical, Pill, Syringe, ClipboardList, RefreshCw,
+    Save, CheckCircle, Inbox, Trash2
 } from 'lucide-vue-next'
-import { useAuthStore } from '../stores/auth'
-import { usePermission } from '@/composables/usePermission'
-import { useToast } from '../composables/useToast'
 import { useI18nStore } from '../stores/i18n'
+import { usePermission } from '../composables/usePermission'
+import apiClient from '../services/apiClient'
+import { useToast } from '../composables/useToast'
+import { parseApiError } from '../services/errorHelper'
 
-import CurrencyInput from '../components/CurrencyInput.vue'
-
-const authStore = useAuthStore()
+const i18n = useI18nStore()
 const { can } = usePermission()
 const toast = useToast()
-const i18n = useI18nStore()
 
-// -- STATE --
-const activeTab = ref('inventory')
-const list = ref([])
-const vouchers = ref([])
-const groups = ref([])
-const showModal = ref(false)
-const showVoucherModal = ref(false)
+const supplies = ref([])
+const activeGroups = ref([])
 const searchQuery = ref('')
-const currentItem = ref({})
-const isGroupDropdownOpen = ref(false)
+const isLoading = ref(false)
+const saving = ref(false)
 
-const newVoucher = ref({
-    type: 'IMPORT',
-    groupId: null,
-    note: '',
-    details: [{ supplyId: null, quantity: 0 }]
+const activeTab = ref('inventory')
+const historyList = ref([])
+
+const modals = ref({
+    add: { show: false, data: { itemName: '', unit: '', category: 'Vật tư y tế', minStockLevel: 10, typicalUnitPrice: 0 } },
+    import: { show: false, supply: null, data: { quantity: 0, unitPrice: 0, note: '' } },
+    export: { show: false, supply: null, data: { medicalGroupId: null, quantity: 0, unitPrice: 0, note: '' } },
+    history: { show: false, supply: null, list: [] }
 })
 
-// -- UTILS: Number & Currency Formatting --
-const formatNumber = (num) => new Intl.NumberFormat('vi-VN').format(num || 0)
-const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
-
-// -- COMPUTED --
-const filteredList = computed(() => {
-    if (!searchQuery.value) return list.value
-    const q = searchQuery.value.toLowerCase()
-    return list.value.filter(s => 
-        s.supplyName.toLowerCase().includes(q) || 
-        (s.category && s.category.toLowerCase().includes(q)) ||
-        String(s.supplyId).includes(q)
-    )
-})
-
-const isVoucherValid = computed(() => {
-    if (newVoucher.value.type === 'EXPORT' && !newVoucher.value.groupId) return false
-    return newVoucher.value.details.some(d => d.supplyId && d.quantity > 0)
-})
-
-// -- DATA FETCHING --
-const fetchList = async () => {
+const fetchGlobalHistory = async () => {
+    isLoading.value = true
     try {
-        const res = await apiClient.get('/api/Supplies')
-        list.value = res.data
-    } catch (e) { toast.error(parseApiError(e)) }
+        const res = await apiClient.get('/api/Supplies/movements')
+        historyList.value = res.data
+    } catch (err) {
+        toast.error("Không thể tải lịch sử biến động")
+    } finally {
+        isLoading.value = false
+    }
 }
 
-const fetchVouchers = async () => {
+// Watch tab change to fetch history
+import { watch } from 'vue'
+watch(activeTab, (newTab) => {
+    if (newTab === 'history') {
+        fetchGlobalHistory()
+    }
+})
+
+const fetchSupplies = async () => {
+    isLoading.value = true
     try {
-        const res = await apiClient.get('/api/Supplies/vouchers')
-        vouchers.value = res.data
-    } catch (e) { toast.error(parseApiError(e)) }
+        const res = await apiClient.get('/api/Supplies')
+        supplies.value = res.data
+    } catch (err) {
+        toast.error("Không thể tải danh sách vật tư")
+    } finally {
+        isLoading.value = false
+    }
 }
 
 const fetchGroups = async () => {
     try {
         const res = await apiClient.get('/api/MedicalGroups')
-        // CHỈ lấy các đoàn khám đang hoạt động (Open)
-        groups.value = res.data.filter(g => {
-            const status = g.status || g.Status
-            return status === 'Open'
-        })
-    } catch (e) { console.warn("Could not fetch groups") }
+        activeGroups.value = (res.data || []).filter(g => g.status === 'Open')
+    } catch (err) {}
 }
 
-// -- ACTIONS: SUPPLIES --
-const openModal = (item = null) => {
-    currentItem.value = item ? { ...item } : { supplyName: '', category: 'VTYT', unit: '', unitPrice: 0, minStockLevel: 5 }
-    showModal.value = true
-}
-
-const saveItem = async () => {
-    try {
-        if (currentItem.value.supplyId) {
-            await apiClient.put(`/api/Supplies/${currentItem.value.supplyId}`, currentItem.value)
-        } else {
-            await apiClient.post('/api/Supplies', currentItem.value)
-        }
-        toast.success("Hợp lệ: Dữ liệu đã được cập nhật!")
-        showModal.value = false
-        fetchList()
-    } catch (e) { 
-        toast.error(parseApiError(e)) 
-    }
-}
-
-const deleteItem = async () => {
-    if (!confirm("Xác nhận xóa mặt hàng này khỏi kho?")) return
-    try {
-        await apiClient.delete(`/api/Supplies/${currentItem.value.supplyId}`)
-        toast.success("Đã xóa khỏi danh mục!")
-        showModal.value = false
-        fetchList()
-    } catch (e) { 
-        toast.error(parseApiError(e)) 
-    }
-}
-
-// -- ACTIONS: VOUCHERS --
-const openVoucherModal = () => {
-    newVoucher.value = {
-        type: 'IMPORT',
-        groupId: null,
-        note: '',
-        details: [{ supplyId: list.value[0]?.supplyId || null, quantity: 10 }]
-    }
-    showVoucherModal.value = true
-}
-
-const addDetailRow = () => {
-    newVoucher.value.details.push({ supplyId: list.value[0]?.supplyId || null, quantity: 0 })
-}
-
-const removeDetailRow = (idx) => {
-    if (newVoucher.value.details.length > 1) {
-        newVoucher.value.details.splice(idx, 1)
-    }
-}
-
-const saveVoucher = async () => {
-    try {
-        await apiClient.post('/api/Supplies/vouchers', newVoucher.value)
-        toast.success("Phiếu kho đã được chốt và cập nhật tồn kho!")
-        showVoucherModal.value = false
-        fetchList()
-        fetchVouchers()
-    } catch (e) {
-        toast.error(parseApiError(e))
-    }
-}
-
-const deleteVoucher = async (id) => {
-    if (!confirm("Xác nhận xóa phiếu kho này? Tồn kho liên quan sẽ được tự động hoàn tác.")) return
-    try {
-        await apiClient.delete(`/api/Supplies/vouchers/${id}`)
-        toast.success("Đã xóa phiếu và hoàn tác tồn kho!")
-        fetchVouchers()
-        fetchList()
-    } catch (e) {
-        toast.error(parseApiError(e))
-    }
-}
-
-// -- LIFECYCLE --
-onMounted(() => {
-    fetchList()
-    fetchVouchers()
-    fetchGroups()
+const filteredSupplies = computed(() => {
+    if (!searchQuery.value) return supplies.value
+    const q = searchQuery.value.toLowerCase()
+    return supplies.value.filter(s => s.itemName.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
 })
 
-// Watch for tab switching to refresh data
-watch(activeTab, (val) => {
-    if (val === 'vouchers') fetchVouchers()
-    else fetchList()
+const lowStockItems = computed(() => supplies.value.filter(s => s.currentStock <= s.minStockLevel))
+const totalValue = computed(() => supplies.value.reduce((sum, s) => sum + (s.currentStock * s.typicalUnitPrice), 0))
+
+const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
+const formatDate = (dateStr, includeTime = false) => {
+    if (!dateStr) return ''
+    const d = new Date(dateStr)
+    return includeTime ? d.toLocaleString('vi-VN') : d.toLocaleDateString('vi-VN')
+}
+
+const importHistory = computed(() => historyList.value.filter(m => m.movementType === 'IN'))
+const exportHistory = computed(() => historyList.value.filter(m => m.movementType === 'OUT'))
+
+// Category Helpers
+const getCategoryIcon = (cat) => {
+    if (cat?.includes('Thuốc')) return Pill
+    if (cat?.includes('Thiết bị')) return FlaskConical
+    if (cat?.includes('Y tế')) return Syringe
+    return Box
+}
+const getCategoryBg = (cat) => {
+    if (cat?.includes('Thuốc')) return 'bg-rose-50 text-rose-500'
+    if (cat?.includes('Thiết bị')) return 'bg-sky-50 text-sky-500'
+    return 'bg-indigo-50 text-indigo-500'
+}
+
+// Stock Logic
+const getStockColor = (s) => {
+    if (s.currentStock <= 0) return 'bg-slate-300'
+    if (s.currentStock <= s.minStockLevel) return 'bg-rose-500 shadow-[0_0_10px_rgba(244,63,94,0.4)]'
+    if (s.currentStock < s.minStockLevel * 2) return 'bg-amber-500'
+    return 'bg-emerald-500'
+}
+const getStockTextClass = (s) => {
+    if (s.currentStock <= 0) return 'text-slate-400'
+    if (s.currentStock <= s.minStockLevel) return 'text-rose-600'
+    return 'text-slate-400'
+}
+const getStockLabel = (s) => {
+    if (s.currentStock <= 0) return 'Hết hàng'
+    if (s.currentStock <= s.minStockLevel) return 'Sắp hết (Báo động)'
+    return 'Duy trì ổn định'
+}
+
+// Modal Handlers
+const openAddModal = () => {
+    modals.value.add.data = { itemName: '', unit: '', category: 'Vật tư y tế', minStockLevel: 10, typicalUnitPrice: 0 }
+    modals.value.add.show = true
+}
+
+const saveNewSupply = async () => {
+    saving.value = true
+    try {
+        await apiClient.post('/api/Supplies', modals.value.add.data)
+        toast.success("Đã thêm vật tư mới")
+        modals.value.add.show = false
+        fetchSupplies()
+    } catch (err) {
+        toast.error(parseApiError(err))
+    } finally {
+        saving.value = false
+    }
+}
+
+const openImportModal = (s) => {
+    modals.value.import.supply = s
+    modals.value.import.data = { supplyId: s.supplyId, quantity: 0, unitPrice: s.typicalUnitPrice, note: '' }
+    modals.value.import.show = true
+}
+
+const processImport = async () => {
+    saving.value = true
+    try {
+        await apiClient.post('/api/Supplies/import', modals.value.import.data)
+        toast.success("Đã nhập kho thành công")
+        modals.value.import.show = false
+        fetchSupplies()
+    } catch (err) {
+        toast.error(parseApiError(err))
+    } finally {
+        saving.value = false
+    }
+}
+
+const openExportModal = (s) => {
+    modals.value.export.supply = s
+    modals.value.export.data = { supplyId: s.supplyId, medicalGroupId: activeGroups.value[0]?.groupId || null, quantity: 0, unitPrice: s.typicalUnitPrice, note: '' }
+    modals.value.export.show = true
+}
+
+const processExport = async () => {
+    saving.value = true
+    try {
+        await apiClient.post('/api/Supplies/export', modals.value.export.data)
+        toast.success("Đã xuất kho cho đoàn")
+        modals.value.export.show = false
+        fetchSupplies()
+    } catch (err) {
+        toast.error(parseApiError(err))
+    } finally {
+        saving.value = false
+    }
+}
+
+const openHistory = async (s) => {
+    modals.value.history.supply = s
+    modals.value.history.list = []
+    modals.value.history.show = true
+    try {
+        const res = await apiClient.get(`/api/Supplies/movements/${s.supplyId}`)
+        modals.value.history.list = res.data
+    } catch (err) {
+        toast.error("Không thể tải lịch sử biến động")
+    }
+}
+
+const confirmDelete = async (s) => {
+    if (confirm(`Bạn có chắc muốn xóa vật tư "${s.itemName}" không?`)) {
+        try {
+            await apiClient.delete(`/api/Supplies/${s.supplyId}`)
+            toast.success("Đã xóa vật tư")
+            fetchSupplies()
+        } catch (err) {
+            toast.error(parseApiError(err))
+        }
+    }
+}
+
+onMounted(() => {
+    fetchSupplies()
+    fetchGroups()
 })
 </script>
 
 <style scoped>
-.animate-scale-up {
-  animation: scaleUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-@keyframes scaleUp {
-  from { opacity: 0; transform: scale(0.92) translateY(20px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
+.dashboard-gradient {
+    background: radial-gradient(circle at top left, rgba(248, 250, 252, 1), rgba(241, 245, 249, 1));
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease-out forwards;
+.scrollbar-premium::-webkit-scrollbar {
+    width: 6px;
 }
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+.scrollbar-premium::-webkit-scrollbar-track {
+    background: transparent;
 }
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.4s ease-out forwards;
-}
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+.scrollbar-premium::-webkit-scrollbar-thumb {
+    background: rgba(203, 213, 225, 0.5);
+    border-radius: 10px;
 }
 
-.premium-card {
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+/* Premium UI Patterns */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(8px); z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+  animation: fadeIn 0.3s ease;
+  padding: 1rem;
 }
-.premium-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 20px 40px -15px rgba(0,0,0,0.05);
+
+.modal-box {
+  background: white; border-radius: 2.5rem; overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%; animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+.form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+.form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+.form-group label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.1em; }
+.form-input { 
+  width: 100%; padding: 0.75rem 1rem; border-radius: 1rem; border: 1px solid #e2e8f0;
+  outline: none; transition: all 0.2s; font-size: 13px; font-weight: 600;
+}
+.form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1); }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-20">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans p-6">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
@@ -8,8 +8,6 @@
             <UsersIcon class="w-6 h-6" />
           </div>
           {{ i18n.t('staff.title') }}
-          <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-primary font-black tabular-nums">{{ String(list.length).padStart(3, '0') }}</span>
         </h2>
         <p class="text-slate-400 font-black uppercase tracking-widest text-[9px] mt-2">{{ i18n.t('staff.subtitle') }}</p>
       </div>
@@ -28,7 +26,7 @@
         </button>
         <button v-if="can('NhanSu.Manage')" 
                 @click="openModal()" 
-                class="btn-premium bg-primary text-white px-8 py-3 shadow-lg">
+                class="btn-premium primary">
           <Plus class="w-5 h-5" />
           <span>{{ i18n.t('staff.addBtn') }}</span>
         </button>
@@ -38,8 +36,8 @@
 
 
     <!-- Search & List in Table Format -->
-    <div class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden">
-        <div class="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 bg-slate-50/30">
+    <div class="premium-card overflow-hidden">
+        <div class="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 bg-slate-50/10">
             <div class="relative group flex-1">
                 <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
                 <input v-model="searchQuery" placeholder="Tìm tên hoặc mã nhân viên..." 
@@ -145,7 +143,21 @@
                 </div>
             </div>
 
-            <div class="px-10 pb-10">
+            <!-- Tab Navigation -->
+            <div class="px-10 pb-0">
+                <div class="flex gap-1 border-b border-slate-100">
+                    <button v-for="tab in modalTabs" :key="tab.id"
+                            @click="activeModalTab = tab.id"
+                            :class="['px-5 py-3 text-[10px] font-black uppercase tracking-widest transition-all relative',
+                                     activeModalTab === tab.id ? 'text-sky-600' : 'text-slate-400 hover:text-slate-600']">
+                        {{ tab.label }}
+                        <div v-if="activeModalTab === tab.id" class="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 rounded-full"></div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 1: Thông tin cơ bản -->
+            <div v-if="activeModalTab === 'info'" class="px-10 pb-10 pt-6">
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <!-- Basic Info Form -->
                     <div class="lg:col-span-2 space-y-6">
@@ -249,6 +261,111 @@
                 </div>
             </div>
 
+            <!-- TAB 2: Bảng Lương -->
+            <div v-if="activeModalTab === 'payroll'" class="px-10 pb-10 pt-6">
+                <div v-if="payrollLoading" class="py-16 text-center text-slate-400">
+                    <div class="w-8 h-8 border-2 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                    <p class="text-xs font-black uppercase tracking-widest">Đang tải dữ liệu lương...</p>
+                </div>
+                <div v-else>
+                    <div class="grid grid-cols-3 gap-4 mb-6">
+                        <div class="bg-emerald-50 rounded-2xl p-5 text-center border border-emerald-100">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-emerald-600 mb-1">Tổng thù lao</p>
+                            <p class="text-xl font-black text-emerald-700">{{ formatPrice(payrollData.totalSalary || 0) }}</p>
+                        </div>
+                        <div class="bg-sky-50 rounded-2xl p-5 text-center border border-sky-100">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-sky-600 mb-1">Số đoàn tham gia</p>
+                            <p class="text-xl font-black text-sky-700">{{ payrollData.totalShifts || 0 }}</p>
+                        </div>
+                        <div class="bg-violet-50 rounded-2xl p-5 text-center border border-violet-100">
+                            <p class="text-[9px] font-black uppercase tracking-widest text-violet-600 mb-1">Tổng ngày công</p>
+                            <p class="text-xl font-black text-violet-700">{{ payrollData.totalDays || 0 }}</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                        <table class="w-full text-xs">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="p-3 text-left font-black text-slate-400 uppercase tracking-widest">Đoàn khám</th>
+                                    <th class="p-3 text-left font-black text-slate-400 uppercase tracking-widest">Ngày</th>
+                                    <th class="p-3 text-left font-black text-slate-400 uppercase tracking-widest">Vị trí</th>
+                                    <th class="p-3 text-center font-black text-slate-400 uppercase tracking-widest">Ca</th>
+                                    <th class="p-3 text-center font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
+                                    <th class="p-3 text-right font-black text-slate-400 uppercase tracking-widest">Thù lao</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-50">
+                                <tr v-for="s in payrollData.shifts" :key="s.id" class="hover:bg-slate-50/50">
+                                    <td class="p-3 font-black text-slate-700">{{ s.groupName }}</td>
+                                    <td class="p-3 text-slate-500">{{ formatDate(s.examDate) }}</td>
+                                    <td class="p-3 text-slate-500">{{ s.workPosition || '—' }}</td>
+                                    <td class="p-3 text-center">
+                                        <span class="px-2 py-1 rounded bg-indigo-50 text-indigo-600 font-black">
+                                            {{ s.shiftType === 0.5 ? 'Nửa ca' : 'Cả ngày' }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-center">
+                                        <span :class="s.workStatus === 'Joined' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'"
+                                              class="px-2 py-1 rounded font-black text-[9px] uppercase tracking-widest">
+                                            {{ s.workStatus }}
+                                        </span>
+                                    </td>
+                                    <td class="p-3 text-right font-black text-slate-800">{{ formatPrice(s.calculatedSalary) }}</td>
+                                </tr>
+                                <tr v-if="!payrollData.shifts?.length">
+                                    <td colspan="6" class="py-12 text-center text-slate-300 font-black text-[10px] uppercase tracking-widest">Chưa có dữ liệu lương</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Chấm công -->
+            <div v-if="activeModalTab === 'attendance'" class="px-10 pb-10 pt-6">
+                <div class="flex gap-3 mb-5">
+                    <select v-model="attendanceYear" @change="loadAttendance" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 font-black text-xs text-slate-600 outline-none">
+                        <option v-for="y in yearOptions" :key="y" :value="y">Năm {{ y }}</option>
+                    </select>
+                    <select v-model="attendanceMonth" @change="loadAttendance" class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 font-black text-xs text-slate-600 outline-none">
+                        <option value="">Tất cả tháng</option>
+                        <option v-for="m in 12" :key="m" :value="m">Tháng {{ m }}</option>
+                    </select>
+                </div>
+                <div v-if="attendanceLoading" class="py-16 text-center text-slate-400">
+                    <div class="w-8 h-8 border-2 border-sky-400 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                </div>
+                <div v-else class="space-y-3">
+                    <div v-for="(rec, idx) in attendanceData" :key="idx"
+                         class="flex items-center gap-4 p-4 bg-white border border-slate-100 rounded-2xl hover:border-sky-100 transition-all">
+                        <div class="w-14 h-14 rounded-2xl flex flex-col items-center justify-center flex-shrink-0"
+                             :class="rec.checkInTime ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-50 text-slate-400'">
+                            <span class="text-lg font-black leading-tight">{{ new Date(rec.examDate).getDate() }}</span>
+                            <span class="text-[8px] font-black uppercase tracking-widest">Th{{ new Date(rec.examDate).getMonth()+1 }}</span>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-black text-slate-800 text-sm">{{ rec.groupName }}</p>
+                            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-0.5">{{ rec.workPosition || 'Chưa rõ vị trí' }}</p>
+                            <div class="flex gap-4 mt-1.5 text-[10px] font-black">
+                                <span v-if="rec.checkInTime" class="text-emerald-600">✓ Vào: {{ formatTime(rec.checkInTime) }}</span>
+                                <span v-else class="text-slate-300">Chưa check-in</span>
+                                <span v-if="rec.checkOutTime" class="text-sky-600">✓ Ra: {{ formatTime(rec.checkOutTime) }}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span :class="rec.workStatus === 'Joined' ? 'text-emerald-600 bg-emerald-50' : 'text-slate-400 bg-slate-50'"
+                                  class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest">
+                                {{ rec.workStatus }}
+                            </span>
+                            <p class="text-xs font-black text-slate-700 mt-2">{{ formatPrice(rec.calculatedSalary) }}</p>
+                        </div>
+                    </div>
+                    <div v-if="!attendanceData.length" class="py-16 text-center text-slate-300">
+                        <p class="font-black text-[10px] uppercase tracking-widest">Không có dữ liệu chấm công kỳ này</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="p-8 border-t border-slate-50 flex justify-between gap-4 bg-white">
                 <button v-if="currentStaff.staffId && can('HeThong.UserManage')" @click="deleteStaff" type="button" class="w-12 h-12 rounded-2xl bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border-2 border-rose-100 hover:border-slate-900 shadow-sm">
                     <Trash2 class="w-5 h-5" />
@@ -297,6 +414,24 @@ const currentStaff = ref({})
 const avatarInput = ref(null)
 const importInput = ref(null)
 const confirmData = ref({ show: false, title: '', message: '', variant: 'warning', onConfirm: () => {} })
+
+const activeModalTab = ref('info')
+const modalTabs = [
+    { id: 'info', label: 'Thông tin' },
+    { id: 'payroll', label: 'Bảng lương' },
+    { id: 'attendance', label: 'Chấm công' },
+]
+
+// Payroll tab state
+const payrollLoading = ref(false)
+const payrollData = ref({ totalSalary: 0, totalShifts: 0, totalDays: 0, shifts: [] })
+
+// Attendance tab state
+const attendanceLoading = ref(false)
+const attendanceData = ref([])
+const attendanceYear = ref(new Date().getFullYear())
+const attendanceMonth = ref('')
+const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
 const standardJobs = ['Bác sĩ', 'Điều dưỡng', 'Kỹ thuật viên', 'Dược sĩ', 'Nhân viên hỗ trợ']
 const jobCategory = ref('Bác sĩ')
@@ -349,6 +484,11 @@ const openModal = async (staff = null) => {
         jobCategory.value = 'Bác sĩ'
     }
     showModal.value = true
+    activeModalTab.value = 'info'
+    if (staff?.staffId) {
+        loadPayroll(staff.staffId)
+        loadAttendance()
+    }
 }
 
 watch(jobCategory, (newVal) => {
@@ -429,7 +569,30 @@ const handleImportFile = async (e) => {
 }
 
 const formatDate = (d) => new Date(d).toLocaleDateString('vi-VN')
+const formatTime = (d) => d ? new Date(d).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '—'
 const formatPrice = (p) => new Intl.NumberFormat('vi-VN').format(p) + ' đ'
+
+const loadPayroll = async (staffId) => {
+    if (!staffId) return
+    payrollLoading.value = true
+    try {
+        const res = await apiClient.get(`/api/Staffs/${staffId}/payroll-summary`)
+        payrollData.value = res.data
+    } catch (e) { console.warn('Cannot load payroll', e) }
+    finally { payrollLoading.value = false }
+}
+
+const loadAttendance = async () => {
+    if (!currentStaff.value.staffId) return
+    attendanceLoading.value = true
+    try {
+        const params = new URLSearchParams({ year: attendanceYear.value })
+        if (attendanceMonth.value) params.append('month', attendanceMonth.value)
+        const res = await apiClient.get(`/api/Staffs/${currentStaff.value.staffId}/attendance?${params}`)
+        attendanceData.value = res.data
+    } catch (e) { console.warn('Cannot load attendance', e) }
+    finally { attendanceLoading.value = false }
+}
 
 onMounted(fetchList)
 </script>

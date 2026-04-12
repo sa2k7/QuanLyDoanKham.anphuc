@@ -28,10 +28,22 @@ builder.Services.AddScoped<QuanLyDoanKham.API.Services.IGeminiService, QuanLyDoa
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMedicalGroupAutoAssignmentService, MedicalGroupAutoAssignmentService>();
+builder.Services.AddScoped<IGroupLifecycleService, GroupLifecycleService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.IReportingService, QuanLyDoanKham.API.Services.ReportingService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.QrService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.TimeSheetService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Reports.FinancialReportService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Reports.IReportExportService, QuanLyDoanKham.API.Services.Reports.ReportExportService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Settlement.ICostCalculationService, QuanLyDoanKham.API.Services.Settlement.CostCalculationService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Settlement.ISettlementService, QuanLyDoanKham.API.Services.Settlement.SettlementService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Settlement.IFinancialCalculatorEngine, QuanLyDoanKham.API.Services.Settlement.FinancialCalculatorEngine>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRecordService, QuanLyDoanKham.API.Services.MedicalRecords.MedicalRecordService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRecordStateMachine, QuanLyDoanKham.API.Services.MedicalRecords.MedicalRecordStateMachine>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.ICheckInService, QuanLyDoanKham.API.Services.MedicalRecords.CheckInService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IExamService, QuanLyDoanKham.API.Services.MedicalRecords.ExamService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Contracts.IHealthContractService, QuanLyDoanKham.API.Services.Contracts.HealthContractService>();
+
+builder.Services.AddSignalR();
 
 // ================================================================
 // 3. PERMISSION AUTHORIZATION
@@ -153,7 +165,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             {
                 if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
                 {
-                    context.Response.Headers.Add("IS-TOKEN-EXPIRED", "true");
+                    context.Response.Headers.Append("IS-TOKEN-EXPIRED", "true");
                 }
                 Console.WriteLine($"[AUTH ERROR] Authentication failed: {context.Exception.Message}");
                 return Task.CompletedTask;
@@ -171,6 +183,20 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // ================================================================
 var app = builder.Build();
 
+// Middleware log lỗi chưa xử lý (unhandled exceptions) để debug 500
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[UNHANDLED ERROR] {context.Request.Path} -> {ex}");
+        throw;
+    }
+});
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -184,5 +210,6 @@ app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<QuanLyDoanKham.API.Hubs.QueueHub>("/hub/queue");
 
 app.Run();

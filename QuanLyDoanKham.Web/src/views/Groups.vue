@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-8 animate-fade-in pb-20">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans p-6">
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
       <div>
@@ -8,22 +8,20 @@
             <Stethoscope class="w-6 h-6" />
           </div>
           {{ i18n.t('groups.title') }}
-          <span class="text-slate-200 ml-2 font-black">/</span>
-          <span class="text-primary font-black tabular-nums">{{ String(groups.length).padStart(3, '0') }}</span>
         </h2>
         <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px] mt-2">{{ i18n.t('groups.subtitle') }}</p>
       </div>
 
       <div class="flex items-center gap-4">
         <button v-if="can('DoanKham.Create')" 
-                @click="exportGroups"                 class="btn-premium bg-white border-2 border-slate-900 text-slate-800 px-6 py-3 rounded-xl shadow-[4px_4px_0px_#0f172a] hover:bg-slate-50 transition-all font-black">
+                @click="exportGroups"                 class="btn-premium secondary">
             <Download class="w-4 h-4 mr-2" />
-            <span class="text-[10px] font-black uppercase tracking-widest">Xuất DS Đoàn</span>
+            <span class="text-[10px] uppercase">Xuất DS Đoàn</span>
         </button>
         <button v-if="can('DoanKham.Create')" 
-                @click="showForm = !showForm"                 class="btn-premium bg-primary text-white px-8 py-3 rounded-xl border-2 border-primary shadow-[4px_4px_0px_#152a41] hover:bg-primary/90 transition-all font-black">
+                @click="showForm = !showForm"                 class="btn-premium primary">
             <Plus class="w-5 h-5 mr-2" />
-            <span class="text-[10px] font-black uppercase tracking-widest ">{{ i18n.t('groups.addBtn') }}</span>
+            <span class="text-[10px] uppercase">{{ i18n.t('groups.addBtn') }}</span>
         </button>
       </div>
     </div>
@@ -31,128 +29,77 @@
 
 
     <!-- Smart Create Form -->
-    <div v-if="showForm" class="premium-card p-10 bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 mb-10 animate-slide-up relative overflow-hidden">
-        <div class="absolute top-0 right-0 p-4">
-            <button @click="showForm = false" class="p-2 hover:bg-slate-100 rounded-full transition-all">
-                <X class="w-5 h-5 text-slate-400" />
-            </button>
-        </div>
-
-        <!-- Tabs for Creation Mode -->
-        <div class="flex gap-4 mb-8 p-1 bg-slate-50 rounded-2xl border-2 border-slate-100">
-            <button @click="createMode = 'manual'" :class="['flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all', createMode === 'manual' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 opacity-50']">
-                Khai báo thủ công
-            </button>
-            <button @click="createMode = 'smart'" :class="['flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all', createMode === 'smart' ? 'bg-white text-slate-900 shadow-sm border border-slate-200' : 'text-slate-400 opacity-50']">
-                Clone từ đoàn cũ
-            </button>
-            <button @click="createMode = 'auto'" :class="['flex-1 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all', createMode === 'auto' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400 opacity-50']">
-                 PHÂN BỔ TỰ ĐỘNG (BETA)
-            </button>
+    <div v-if="showForm" class="premium-card p-4 mb-6 overflow-hidden border-indigo-100 bg-indigo-50/10 shadow-sm transition-all duration-300">
+        <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-100 shrink-0">
+                    <Zap class="w-4 h-4 text-white" />
+                </div>
+                <h3 class="text-sm font-black text-slate-800 tracking-tight uppercase">Tạo đoàn tự động</h3>
+            </div>
+            <div class="flex items-center gap-3">
+                <div class="flex p-1 bg-white rounded-xl border border-slate-100 shadow-sm">
+                    <button @click="createMode = 'manual'" :class="['px-4 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-tighter transition-all', createMode === 'manual' ? 'bg-slate-100 text-slate-900 shadow-inner' : 'text-slate-400']">Thủ công</button>
+                    <button @click="createMode = 'auto'" :class="['px-4 py-1.5 rounded-lg font-black text-[9px] uppercase tracking-tighter transition-all', createMode === 'auto' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400']">Tự động</button>
+                </div>
+                <button @click="showForm = false" class="p-1.5 hover:bg-slate-200/50 rounded-lg transition-all text-slate-400">
+                    <X class="w-4 h-4" />
+                </button>
+            </div>
         </div>
 
         <!-- Mode: Manual -->
-        <form v-if="createMode === 'manual'" @submit.prevent="addGroup" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Hợp đồng mục tiêu</label>
-                <select v-model="newGroup.healthContractId" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
+        <form v-if="createMode === 'manual'" @submit.prevent="addGroup" class="flex items-end gap-4 min-w-full">
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5 ">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Hợp đồng mục tiêu</label>
+                <select v-model="newGroup.healthContractId" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] uppercase px-4 py-0 transition-all focus:ring-2 focus:ring-indigo-500/10">
                     <option :value="null" disabled>-- Chọn hợp đồng --</option>
                     <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                        [HĐ-{{ c.healthContractId }}] {{ c.shortName || c.companyName }}
+                        [{{ c.contractCode || '---' }}] {{ c.contractName || c.companyName }}
                     </option>
                 </select>
             </div>
-            <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Tên đoàn khám</label>
-                <input v-model="newGroup.groupName" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all placeholder:text-slate-300" placeholder="VD: Khám sức khỏe CN 2026" />
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5 ">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đoàn khám</label>
+                <input v-model="newGroup.groupName" required class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="" />
             </div>
-            <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Ngày triển khai</label>
-                <input v-model="newGroup.examDate" type="date" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all" />
+            <div class="flex-[2] min-w-0 flex flex-col gap-1.5 ">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày triển khai</label>
+                <input v-model="newGroup.examDate" type="date" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] px-4" />
             </div>
-            <div class="md:col-span-3 flex justify-end pt-4">
-                 <button type="submit" class="btn-premium bg-slate-900 text-white px-12 py-4 rounded-2xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:bg-slate-800 transition-all font-black uppercase tracking-widest text-[11px] ">KÍCH HOẠT ĐOÀN MỚI</button>
-            </div>
+            <button type="submit" class="h-11 px-8 rounded-xl bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg active:scale-95 shrink-0">KÍCH HOẠT ĐOÀN MỚI</button>
         </form>
 
-        <!-- Mode: Smart/Clone -->
-        <div v-if="createMode === 'smart'" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-             <div class="space-y-3">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Chọn Hợp đồng nguồn</label>
-                <select v-model="selectedContractForAuto" @change="onSmartContractSelect" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                    <option :value="null" disabled>-- Chọn hợp đồng --</option>
+        <!-- Mode: Auto-Create (Simplified) -->
+        <div v-if="createMode === 'auto'" class="flex items-end gap-4 min-w-full animate-fade-in">
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Chọn hợp đồng nguồn</label>
+                <select v-model="autoAssignData.healthContractId" @change="onAutoContractSelect" 
+                        class="input-premium bg-white border-slate-200 w-full cursor-pointer font-black text-[11px] uppercase px-4 h-11 py-0 transition-all focus:ring-2 focus:ring-indigo-500/10">
+                    <option :value="null">-- Chọn hợp đồng --</option>
                     <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                        [HĐ-{{ c.healthContractId }}] {{ c.shortName || c.companyName }}
+                        [{{ c.contractCode || '---' }}] {{ c.contractName || c.companyName }}
                     </option>
                 </select>
             </div>
-            <div v-if="smartPreview" class="bg-indigo-50 rounded-[1.5rem] p-6 border-2 border-indigo-100 space-y-4">
-                <div class="space-y-3">
-                    <div class="flex items-center gap-2">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest w-24">Tên đoàn:</span>
-                        <input v-model="smartPreview.groupName" class="flex-1 bg-white rounded-lg px-3 py-2 text-xs font-black text-slate-800 border border-indigo-100 outline-none" />
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[9px] font-black text-slate-500 uppercase tracking-widest w-24">Ngày:</span>
-                        <input v-model="smartPreview.examDate" type="date" class="flex-1 bg-white rounded-lg px-3 py-2 text-xs font-black text-slate-800 border border-indigo-100 outline-none" />
-                    </div>
-                </div>
-                <div v-if="lastGroupOfContract" class="flex items-center gap-3 p-3 bg-white rounded-xl border border-indigo-100">
-                    <input type="checkbox" id="cloneStaff" v-model="doCloneStaff" class="w-4 h-4 accent-indigo-600" />
-                    <label for="cloneStaff" class="text-[10px] font-black text-slate-700 cursor-pointer">Sao chép đội ngũ từ đoàn cũ</label>
-                </div>
-                <button @click="confirmSmartCreate" class="w-full bg-indigo-600 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] hover:bg-indigo-700 transition-all">
-                    XÁC NHẬN TẠO NHANH
-                </button>
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đoàn (Tự động)</label>
+                <input v-model="autoAssignData.groupName"  placeholder=""
+                       class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" />
             </div>
-            <div v-else class="flex items-center justify-center border-2 border-dashed border-slate-100 rounded-3xl p-10 text-slate-300 font-black text-[10px] uppercase tracking-widest text-center">
-                Vui lòng chọn hợp đồng để xem trước
-            </div>
-        </div>
-
-        <!-- Mode: Auto-Assignment -->
-        <div v-if="createMode === 'auto'" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-6">
-                <div class="space-y-3">
-                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Hợp đồng & Thông tin cơ bản</label>
-                    <select v-model="autoAssignData.healthContractId" @change="onAutoContractSelect" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                        <option :value="null" disabled>-- Chọn hợp đồng --</option>
-                        <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                            [HĐ-{{ c.healthContractId }}] {{ c.shortName || c.companyName }}
-                        </option>
-                    </select>
-                    <input v-model="autoAssignData.groupName" placeholder="Tên đoàn khám" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all mt-3" />
-                    <input v-model="autoAssignData.examDate" type="date" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all mt-3" />
-                </div>
+            <div class="flex-[2] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày triển khai</label>
+                <input type="date" v-model="autoAssignData.examDate"
+                       class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] px-4 transition-all focus:ring-2 focus:ring-indigo-500/20" />
             </div>
 
-            <div class="bg-indigo-600/5 rounded-3xl p-8 border-2 border-indigo-600/10 space-y-6">
-                <h5 class="text-[10px] font-black uppercase tracking-widest text-indigo-600 flex items-center gap-2">
-                    <Sparkles class="w-4 h-4" /> Cấu hình mô hình phân bổ
-                </h5>
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="space-y-2">
-                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Định mức (Người/NV)</label>
-                        <input v-model.number="autoAssignData.targetRatio" type="number" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none font-black text-slate-700" />
-                    </div>
-                    <div class="space-y-2">
-                        <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Bác sĩ tối thiểu</label>
-                        <input v-model.number="autoAssignData.minimumDoctors" type="number" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none font-black text-slate-700" />
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Chế độ nghiêm ngặt</label>
-                    <select v-model="autoAssignData.assignmentMode" class="w-full px-4 py-3 rounded-xl bg-white border border-slate-200 outline-none font-black text-slate-700">
-                        <option value="Partial">Lướt qua (Điền tối đa nhân sự hiện có)</option>
-                        <option value="Strict">Nghiêm ngặt (Rollback nếu thiếu nhân sự P0)</option>
-                    </select>
-                </div>
-                <button @click="handleAutoAssign" :disabled="isAutoAssignLoading" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-black text-xs border-2 border-slate-900 shadow-[4px_4px_0px_#1e293b] active:scale-95 transition-all flex items-center justify-center gap-3">
-                    <RefreshCw v-if="isAutoAssignLoading" class="w-4 h-4 animate-spin" />
-                    <Zap v-else class="w-4 h-4" />
-                    {{ isAutoAssignLoading ? 'HỆ THỐNG ĐANG PHÂN BỔ...' : 'PHÂN BỔ NHÂN SỰ & TẠO ĐOÀN' }}
-                </button>
-            </div>
+            <button @click="handleAutoCreateOnly" :disabled="isAutoAssignLoading || !autoAssignData.healthContractId" 
+                    class="h-11 px-8 rounded-xl font-black transition-all flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest shrink-0"
+                    :class="[!autoAssignData.healthContractId ? 'bg-slate-100 text-slate-400 border border-slate-200' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-500/20 active:scale-95 animate-pulse-subtle']">
+                <Loader2 v-if="isAutoAssignLoading" class="w-4 h-4 animate-spin" />
+                <Zap v-else class="w-4 h-4" />
+                <span>Xác nhận tạo đoàn tự động</span>
+            </button>
         </div>
     </div>
 
@@ -172,12 +119,12 @@
 
     <!-- Danh sách Đoàn -->
     <div class="space-y-6">
-        <div v-if="filteredGroups.length === 0" class="premium-card bg-white rounded-[2rem] shadow-xl border border-slate-100 p-16 text-center flex flex-col items-center justify-center">
-            <div class="w-24 h-24 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-100 shadow-inner">
+        <div v-if="filteredGroups.length === 0" class="premium-card p-16 flex flex-col items-center justify-center">
+            <div class="w-24 h-24 bg-slate-50 text-slate-300 rounded-[2rem] flex items-center justify-center mb-6 border border-slate-50 shadow-inner">
                 <Stethoscope class="w-12 h-12" />
             </div>
             <h4 class="text-xl font-black text-slate-800 uppercase tracking-widest">{{ i18n.t('common.noData') }}</h4>
-            <p class="text-xs font-black text-slate-400 mt-2 uppercase tracking-widest">Không có dữ liệu hiển thị trong mục này</p>
+            <p class="text-[10px] font-black text-slate-400 mt-2 uppercase tracking-widest">Không có dữ liệu đoàn khám nào trong mục này</p>
         </div>
 
         <div v-for="group in filteredGroups" :key="group.groupId" 
@@ -185,19 +132,34 @@
             
             <div class="p-5 bg-primary text-white flex justify-between items-center transition-all">
                 <div class="flex items-center gap-5">
-                    <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white shadow-sm border border-white/10">
-                        <Stethoscope class="w-7 h-7" />
+                    <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center text-white shadow-sm border border-white/10 shrink-0">
+                        <Stethoscope class="w-5 h-5" />
                     </div>
-                    <div>
-                        <h4 class="text-xl font-black ">{{ group.groupName }}</h4>
-                        <p class="text-[11px] font-black text-white/80 uppercase tracking-widest mt-1">
+                    <div class="min-w-0 pr-4">
+                        <h4 class="text-base font-black truncate">{{ group.groupName }}</h4>
+                        <p class="text-[9px] font-black text-white/70 uppercase tracking-widest mt-0.5 truncate italic">
                             [HĐ-{{ group.healthContractId }}] • {{ group.shortName || group.companyName }} • {{ formatDate(group.examDate) }}
                         </p>
                     </div>
                 </div>
                 <div class="flex items-center gap-3">
-                   <span :class="['px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest border border-white/20 shadow-sm', getStatusClass(group.status)]">{{ getStatusLabel(group.status) }}</span>
+                    <span :class="['px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter border border-white/20 shadow-sm leading-none flex items-center h-6', getStatusClass(group.status)]">
+                        {{ getStatusLabel(group.status) }}
+                    </span>
+                   
+                   <!-- Action Buttons for Status -->
                    <button v-if="group.status === 'Open' && can('DoanKham.Edit')" @click="updateStatus(group.groupId, 'Finished')" class="text-[9px] font-black bg-white text-primary hover:bg-slate-50 px-4 py-2 rounded-xl transition-all shadow-sm">{{ i18n.t('groups.btnFinish') }}</button>
+                   
+                   <button v-if="group.status === 'Finished' && can('DoanKham.Lock') && lockStatuses[group.groupId]?.isReadyToLock" 
+                           @click="handleLockGroup(group.groupId)" 
+                           class="text-[9px] font-black bg-emerald-500 text-white hover:bg-emerald-600 px-4 py-2 rounded-xl transition-all shadow-sm flex items-center gap-2">
+                       <Lock class="w-3 h-3" /> KHÓA SỔ TÀI CHÍNH
+                   </button>
+
+                   <div v-if="group.status === 'Locked'" class="flex items-center gap-2 px-3 py-1.5 bg-white/20 rounded-xl border border-white/10 shadow-inner">
+                       <CheckCircle2 class="w-3 h-3 text-white" />
+                       <span class="text-[9px] font-black uppercase tracking-widest text-white">Dữ liệu đã chốt sổ</span>
+                   </div>
                 </div>
             </div>
 
@@ -206,6 +168,9 @@
                 <div class="flex gap-4 mb-6 border-b border-slate-100 pb-2 mt-2">
                     <button @click="cardTab[group.groupId] = 'staffs'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', (cardTab[group.groupId] || 'staffs') === 'staffs' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabStaff') }}</button>
                     <button @click="cardTab[group.groupId] = 'positions'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', cardTab[group.groupId] === 'positions' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabPositions') }}</button>
+                    <button @click="openSuppliesTab(group.groupId)" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all flex items-center gap-2', cardTab[group.groupId] === 'supplies' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">
+                        <Package class="w-3 h-3" /> Vật tư & Hao phí
+                    </button>
                 </div>
 
                 <!-- Nhân sự List Table -->
@@ -214,20 +179,20 @@
                         <h5 class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 ">
                             <UsersIcon class="w-4 h-4" /> Đội ngũ đi khám
                         </h5>
-                        <div class="flex items-center gap-3">
-                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="openStaffModal(group.groupId)" class="text-[9px] font-black text-primary uppercase tracking-widest hover:underline">{{ i18n.t('groups.btnAssign') }}</button>
-                            <div v-if="can('DoanKham.StaffAssign')" class="w-px h-3 bg-slate-200"></div>
-                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="handleAiSuggest(group.groupId)" :disabled="isAiLoading" class="text-[9px] font-black text-primary uppercase tracking-widest hover:underline flex items-center gap-1">
-                                <Sparkles class="w-3 h-3" v-if="!isAiLoading" />
-                                <RefreshCw class="w-3 h-3 animate-spin" v-else />
-                                {{ isAiLoading ? 'AI ĐANG TÍNH TOÁN...' : '✨ ' + i18n.t('groups.btnAICopilot') }}
+                        <div class="flex items-center gap-2 pr-2">
+                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="openStaffModal(group.groupId)" class="text-[8px] font-black text-primary uppercase tracking-tighter hover:bg-blue-50 px-2 py-1 rounded transition-all">Gán nhân sự</button>
+                            <div v-if="can('DoanKham.StaffAssign')" class="w-px h-3 bg-slate-100"></div>
+                            <button v-if="group.status === 'Open' && can('DoanKham.StaffAssign')" @click="handleAiSuggest(group.groupId)" :disabled="isAiLoading" class="text-[8px] font-black text-primary uppercase tracking-tighter hover:bg-blue-50 px-2 py-1 rounded transition-all flex items-center gap-1">
+                                <Sparkles class="w-2.5 h-2.5" v-if="!isAiLoading" />
+                                <RefreshCw class="w-2.5 h-2.5 animate-spin" v-else />
+                                {{ isAiLoading ? '...' : 'AI Copilot' }}
                             </button>
-                            <div class="w-px h-3 bg-slate-200"></div>
-                            <button @click="exportGroupStaff(group.groupId, group.groupName)" class="text-[9px] font-black text-emerald-600 uppercase tracking-widest hover:underline">XUẤT DS ĐI ĐOÀN (EXCEL)</button>
-                            <div class="w-px h-3 bg-slate-200"></div>
-                            <button v-if="group.status === 'Open' && can('ChamCong.QR')" @click="openQrModal(group.groupId)" class="text-[9px] font-black text-purple-600 uppercase tracking-widest hover:underline flex items-center gap-1">
-                                <QrCode class="w-3 h-3" />
-                                MÃ QR CHẤM CÔNG
+                            <div class="w-px h-3 bg-slate-100"></div>
+                            <button @click="exportGroupStaff(group.groupId, group.groupName)" class="text-[8px] font-black text-emerald-600 uppercase tracking-tighter hover:bg-emerald-50 px-2 py-1 rounded transition-all">Excel</button>
+                            <div class="w-px h-3 bg-slate-100"></div>
+                            <button v-if="group.status === 'Open' && can('ChamCong.QR')" @click="openQrModal(group.groupId)" class="text-[8px] font-black text-purple-600 uppercase tracking-tighter hover:bg-purple-50 px-2 py-1 rounded transition-all flex items-center gap-1">
+                                <QrCode class="w-2.5 h-2.5" />
+                                QR
                             </button>
                         </div>
                     </div>
@@ -346,6 +311,130 @@
                     </div>
                 </div>
 
+                <!-- Supplies / Vật tư List -->
+                <div v-show="cardTab[group.groupId] === 'supplies'" class="space-y-6 animate-fade-in">
+                    <div class="flex justify-between items-center">
+                        <h5 class="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 ">
+                            <Package class="w-4 h-4" /> THỰC TẾ TIÊU HAO SO VỚI QUY MÔ ĐOÀN
+                        </h5>
+                        <div class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-100">
+                            Quy mô: <span class="bg-primary text-white px-2 py-0.5 rounded-md">{{ suppliesData[group.groupId]?.totalPatients || 0 }}</span> bệnh nhân
+                        </div>
+                    </div>
+
+                    <div v-if="loadingSupplies[group.groupId]" class="flex justify-center p-8">
+                        <Loader2 class="w-8 h-8 animate-spin text-primary opacity-50" />
+                    </div>
+                    
+                    <div v-else-if="suppliesData[group.groupId]?.supplies?.length" class="grid gap-4">
+                        <div v-for="item in suppliesData[group.groupId].supplies" :key="item.itemName" class="p-5 rounded-2xl border flex flex-col md:flex-row md:items-center gap-6 transition-all"
+                            :class="{ 
+                                'bg-rose-50 border-rose-100': item.status === 'CRITICAL',
+                                'bg-amber-50 border-amber-100': item.status === 'WARNING',
+                                'bg-emerald-50 border-emerald-100': item.status === 'NORMAL'
+                            }">
+                            
+                            <div class="w-full md:w-1/3">
+                                <div class="font-black text-slate-700 uppercase tracking-widest mb-1">{{ item.itemName }}</div>
+                                <div class="text-[10px] font-black uppercase tracking-widest"
+                                    :class="{
+                                        'text-rose-500': item.status === 'CRITICAL',
+                                        'text-amber-500': item.status === 'WARNING',
+                                        'text-emerald-500': item.status === 'NORMAL'
+                                    }">
+                                    <template v-if="item.status === 'CRITICAL'"><AlertOctagon class="w-3 h-3 inline mr-1 -mt-0.5"/> THẤT THOÁT NGHIÊM TRỌNG</template>
+                                    <template v-else-if="item.status === 'WARNING'">CẦN CHÚ Ý</template>
+                                    <template v-else>TRONG ĐỊNH MỨC AN TOÀN</template>
+                                </div>
+                            </div>
+
+                            <div class="w-full md:w-2/3 space-y-2">
+                                <div class="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                                    <span>Đã dùng: <strong class="text-slate-800">{{ item.totalUsed }}</strong> {{ item.unit }}</span>
+                                    <span>Định mức: <strong>{{ item.expectedUsage }}</strong> {{ item.unit }}</span>
+                                </div>
+                                <div class="h-2 w-full bg-slate-100 rounded-full flex overflow-hidden relative">
+                                    <div class="h-full transition-all duration-1000"
+                                        :class="{
+                                            'bg-rose-500': item.status === 'CRITICAL',
+                                            'bg-amber-500': item.status === 'WARNING',
+                                            'bg-emerald-500': item.status === 'NORMAL'
+                                        }"
+                                        :style="`width: ${Math.min(item.usagePercentage, 100)}%`">
+                                    </div>
+                                    <div v-if="item.usagePercentage > 100" class="h-full bg-rose-600 opacity-50 absolute left-0 top-0"
+                                        :style="`width: ${Math.min(item.usagePercentage, 100)}%`">
+                                    </div>
+                                </div>
+                                <div class="text-right text-[9px] font-black uppercase tracking-widest"
+                                     :class="item.usagePercentage > 100 ? 'text-rose-500' : 'text-slate-400'">
+                                    Tỉ lệ hao phí: {{ item.usagePercentage }}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-else class="p-10 text-center bg-slate-50/50 rounded-2xl border border-slate-100">
+                        <PackageSearch class="w-8 h-8 mx-auto text-slate-300 mb-3" />
+                        <div class="text-[10px] font-black uppercase tracking-widest text-slate-400">Đoàn khám này chưa có phát sinh xuất kho vật tư</div>
+                    </div>
+                </div>
+
+                <!-- Financial Lock Summary (Visible when Locked) -->
+                <div v-if="group.status === 'Locked'" class="mt-8 p-6 bg-slate-900 rounded-3xl border border-white/5 relative overflow-hidden group/finance">
+                    <div class="absolute -right-4 -bottom-4 opacity-10 transform group-hover/finance:scale-110 transition-transform">
+                        <Scale class="w-32 h-32 text-white" />
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                        <div class="space-y-1">
+                            <h5 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Giá trị quyết toán nhân sự</h5>
+                            <div class="text-2xl font-black text-white italic">
+                                {{ formatPrice(group.totalLaborCost || 0) }}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-6">
+                            <div class="text-right">
+                                <p class="text-[9px] font-black text-slate-500 uppercase">Thực khám</p>
+                                <p class="text-lg font-black text-white italic">{{ lockStatuses[group.groupId]?.completedPatients || 0 }} ca</p>
+                            </div>
+                            <div class="w-px h-10 bg-white/10"></div>
+                            <div class="text-right">
+                                <p class="text-[9px] font-black text-slate-500 uppercase">Nhân sự đi đoàn</p>
+                                <p class="text-lg font-black text-white italic">{{ staffDetails[group.groupId]?.length || 0 }} người</p>
+                            </div>
+                        </div>
+                        <div class="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl">
+                            <div class="flex items-center gap-3 text-emerald-400">
+                                <CheckCircle2 class="w-5 h-5" />
+                                <div>
+                                    <p class="text-[9px] font-black uppercase tracking-widest">Trạng thái khóa</p>
+                                    <p class="text-[11px] font-black text-white">ĐÃ XÁC THỰC LƯƠNG</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ready to Lock Warning (Visible when Finished but not Locked) -->
+                <div v-if="group.status === 'Finished' && lockStatuses[group.groupId]" class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="flex items-center gap-4 text-amber-700">
+                        <div class="w-12 h-12 bg-amber-200 rounded-full flex items-center justify-center animate-pulse">
+                            <Lock class="w-6 h-6" />
+                        </div>
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-widest">Tiến độ đoàn: {{ lockStatuses[group.groupId].completedPatients }} / {{ lockStatuses[group.groupId].totalPatients }} bệnh nhân hoàn tất</p>
+                            <p class="text-[10px] font-bold opacity-70">{{ lockStatuses[group.groupId].message }}</p>
+                        </div>
+                    </div>
+                    <button v-if="lockStatuses[group.groupId].isReadyToLock" 
+                            @click="handleLockGroup(group.groupId)" 
+                            class="btn-premium primary !bg-emerald-600 !shadow-emerald-100 !rounded-2xl">
+                        CHỐT KHÓA SỔ & TÍNH LƯƠNG
+                    </button>
+                    <div v-else class="text-[10px] font-black text-amber-600 uppercase tracking-widest italic">
+                        Đang chờ hoàn tất 100% ca khám...
+                    </div>
+                </div>
+
                 <!-- Tài liệu đính kèm -->
                 <div class="mt-10 pt-8 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div class="flex items-center gap-4">
@@ -396,47 +485,43 @@
                       <form id="staffForm" @submit.prevent="addStaff" class="space-y-6">
                           <div class="space-y-2">
                               <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                  <CheckCircle2 class="w-3 h-3 text-indigo-400" /> Chọn nhân viên (Đảm bảo không trùng lịch)
-                              </label>
-                              <select v-model="modals.staff.data.staffId" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all appearance-none">
-                                  <option :value="null" disabled>-- Chọn nhân sự từ danh sách --</option>
-                                  <option v-for="s in staffList" :key="s.staffId" :value="s.staffId">{{ s.fullName }} — {{ s.jobTitle }}</option>
-                              </select>
-                          </div>
-                          
-                          <div class="grid grid-cols-2 gap-4">
-                              <div class="space-y-2">
-                                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                      <Clock class="w-3 h-3 text-indigo-400" /> Loại ca làm
-                                  </label>
-                                  <select v-model="modals.staff.data.shiftType" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                                      <option :value="1.0">Cả ngày (1.0)</option>
-                                      <option :value="0.5">Nửa ngày (0.5)</option>
-                                  </select>
-                              </div>
-                              <div class="space-y-2">
-                                  <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                                      <RefreshCw class="w-3 h-3 text-indigo-400" /> Trạng thái
-                                  </label>
-                                  <select v-model="modals.staff.data.workStatus" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
-                                      <option value="Đang chờ">Đang chờ</option>
-                                      <option value="Đã tham gia">Đã tham gia</option>
-                                  </select>
-                              </div>
-                          </div>
-
-                          <div class="space-y-2">
-                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                                   <Stethoscope class="w-3 h-3 text-indigo-400" /> Vị trí làm việc
                               </label>
-                              <div v-if="selectedStaffType === 'BacSi'" class="flex items-center gap-2 px-3 py-2 bg-amber-50 rounded-xl border border-amber-100 mb-2">
-                                  <span class="text-[9px] font-black text-amber-600 uppercase tracking-widest">⚠️ Bác sĩ chỉ được phân vào vị trí khám bệnh</span>
-                              </div>
-                              <select v-model="modals.staff.data.positionId" required @change="onStaffSelect" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
+                              <select v-model="modals.staff.data.positionId" required @change="onPositionChange" class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all">
                                   <option :value="null" disabled>-- Chọn vị trí trống --</option>
-                                  <option v-for="p in groupPositions[modals.staff.groupId]" :key="p.positionId" :value="p.positionId" :disabled="selectedStaffType === 'BacSi' && !isDoctorPosition(p.positionName)">
+                                  <option v-for="p in groupPositions[modals.staff.groupId]" :key="p.positionId" :value="p.positionId">
                                       {{ p.positionName }} (Đã xếp: {{ p.assignedCount }}/{{ p.requiredCount }})
                                   </option>
+                              </select>
+                          </div>
+
+                          <div class="space-y-2" v-if="modals.staff.data.positionId">
+                              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                                  <CheckCircle2 class="w-3 h-3 text-indigo-400" /> Chọn nhân viên (Đã lọc theo vị trí)
+                              </label>
+                              
+                              <!-- Role Mismatch Warning -->
+                              <div v-if="isRoleMismatch" class="flex items-center gap-2 px-3 py-2 bg-rose-50 rounded-xl border border-rose-100 mb-2 animate-pulse">
+                                  <AlertCircle class="w-3 h-3 text-rose-600" />
+                                  <span class="text-[9px] font-black text-rose-600 uppercase tracking-widest leading-tight">
+                                      Cảnh báo: Nhân sự này có chuyên môn không khớp với vị trí {{ currentPositionName }}
+                                  </span>
+                              </div>
+
+                              <select v-model="modals.staff.data.staffId" required class="w-full px-5 py-4 rounded-2xl bg-slate-50 border-2 border-transparent focus:border-indigo-500/20 focus:bg-white outline-none font-black text-slate-700 transition-all appearance-none">
+                                  <option :value="null" disabled>-- Chọn nhân sự phù hợp --</option>
+                                  
+                                  <optgroup label="Gợi ý phù hợp nhất">
+                                      <option v-for="s in recommendedStaff" :key="s.staffId" :value="s.staffId">
+                                          🌟 {{ s.fullName }} ({{ s.staffType || 'Chưa phân loại' }})
+                                      </option>
+                                  </optgroup>
+
+                                  <optgroup label="Tất cả nhân sự khác">
+                                      <option v-for="s in otherStaff" :key="s.staffId" :value="s.staffId">
+                                          {{ s.fullName }} ({{ s.staffType || '---' }})
+                                      </option>
+                                  </optgroup>
                               </select>
                           </div>
                       </form>
@@ -689,16 +774,18 @@ import apiClient from '../services/apiClient'
 import { 
     Stethoscope, Plus, Building2, Calendar, Users as UsersIcon, FileText, Trash2, Sparkles, Brain, 
     FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, CheckCircle2, Clock, Zap, RefreshCw,
-    ShieldCheck, Scale, ListTodo, QrCode
+    ShieldCheck, Scale, ListTodo, QrCode, Lock, Package, PackageSearch, AlertOctagon
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { parseApiError } from '../services/errorHelper'
 import { usePermission } from '@/composables/usePermission'
 import { useToast } from '../composables/useToast'
+import { useI18nStore } from '../stores/i18n'
 import ConfirmDialog from '../components/ConfirmDialog.vue'
 
 
 const authStore = useAuthStore()
+const i18n = useI18nStore()
 const { can } = usePermission()
 const toast = useToast()
 const groups = ref([])
@@ -709,51 +796,53 @@ const showForm = ref(false)
 const activeTab = ref('Open')
 const importInput = ref(null)
 const currentGroupId = ref(null)
-const selectedContractForAuto = ref(null)
-const createMode = ref('manual') // manual, smart, auto
+const createMode = ref('manual') // manual, auto
+const lockStatuses = ref({})
 
 const autoAssignData = ref({
     healthContractId: null,
     groupName: '',
-    examDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    targetRatio: 20,
-    minimumDoctors: 2,
-    assignmentMode: 'Partial'
+    examDate: '',
+    status: 'Open'
 })
 const isAutoAssignLoading = ref(false)
-const showAutoAssignModal = ref(false)
-const autoAssignResult = ref(null)
 
 const onAutoContractSelect = () => {
     if (!autoAssignData.value.healthContractId) return
-    const contract = contracts.value.find(c => c.healthContractId === autoAssignData.value.healthContractId)
+    const contract = contracts.value.find(c => c.healthContractId === Number(autoAssignData.value.healthContractId))
     if (!contract) return
     
-    const contractGroups = groups.value.filter(g => g.healthContractId === autoAssignData.value.healthContractId)
+    // Đồng bộ ngày chuẩn 100%
+    const rawDate = contract.startDate || contract.StartDate
+    if (rawDate) {
+        autoAssignData.value.examDate = rawDate.split('T')[0]
+    }
+
+    const contractGroups = groups.value.filter(g => g.healthContractId === Number(autoAssignData.value.healthContractId))
     const nextSequence = contractGroups.length + 1
-    const displayName = contract.shortName || contract.companyName
-    autoAssignData.value.groupName = `Đoàn ${String(nextSequence).padStart(2, '0')} - ${displayName} - TĐPB`
+    const companyBase = contract.shortName || contract.companyName || 'Công ty'
+    
+    // Đặt tên chuyên nghiệp: Đoàn khám [Tên Cty] - Lần [X]
+    autoAssignData.value.groupName = `Đoàn khám ${companyBase} - Lần ${nextSequence}`
 }
 
-const handleAutoAssign = async () => {
-    if (!autoAssignData.value.healthContractId || !autoAssignData.value.groupName) {
+const handleAutoCreateOnly = async () => {
+    if (!autoAssignData.value.healthContractId || !autoAssignData.value.groupName || !autoAssignData.value.examDate) {
         toast.error("Vui lòng điền đầy đủ thông tin")
         return
     }
     
-    // Tạo IdempotencyKey để chống user click đúp tạo 2 đoàn giống hệt nhau
-    const payload = {
-        ...autoAssignData.value,
-        idempotencyKey: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2)
-    }
-
     try {
         isAutoAssignLoading.value = true
-        const res = await apiClient.post('/api/MedicalGroups/auto-create-with-staff', payload)
-        autoAssignResult.value = res.data
-        showAutoAssignModal.value = true
-        fetchData()
-        toast.success("Hệ thống đã thực hiện phân bổ nhân sự!")
+        await apiClient.post('/api/MedicalGroups', {
+            healthContractId: Number(autoAssignData.value.healthContractId),
+            groupName: autoAssignData.value.groupName,
+            examDate: autoAssignData.value.examDate,
+            status: 'Open'
+        })
+        await fetchData()
+        showForm.value = false
+        toast.success("Hệ thống đã tự động tạo đoàn khám thành công!")
     } catch (e) {
         toast.error(parseApiError(e))
     } finally {
@@ -761,20 +850,58 @@ const handleAutoAssign = async () => {
     }
 }
 
-// Track the selected staff's type to enforce doctor restrictions
-const selectedStaffType = computed(() => {
-    const sid = modals.value.staff.data.staffId
-    if (!sid) return null
-    return staffList.value.find(s => s.staffId === sid)?.staffType || null
-})
-
-// Auto-adjust workPosition when staff changes: if doctor, default to 'Khám nội'
-const onStaffSelect = () => {
-    // Left empty since we enforce this directly in the UI options
+const getRequiredStaffType = (posName) => {
+    if (!posName) return null;
+    const clinicalKeywords = ['Khám', 'Siêu âm', 'Sản', 'Tai mũi họng', 'Bác sĩ', 'Chẩn đoán'];
+    const technicalKeywords = ['Lấy máu', 'X-Quang', 'Xét nghiệm', 'Xét nghiệm máu', 'Kỹ thuật'];
+    
+    if (clinicalKeywords.some(k => posName.toLowerCase().includes(k.toLowerCase()))) return 'BacSi';
+    if (technicalKeywords.some(k => posName.toLowerCase().includes(k.toLowerCase()))) return 'KyThuatVien';
+    return 'DieuDuong'; // Default to Nursing/Support
 }
 
-const newGroup = ref({ healthContractId: null, groupName: '', examDate: new Date().toISOString().split('T')[0] })
+const currentPositionName = computed(() => {
+    const gid = modals.value.staff.groupId;
+    const pid = modals.value.staff.data.positionId;
+    if (!gid || !pid) return '';
+    return groupPositions.value[gid]?.find(p => p.positionId === pid)?.positionName || '';
+})
+
+const requiredTypeForSelectedPos = computed(() => getRequiredStaffType(currentPositionName.value));
+
+const recommendedStaff = computed(() => {
+    if (!requiredTypeForSelectedPos.value) return [];
+    return staffList.value.filter(s => s.staffType === requiredTypeForSelectedPos.value);
+})
+
+const otherStaff = computed(() => {
+    if (!requiredTypeForSelectedPos.value) return staffList.value;
+    return staffList.value.filter(s => s.staffType !== requiredTypeForSelectedPos.value);
+})
+
+const isRoleMismatch = computed(() => {
+    const sid = modals.value.staff.data.staffId;
+    const reqType = requiredTypeForSelectedPos.value;
+    if (!sid || !reqType) return false;
+    const staff = staffList.value.find(s => s.staffId === sid);
+    if (!staff || !staff.staffType) return false;
+    
+    // Nếu yêu cầu Bác sĩ mà gán người khác -> Mismatch
+    if (reqType === 'BacSi' && staff.staffType !== 'BacSi') return true;
+    // Nếu Bác sĩ mà bị gán vào vị trí không yêu cầu Bác sĩ -> Mismatch (Lãng phí tài nguyên)
+    if (staff.staffType === 'BacSi' && reqType !== 'BacSi') return true;
+    
+    return false;
+})
+
+const onPositionChange = () => {
+    // Tự động clear nhân viên nếu đã chọn mà không khớp (optional, but warning is better)
+}
+
+const newGroup = ref({ healthContractId: null, groupName: '', examDate: '', status: 'Open' })
 const cardTab = ref({})
+const loadingSupplies = ref({})
+const suppliesData = ref({})
 const groupPositions = ref({})
 
 const modals = ref({
@@ -815,8 +942,16 @@ const handleAiSuggest = async (groupId) => {
         isAiLoading.value = true
         currentAiGroupId.value = groupId
         const res = await apiClient.post(`/api/MedicalGroups/${groupId}/ai-suggest-staff`)
-        aiSuggestions.value = typeof res.data === 'string' ? JSON.parse(res.data) : res.data
-        showAiModal.value = true
+        const rawData = res.data;
+        let processedData = rawData;
+        
+        if (typeof rawData === 'string') {
+            // Xóa dấu phẩy thừa trước ] hoặc } để tránh lỗi JSON.parse
+            processedData = rawData.replace(/,(\s*[\]\}])/g, '$1');
+        }
+        
+        aiSuggestions.value = typeof processedData === 'string' ? JSON.parse(processedData) : processedData;
+        showAiModal.value = true;
     } catch (e) {
         const errorMsg = e.response?.data?.message || e.response?.data || e.message;
         toast.error("Lỗi khi phân tích Dữ liệu AI: " + errorMsg)
@@ -859,7 +994,7 @@ const canCheckIn = (staffDetail, group) => {
     if (group.status !== 'Open' || staffDetail.checkInTime) return false
     if (can('ChamCong.CheckInOut')) return true
     // MedicalStaff can only check-in for themselves — backend validates identity
-    if (staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
+    if (staffDetail.employeeCode?.toLowerCase() === authStore.user?.username?.toLowerCase()) return true
     return false
 }
 
@@ -867,7 +1002,7 @@ const canCheckOut = (staffDetail, group) => {
     if (group.status !== 'Open' || !staffDetail.checkInTime || staffDetail.checkOutTime) return false
     if (can('ChamCong.CheckInOut')) return true
     // MedicalStaff can only check-out for themselves — backend validates identity
-    if (staffDetail.employeeCode?.toLowerCase() === authStore.currentUser?.toLowerCase()) return true
+    if (staffDetail.employeeCode?.toLowerCase() === authStore.user?.username?.toLowerCase()) return true
     return false
 }
 
@@ -883,15 +1018,42 @@ const getStatusClass = (status) => {
 const getStatusLabel = (status) => {
     switch(status) {
         case 'Open': return 'Đang thực hiện'
-        case 'Finished': return 'Đã hoàn tất'
-        case 'Locked': return 'Đã khóa'
+        case 'Finished': return 'Hòa tất khám'
+        case 'Locked': return 'Đã khóa sổ'
         default: return status
+    }
+}
+
+const fetchLockStatus = async (groupId) => {
+    try {
+        const res = await apiClient.get(`/api/MedicalGroups/${groupId}/lock-status`)
+        lockStatuses.value[groupId] = res.data
+    } catch (e) {
+        console.error("Lock Status Error:", e)
+    }
+}
+
+const handleLockGroup = async (groupId) => {
+    confirmData.value = {
+        show: true,
+        title: 'Khóa sổ tài chính',
+        message: 'Hệ thống sẽ tự động tính toán lương dựa trên ca làm thực tế và khóa toàn bộ dữ liệu đoàn khám này. Bạn có chắc chắn muốn chốt số liệu không?',
+        variant: 'warning',
+        onConfirm: async () => {
+            try {
+                const res = await apiClient.post(`/api/MedicalGroups/${groupId}/lock`)
+                toast.success("Đã khóa sổ đoàn khám thành công!")
+                fetchData()
+            } catch (e) {
+                toast.error(parseApiError(e))
+            }
+        }
     }
 }
 
 const fetchData = async () => {
     try {
-        if (authStore.role === 'MedicalStaff') {
+        if (authStore.hasRole('MedicalStaff')) {
             const res = await apiClient.get('/api/MedicalGroups/my-schedule')
             // Map my-schedule data to fit group list structure
             groups.value = res.data.map(item => ({
@@ -912,10 +1074,10 @@ const fetchData = async () => {
             groups.value = res.data
         }
         
-        const cRes = await apiClient.get('/api/HealthContracts')
+        const cRes = await apiClient.get('/api/Contracts')
         contracts.value = cRes.data
 
-        if (['Admin', 'MedicalGroupManager', 'MedicalStaff', 'PersonnelManager'].includes(authStore.role)) {
+        if (authStore.hasAnyRole('Admin', 'MedicalGroupManager', 'MedicalStaff', 'PersonnelManager')) {
             try {
                 const sRes = await apiClient.get('/api/Staffs')
                 staffList.value = sRes.data
@@ -930,6 +1092,9 @@ const fetchData = async () => {
         groups.value.forEach(g => {
             fetchGroupStaff(g.groupId)
             fetchGroupPositions(g.groupId)
+            if (g.status === 'Finished' || g.status === 'Locked') {
+                fetchLockStatus(g.groupId)
+            }
         })
     } catch (e) { toast.error("Lỗi khi tải dữ liệu") }
 }
@@ -947,7 +1112,7 @@ const addGroup = async () => {
         toast.success("Khởi tạo đoàn thành công!")
         showForm.value = false
         // Reset form
-        newGroup.value = { healthContractId: null, groupName: '', examDate: new Date().toISOString().split('T')[0] }
+        newGroup.value = { healthContractId: null, groupName: '', examDate: new Date().toISOString().split('T')[0], status: 'Open' }
         fetchData()
     } catch (e) { toast.error("Lỗi khi tạo đoàn khám") }
 }
@@ -962,89 +1127,7 @@ const autoCreateGroup = async () => {
     } catch (e) { toast.error(e.response?.data || "Lỗi tạo tự động") }
 }
 
-// --- Smart Create Logic ---
-const smartPreview = ref(null)
-const lastGroupOfContract = ref(null)
-const doCloneStaff = ref(false)
-const conflictWarnings = ref([])
-
-const onSmartContractSelect = async () => {
-    if (!selectedContractForAuto.value) { smartPreview.value = null; return }
-    const contract = contracts.value.find(c => c.healthContractId === selectedContractForAuto.value)
-    if (!contract) return
-
-    // Find groups for this contract to determine sequence number
-    const contractGroups = groups.value.filter(g => g.healthContractId === selectedContractForAuto.value)
-    const nextSequence = contractGroups.length + 1
-    const sequenceStr = String(nextSequence).padStart(2, '0')
-
-    // Auto-fill group name and date
-    const now = new Date()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const year = now.getFullYear()
-    
-    const displayName = contract.shortName || contract.companyName
-    smartPreview.value = {
-        groupName: `Đoàn ${sequenceStr} - ${displayName} - ${month}/${year}`,
-        examDate: contract.examDate ? contract.examDate.split('T')[0] : 
-                  new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }
-
-    // Find last group for this contract to offer clone
-    lastGroupOfContract.value = contractGroups.length > 0 ? contractGroups[contractGroups.length - 1] : null
-    doCloneStaff.value = false
-    conflictWarnings.value = []
-}
-
-const confirmSmartCreate = async () => {
-    if (!smartPreview.value || !selectedContractForAuto.value) return
-    try {
-        // Create the group
-        const res = await apiClient.post('/api/MedicalGroups', {
-            healthContractId: selectedContractForAuto.value,
-            groupName: smartPreview.value.groupName,
-            examDate: smartPreview.value.examDate
-        })
-        const newGroupId = res.data.groupId
-
-        // Clone staff if option is selected
-        if (doCloneStaff.value && lastGroupOfContract.value) {
-            const oldStaff = staffDetails.value[lastGroupOfContract.value.groupId] || []
-            conflictWarnings.value = []
-            for (const s of oldStaff) {
-                // Check conflict: is staff already in another group on same date?
-                const conflict = groups.value.some(g => 
-                    g.groupId !== newGroupId &&
-                    g.examDate?.split('T')[0] === smartPreview.value.examDate &&
-                    g.status === 'Open' &&
-                    (staffDetails.value[g.groupId] || []).some(ms => ms.staffId === s.staffId)
-                )
-                if (conflict) {
-                    conflictWarnings.value.push({ staffId: s.staffId, fullName: s.fullName })
-                } else {
-                    try {
-                        await apiClient.post(`/api/MedicalGroups/${newGroupId}/staffs`, {
-                            staffId: s.staffId,
-                            shiftType: s.shiftType,
-                            workPosition: s.workPosition,
-                            workStatus: 'Đang chờ'
-                        })
-                    } catch (_) {}
-                }
-            }
-        }
-
-        if (conflictWarnings.value.length > 0) {
-            toast.success(`Đã tạo đoàn! (${conflictWarnings.value.length} nhân sự bị trùng lịch, bỏ qua)`)
-        } else {
-            toast.success('Đã tạo nhanh đoàn khám thành công!')
-        }
-        showForm.value = false
-        smartPreview.value = null
-        selectedContractForAuto.value = null // Reset selection
-        fetchData()
-    } catch (e) { toast.error(parseApiError(e)) }
-}
+// --- Smart Create Logic Removed as per request ---
 
 const updateStatus = async (id, status) => {
     if (status === 'Finished') {
@@ -1147,6 +1230,19 @@ const removePosition = async (positionId, groupId) => {
                 confirmData.value.show = false
             }
         }
+    }
+}
+
+const openSuppliesTab = async (groupId) => {
+    cardTab.value[groupId] = 'supplies'
+    loadingSupplies.value[groupId] = true
+    try {
+        const res = await apiClient.get(`/api/MedicalGroups/${groupId}/supplies-report`)
+        suppliesData.value[groupId] = res.data
+    } catch (e) {
+        toast.error(parseApiError(e))
+    } finally {
+        loadingSupplies.value[groupId] = false
     }
 }
 
