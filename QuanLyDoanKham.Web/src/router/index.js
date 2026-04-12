@@ -20,14 +20,12 @@ const routes = [
     {
         path: '/checkin',
         name: 'CheckIn',
-        component: () => import('../views/CheckIn.vue'),
-        meta: { guest: true }
+        component: () => import('../views/CheckIn.vue')
     },
     {
         path: '/patient-checkin',
         name: 'PatientCheckIn',
-        component: () => import('../views/PatientSelfCheckIn.vue'),
-        meta: { guest: true }
+        component: () => import('../views/PatientSelfCheckIn.vue')
     },
 
     // ── Dashboard ────────────────────────────────────────────────────

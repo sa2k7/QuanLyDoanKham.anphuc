@@ -37,18 +37,57 @@
 
     <!-- MAIN CONTENT START -->
     <div class="px-6 pb-20 max-w-[1600px] mx-auto w-full">
-      <!-- 1. Top Level KPIs (Live from Backend) -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard title="Số Ca Khám (Tháng)" :value="operationalSummary?.totalPatientsThisMonth?.toLocaleString() || '0'" :icon="Users" trend="Real-time" subtext="Bệnh nhân check-in" variant="indigo" />
-        <StatCard title="Tổng Lợi Nhuận" :value="formatCurrency(kpis.netProfit)" :icon="DollarSign" :trend="kpis.netProfit > 0 ? 'Tín hiệu tốt' : 'Đang xử lý'" :trendColor="kpis.netProfit > 0 ? 'emerald' : 'rose'" subtext="Doanh thu - Nhân sự" variant="emerald" />
-        <StatCard title="Đoàn Khám (Tháng)" :value="operationalSummary?.totalMedicalGroupsThisMonth || 0" :icon="CheckCircle2" :trend="(operationalSummary?.totalStaffDeployedThisMonth || 0) + ' lượt NS'" subtext="Số lượng đoàn triển khai" :progress="kpis.completionRate || 0" variant="sky" />
-        <StatCard title="Hợp Đồng Đang Chờ" :value="operationalSummary?.pendingContractsCount || 0" :icon="FileText" :trend="(operationalSummary?.pendingContractsCount || 0) > 5 ? 'Cần xử lý' : 'Bình thường'" :trendColor="(operationalSummary?.pendingContractsCount || 0) > 5 ? 'rose' : 'amber'" subtext="Hợp đồng mới chờ Approve" variant="rose" />
+      <!-- 1. P&L CONTROL CENTER WIDGETS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-4">
+        <StatCard 
+          title="LÃI/LỖ RÒNG (P&L)" 
+          :value="formatCurrency(kpis.netProfit)" 
+          :icon="DollarSign" 
+          :trend="kpis.netProfit > 0 ? 'Tín hiệu tốt' : 'Cần tối ưu'" 
+          :trendColor="kpis.netProfit > 0 ? 'emerald' : 'rose'" 
+          subtext="Doanh thu - Chi phí vận hành" 
+          variant="indigo" 
+          class="glass-stat shadow-glass"
+        />
+        
+        <StatCard 
+          title="HIỆU SUẤT NHÂN SỰ" 
+          :value="(kpis.hrPerformance || 0) + '%'" 
+          :icon="Users" 
+          trend="Utilization" 
+          subtext="Tỷ lệ tham gia thực tế" 
+          :progress="kpis.hrPerformance || 0" 
+          variant="emerald"
+          class="glass-stat shadow-glass"
+        />
+
+        <StatCard 
+          title="ĐỘ LỆCH VẬT TƯ" 
+          :value="formatCurrency(kpis.materialDeviation)" 
+          :icon="Package" 
+          :trend="Math.abs(kpis.materialDeviation) < 5000000 ? 'Ổn định' : 'Cao'" 
+          :trendColor="kpis.materialDeviation <= 0 ? 'emerald' : 'amber'" 
+          subtext="Thực tế vs. Định mức (10%)" 
+          variant="sky"
+          class="glass-stat shadow-glass"
+        />
+
+        <StatCard 
+          title="ĐOÀN KHÁM (THÁNG)" 
+          :value="operationalSummary?.totalMedicalGroupsThisMonth || 0" 
+          :icon="CheckCircle2" 
+          :trend="(operationalSummary?.totalStaffDeployedThisMonth || 0) + ' lượt NS'" 
+          subtext="Tiến độ hoàn thành" 
+          :progress="kpis.completionRate || 0" 
+          variant="rose"
+          class="glass-stat shadow-glass"
+        />
       </div>
 
       <!-- 2. Charts & Performance Matrix -->
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
         <!-- Revenue Trend Analysis -->
-        <div class="lg:col-span-2 premium-card p-8 relative overflow-hidden group">
+        <div class="lg:col-span-2 premium-card p-8 relative overflow-hidden group glass-card shadow-glass">
           <div class="flex items-center justify-between mb-8">
              <div>
                 <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Biểu đồ Xu hướng Doanh thu</h3>
@@ -76,11 +115,11 @@
         </div>
 
         <!-- 2.2 Operation Deadlines Widget -->
-        <div class="premium-card p-8 flex flex-col group/alerts">
+        <div class="premium-card p-8 flex flex-col group/alerts glass-card shadow-glass">
           <div class="flex items-center justify-between mb-6">
-             <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Tiến độ Hợp đồng</h3>
+             <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Thông báo & Deadline</h3>
              <div class="p-2 bg-indigo-50 rounded-xl">
-               <Calendar class="text-indigo-500 w-5 h-5" />
+               <BellRing class="text-indigo-500 w-5 h-5" />
              </div>
           </div>
           <div class="flex-grow space-y-4">
@@ -96,7 +135,7 @@
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ item.company }}</p>
              </div>
           </div>
-          <button class="mt-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-100 transition-all border border-slate-100">Quản lý Hợp đồng</button>
+          <button class="mt-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-100 transition-all border border-slate-100">Xem tất cả</button>
         </div>
       </div>
 

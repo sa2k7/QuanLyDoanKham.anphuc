@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -18,14 +18,13 @@ namespace QuanLyDoanKham.API.Models
         [ForeignKey("StaffId")]
         public Staff Staff { get; set; } = null!;
 
-        // Vá»‹ trĂ­ Ä‘Æ°á»£c phĂ¢n cĂ´ng
         public int? PositionId { get; set; }
         [ForeignKey("PositionId")]
-        public Position Position { get; set; } = null!;
+        public Position? Position { get; set; }
 
         public int? GroupPositionQuotaId { get; set; }
         [ForeignKey("GroupPositionQuotaId")]
-        public GroupPositionQuota GroupPositionQuota { get; set; } = null!;
+        public GroupPositionQuota? GroupPositionQuota { get; set; }
 
         [MaxLength(100)]
         public string WorkPosition { get; set; } = null!; // TĂªn vá»‹ trĂ­ (denormalized Ä‘á»ƒ dá»… query)
@@ -48,6 +47,6 @@ namespace QuanLyDoanKham.API.Models
         public int? AssignedByUserId { get; set; }
         public DateTime? AssignedAt { get; set; }
 
-        public string Note { get; set; } = null!;
+        public string? Note { get; set; }
     }
 }

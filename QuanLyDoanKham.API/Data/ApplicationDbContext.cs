@@ -383,11 +383,11 @@ namespace QuanLyDoanKham.API.Data
                 new AppRole { RoleId = 4, RoleName = "PayrollManager", Description = "Quản lý tính lương" },
                 new AppRole { RoleId = 5, RoleName = "MedicalGroupManager", Description = "Quản lý đoàn khám" },
                 new AppRole { RoleId = 6, RoleName = "WarehouseManager", Description = "Quản lý kho vật tư" },
-                new AppRole { RoleId = 7, RoleName = "GroupLeader", Description = "Trưởng đoàn khám" },
-                new AppRole { RoleId = 8, RoleName = "MedicalStaff", Description = "Nhân viên đi đoàn" },
-                new AppRole { RoleId = 9, RoleName = "Accountant", Description = "Kế toán" },
-                new AppRole { RoleId = 10, RoleName = "Customer", Description = "Đại diện doanh nghiệp đối tác" },
-                new AppRole { RoleId = 11, RoleName = "QA", Description = "Quản lý chất lượng (QC/QA)" }
+
+                new AppRole { RoleId = 7, RoleName = "MedicalStaff", Description = "Nhân viên đi đoàn" },
+
+                new AppRole { RoleId = 8, RoleName = "Customer", Description = "Đại diện doanh nghiệp đối tác" }
+
             );
 
             // Seed Default Admin User (Pass: admin123)

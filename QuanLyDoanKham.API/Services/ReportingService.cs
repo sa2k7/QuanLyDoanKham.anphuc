@@ -54,7 +54,32 @@ namespace QuanLyDoanKham.API.Services
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .SumAsync(g => (decimal?)g.CalculatedSalary) ?? 0;
 
-            var netProfit = totalRevenue - staffCost;
+            // Chi phí vật tư từ StockMovement (OUT - IN)
+            decimal supplyCostOut = await _context.Set<StockMovement>()
+                .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "OUT")
+                .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
+            decimal supplyCostIn = await _context.Set<StockMovement>()
+                .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "IN")
+                .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
+            decimal materialCost = supplyCostOut - supplyCostIn;
+
+            // Chi phí chung khác
+            decimal overheadCost = await _context.Set<Overhead>()
+                .Where(o => o.IncurredAt >= start && o.IncurredAt <= end)
+                .SumAsync(o => (decimal?)o.Amount) ?? 0;
+
+            var totalCost = staffCost + materialCost + overheadCost;
+            var netProfit = totalRevenue - totalCost;
+            
+            // 4. HR Performance: Dựa trên tỷ lệ nhân viên đã tham gia trên tổng số lượt điều động
+            var totalStaffAssignments = await _context.GroupStaffDetails.CountAsync(g => g.ExamDate >= start && g.ExamDate <= end);
+            var actualJoinedStaff = await _context.GroupStaffDetails.CountAsync(g => g.ExamDate >= start && g.ExamDate <= end && g.WorkStatus == "Joined");
+            var hrPerformance = totalStaffAssignments > 0 ? (double)actualJoinedStaff / totalStaffAssignments * 100 : 0;
+
+            // 5. Material Deviation: Chênh lệch giữa chi phí thực tế và chi phí định mức (Giả định 10% doanh thu là định mức)
+            var expectedMaterialCost = totalRevenue * 0.10m;
+            var materialDeviation = materialCost - expectedMaterialCost;
+
             var totalGroups = await _context.MedicalGroups
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .CountAsync();
@@ -105,6 +130,8 @@ namespace QuanLyDoanKham.API.Services
                 NetProfit = netProfit,
                 CompletionRate = Math.Round(completionRate, 1),
                 ActiveGroupsCount = await _context.MedicalGroups.CountAsync(g => g.Status == "Open"),
+                HrPerformance = Math.Round(hrPerformance, 1),
+                MaterialDeviation = materialDeviation,
                 RevenueTrend = revenueTrend
             };
         }
@@ -145,9 +172,21 @@ namespace QuanLyDoanKham.API.Services
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .SumAsync(g => (decimal?)g.CalculatedSalary) ?? 0;
 
-            var supplyCost = await _context.StockMovements
+            // Chi phí vật tư từ StockMovement (OUT - IN)
+            decimal supplyCostOut = await _context.Set<StockMovement>()
                 .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "OUT")
                 .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
+            decimal supplyCostIn = await _context.Set<StockMovement>()
+                .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "IN")
+                .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
+            decimal materialCost = supplyCostOut - supplyCostIn;
+
+            // Chi phí chung khác
+            decimal overheadCost = await _context.Set<Overhead>()
+                .Where(o => o.IncurredAt >= start && o.IncurredAt <= end)
+                .SumAsync(o => (decimal?)o.Amount) ?? 0;
+
+
 
             var topContracts = await _context.Contracts
                 .Include(c => c.Company)
@@ -171,8 +210,8 @@ namespace QuanLyDoanKham.API.Services
                 VarianceQuantity = actualQty - plannedQty,
                 VarianceRevenue = revenue - plannedRevenue,
                 StaffCost = staffCost,
-                OtherCost = revenue * 0.05m,
-                Margin = revenue > 0 ? (revenue - staffCost) / revenue * 100 : 0,
+                OtherCost = overheadCost,
+                Margin = revenue > 0 ? (revenue - (staffCost + materialCost + overheadCost)) / revenue * 100 : 0,
                 TopContracts = topContracts
             };
         }

@@ -103,6 +103,46 @@
         </div>
     </div>
 
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
+          <Stethoscope class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng đoàn khám</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ allGroups.length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <Zap class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đang thực hiện</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ openGroups.length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <CheckCircle2 class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Hoàn tất</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ closedGroups.length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <Lock class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Khóa sổ</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ allGroups.filter(g => g.status === 'Locked').length }}</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Tab Filter -->
     <div class="flex items-center gap-4 mb-6">
         <button @click="activeTab = 'Open'" 
@@ -166,10 +206,18 @@
             <div class="p-8">
                 <!-- Tabs for Card -->
                 <div class="flex gap-4 mb-6 border-b border-slate-100 pb-2 mt-2">
-                    <button @click="cardTab[group.groupId] = 'staffs'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', (cardTab[group.groupId] || 'staffs') === 'staffs' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabStaff') }}</button>
-                    <button @click="cardTab[group.groupId] = 'positions'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', cardTab[group.groupId] === 'positions' ? 'bg-primary text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">{{ i18n.t('groups.tabPositions') }}</button>
-                    <button @click="openSuppliesTab(group.groupId)" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all flex items-center gap-2', cardTab[group.groupId] === 'supplies' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-400 hover:bg-slate-100']">
+                    <button @click="cardTab[group.groupId] = 'staffs'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', (cardTab[group.groupId] || 'staffs') === 'staffs' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white text-slate-400 hover:bg-slate-100']">
+                        <Users class="w-3 h-3 inline mr-1" /> {{ i18n.t('groups.tabStaff') }}
+                    </button>
+                    <button @click="cardTab[group.groupId] = 'positions'" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all', cardTab[group.groupId] === 'positions' ? 'bg-primary text-white shadow-md shadow-primary/20' : 'bg-white text-slate-400 hover:bg-slate-100']">
+                        <ShieldCheck class="w-3 h-3 inline mr-1" /> {{ i18n.t('groups.tabPositions') }}
+                    </button>
+                    <button @click="openSuppliesTab(group.groupId)" :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-t-xl transition-all flex items-center gap-2', cardTab[group.groupId] === 'supplies' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-100' : 'bg-white text-slate-400 hover:bg-slate-100']">
                         <Package class="w-3 h-3" /> Vật tư & Hao phí
+                    </button>
+                    <div class="flex-grow"></div>
+                    <button @click="$router.push('/reception')" class="px-4 py-2 text-[9px] font-black uppercase tracking-widest text-indigo-500 hover:bg-indigo-50 rounded-xl transition-all flex items-center gap-2">
+                        <ScanLine class="w-3 h-3" /> Cổng Báo Danh
                     </button>
                 </div>
 
@@ -415,23 +463,38 @@
                 </div>
 
                 <!-- Ready to Lock Warning (Visible when Finished but not Locked) -->
-                <div v-if="group.status === 'Finished' && lockStatuses[group.groupId]" class="mt-8 p-6 bg-amber-50 rounded-3xl border border-amber-100 flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="flex items-center gap-4 text-amber-700">
-                        <div class="w-12 h-12 bg-amber-200 rounded-full flex items-center justify-center animate-pulse">
-                            <Lock class="w-6 h-6" />
+                <div v-if="group.status === 'Finished' && lockStatuses[group.groupId]" class="mt-8 p-6 bg-slate-50 rounded-[2.5rem] border-2 border-slate-200/50 flex flex-col md:flex-row justify-between items-center gap-8 relative overflow-hidden group/lockbox">
+                    <div class="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-emerald-50/50 opacity-0 group-hover/lockbox:opacity-100 transition-opacity"></div>
+                    
+                    <div class="flex items-center gap-6 relative z-10">
+                        <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-xl border border-slate-100">
+                             <div class="relative">
+                                <Stethoscope class="w-8 h-8 text-primary" />
+                                <Lock v-if="!lockStatuses[group.groupId].isReadyToLock" class="absolute -right-2 -bottom-2 w-5 h-5 text-amber-500 fill-amber-500" />
+                                <CheckCircle2 v-else class="absolute -right-2 -bottom-2 w-5 h-5 text-emerald-500 fill-emerald-500" />
+                             </div>
                         </div>
                         <div>
-                            <p class="text-xs font-black uppercase tracking-widest">Tiến độ đoàn: {{ lockStatuses[group.groupId].completedPatients }} / {{ lockStatuses[group.groupId].totalPatients }} bệnh nhân hoàn tất</p>
-                            <p class="text-[10px] font-bold opacity-70">{{ lockStatuses[group.groupId].message }}</p>
+                            <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Kiểm tra điều kiện chốt sổ</p>
+                            <h4 class="text-xl font-black text-slate-800 italic leading-none mb-1">
+                                {{ lockStatuses[group.groupId].completedPatients }} / {{ lockStatuses[group.groupId].totalPatients }} Ca khám hoàn tất
+                            </h4>
+                            <p class="text-[10px] font-black tracking-widest" :class="lockStatuses[group.groupId].isReadyToLock ? 'text-emerald-500' : 'text-amber-500'">
+                                {{ lockStatuses[group.groupId].isReadyToLock ? '✓ Đủ điều kiện khóa sổ tài chính' : '⚠ ' + lockStatuses[group.groupId].message }}
+                            </p>
                         </div>
                     </div>
-                    <button v-if="lockStatuses[group.groupId].isReadyToLock" 
-                            @click="handleLockGroup(group.groupId)" 
-                            class="btn-premium primary !bg-emerald-600 !shadow-emerald-100 !rounded-2xl">
-                        CHỐT KHÓA SỔ & TÍNH LƯƠNG
-                    </button>
-                    <div v-else class="text-[10px] font-black text-amber-600 uppercase tracking-widest italic">
-                        Đang chờ hoàn tất 100% ca khám...
+
+                    <div class="flex flex-col items-center md:items-end gap-3 relative z-10">
+                        <button v-if="lockStatuses[group.groupId].isReadyToLock" 
+                                @click="handleLockGroup(group.groupId)" 
+                                class="btn-premium primary !bg-slate-900 !shadow-slate-200 !px-10 !py-4 !text-xs">
+                            CHỐT KHÓA SỔ & TÍNH LƯƠNG
+                        </button>
+                        <router-link v-else :to="`/medical-records?groupId=${group.groupId}`" class="px-8 py-3 bg-white border-2 border-slate-200 text-slate-400 font-black text-[10px] uppercase tracking-widest rounded-2xl hover:border-primary hover:text-primary transition-all">
+                            Xử lý ca tồn đọng
+                        </router-link>
+                        <p class="text-[9px] font-bold text-slate-400 italic">Dữ liệu sẽ không thể chỉnh sửa sau khi khóa.</p>
                     </div>
                 </div>
 
@@ -773,8 +836,11 @@ import { ref, onMounted, computed, watch } from 'vue'
 import apiClient from '../services/apiClient'
 import { 
     Stethoscope, Plus, Building2, Calendar, Users as UsersIcon, FileText, Trash2, Sparkles, Brain, 
-    FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, CheckCircle2, Clock, Zap, RefreshCw,
-    ShieldCheck, Scale, ListTodo, QrCode, Lock, Package, PackageSearch, AlertOctagon
+    FileIcon, X, Download, Upload as UploadIcon, LogIn, LogOut, Search, Edit3, 
+    MapPin, Clock, Filter, ChevronRight, Activity, 
+    Settings, CheckCircle, Package, History, 
+    ChevronDown, ChevronUp, MoreHorizontal,
+    Loader2, AlertCircle, Send
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { parseApiError } from '../services/errorHelper'
@@ -789,6 +855,8 @@ const i18n = useI18nStore()
 const { can } = usePermission()
 const toast = useToast()
 const groups = ref([])
+const allGroups = computed(() => groups.value)
+const loading = ref(false)
 const contracts = ref([])
 const staffList = ref([])
 const staffDetails = ref({})

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuanLyDoanKham.API.Data;
 
@@ -11,9 +12,11 @@ using QuanLyDoanKham.API.Data;
 namespace QuanLyDoanKham.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260412061115_FixGroupStaffDetailNoteNullable")]
+    partial class FixGroupStaffDetailNoteNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,14 +87,32 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             RoleId = 7,
+                            Description = "Trưởng đoàn khám",
+                            RoleName = "GroupLeader"
+                        },
+                        new
+                        {
+                            RoleId = 8,
                             Description = "Nhân viên đi đoàn",
                             RoleName = "MedicalStaff"
                         },
                         new
                         {
-                            RoleId = 8,
+                            RoleId = 9,
+                            Description = "Kế toán",
+                            RoleName = "Accountant"
+                        },
+                        new
+                        {
+                            RoleId = 10,
                             Description = "Đại diện doanh nghiệp đối tác",
                             RoleName = "Customer"
+                        },
+                        new
+                        {
+                            RoleId = 11,
+                            Description = "Quản lý chất lượng (QC/QA)",
+                            RoleName = "QA"
                         });
                 });
 
@@ -984,11 +1005,11 @@ namespace QuanLyDoanKham.API.Migrations
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalGroupPosition", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<int>("PositionId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PositionId"));
 
                     b.Property<int>("AssignedCount")
                         .HasColumnType("int");
@@ -999,9 +1020,6 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<int>("GroupId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("PositionId")
                         .HasColumnType("int");
 
                     b.Property<string>("PositionName")
@@ -1015,11 +1033,9 @@ namespace QuanLyDoanKham.API.Migrations
                     b.Property<int>("SortOrder")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("PositionId");
 
                     b.HasIndex("GroupId");
-
-                    b.HasIndex("PositionId");
 
                     b.ToTable("MedicalGroupPositions");
                 });
@@ -1505,8 +1521,6 @@ namespace QuanLyDoanKham.API.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("PositionId");
-
-                    b.HasIndex("Code");
 
                     b.ToTable("Positions");
                 });
@@ -2699,13 +2713,7 @@ namespace QuanLyDoanKham.API.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("QuanLyDoanKham.API.Models.Position", "Position")
-                        .WithMany()
-                        .HasForeignKey("PositionId");
-
                     b.Navigation("MedicalGroup");
-
-                    b.Navigation("Position");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.MedicalRecord", b =>
@@ -2764,17 +2772,6 @@ namespace QuanLyDoanKham.API.Migrations
                         .IsRequired();
 
                     b.Navigation("HealthContract");
-                });
-
-            modelBuilder.Entity("QuanLyDoanKham.API.Models.Position", b =>
-                {
-                    b.HasOne("QuanLyDoanKham.API.Models.Station", "Station")
-                        .WithMany()
-                        .HasForeignKey("Code")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Station");
                 });
 
             modelBuilder.Entity("QuanLyDoanKham.API.Models.RecordStationTask", b =>

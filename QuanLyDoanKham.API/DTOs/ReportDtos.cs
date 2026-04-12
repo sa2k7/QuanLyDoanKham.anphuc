@@ -10,6 +10,8 @@ namespace QuanLyDoanKham.API.DTOs
         public decimal NetProfit { get; set; }
         public double CompletionRate { get; set; }
         public int ActiveGroupsCount { get; set; }
+        public double HrPerformance { get; set; } // Percentage of staff utilization or efficiency
+        public decimal MaterialDeviation { get; set; } // Variance between expected and actual material costs
         public List<ChartPointDto> RevenueTrend { get; set; } = new();
     }
 

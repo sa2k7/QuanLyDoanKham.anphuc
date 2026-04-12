@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
@@ -11,6 +12,9 @@ namespace QuanLyDoanKham.API.Models
         [Required]
         [MaxLength(50)]
         public string Code { get; set; } = ""; // KHAM_NOI, LAY_MAU...
+
+        [ForeignKey("Code")]
+        public virtual Station? Station { get; set; }
 
         [Required]
         [MaxLength(150)]

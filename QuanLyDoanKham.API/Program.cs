@@ -41,6 +41,7 @@ builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRe
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRecordStateMachine, QuanLyDoanKham.API.Services.MedicalRecords.MedicalRecordStateMachine>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.ICheckInService, QuanLyDoanKham.API.Services.MedicalRecords.CheckInService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IExamService, QuanLyDoanKham.API.Services.MedicalRecords.ExamService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.PayrollService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Contracts.IHealthContractService, QuanLyDoanKham.API.Services.Contracts.HealthContractService>();
 
 builder.Services.AddSignalR();

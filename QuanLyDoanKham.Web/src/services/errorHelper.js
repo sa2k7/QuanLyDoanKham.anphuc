@@ -27,8 +27,8 @@ export const parseApiError = (error) => {
 
     // Các trường hợp lỗi khác (trả về string trực tiếp hoặc message)
     if (typeof data === 'string') {
-        // Bảo mật: Nếu string quá dài hoặc chứa ký tự Token, không hiện trực tiếp
-        if (data.length > 200 || data.includes('ey')) {
+        // Bảo mật: Nếu string quá dài (ví dụ stack trace) hoặc chứa ký tự Token, không hiện trực tiếp
+        if (data.length > 1000 || data.includes('ey')) {
             return `Lỗi hệ thống hoặc thiếu quyền thực thi (${status})`;
         }
         return data;

@@ -33,7 +33,46 @@
       </div>
     </div>
     
-
+    
+    <!-- Stats Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
+          <UsersIcon class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng nhân sự</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <CheckCircle2 class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đi đoàn</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.filter(s => s.isWorking).length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <Clock class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nghỉ</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.filter(s => !s.isWorking).length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <DollarSign class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng lương</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ formatPrice(list.reduce((sum, s) => sum + (s.baseSalary || 0), 0)) }}</p>
+        </div>
+      </div>
+    </div>
 
     <!-- Search & List in Table Format -->
     <div class="premium-card overflow-hidden">
@@ -199,13 +238,13 @@
                             <div class="flex flex-col gap-2">
                                 <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Vai trò hệ thống</label>
                                 <select v-model="currentStaff.systemRole" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" required>
-                                    <option value="MedicalStaff">{{ i18n.t('roles.MedicalStaff') }}</option>
+                                    <option value="Admin">{{ i18n.t('roles.Admin') }}</option>
                                     <option value="PersonnelManager">{{ i18n.t('roles.PersonnelManager') }}</option>
                                     <option value="ContractManager">{{ i18n.t('roles.ContractManager') }}</option>
+                                    <option value="PayrollManager">{{ i18n.t('roles.PayrollManager') }}</option>
                                     <option value="MedicalGroupManager">{{ i18n.t('roles.MedicalGroupManager') }}</option>
                                     <option value="WarehouseManager">{{ i18n.t('roles.WarehouseManager') }}</option>
-                                    <option value="PayrollManager">{{ i18n.t('roles.PayrollManager') }}</option>
-                                    <option value="Admin">{{ i18n.t('roles.Admin') }}</option>
+                                    <option value="MedicalStaff">{{ i18n.t('roles.MedicalStaff') }}</option>
                                     <option value="Customer">{{ i18n.t('roles.Customer') }}</option>
                                 </select>
                             </div>
@@ -388,11 +427,11 @@ import { ref, onMounted, computed, watch } from 'vue'
 import apiClient from '../services/apiClient'
 import { parseApiError } from '../services/errorHelper'
 import { 
-  Users as UsersIcon, Plus, Search, ArrowRight, X, Camera, Save, 
-  History as HistoryIcon, Download, Upload as UploadIcon, Wallet, Stethoscope,
-  Edit3, Trash2, RefreshCw, Filter, MoreHorizontal, UserPlus, FileSpreadsheet,
-  Mail, Phone, MapPin, Briefcase, Calendar, ChevronRight, CheckCircle,
-  AlertCircle, Clock, Loader2, ShieldAlert, UserCheck
+    Users as UsersIcon, Plus, Search, ArrowRight, X, Camera, Save, 
+    History as HistoryIcon, Download, Upload as UploadIcon, Wallet, Stethoscope,
+    Edit3, Trash2, RefreshCw, Filter, MoreHorizontal, UserPlus, FileSpreadsheet,
+    Mail, Phone, MapPin, Briefcase, Calendar, ChevronRight, CheckCircle, CheckCircle2,
+    AlertCircle, Clock, Loader2, ShieldAlert, UserCheck, DollarSign, Activity, LogOut, LogIn, Package
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { usePermission } from '../composables/usePermission'
@@ -436,7 +475,15 @@ const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear()
 const standardJobs = ['Bác sĩ', 'Điều dưỡng', 'Kỹ thuật viên', 'Dược sĩ', 'Nhân viên hỗ trợ']
 const jobCategory = ref('Bác sĩ')
 
-const roles = computed(() => [...new Set(list.value.map(s => s.jobTitle))])
+const roles = computed(() => {
+    if (!list.value) return []
+    return [...new Set(list.value.map(s => s.jobTitle).filter(Boolean))]
+})
+
+const totalPayroll = computed(() => {
+    if (!list.value) return 0
+    return list.value.reduce((acc, s) => acc + (s.baseSalary || 0), 0)
+})
 
 const filteredList = computed(() => {
     let res = list.value

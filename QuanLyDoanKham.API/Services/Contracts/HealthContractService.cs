@@ -359,10 +359,19 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
             if (dto.Status == "Finished")
             {
-                var hasUnfinished = await _context.MedicalGroups
-                    .AnyAsync(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked");
-                if (hasUnfinished)
-                    return (false, "Còn đoàn khám chưa hoàn thành trong hợp đồng này.");
+                var unfinishedGroups = await _context.MedicalGroups
+                    .Where(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked")
+                    // Chỉ chặn nếu đoàn khám thực sự có dữ liệu (Bệnh nhân hoặc Nhân viên đã phân công)
+                    .Where(g => _context.MedicalRecords.Any(mr => mr.GroupId == g.GroupId) || 
+                                _context.GroupStaffDetails.Any(sd => sd.GroupId == g.GroupId))
+                    .Select(g => g.GroupName)
+                    .ToListAsync();
+
+                if (unfinishedGroups.Any())
+                {
+                    var groupNames = string.Join(", ", unfinishedGroups);
+                    return (false, $"Không thể kết thúc hợp đồng vì còn {unfinishedGroups.Count} đoàn khám chưa hoàn thành: {groupNames}");
+                }
             }
 
             _context.ContractStatusHistories.Add(new ContractStatusHistory

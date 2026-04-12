@@ -66,7 +66,7 @@ namespace QuanLyDoanKham.API.Controllers
         // ================================================================
         [HttpGet("active-qr-today")]
         [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.QR")]
-        public async Task<IActionResult> GetActiveQrToday([FromServices] Services.QrService qrService)
+        public async Task<IActionResult> GetActiveQrToday([FromServices] Services.QrService qrService, [FromQuery] string? origin = null)
         {
             var today = DateTime.Today;
             // 1. Tìm đoàn khám sẵn sàng (Open hoặc InProgress) cho hôm nay
@@ -105,7 +105,7 @@ namespace QuanLyDoanKham.API.Controllers
 
             // Sinh token ngắn hạn (12h). Frontend sẽ lo việc làm mới link.
             var token = qrService.GenerateSignedToken(activeGroup.GroupId, 12);
-            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var baseUrl = !string.IsNullOrEmpty(origin) ? origin : (_configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173");
             var frontendUrl = $"{baseUrl}/checkin?token={Uri.EscapeDataString(token)}";
             var pngBase64 = qrService.GenerateQr(frontendUrl);
 
@@ -125,9 +125,9 @@ namespace QuanLyDoanKham.API.Controllers
         // ================================================================
         [HttpGet("patient-qr")]
         [AllowAnonymous]
-        public IActionResult GetPatientQr([FromServices] Services.QrService qrService)
+        public IActionResult GetPatientQr([FromServices] Services.QrService qrService, [FromQuery] string? origin = null)
         {
-            var baseUrl = _configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173";
+            var baseUrl = !string.IsNullOrEmpty(origin) ? origin : (_configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173");
             var frontendUrl = $"{baseUrl}/patient-checkin";
             var pngBase64 = qrService.GenerateQr(frontendUrl);
 

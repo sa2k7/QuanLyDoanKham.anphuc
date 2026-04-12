@@ -49,9 +49,10 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                 record.Status = RecordStatus.CheckedIn;
                 record.CheckInAt = DateTime.Now;
 
-                // Lọc trạm theo giới tính bệnh nhân
-                // VD: Trạm PHỤ KHOA (RequiredGender="Nữ") sẽ không tạo task cho bệnh nhân nam
-                var activeStations = await _context.Stations
+                // Lọc trạm theo giới tính bệnh nhân và các trạm được cấu hình cho đoàn khám
+                var activeStations = await _context.MedicalGroupPositions
+                    .Where(mgp => mgp.GroupId == record.GroupId)
+                    .Select(mgp => mgp.Position.Station)
                     .Where(s => s.IsActive && IsStationApplicable(s, record.Gender))
                     .OrderBy(s => s.SortOrder)
                     .ToListAsync();

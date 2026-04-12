@@ -589,9 +589,10 @@ const fetchActiveQr = async () => {
     loadingQr.value = true
     qrError.value = ''
     try {
+        const originParams = `?origin=${encodeURIComponent(window.location.origin)}`
         const endpoint = scanMode.value === 'staff' 
-            ? '/api/Attendance/active-qr-today' 
-            : '/api/Attendance/patient-qr'
+            ? `/api/Attendance/active-qr-today${originParams}`
+            : `/api/Attendance/patient-qr${originParams}`
             
         const res = await apiClient.get(endpoint)
         activeQr.value = res.data
@@ -670,6 +671,11 @@ const fetchStaffGroupData = async (token) => {
         // Tự động điền staffId nếu đã có session
         if (!staffId.value) {
             await autoDetectStaff()
+        }
+
+        // Tự động bấm nút chấm công:
+        if (staffId.value) {
+            await submitStaffCheckIn()
         }
     } catch (err) {
         errorMsg.value = err.response?.data?.message || err.message || 'Không thể lấy thông tin đoàn khám.'

@@ -826,7 +826,7 @@ namespace QuanLyDoanKham.API.Controllers
                 .OrderBy(p => p.SortOrder)
                 .Select(p => new MedicalGroupPositionDto
                 {
-                    PositionId = p.PositionId,
+                    PositionId = p.Id,
                     GroupId = p.GroupId,
                     PositionName = p.PositionName,
                     RequiredCount = p.RequiredCount,
@@ -845,9 +845,16 @@ namespace QuanLyDoanKham.API.Controllers
             var group = await _context.MedicalGroups.FindAsync(id);
             if (group == null) return NotFound("Đoàn khám không tồn tại");
 
+            // Cố gắng tìm Position chuẩn tương ứng để link (nếu có)
+            var basePositionId = await _context.Positions
+                .Where(p => p.Name.ToLower() == dto.PositionName.ToLower() || p.Code.ToLower() == dto.PositionName.ToLower())
+                .Select(p => (int?)p.PositionId)
+                .FirstOrDefaultAsync();
+
             var entity = new MedicalGroupPosition
             {
                 GroupId = id,
+                PositionId = basePositionId,
                 PositionName = dto.PositionName,
                 RequiredCount = dto.RequiredCount,
                 Description = dto.Description ?? "",

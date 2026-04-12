@@ -16,6 +16,9 @@
           <span>{{ importing ? 'Đang nhập...' : 'Nhập Excel' }}</span>
         </button>
         <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls" @change="onFileChange" />
+        <button @click="openEnrollModal" class="btn-premium secondary !bg-indigo-50 !text-indigo-600 border-indigo-100">
+          <Calendar class="w-4 h-4" /> Đăng ký khám đoàn
+        </button>
         <button @click="openAdd" class="btn-premium primary">
           <UserPlus class="w-5 h-5" /> Thêm Bệnh Nhân
         </button>
@@ -56,8 +59,26 @@
           <FileText class="w-6 h-6" />
         </div>
         <div>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đã có hồ sơ</p>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Có hồ sơ</p>
           <p class="text-2xl font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.hasRecord).length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-sky-100 text-sky-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <CheckCircle class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Khám xong</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.status === 'COMPLETED').length }}</p>
+        </div>
+      </div>
+      <div class="premium-card p-6 flex items-center gap-4">
+        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shadow-inner">
+          <Clock class="w-6 h-6" />
+        </div>
+        <div>
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chờ khám</p>
+          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.status !== 'COMPLETED' && p.status !== 'CREATED').length }}</p>
         </div>
       </div>
     </div>
@@ -126,6 +147,9 @@
                 <div class="flex items-center justify-center gap-1 group">
                   <button @click="viewDetail(p)" class="p-2.5 rounded-xl bg-blue-50/50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm border border-blue-100 hover:border-blue-500" title="Xem hồ sơ">
                     <Eye class="w-4 h-4" />
+                  </button>
+                  <button @click="openEnrollModal(p)" class="p-2.5 rounded-xl bg-emerald-50/50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-100 hover:border-emerald-600" title="Ghi danh vào đoàn">
+                    <Calendar class="w-4 h-4" />
                   </button>
                   <button @click="openEdit(p)" class="p-2.5 rounded-xl bg-indigo-50/50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-indigo-100 hover:border-indigo-500" title="Sửa">
                     <Edit class="w-4 h-4" />
@@ -396,6 +420,74 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- ENROLL MODAL -->
+    <Teleport to="body">
+      <div v-if="showEnrollModal" class="modal-overlay flex items-center justify-center p-6 z-[120]" @click.self="showEnrollModal = false">
+        <div class="modal-box max-w-lg w-full animate-scale-up">
+          <div class="modal-header bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-8 rounded-t-[2.5rem]">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
+                <Calendar class="w-7 h-7" />
+              </div>
+              <div>
+                <h2 class="text-xl font-black uppercase tracking-tight leading-none mb-1">Ghi Danh Khám Đoàn</h2>
+                <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Đăng ký bệnh nhân vào một đợt khám tập trung</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-8">
+            <div class="mb-6 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4" v-if="enrollTarget">
+                <div class="avatar-circle">{{ enrollTarget.fullName?.charAt(0) }}</div>
+                <div>
+                   <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Bệnh nhân đang chọn</p>
+                   <p class="text-lg font-black text-slate-800">{{ enrollTarget.fullName }}</p>
+                </div>
+            </div>
+
+            <div v-else class="mb-6">
+                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">1. Tìm bệnh nhân (Chưa bắt buộc)</label>
+                <div class="relative">
+                    <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
+                    <input type="text" v-model="enrollSearch" @input="searchEnrollTarget" placeholder="Tìm theo tên hoặc CCCD..." class="form-input !pl-12" />
+                </div>
+                <!-- Search Result Dropdown (Simple) -->
+                <div v-if="enrollSearchResults.length > 0" class="mt-2 bg-white border border-slate-100 rounded-xl shadow-lg max-h-40 overflow-y-auto">
+                    <div v-for="p in enrollSearchResults" :key="p.patientId" @click="enrollTarget = p; enrollSearchResults = []" 
+                        class="p-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0">
+                        <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-[10px] font-black">{{ p.fullName?.charAt(0) }}</div>
+                        <div>
+                            <p class="text-xs font-black text-slate-800">{{ p.fullName }}</p>
+                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{{ p.iDCardNumber || '—' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">2. Chọn Đoàn Khám Đang Mở</label>
+              <select v-model="selectedEnrollGroupId" class="form-input !py-4 !text-base">
+                <option value="">— Chọn đoàn khám mục tiêu —</option>
+                <option v-for="g in openGroups" :key="g.groupId" :value="g.groupId">
+                  [{{ formatDateShort(g.examDate) }}] {{ g.groupName }}
+                </option>
+              </select>
+              <p v-if="openGroups.length === 0" class="text-[10px] font-bold text-rose-500 uppercase mt-2 italic">Hiện không có đoàn khám nào đang mở.</p>
+            </div>
+          </div>
+
+          <div class="p-8 border-t bg-slate-50/50 rounded-b-[2.5rem] flex gap-3">
+             <button @click="showEnrollModal = false" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest">Hủy bỏ</button>
+             <button @click="submitEnroll" :disabled="!selectedEnrollGroupId || !enrollTarget || enrollLoading" 
+                     class="flex-[2] btn-premium primary !bg-emerald-600 !shadow-emerald-100">
+                <Loader2 v-if="enrollLoading" class="w-4 h-4 animate-spin" />
+                <span v-else>XÁC NHẬN GHI DANH</span>
+             </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -428,6 +520,15 @@ const formError = ref('')
 const importing = ref(false)
 const fileInput = ref(null)
 
+// Enroll State
+const showEnrollModal = ref(false)
+const enrollTarget = ref(null)
+const selectedEnrollGroupId = ref('')
+const openGroups = ref([])
+const enrollLoading = ref(false)
+const enrollSearch = ref('')
+const enrollSearchResults = ref([])
+
 const form = ref(resetForm())
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
@@ -442,7 +543,7 @@ const approvedContracts = computed(() => {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([loadContracts(), loadPatients()])
+  await Promise.all([loadContracts(), loadPatients(), loadOpenGroups()])
 })
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -466,6 +567,7 @@ function debouncedSearch() {
 }
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '—'
+const formatDateShort = (d) => d ? new Date(d).toLocaleDateString('vi-VN', {day:'2-digit', month:'2-digit'}) : '—'
 const formatDateTime = (d) => d ? new Date(d).toLocaleString('vi-VN') : '—'
 
 const formatStatus = (s) => {
@@ -478,14 +580,14 @@ const formatStatus = (s) => {
 }
 
 const getStatusColor = (s) => {
-  if (['CLOSED', 'REPORTED'].includes(s)) return 'bg-emerald-400'
+  if (['CLOSED', 'REPORTED', 'QC_PASSED'].includes(s)) return 'bg-emerald-400'
   if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'bg-blue-400'
   if (s === 'CHECKED_IN') return 'bg-indigo-400'
   return 'bg-slate-300'
 }
 
 const getStatusBadge = (s) => {
-  if (['CLOSED', 'REPORTED'].includes(s)) return 'badge-green'
+  if (['CLOSED', 'REPORTED', 'QC_PASSED'].includes(s)) return 'badge-green'
   if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'badge-blue'
   if (s === 'CHECKED_IN') return 'badge-indigo'
   return 'badge-gray'
@@ -499,6 +601,13 @@ const loadContracts = async () => {
   } catch (e) {
     console.warn('Không tải được danh sách HĐ:', e)
   }
+}
+
+const loadOpenGroups = async () => {
+    try {
+        const res = await apiClient.get('/api/MedicalGroups')
+        openGroups.value = res.data.filter(g => g.status === 'Open')
+    } catch (e) { console.error('Lỗi tải đoàn khám:', e) }
 }
 
 const loadPatients = async () => {
@@ -532,6 +641,55 @@ const viewDetail = async (p) => {
     toast.error('Không thể tải hồ sơ bệnh nhân')
     showDetail.value = false
   }
+}
+
+// ─── Enroll Actions ───────────────────────────────────────────────────────────
+const openEnrollModal = (p = null) => {
+    enrollTarget.value = p
+    enrollSearch.value = ''
+    enrollSearchResults.value = []
+    selectedEnrollGroupId.value = ''
+    showEnrollModal.value = true
+}
+
+const searchEnrollTarget = async () => {
+    if (enrollSearch.value.length < 2) {
+        enrollSearchResults.value = []
+        return
+    }
+    try {
+        const res = await apiClient.get(`/api/Patients?search=${enrollSearch.value}&pageSize=5`)
+        enrollSearchResults.value = res.data.items || []
+    } catch (e) { console.error(e) }
+}
+
+const submitEnroll = async () => {
+    if (!enrollTarget.value || !selectedEnrollGroupId.value) return
+    enrollLoading.value = true
+    try {
+        const p = enrollTarget.value
+        const payload = {
+            groupId: Number(selectedEnrollGroupId.value),
+            records: [{
+                fullName: p.fullName,
+                iDCardNumber: p.iDCardNumber,
+                gender: p.gender,
+                dateOfBirth: p.dateOfBirth,
+                department: p.department
+            }]
+        }
+        await apiClient.post('/api/MedicalRecords/batch-ingest', payload)
+        toast.success(`Đã ghi danh ${p.fullName} vào đoàn khám thành công!`)
+        showEnrollModal.value = false
+        // Nếu đang mở trang detail thì load lại để thấy history mới
+        if (showDetail.value && detailData.value?.patientId === p.patientId) {
+            viewDetail(p)
+        }
+    } catch (e) {
+        toast.error(e.response?.data?.message || 'Có lỗi khi ghi danh.')
+    } finally {
+        enrollLoading.value = false
+    }
 }
 
 // ─── Form Actions ─────────────────────────────────────────────────────────────

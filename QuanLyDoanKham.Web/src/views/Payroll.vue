@@ -27,6 +27,9 @@
         <button @click="loadPayroll" class="w-10 h-10 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all flex items-center justify-center shadow-sm">
           <RefreshCw class="w-4 h-4 text-slate-500" :class="{ 'animate-spin': loading }" />
         </button>
+        <button @click="calculateAllPayroll" class="btn-premium primary !bg-indigo-600 !shadow-indigo-100" :disabled="loading">
+          <Calculator class="w-3.5 h-3.5" /> Chạy tính lương
+        </button>
         <button @click="exportExcel" class="btn-premium primary">
           <Download class="w-3.5 h-3.5" /> Xuất Excel
         </button>
@@ -132,7 +135,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Wallet, Download, Search, RefreshCw, FileText, Loader2 } from 'lucide-vue-next'
+import { Wallet, Download, Search, RefreshCw, FileText, Loader2, Calculator } from 'lucide-vue-next'
 import apiClient from '../services/apiClient'
 import { useToast } from '../composables/useToast'
 import { parseApiError } from '../services/errorHelper'
@@ -158,6 +161,22 @@ const loadPayroll = async () => {
         payoutList.value = res.data || []
     } catch (err) {
         console.error('Lỗi tải bảng lương', err)
+        toast.show(parseApiError(err), 'error')
+    } finally {
+        loading.value = false
+    }
+}
+
+const calculateAllPayroll = async () => {
+    loading.value = true
+    try {
+        const res = await apiClient.post('/api/Staffs/calculate-payroll-all', null, {
+            params: { month: selectedMonth.value, year: selectedYear.value }
+        })
+        toast.show(res.data.message, 'success')
+        await loadPayroll()
+    } catch (err) {
+        console.error('Lỗi tính lương', err)
         toast.show(parseApiError(err), 'error')
     } finally {
         loading.value = false

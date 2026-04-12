@@ -439,7 +439,7 @@ import {
     Package, Box, AlertTriangle, TrendingUp, Search, Plus, 
     X, History, ArrowDownLeft, ArrowUpRight, Stethoscope,
     FlaskConical, Pill, Syringe, ClipboardList, RefreshCw,
-    Save, CheckCircle, Inbox, Trash2
+    Save, CheckCircle, Inbox, Trash2, Loader2, AlertCircle
 } from 'lucide-vue-next'
 import { useI18nStore } from '../stores/i18n'
 import { usePermission } from '../composables/usePermission'
@@ -513,7 +513,10 @@ const filteredSupplies = computed(() => {
 })
 
 const lowStockItems = computed(() => supplies.value.filter(s => s.currentStock <= s.minStockLevel))
-const totalValue = computed(() => supplies.value.reduce((sum, s) => sum + (s.currentStock * s.typicalUnitPrice), 0))
+const totalValue = computed(() => {
+    if (!supplies.value) return 0
+    return supplies.value.reduce((acc, s) => acc + ((s.currentStock || 0) * (s.typicalUnitPrice || 0)), 0)
+})
 
 const formatCurrency = (val) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val || 0)
 const formatDate = (dateStr, includeTime = false) => {
