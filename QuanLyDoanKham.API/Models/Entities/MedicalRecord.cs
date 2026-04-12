@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -8,34 +8,55 @@ namespace QuanLyDoanKham.API.Models
     public class MedicalRecord
     {
         [Key]
-        public int RecordId { get; set; }
+        public int MedicalRecordId { get; set; }
 
-        public int PatientId { get; set; }
-        [ForeignKey("PatientId")]
-        public Patient Patient { get; set; }
-
-        public int? GroupId { get; set; }
+        public int GroupId { get; set; }
         [ForeignKey("GroupId")]
-        public MedicalGroup MedicalGroup { get; set; }
+        public MedicalGroup? MedicalGroup { get; set; }
 
-        public DateTime ExamDate { get; set; } = DateTime.Now;
+        [Required]
+        [MaxLength(100)]
+        public string FullName { get; set; } = null!;
+
+        public DateTime? DateOfBirth { get; set; }
+
+        [MaxLength(10)]
+        public string? Gender { get; set; }
+
+        [MaxLength(20)]
+        public string? IDCardNumber { get; set; }
+
+        [MaxLength(100)]
+        public string? Department { get; set; }
+
+        /// <summary>JWT-signed token for check-in</summary>
+        [Required]
+        [MaxLength(512)]
+        public string QrToken { get; set; } = null!;
+
+        /// <summary>
+        /// CREATED, READY, CHECKED_IN, IN_PROGRESS, STATION_DONE, QC_PENDING, QC_PASSED, REPORTED, CLOSED
+        /// </summary>
+        [Required]
+        [MaxLength(30)]
+        public string Status { get; set; } = "CREATED";
 
         [MaxLength(50)]
-        public string Status { get; set; } = "CheckIn"; // CheckIn, InProgress, Completed
+        public string? CurrentStation { get; set; }
 
-        public int? ConcludingDoctorId { get; set; }
-        [ForeignKey("ConcludingDoctorId")]
-        public Staff ConcludingDoctor { get; set; }
+        /// <summary>Link to master patient record after dedup</summary>
+        public int? PatientId { get; set; }
+        [ForeignKey("PatientId")]
+        public Patient? Patient { get; set; }
 
-        public string Conclusion { get; set; }
-        public string Notes { get; set; }
+        public DateTime? CheckInAt { get; set; }
+        public int? CheckInByUserId { get; set; }
 
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal TotalCost { get; set; } = 0;
+        public int? QueueNo { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
 
-        public ICollection<MedicalRecordService> Services { get; set; } = new List<MedicalRecordService>();
+        public ICollection<RecordStationTask> StationTasks { get; set; } = new List<RecordStationTask>();
     }
 }

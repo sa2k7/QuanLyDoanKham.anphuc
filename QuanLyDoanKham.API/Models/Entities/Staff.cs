@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -11,78 +11,76 @@ namespace QuanLyDoanKham.API.Models
         public int StaffId { get; set; }
 
         [MaxLength(20)]
-        public string EmployeeCode { get; set; }
+        public string? EmployeeCode { get; set; }
 
-        [Required(ErrorMessage = "Há»  vĂ  tĂªn nhĂ¢n sá»± khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+        [Required(ErrorMessage = "Há» vĂ  tĂªn nhĂ¢n sá»± khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
         [MaxLength(100)]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = null!;
 
         [MaxLength(100)]
-        public string FullNameUnsigned { get; set; }
+        public string? FullNameUnsigned { get; set; }
 
         public int? BirthYear { get; set; }
 
         [MaxLength(10)]
-        public string Gender { get; set; }
+        public string? Gender { get; set; }
 
         [MaxLength(20)]
-        public string IDCardNumber { get; set; }
+        public string? IDCardNumber { get; set; }
 
         [MaxLength(20)]
-        public string TaxCode { get; set; }
+        public string? TaxCode { get; set; }
 
         [MaxLength(50)]
-        public string BankAccountNumber { get; set; }
+        public string? BankAccountNumber { get; set; }
 
         [MaxLength(100)]
-        public string BankAccountName { get; set; }
+        public string? BankAccountName { get; set; }
 
         [MaxLength(100)]
-        public string BankName { get; set; }
+        public string? BankName { get; set; }
 
         [MaxLength(15)]
-        public string PhoneNumber { get; set; }
+        public string? PhoneNumber { get; set; }
 
         [MaxLength(100)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
         [MaxLength(100)]
-        public string JobTitle { get; set; }
+        public string? JobTitle { get; set; }
 
         // BacSi, DieuDuong, KyThuatVien, NhanVienHoTro
         [MaxLength(50)]
-        public string StaffType { get; set; }
+        public string? StaffType { get; set; }
 
         [MaxLength(100)]
-        public string Specialty { get; set; } // Chuyên khoa
-
-        // Phòng ban
-        public int? DepartmentId { get; set; }
-        [ForeignKey("DepartmentId")]
-        public Department Department { get; set; }
+        public string? Specialty { get; set; } // ChuyĂªn khoa
 
         [MaxLength(100)]
-        public string DepartmentName { get; set; } // Tên phòng ban (denormalized, không cần join)
+        public string? DepartmentName { get; set; } // TĂªn phĂ²ng ban/bá»™ pháº­n (LÆ°u dáº¡ng chuá»—i)
+
+        [MaxLength(50)]
+        public string? CertificateNumber { get; set; } // Sá»‘ CCHN
 
         [MaxLength(20)]
-        public string EmployeeType { get; set; } // NoiBo, ThueNgoai
+        public string? EmployeeType { get; set; } // NoiBo, ThueNgoai
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal DailyRate { get; set; } // Đơn giá ngày
+        public decimal DailyRate { get; set; } // ÄÆ¡n giĂ¡ ngĂ y
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal BaseSalary { get; set; } // Lương cơ bản tháng
+        public decimal BaseSalary { get; set; } // LÆ°Æ¡ng cÆ¡ báº£n thĂ¡ng
 
-        public int StandardWorkDays { get; set; } = 26; // Công chuẩn mặc định
+        public int StandardWorkDays { get; set; } = 26; // CĂ´ng chuáº©n máº·c Ä‘á»‹nh
 
-        // Loại lương: ByDay (tính theo DailyRate), ByMonth (BaseSalary ÷ StdDays × actual)
+        // Loáº¡i lÆ°Æ¡ng: ByDay (tĂ­nh theo DailyRate), ByMonth (BaseSalary Ă· StdDays Ă— actual)
         [MaxLength(20)]
         public string SalaryType { get; set; } = "ByDay";
 
-        public string IDCardFrontPath { get; set; }
-        public string IDCardBackPath { get; set; }
-        public string PracticeCertificatePath { get; set; }
-        public string AvatarPath { get; set; }
+        public string? IDCardFrontPath { get; set; }
+        public string? IDCardBackPath { get; set; }
+        public string? PracticeCertificatePath { get; set; }
+        public string? AvatarPath { get; set; }
 
         public bool IsActive { get; set; } = true;
         public DateTime CreatedDate { get; set; } = DateTime.Now;

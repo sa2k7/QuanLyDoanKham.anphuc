@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Tổng hợp tài chính snapshot cho hợp đồng</summary>
+    /// <summary>Tá»•ng há»£p tĂ i chĂ­nh snapshot cho há»£p Ä‘á»“ng</summary>
     public class ContractFinancialSummary
     {
         [Key]
@@ -12,7 +12,7 @@ namespace QuanLyDoanKham.API.Models
 
         public int HealthContractId { get; set; }
         [ForeignKey("HealthContractId")]
-        public HealthContract HealthContract { get; set; }
+        public HealthContract HealthContract { get; set; } = null!;
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal StaffCost { get; set; }

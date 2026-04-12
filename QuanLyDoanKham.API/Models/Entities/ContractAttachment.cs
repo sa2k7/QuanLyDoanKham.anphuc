@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>File đính kèm hợp đồng</summary>
+    /// <summary>File Ä‘Ă­nh kĂ¨m há»£p Ä‘á»“ng</summary>
     public class ContractAttachment
     {
         [Key]
@@ -12,19 +12,19 @@ namespace QuanLyDoanKham.API.Models
 
         public int HealthContractId { get; set; }
         [ForeignKey("HealthContractId")]
-        public HealthContract HealthContract { get; set; }
+        public HealthContract HealthContract { get; set; } = null!;
 
         [MaxLength(200)]
-        public string FileName { get; set; }
+        public string FileName { get; set; } = null!;
 
-        public string FilePath { get; set; }
+        public string FilePath { get; set; } = null!;
 
         [MaxLength(50)]
-        public string FileType { get; set; } // PDF, DOCX, IMG
+        public string FileType { get; set; } = null!; // PDF, DOCX, IMG
 
         public DateTime UploadedAt { get; set; } = DateTime.Now;
 
         [MaxLength(100)]
-        public string UploadedBy { get; set; }
+        public string UploadedBy { get; set; } = null!;
     }
 }

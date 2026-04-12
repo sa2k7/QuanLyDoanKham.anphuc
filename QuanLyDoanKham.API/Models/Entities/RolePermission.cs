@@ -1,9 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Mapping nhiều-nhiều: Role ↔ Permission</summary>
+    /// <summary>Mapping nhiá»u-nhiá»u: Role â†” Permission</summary>
     public class RolePermission
     {
         [Key]
@@ -11,10 +11,10 @@ namespace QuanLyDoanKham.API.Models
 
         public int RoleId { get; set; }
         [ForeignKey("RoleId")]
-        public AppRole Role { get; set; }
+        public AppRole Role { get; set; } = null!;
 
         public int PermissionId { get; set; }
         [ForeignKey("PermissionId")]
-        public Permission Permission { get; set; }
+        public Permission Permission { get; set; } = null!;
     }
 }

@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Danh mục vị trí chuẩn</summary>
+    /// <summary>Danh má»¥c vá»‹ trĂ­ chuáº©n</summary>
     public class Position
     {
         [Key]
@@ -10,16 +10,16 @@ namespace QuanLyDoanKham.API.Models
 
         [Required]
         [MaxLength(50)]
-        public string Code { get; set; } // KHAM_NOI, LAY_MAU...
+        public string Code { get; set; } = ""; // KHAM_NOI, LAY_MAU...
 
         [Required]
         [MaxLength(150)]
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
 
         [MaxLength(100)]
-        public string SpecialtyRequired { get; set; }
+        public string SpecialtyRequired { get; set; } = "";
 
         [MaxLength(200)]
-        public string Description { get; set; }
+        public string Description { get; set; } = "";
     }
 }

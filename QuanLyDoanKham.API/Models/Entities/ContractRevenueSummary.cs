@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Tổng hợp doanh thu/lợi nhuận theo hợp đồng</summary>
+    /// <summary>Tá»•ng há»£p doanh thu/lá»£i nhuáº­n theo há»£p Ä‘á»“ng</summary>
     public class ContractRevenueSummary
     {
         [Key]
@@ -12,7 +12,7 @@ namespace QuanLyDoanKham.API.Models
 
         public int HealthContractId { get; set; }
         [ForeignKey("HealthContractId")]
-        public HealthContract HealthContract { get; set; }
+        public HealthContract HealthContract { get; set; } = null!;
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal TotalContractValue { get; set; }
@@ -27,6 +27,6 @@ namespace QuanLyDoanKham.API.Models
         public DateTime GeneratedAt { get; set; } = DateTime.Now;
 
         [MaxLength(100)]
-        public string GeneratedBy { get; set; }
+        public string GeneratedBy { get; set; } = null!;
     }
 }

@@ -1,9 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Vị trí trong đoàn khám: Tiếp nhận, Khám nội, Lấy máu...</summary>
+    /// <summary>Vá»‹ trĂ­ trong Ä‘oĂ n khĂ¡m: Tiáº¿p nháº­n, KhĂ¡m ná»™i, Láº¥y mĂ¡u...</summary>
     public class MedicalGroupPosition
     {
         [Key]
@@ -11,17 +11,17 @@ namespace QuanLyDoanKham.API.Models
 
         public int GroupId { get; set; }
         [ForeignKey("GroupId")]
-        public MedicalGroup MedicalGroup { get; set; }
+        public MedicalGroup MedicalGroup { get; set; } = null!;
 
         [Required]
         [MaxLength(100)]
-        public string PositionName { get; set; } // "Tiếp nhận", "Khám nội", "Siêu âm"...
+        public string PositionName { get; set; } = null!; // "Tiáº¿p nháº­n", "KhĂ¡m ná»™i", "SiĂªu Ă¢m"...
 
-        public int RequiredCount { get; set; } = 1; // Số người cần
-        public int AssignedCount { get; set; } = 0; // Số người đã gán (tự tổng hợp)
+        public int RequiredCount { get; set; } = 1; // Sá»‘ ngÆ°á»i cáº§n
+        public int AssignedCount { get; set; } = 0; // Sá»‘ ngÆ°á»i Ä‘Ă£ gĂ¡n (tá»± tá»•ng há»£p)
 
         [MaxLength(200)]
-        public string Description { get; set; }
+        public string Description { get; set; } = null!;
 
         public int SortOrder { get; set; } = 0;
     }

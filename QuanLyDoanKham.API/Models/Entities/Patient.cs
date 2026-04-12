@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -10,30 +9,28 @@ namespace QuanLyDoanKham.API.Models
         [Key]
         public int PatientId { get; set; }
 
+        public int HealthContractId { get; set; }
+        [ForeignKey("HealthContractId")]
+        public HealthContract? HealthContract { get; set; }
+
         [Required]
-        [MaxLength(200)]
-        public string FullName { get; set; }
+        [MaxLength(100)]
+        public string FullName { get; set; } = null!;
 
-        public DateTime? DateOfBirth { get; set; }
+        public DateTime DateOfBirth { get; set; }
+
+        [MaxLength(10)]
+        public string? Gender { get; set; }
 
         [MaxLength(20)]
-        public string Gender { get; set; }
+        public string? IDCardNumber { get; set; }
 
-        [MaxLength(20)]
-        public string PhoneNumber { get; set; }
+        [MaxLength(15)]
+        public string? PhoneNumber { get; set; }
 
-        [MaxLength(255)]
-        public string Address { get; set; }
+        [MaxLength(100)]
+        public string? Department { get; set; }
 
-        [MaxLength(50)]
-        public string IdentityCard { get; set; }
-
-        public int? CompanyId { get; set; }
-        [ForeignKey("CompanyId")]
-        public Company Company { get; set; }
-
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
     }
 }

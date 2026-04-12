@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Phân công nhân sự vào vị trí trong đoàn khám</summary>
+    /// <summary>PhĂ¢n cĂ´ng nhĂ¢n sá»± vĂ o vá»‹ trĂ­ trong Ä‘oĂ n khĂ¡m</summary>
     public class GroupStaffDetail
     {
         [Key]
@@ -12,34 +12,34 @@ namespace QuanLyDoanKham.API.Models
 
         public int GroupId { get; set; }
         [ForeignKey("GroupId")]
-        public MedicalGroup MedicalGroup { get; set; }
+        public MedicalGroup MedicalGroup { get; set; } = null!;
 
         public int StaffId { get; set; }
         [ForeignKey("StaffId")]
-        public Staff Staff { get; set; }
+        public Staff Staff { get; set; } = null!;
 
-        // Vị trí được phân công
+        // Vá»‹ trĂ­ Ä‘Æ°á»£c phĂ¢n cĂ´ng
         public int? PositionId { get; set; }
         [ForeignKey("PositionId")]
-        public Position Position { get; set; }
+        public Position Position { get; set; } = null!;
 
         public int? GroupPositionQuotaId { get; set; }
         [ForeignKey("GroupPositionQuotaId")]
-        public GroupPositionQuota GroupPositionQuota { get; set; }
+        public GroupPositionQuota GroupPositionQuota { get; set; } = null!;
 
         [MaxLength(100)]
-        public string WorkPosition { get; set; } // Tên vị trí (denormalized để dễ query)
+        public string WorkPosition { get; set; } = null!; // TĂªn vá»‹ trĂ­ (denormalized Ä‘á»ƒ dá»… query)
 
         [MaxLength(50)]
         public string WorkStatus { get; set; } = "Pending"; // Pending, Joined, Absent, Leave
 
         public DateTime ExamDate { get; set; }
 
-        // Chấm công
+        // Cháº¥m cĂ´ng
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
 
-        // 0.5 = nửa ngày, 1.0 = một ngày
+        // 0.5 = ná»­a ngĂ y, 1.0 = má»™t ngĂ y
         public double ShiftType { get; set; } = 1.0;
 
         [Column(TypeName = "decimal(18, 2)")]
@@ -48,6 +48,6 @@ namespace QuanLyDoanKham.API.Models
         public int? AssignedByUserId { get; set; }
         public DateTime? AssignedAt { get; set; }
 
-        public string Note { get; set; }
+        public string Note { get; set; } = null!;
     }
 }

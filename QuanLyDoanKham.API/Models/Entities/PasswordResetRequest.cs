@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 
 namespace QuanLyDoanKham.API.Models
@@ -10,12 +10,12 @@ namespace QuanLyDoanKham.API.Models
 
         [Required]
         [MaxLength(50)]
-        public string Username { get; set; }
+        public string Username { get; set; } = "";
 
         public DateTime RequestedDate { get; set; } = DateTime.Now;
         public bool IsProcessed { get; set; } = false;
 
         [MaxLength(100)]
-        public string NewPassword { get; set; }
+        public string NewPassword { get; set; } = "";
     }
 }
