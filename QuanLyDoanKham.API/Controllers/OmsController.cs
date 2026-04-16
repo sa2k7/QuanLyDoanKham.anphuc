@@ -14,11 +14,13 @@ namespace QuanLyDoanKham.API.Controllers
     public class OmsController : ControllerBase
     {
         private readonly IMedicalRecordStateMachine _stateMachine;
+        private readonly IMedicalRecordService _medicalRecordService;
         private readonly ApplicationDbContext _context;
 
-        public OmsController(IMedicalRecordStateMachine stateMachine, ApplicationDbContext context)
+        public OmsController(IMedicalRecordStateMachine stateMachine, IMedicalRecordService medicalRecordService, ApplicationDbContext context)
         {
             _stateMachine = stateMachine;
+            _medicalRecordService = medicalRecordService;
             _context = context;
         }
 
@@ -62,6 +64,16 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(result);
         }
 
+        [HttpPost("station/{medicalRecordId}/assign-extra")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> AssignExtraStation(int medicalRecordId, [FromQuery] string stationCode, [FromQuery] string? notes = null)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.AddExtraStationAsync(medicalRecordId, stationCode, userId, notes);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(result);
+        }
+
         // ─── QC Endpoints ────────────────────────────────────────────────────
 
         /// <summary>GET api/Oms/qc-pending — Danh sách hồ sơ đang chờ QC</summary>
@@ -69,25 +81,7 @@ namespace QuanLyDoanKham.API.Controllers
         [AuthorizePermission("KetQua.QCApprove")]
         public async Task<IActionResult> GetQcPendingRecords()
         {
-            var records = await _context.MedicalRecords
-                .Include(r => r.StationTasks)
-                .Where(r => r.Status == RecordStatus.QcPending)
-                .OrderBy(r => r.CheckInAt)
-                .Select(r => new
-                {
-                    r.MedicalRecordId,
-                    r.FullName,
-                    r.QueueNo,
-                    r.Status,
-                    r.CheckInAt,
-                    StationTasks = r.StationTasks.Select(t => new
-                    {
-                        t.StationCode,
-                        t.Status
-                    })
-                })
-                .ToListAsync();
-
+            var records = await _medicalRecordService.GetQcPendingRecordsAsync();
             return Ok(records);
         }
 

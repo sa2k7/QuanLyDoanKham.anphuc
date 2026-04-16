@@ -190,7 +190,7 @@
                     <tr v-for="contract in filteredList[activeTab]" :key="contract.healthContractId" 
                         class="group hover:bg-slate-50/50 transition-all duration-300 text-[11px] border-b border-slate-50 last:border-0">
                         <td class="px-8 py-5 text-center">
-                            <span class="font-black text-slate-300 tabular-nums text-xs">#{{ String(contract.healthContractId).padStart(3, '0') }}</span>
+                            <span class="font-black text-slate-700 tabular-nums text-xs">#{{ String(contract.healthContractId).padStart(3, '0') }}</span>
                         </td>
                         <td class="px-6 py-5">
                             <div class="flex items-center gap-4">
@@ -425,14 +425,14 @@
                                 <History class="w-3 h-3" /> Lịch sử thay đổi
                             </h4>
                             <div class="space-y-2">
-                                <div v-for="h in detailsModal.data.statusHistories" :key="h.id" class="flex gap-3 items-start bg-slate-50/50 p-3 rounded-xl border border-slate-50">
+                                <div v-for="h in detailsModal.data.statusHistories" :key="h.id" class="flex gap-3 items-start bg-slate-50/50 p-3 rounded-xl border border-slate-200">
                                     <div class="w-1.5 h-1.5 rounded-full bg-indigo-400 mt-1.5 shrink-0"></div>
                                     <div class="flex-1 min-w-0 text-[10px]">
                                         <div class="flex justify-between items-center mb-0.5">
                                             <span class="font-black text-slate-800 uppercase tracking-tighter">
                                                 {{ getStatusLabel(h.oldStatus) }} → {{ getStatusLabel(h.newStatus) }}
                                             </span>
-                                            <span class="text-[8px] font-black text-slate-400">{{ formatDate(h.changedAt) }}</span>
+                                            <span class="text-[8px] font-black text-slate-600">{{ formatDate(h.changedAt) }}</span>
                                         </div>
                                         <p v-if="h.note" class="text-slate-500 italic">"{{ h.note }}"</p>
                                     </div>
@@ -468,41 +468,41 @@
                         <template v-if="!isEditing">
                             <button v-if="detailsModal.data.status === 'Draft' && canEdit" 
                                     @click="handleSubmitForApproval(detailsModal.data.healthContractId)"
-                                    class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center gap-2 shadow-lg text-[10px] uppercase tracking-widest">
+                                    class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 shadow-lg text-[10px] uppercase tracking-widest">
                                 <Send class="w-4 h-4" /> <span>GỬI PHÊ DUYỆT</span>
                             </button>
                             <button v-if="detailsModal.data.status === 'Approved' && canActivate" 
                                     @click="handleActivateContract(detailsModal.data.healthContractId)"
-                                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black shadow-lg text-[10px] uppercase tracking-widest">
+                                    class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black shadow-lg text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                                 <Clock class="w-4 h-4" /> <span>KÍCH HOẠT</span>
                             </button>
                             <button v-if="detailsModal.data.status === 'Active' && canEdit" 
                                     @click="handleFinishContract(detailsModal.data.healthContractId)"
-                                    class="bg-slate-800 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                    class="bg-slate-800 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                                 <Lock class="w-4 h-4" /> <span>KẾT THÚC</span>
                             </button>
                             <button v-if="detailsModal.data.status === 'Finished' && canEdit" 
                                     @click="goToSettlement(detailsModal.data.healthContractId)"
-                                    class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                    class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                                 <Calculator class="w-4 h-4" /> <span>QUYẾT TOÁN</span>
                             </button>
                             <button v-if="['Draft', 'Rejected'].includes(detailsModal.data.status) && canEdit" 
                                     @click="isEditing = true" 
-                                    class="bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-black border border-indigo-100 text-[10px] uppercase tracking-widest">
+                                    class="bg-white text-indigo-600 px-5 py-2.5 rounded-xl font-black border border-indigo-100 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2">
                                 CHỈNH SỬA
                             </button>
                             <button @click="detailsModal.show = false" 
-                                    class="bg-white border border-slate-200 text-slate-500 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                    class="bg-white border border-slate-200 text-slate-500 px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                 ĐÓNG
                             </button>
                         </template>
                         <template v-else>
                             <button @click="handleUpdateContract" 
-                                    class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest">
+                                    class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all">
                                 LƯU THAY ĐỔI
                             </button>
                             <button @click="isEditing = false" 
-                                    class="bg-white text-slate-500 px-6 py-2.5 rounded-xl font-black border border-slate-200 text-[10px] uppercase tracking-widest">
+                                    class="bg-white text-slate-500 px-6 py-2.5 rounded-xl font-black border border-slate-200 text-[10px] uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                 HỦY
                             </button>
                         </template>
@@ -527,7 +527,8 @@ import {
     Plus, FileText, Search, PlusCircle, Edit3, Trash2, 
     Clock, CheckCircle, Activity, FileCheck, XCircle, X,
     ArrowRight, ArrowDown, History, Save, Lock, Unlock, Calculator,
-    Building2, DollarSign, Users, ShieldCheck, Calendar, Settings2, Eye, Tag, Hash, CreditCard, Info
+    Building2, DollarSign, Users, ShieldCheck, Calendar, Settings2, Eye, Tag, Hash, CreditCard, Info,
+    Send, Award, Undo, Quote, Ban
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'

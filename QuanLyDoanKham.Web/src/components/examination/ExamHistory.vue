@@ -37,7 +37,24 @@
             </header>
             
             <div class="result-body mb-3">
-              <p class="text-slate-700 text-sm font-medium line-clamp-3 group-hover:line-clamp-none transition-all">{{ item.result }}</p>
+              <div v-if="typeof item.resultData === 'object' && item.resultData !== null" class="text-slate-700 text-sm font-medium line-clamp-3 group-hover:line-clamp-none transition-all space-y-1">
+                <template v-for="(val, key) in item.resultData" :key="key">
+                  <div v-if="key !== 'Attachments'" class="flex gap-2">
+                    <span class="text-[10px] font-black text-slate-400 uppercase w-1/3">{{ key }}</span>
+                    <span class="font-bold text-slate-800">{{ val }}</span>
+                  </div>
+                </template>
+              </div>
+              <p v-else class="text-slate-700 text-sm font-medium line-clamp-3 group-hover:line-clamp-none transition-all">{{ item.resultData || item.result }}</p>
+
+              <div v-if="item.resultData?.Attachments?.length > 0" class="mt-2 flex flex-wrap gap-2">
+                <a v-for="(img, idx) in item.resultData.Attachments" :key="idx" :href="api.defaults.baseURL + img" target="_blank" class="w-12 h-12 rounded-lg overflow-hidden border-2 border-indigo-100 hover:border-indigo-400 transition-all block relative group">
+                  <img :src="api.defaults.baseURL + img" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all">
+                    <ExternalLink :size="10" class="text-white" />
+                  </div>
+                </a>
+              </div>
             </div>
             
             <footer class="pt-3 border-t border-slate-100 flex items-center justify-between">
@@ -61,7 +78,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
-import { History, RotateCcw, Loader2, ClipboardList, AlertCircle } from 'lucide-vue-next'
+import { History, RotateCcw, Loader2, ClipboardList, AlertCircle, ExternalLink } from 'lucide-vue-next'
 import { api } from '@/services/apiClient'
 
 const props = defineProps({

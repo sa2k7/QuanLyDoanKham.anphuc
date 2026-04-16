@@ -14,6 +14,8 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
+
 // ================================================================
 // 1. DATABASE
 // ================================================================
@@ -30,6 +32,11 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IMedicalGroupAutoAssignmentService, MedicalGroupAutoAssignmentService>();
 builder.Services.AddScoped<IGroupLifecycleService, GroupLifecycleService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.IReportingService, QuanLyDoanKham.API.Services.ReportingService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.IReportingServiceEnhanced, QuanLyDoanKham.API.Services.ReportingServiceEnhanced>();
+
+builder.Services.AddHttpContextAccessor(); // Bắt buộc để lấy IP và Username
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.Auth.IAuditLogService, QuanLyDoanKham.API.Services.Auth.AuditLogService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.ISmartQueueService, QuanLyDoanKham.API.Services.MedicalRecords.SmartQueueService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.QrService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.TimeSheetService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Reports.FinancialReportService>();
@@ -40,6 +47,7 @@ builder.Services.AddScoped<QuanLyDoanKham.API.Services.Settlement.IFinancialCalc
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRecordService, QuanLyDoanKham.API.Services.MedicalRecords.MedicalRecordService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalRecordStateMachine, QuanLyDoanKham.API.Services.MedicalRecords.MedicalRecordStateMachine>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.ICheckInService, QuanLyDoanKham.API.Services.MedicalRecords.CheckInService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IMedicalReportPdfGenerator, QuanLyDoanKham.API.Services.MedicalRecords.MedicalReportPdfGenerator>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalRecords.IExamService, QuanLyDoanKham.API.Services.MedicalRecords.ExamService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.PayrollService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Contracts.IHealthContractService, QuanLyDoanKham.API.Services.Contracts.HealthContractService>();

@@ -212,11 +212,13 @@ namespace QuanLyDoanKham.API.Data
             // PHASE 1 HARDENING: Prevent double-booking a staff on the same exam date.
             // The partial filter excludes records where the staff was marked Absent,
             // so a legitimate absence does not block re-assignment on the same day.
+            /*
             modelBuilder.Entity<GroupStaffDetail>()
                 .HasIndex(g => new { g.StaffId, g.ExamDate })
                 .IsUnique()
-                .HasFilter("[WorkStatus] != 'Absent'")
+                .HasFilter("WorkStatus != 'Absent'")
                 .HasDatabaseName("IX_GroupStaffDetail_StaffId_ExamDate_NoConflict");
+            */
 
             modelBuilder.Entity<GroupPositionQuota>()
                 .HasOne(q => q.MedicalGroup)
@@ -308,10 +310,12 @@ namespace QuanLyDoanKham.API.Data
                 .HasIndex(m => new { m.GroupId, m.Status });
             modelBuilder.Entity<MedicalRecord>()
                 .HasIndex(m => m.QrToken).IsUnique();
+            /*
             modelBuilder.Entity<MedicalRecord>()
                 .HasIndex(m => new { m.IDCardNumber, m.GroupId })
-                .HasFilter("[IDCardNumber] IS NOT NULL") // Index uniqueness only for non-null IDCards
+                .HasFilter("IDCardNumber IS NOT NULL") // Index uniqueness only for non-null IDCards
                 .IsUnique();
+            */
 
             modelBuilder.Entity<MedicalRecord>()
                 .HasOne(m => m.MedicalGroup)

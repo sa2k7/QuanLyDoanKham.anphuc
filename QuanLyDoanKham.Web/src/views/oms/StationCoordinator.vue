@@ -1,43 +1,17 @@
 <template>
   <div class="station-coordinator">
-    <aside class="sidebar">
-      <div class="station-header">
-        <h2>{{ stationName }}</h2>
-        <p>Bảng Điều Phối Trạm</p>
-      </div>
+    <!-- LEFT: Sidebar with Queue -->
+    <StationSidebar
+      :stationName="stationDisplayName"
+      :queue="queue"
+      :selectedId="currentTask?.taskId"
+      @select="selectPatient"
+    />
 
-      <nav class="queue-list">
-        <header>HÀNG CHỜ ({{ queue.length }})</header>
-        <div v-if="queue.length === 0" class="empty-queue">Chưa có bệnh nhân</div>
-        <div 
-          v-for="patient in queue" 
-          :key="patient.taskId" 
-          class="queue-item"
-          :class="{ active: currentTask?.taskId === patient.taskId }"
-          @click="selectPatient(patient)"
-        >
-          <span class="q-no">{{ patient.queueNo }}</span>
-          <div class="q-info">
-            <span class="name">{{ patient.fullName }}</span>
-            <span class="time">{{ formatWaiting(patient.waitingSince) }}</span>
-          </div>
-        </div>
-      </nav>
-    </aside>
-
+    <!-- RIGHT: Active Area -->
     <main class="active-area">
       <div v-if="currentTask" class="current-card">
-        <header>
-          <div class="p-basic">
-            <h1>{{ currentTask.fullName }}</h1>
-            <span class="p-meta">STT: {{ currentTask.queueNo }} • Giới tính: {{ currentTask.gender }}</span>
-          </div>
-          <div class="p-status">
-            <span class="status-badge" :class="currentTask.status.toLowerCase()">
-              {{ currentTask.status }}
-            </span>
-          </div>
-        </header>
+        <StationPatientBanner :patient="currentTask" />
 
         <section class="task-actions">
           <button 
@@ -70,20 +44,15 @@
 
              <div class="flex justify-end mt-6">
                 <button class="btn-skip text-slate-400 font-bold px-6 py-2 hover:text-orange-500 transition-colors" @click="handleAction('skip')">
-                   TẠM BỎ QUA BỆNH NHÂN NÀY
+                   TẠM BỎ QUA BỆNH NHÂN LẠI
                 </button>
              </div>
           </div>
         </section>
       </div>
-      <div v-else class="welcome-screen flex flex-col items-center justify-center h-full text-center">
-        <div class="icon-glow mb-8">
-            <div class="pulse-ring"></div>
-            <Hospital :size="64" class="text-indigo-500 relative z-10" />
-        </div>
-        <h2 class="text-2xl font-black text-slate-800 mb-2">CHÀO MỪNG ĐẾN TRẠM {{ stationDisplayName.toUpperCase() }}</h2>
-        <p class="text-slate-500 max-w-sm font-medium">Vui lòng chọn một bệnh nhân từ danh sách hàng chờ bên trái để bắt đầu quá trình thăm khám.</p>
-      </div>
+
+      <!-- Welcome screen if no patient selected -->
+      <StationWelcome v-else :stationName="stationDisplayName" />
     </main>
   </div>
 </template>
@@ -93,7 +62,12 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { api } from '@/services/apiClient'
 import queueHub from '@/services/queueHub'
-import { Mic, Hospital, User, Clock, ChevronRight } from 'lucide-vue-next'
+import { Mic } from 'lucide-vue-next'
+
+// Sub-components
+import StationSidebar from '@/components/station/StationSidebar.vue'
+import StationPatientBanner from '@/components/station/StationPatientBanner.vue'
+import StationWelcome from '@/components/station/StationWelcome.vue'
 import ExamForm from '@/components/examination/ExamForm.vue'
 import ExamHistory from '@/components/examination/ExamHistory.vue'
 
@@ -102,7 +76,7 @@ const stationCode = route.params.code
 const queue = ref([])
 const currentTask = ref(null)
 
-// Map station code to display name (In real app, fetch from master data)
+// Map station code to display name
 const stationDisplayName = computed(() => {
   const map = {
     'CHECKIN':        'Tiếp Đón & Cấp Số',
@@ -111,7 +85,7 @@ const stationDisplayName = computed(() => {
     'XQUANG':         'Chụp X-Quang',
     'SIEU_AM':        'Siêu Âm',
     'NOI_KHOA':       'Khám Nội Khoa',
-    'MAT_TAI_MUI_HONG': 'Mắt - Tai Mũi Họng',
+    'MAT_TAI_MUI_HONG': 'Mắt - Tai Mùi Họng',
     'QC':             'Kiểm Tra Hồ Sơ (QC)',
   }
   return map[stationCode] || stationCode
@@ -142,7 +116,6 @@ const handleAction = async (action) => {
     if (action === 'start') {
       await api.post(`/api/Oms/station/${currentTask.value.medicalRecordId}/start?stationCode=${stationCode}`)
     } else if (action === 'skip') {
-      // Implement skip logic if needed
       currentTask.value = null
     }
     await fetchQueue()
@@ -152,16 +125,8 @@ const handleAction = async (action) => {
 }
 
 const onExamSuccess = async () => {
-    // Backend service Step 2 already handles updating Task to COMPLETED 
-    // and potentially updating Record status to QC_PENDING.
     currentTask.value = null
     await fetchQueue()
-}
-
-const formatWaiting = (date) => {
-  if (!date) return 'Vừa xong'
-  const diff = Math.floor((new Date() - new Date(date)) / 60000)
-  return diff <= 0 ? 'Vừa xong' : `${diff} m`
 }
 
 let unsubscribeHub = null
@@ -173,12 +138,9 @@ onMounted(async () => {
 
   unsubscribeHub = queueHub.onUpdate((event, payload) => {
     if (event === 'PatientStatusChanged' && payload?.stationCode === stationCode) {
-      // Phase 2: In-place update — mutate the queue array without an API call.
-      // This is the fast path: O(n) scan instead of a full network round-trip.
       const taskIndex = queue.value.findIndex(t => t.medicalRecordId === payload.medicalRecordId)
       if (taskIndex !== -1) {
         queue.value[taskIndex] = { ...queue.value[taskIndex], status: payload.newStatus }
-        // Sync the currentTask view if this patient is active
         if (currentTask.value?.medicalRecordId === payload.medicalRecordId) {
           currentTask.value = { ...currentTask.value, status: payload.newStatus }
         }
@@ -186,43 +148,30 @@ onMounted(async () => {
     } else if (
       event === 'StationQueueUpdated' && (payload === stationCode || payload === 'ALL')
     ) {
-      // Full re-fetch for structural changes (new patient arrived, patient removed)
       fetchQueue()
     } else if (event === 'QueueUpdated' && payload === 'ALL') {
-      // Legacy global signal — only re-fetch if no richer event was received
       fetchQueue()
     }
   })
 })
 
 onUnmounted(async () => {
-  if (unsubscribeHub) unsubscribeHub() // clean up listener to prevent memory leak
+  if (unsubscribeHub) unsubscribeHub()
   await queueHub.leaveStation(stationCode)
 })
 </script>
 
 <style scoped>
-.icon-glow {
-  position: relative;
-  width: 120px;
-  height: 120px;
+.station-coordinator {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 100vh;
+  background: #f8fafc;
 }
 
-.pulse-ring {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: rgba(79, 70, 229, 0.1);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(0.8); opacity: 0.8; }
-  100% { transform: scale(1.5); opacity: 0; }
+.active-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
 }
 
 .btn-call-in {
@@ -261,30 +210,5 @@ onUnmounted(async () => {
 @keyframes growIn {
   from { transform: scale(0.95); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
-}
-
-.sidebar {
-  width: 320px;
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(20px);
-  border-right: 1px solid rgba(226, 232, 240, 0.8);
-  display: flex;
-  flex-direction: column;
-}
-
-.queue-item.active {
-  background: white;
-  margin: 0.5rem;
-  border-radius: 16px;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  border-left: 6px solid #6366f1;
-}
-
-.q-no {
-  font-size: 1.5rem;
-  font-weight: 900;
-  background: linear-gradient(to bottom, #6366f1, #4f46e5);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 </style>

@@ -3,15 +3,21 @@ using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
 
+using Microsoft.Extensions.Logging;
+
 namespace QuanLyDoanKham.API.Services.MedicalRecords
 {
     public class ExamService : IExamService
     {
         private readonly ApplicationDbContext _context;
+        private readonly IMedicalRecordStateMachine _stateMachine;
+        private readonly ILogger<ExamService> _logger;
 
-        public ExamService(ApplicationDbContext context)
+        public ExamService(ApplicationDbContext context, IMedicalRecordStateMachine stateMachine, ILogger<ExamService> logger)
         {
             _context = context;
+            _stateMachine = stateMachine;
+            _logger = logger;
         }
 
         // ─── Public Interface ────────────────────────────────────────────────
@@ -29,21 +35,44 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                     return ServiceResult<bool>.Failure("Hợp đồng đã quyết toán, không thể thay đổi kết quả khám bệnh.");
                 }
 
+                // Guard state: Chặn nhập kết quả nếu bệnh nhân chưa có mặt hoặc đã hủy
+                if (record.Status == RecordStatus.Created || record.Status == RecordStatus.Ready)
+                {
+                    return ServiceResult<bool>.Failure("Bệnh nhân chưa tiếp đón (Check-in), không thể nhập kết quả khám.");
+                }
+                if (record.Status == RecordStatus.NoShow || record.Status == RecordStatus.Cancelled)
+                {
+                    return ServiceResult<bool>.Failure("Bệnh nhân vắng mặt hoặc bị hủy hồ sơ, không thể nhập kết quả khám.");
+                }
+
+                if (record.PatientId == null)
+                {
+                    return ServiceResult<bool>.Failure("Lỗi cấu trúc dữ liệu: Hồ sơ chưa được định danh gốc (Thiếu PatientId).");
+                }
 
                 var stationTask = FindStationTask(record, dto.StationCode);
                 if (stationTask == null)
                     return ServiceResult<bool>.Failure($"Hồ sơ không có chỉ định khám tại trạm '{dto.StationCode}'.");
 
+                // Lưu kết quả y khoa 
                 await UpsertExamResultAsync(record, dto);
-                CompleteStationTask(stationTask, actorUserId);
-                TryAdvanceRecordToQcPending(record);
-
                 await _context.SaveChangesAsync();
+
+                // Giao phó logic Hoàn thành trạm, Real-time và Auto QC cho State Machine
+                if (stationTask.Status != StationTaskStatus.StationDone)
+                {
+                    var completeRes = await _stateMachine.CompleteStationAsync(dto.MedicalRecordId, dto.StationCode, actorUserId, $"Kết luận: {dto.Diagnosis}");
+                    if (!completeRes.IsSuccess)
+                    {
+                        throw new Exception("Lỗi StateMachine: " + completeRes.Message);
+                    }
+                }
+
                 return ServiceResult<bool>.Success(true);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[ERROR] SaveExamResultAsync: {ex.Message}");
+                _logger.LogError(ex, "Lỗi hệ thống khi lưu kết quả khám. RecordID: {RecordId}, Station: {Station}", dto.MedicalRecordId, dto.StationCode);
                 return ServiceResult<bool>.Failure("Lỗi hệ thống khi lưu kết quả khám.");
             }
         }
@@ -73,6 +102,8 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
 
         private async Task UpsertExamResultAsync(MedicalRecord record, SaveExamResultDto dto)
         {
+            var jsonString = dto.ResultData.ValueKind == System.Text.Json.JsonValueKind.Undefined ? "{}" : dto.ResultData.GetRawText();
+
             var existing = await _context.ExamResults.FirstOrDefaultAsync(er =>
                 er.PatientId == record.PatientId &&
                 er.GroupId   == record.GroupId   &&
@@ -80,7 +111,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
 
             if (existing != null)
             {
-                existing.Result       = dto.Result;
+                existing.Result       = jsonString;
                 existing.Diagnosis    = dto.Diagnosis;
                 existing.DoctorStaffId = dto.DoctorStaffId;
                 existing.ExamDate     = DateTime.Now;
@@ -89,10 +120,10 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             {
                 _context.ExamResults.Add(new ExamResult
                 {
-                    PatientId    = record.PatientId ?? 0,
+                    PatientId    = record.PatientId.Value, 
                     GroupId      = record.GroupId,
                     ExamType     = dto.ExamType,
-                    Result       = dto.Result,
+                    Result       = jsonString,
                     Diagnosis    = dto.Diagnosis,
                     DoctorStaffId = dto.DoctorStaffId,
                     ExamDate     = DateTime.Now,
@@ -103,40 +134,25 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             }
         }
 
-        private static void CompleteStationTask(RecordStationTask task, string actorUserId)
+
+
+        private async Task<List<ExamResultResponseDto>> QueryExamResultsForRecord(MedicalRecord record)
         {
-            task.Status      = StationTaskStatus.StationDone;
-            task.CompletedAt = DateTime.Now;
-            task.Notes       = $"[{actorUserId}] Hoàn thành";
-        }
-
-        private static void TryAdvanceRecordToQcPending(MedicalRecord record)
-        {
-            bool allTasksDone = record.StationTasks.All(t => t.Status == StationTaskStatus.StationDone);
-            bool isAlreadyQc  = record.Status is RecordStatus.QcPending or RecordStatus.QcPassed;
-
-            if (allTasksDone && !isAlreadyQc)
-            {
-                record.Status    = RecordStatus.QcPending;
-                record.UpdatedAt = DateTime.Now;
-                Console.WriteLine($"[INFO] Record {record.MedicalRecordId} → QC_PENDING.");
-            }
-        }
-
-        private Task<List<ExamResultResponseDto>> QueryExamResultsForRecord(MedicalRecord record)
-            => _context.ExamResults
+            var rawResults = await _context.ExamResults
                 .Include(er => er.Doctor)
                 .Where(er => er.PatientId == record.PatientId && er.GroupId == record.GroupId)
                 .OrderBy(er => er.ExamDate)
-                .Select(er => new ExamResultResponseDto
+                .ToListAsync();
+
+            return rawResults.Select(er => new ExamResultResponseDto
                 {
                     ExamResultId = er.ExamResultId,
                     ExamType     = er.ExamType,
-                    Result       = er.Result,
+                    ResultData   = string.IsNullOrEmpty(er.Result) ? null : System.Text.Json.JsonSerializer.Deserialize<object>(er.Result, new System.Text.Json.JsonSerializerOptions()),
                     Diagnosis    = er.Diagnosis,
                     ExamDate     = er.ExamDate,
                     DoctorName   = er.Doctor != null ? er.Doctor.FullName : "N/A"
-                })
-                .ToListAsync();
+                }).ToList();
+        }
     }
 }

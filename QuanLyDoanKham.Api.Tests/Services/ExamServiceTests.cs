@@ -1,152 +1,209 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
 using QuanLyDoanKham.API.Services.MedicalRecords;
-using Xunit;
 
-namespace QuanLyDoanKham.Api.Tests.Services
+namespace QuanLyDoanKham.Api.Tests.Services;
+
+public class ExamServiceTests : IDisposable
 {
-    /// <summary>
-    /// Tests cho luồng chính: Lưu kết quả khám → Cập nhật Task → Chuyển trạng thái hồ sơ
-    /// </summary>
-    public class ExamServiceTests : IDisposable
+    private readonly ApplicationDbContext _db;
+    private readonly Mock<IMedicalRecordStateMachine> _stateMachineMock;
+    private readonly ExamService _service;
+
+    public ExamServiceTests()
     {
-        private readonly ApplicationDbContext _db;
-        private readonly ExamService _service;
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
 
-        public ExamServiceTests()
+        _db = new ApplicationDbContext(options);
+        _stateMachineMock = new Mock<IMedicalRecordStateMachine>(MockBehavior.Strict);
+        _service = new ExamService(_db, _stateMachineMock.Object, NullLogger<ExamService>.Instance);
+    }
+
+    [Fact]
+    public async Task SaveExamResult_WhenRecordNotFound_ReturnsFailure()
+    {
+        var dto = new SaveExamResultDto
         {
-            var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                .Options;
-            _db = new ApplicationDbContext(options);
-            _service = new ExamService(_db);
-        }
+            MedicalRecordId = 999,
+            StationCode = "NOI_KHOA",
+            ExamType = "Khám Tổng quát",
+            Result = "Bình thường",
+            Diagnosis = "Không có bệnh lý"
+        };
 
-        // ─── [TEST 1] Lưu kết quả hồ sơ không tồn tại ──────────────────────
+        var result = await _service.SaveExamResultAsync(dto, "user1");
 
-        [Fact]
-        public async Task SaveExamResult_WhenRecordNotFound_ReturnsFailure()
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Không tìm thấy hồ sơ bệnh nhân.", result.Message);
+    }
+
+    [Fact]
+    public async Task SaveExamResult_WhenStationNotAssigned_ReturnsFailure()
+    {
+        var groupId = await SeedGroupAsync(1);
+        var patientId = await SeedPatientAsync(1, groupId, "123456789");
+        var record = CreateRecordWithTask(patientId: patientId, groupId: groupId, stationCode: "XQUANG", taskStatus: StationTaskStatus.Waiting);
+        _db.MedicalRecords.Add(record);
+        await _db.SaveChangesAsync();
+
+        var dto = new SaveExamResultDto
         {
-            var dto = new SaveExamResultDto
-            {
-                MedicalRecordId = 999, // ID không tồn tại
-                StationCode = "NOI_KHOA",
-                ExamType = "Khám Tổng quát",
-                Result = "Bình thường",
-                Diagnosis = "Không có bệnh lý"
-            };
+            MedicalRecordId = record.MedicalRecordId,
+            StationCode = "NOI_KHOA",
+            ExamType = "Khám Nội",
+            Result = "OK",
+            Diagnosis = "Bình thường"
+        };
 
-            var result = await _service.SaveExamResultAsync(dto, "user1");
+        var result = await _service.SaveExamResultAsync(dto, "user1");
 
-            Assert.False(result.IsSuccess);
-            // Service trả về message cụ thể khi record không tồn tại
-            Assert.Equal("Không tìm thấy hồ sơ bệnh nhân.", result.Message);
-        }
+        Assert.False(result.IsSuccess);
+        Assert.Contains("NOI_KHOA", result.Message);
+    }
 
-        // ─── [TEST 2] Lưu kết quả trạm không có trong chỉ định ─────────────
+    [Fact]
+    public async Task SaveExamResult_WhenTaskWaiting_UpsertsResultAndCallsCompleteStation()
+    {
+        var groupId = await SeedGroupAsync(10);
+        var patientId = await SeedPatientAsync(2, groupId, "999999999");
+        var record = CreateRecordWithTask(patientId: patientId, groupId: groupId, stationCode: "NOI_KHOA", taskStatus: StationTaskStatus.Waiting);
+        _db.MedicalRecords.Add(record);
+        await _db.SaveChangesAsync();
 
-        [Fact]
-        public async Task SaveExamResult_WhenStationNotAssigned_ReturnsFailure()
+        _stateMachineMock
+            .Setup(s => s.CompleteStationAsync(record.MedicalRecordId, "NOI_KHOA", "bsNguyen", It.IsAny<string?>()))
+            .ReturnsAsync(ServiceResult<RecordStationTask>.Success(record.StationTasks.First()));
+
+        var dto = new SaveExamResultDto
         {
-            var record = CreateRecordWithTask(patientId: 1, groupId: 1, stationCode: "XET_NGHIEM");
-            _db.MedicalRecords.Add(record);
-            await _db.SaveChangesAsync();
+            MedicalRecordId = record.MedicalRecordId,
+            StationCode = "NOI_KHOA",
+            ExamType = "Khám Nội",
+            Result = "Huyết áp 120/80",
+            Diagnosis = "Ổn định",
+            DoctorStaffId = null
+        };
 
-            var dto = new SaveExamResultDto
-            {
-                MedicalRecordId = record.MedicalRecordId,
-                StationCode = "NOI_KHOA", // Trạm khác không có trong chỉ định
-                ExamType = "Khám Nội",
-                Result = "...",
-                Diagnosis = "..."
-            };
+        var result = await _service.SaveExamResultAsync(dto, "bsNguyen");
 
-            var result = await _service.SaveExamResultAsync(dto, "user1");
+        Assert.True(result.IsSuccess);
 
-            Assert.False(result.IsSuccess);
-            Assert.Contains("NOI_KHOA", result.Message);
-        }
+        var saved = await _db.ExamResults.SingleOrDefaultAsync(r =>
+            r.PatientId == record.PatientId &&
+            r.GroupId == record.GroupId &&
+            r.ExamType == dto.ExamType);
 
-        // ─── [TEST 3] Luồng chính: 1 trạm → Hoàn thành → QC_PENDING ────────
+        Assert.NotNull(saved);
+        Assert.Equal(dto.Result, saved!.Result);
+        Assert.Equal(dto.Diagnosis, saved.Diagnosis);
 
-        [Fact]
-        public async Task SaveExamResult_WhenLastTaskCompleted_AdvancesRecordToQcPending()
+        _stateMachineMock.Verify(
+            s => s.CompleteStationAsync(record.MedicalRecordId, "NOI_KHOA", "bsNguyen", It.IsAny<string?>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveExamResult_WhenTaskAlreadyDone_DoesNotCallCompleteStation()
+    {
+        var groupId = await SeedGroupAsync(11);
+        var patientId = await SeedPatientAsync(3, groupId, "888888888");
+        var record = CreateRecordWithTask(patientId: patientId, groupId: groupId, stationCode: "NOI_KHOA", taskStatus: StationTaskStatus.StationDone);
+        _db.MedicalRecords.Add(record);
+        await _db.SaveChangesAsync();
+
+        var dto = new SaveExamResultDto
         {
-            var record = CreateRecordWithTask(patientId: 2, groupId: 1, stationCode: "NOI_KHOA");
-            _db.MedicalRecords.Add(record);
-            await _db.SaveChangesAsync();
+            MedicalRecordId = record.MedicalRecordId,
+            StationCode = "NOI_KHOA",
+            ExamType = "Khám Nội",
+            Result = "Đã có kết quả",
+            Diagnosis = "Theo dõi định kỳ"
+        };
 
-            var dto = new SaveExamResultDto
-            {
-                MedicalRecordId = record.MedicalRecordId,
-                StationCode = "NOI_KHOA",
-                ExamType = "Khám Tổng quát",
-                Result = "Huyết áp 120/80",
-                Diagnosis = "Không có bệnh lý"
-            };
+        var result = await _service.SaveExamResultAsync(dto, "bsNguyen");
 
-            var result = await _service.SaveExamResultAsync(dto, "bsNguyen");
+        Assert.True(result.IsSuccess);
+        _stateMachineMock.Verify(
+            s => s.CompleteStationAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string?>()),
+            Times.Never);
+    }
 
-            Assert.True(result.IsSuccess);
-
-            var updatedRecord = await _db.MedicalRecords.FindAsync(record.MedicalRecordId);
-            Assert.Equal("QC_PENDING", updatedRecord!.Status);
-        }
-
-        // ─── [TEST 4] Nhiều trạm: Chưa xong hết → Không chuyển QC_PENDING ──
-
-        [Fact]
-        public async Task SaveExamResult_WhenOtherTasksStillPending_RecordStaysInProgress()
+    private static MedicalRecord CreateRecordWithTask(int patientId, int groupId, string stationCode, string taskStatus)
+        => new()
         {
-            var record = new MedicalRecord
+            FullName = "Nguyen Van A",
+            GroupId = groupId,
+            PatientId = patientId,
+            QrToken = $"token-{Guid.NewGuid():N}",
+            Status = RecordStatus.CheckedIn,
+            StationTasks = new List<RecordStationTask>
             {
-                FullName = "Trần Thị Bình",
-                GroupId = 1,
-                PatientId = 3,
-                QrToken = "token-test",
-                Status = "PROCESSING",
-                StationTasks = new List<RecordStationTask>
-                {
-                    new() { StationCode = "NOI_KHOA", Status = "IN_PROGRESS", QueueNo = 1 },
-                    new() { StationCode = "XET_NGHIEM", Status = "PENDING", QueueNo = 2 },
-                }
-            };
-            _db.MedicalRecords.Add(record);
-            await _db.SaveChangesAsync();
+                new() { StationCode = stationCode, Status = taskStatus, QueueNo = 1 }
+            }
+        };
 
-            var dto = new SaveExamResultDto
-            {
-                MedicalRecordId = record.MedicalRecordId,
-                StationCode = "NOI_KHOA", // Chỉ hoàn thành 1 trong 2 trạm
-                ExamType = "Khám Nội",
-                Result = "OK",
-                Diagnosis = "Bình thường"
-            };
+    private async Task<int> SeedGroupAsync(int id)
+    {
+        var company = new Company
+        {
+            CompanyId = id,
+            CompanyName = $"Company {id}",
+            ShortName = $"C{id}"
+        };
 
-            await _service.SaveExamResultAsync(dto, "user1");
+        var contract = new HealthContract
+        {
+            HealthContractId = id,
+            CompanyId = company.CompanyId,
+            ContractName = $"Contract {id}",
+            SigningDate = DateTime.Today.AddDays(-1),
+            StartDate = DateTime.Today,
+            EndDate = DateTime.Today.AddDays(1),
+            TotalAmount = 1000,
+            Status = "Active"
+        };
 
-            var updatedRecord = await _db.MedicalRecords.FindAsync(record.MedicalRecordId);
-            Assert.NotEqual("QC_PENDING", updatedRecord!.Status); // Vẫn chưa được chuyển
-        }
+        var group = new MedicalGroup
+        {
+            GroupId = id,
+            GroupName = $"Group {id}",
+            ExamDate = DateTime.Today,
+            HealthContractId = contract.HealthContractId,
+            Status = "Open"
+        };
 
-        // ─── Helpers ─────────────────────────────────────────────────────────
+        _db.Companies.Add(company);
+        _db.Contracts.Add(contract);
+        _db.MedicalGroups.Add(group);
+        await _db.SaveChangesAsync();
 
-        private static MedicalRecord CreateRecordWithTask(int patientId, int groupId, string stationCode)
-            => new()
-            {
-                FullName  = "Nguyễn Văn A",
-                GroupId   = groupId,
-                PatientId = patientId,
-                QrToken   = "token-test",
-                Status    = "PROCESSING",
-                StationTasks = new List<RecordStationTask>
-                {
-                    new() { StationCode = stationCode, Status = "WAITING", QueueNo = 1 }
-                }
-            };
+        return group.GroupId;
+    }
 
-        public void Dispose() => _db.Dispose();
+    private async Task<int> SeedPatientAsync(int id, int healthContractId, string idCardNumber)
+    {
+        _db.Patients.Add(new Patient
+        {
+            PatientId = id,
+            HealthContractId = healthContractId,
+            FullName = $"Patient {id}",
+            DateOfBirth = new DateTime(1990, 1, 1),
+            Gender = "Nam",
+            IDCardNumber = idCardNumber,
+            PhoneNumber = "0900000000"
+        });
+        await _db.SaveChangesAsync();
+        return id;
+    }
+
+    public void Dispose()
+    {
+        _db.Dispose();
     }
 }

@@ -14,13 +14,13 @@ namespace QuanLyDoanKham.API.Controllers
     [Authorize]
     public class MedicalRecordsController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
         private readonly IMedicalRecordService _medicalRecordService;
+        private readonly IMedicalReportPdfGenerator _pdfGenerator;
 
-        public MedicalRecordsController(ApplicationDbContext context, IMedicalRecordService medicalRecordService)
+        public MedicalRecordsController(IMedicalRecordService medicalRecordService, IMedicalReportPdfGenerator pdfGenerator)
         {
-            _context = context;
             _medicalRecordService = medicalRecordService;
+            _pdfGenerator = pdfGenerator;
         }
 
         // POST: api/MedicalRecords/batch-ingest
@@ -41,28 +41,39 @@ namespace QuanLyDoanKham.API.Controllers
             });
         }
 
-        // GET: api/MedicalRecords/group/{groupId}
-        [HttpGet("group/{groupId}")]
+        // GET: api/MedicalRecords/by-group/{groupId}
+        [HttpGet("by-group/{groupId}")]
         [AuthorizePermission("DoanKham.View")]
         public async Task<ActionResult<IEnumerable<object>>> GetByGroup(int groupId)
         {
-            var records = await _context.MedicalRecords
-                .Where(m => m.GroupId == groupId)
-                .OrderBy(m => m.FullName)
-                .Select(m => new {
-                    m.MedicalRecordId,
-                    m.FullName,
-                    m.DateOfBirth,
-                    m.Gender,
-                    m.IDCardNumber,
-                    m.Department,
-                    m.Status,
-                    m.CheckInAt,
-                    m.QueueNo
-                })
-                .ToListAsync();
-
+            var records = await _medicalRecordService.GetByGroupAsync(groupId);
             return Ok(records);
+        }
+
+        // POST: api/MedicalRecords/batch-ingest-excel
+        [HttpPost("batch-ingest-excel")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> BatchIngestExcel([FromQuery] int groupId, [FromQuery] string filePath)
+        {
+            var username = User.Identity?.Name ?? "system";
+            var result = await _medicalRecordService.BatchIngestFromExcelAsync(groupId, filePath, username);
+
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = "Đã nhập dữ liệu từ Excel thành công.", count = result.Data?.Count ?? 0 });
+        }
+
+        // DELETE: api/MedicalRecords/{id}
+        [HttpDelete("{id}")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var result = await _medicalRecordService.DeleteAsync(id);
+            if (!result.IsSuccess)
+                return BadRequest(new { message = result.Message });
+
+            return Ok(new { message = "Đã xóa hồ sơ y tế thành công." });
         }
 
         // GET: api/MedicalRecords/{id}
@@ -70,86 +81,61 @@ namespace QuanLyDoanKham.API.Controllers
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> GetById(int id)
         {
-            var record = await _context.MedicalRecords
-                .Include(m => m.StationTasks)
-                .FirstOrDefaultAsync(m => m.MedicalRecordId == id);
-
+            var record = await _medicalRecordService.GetByIdAsync(id);
             if (record == null) return NotFound();
-
             return Ok(record);
         }
+
         // GET: api/MedicalRecords/queue/{stationCode}
-        // Returns active tasks for a specific station, ordered by QueueNo (FIFO).
-        // Excludes STATION_DONE and SKIPPED tasks so the station coordinator only sees actionable items.
         [HttpGet("queue/{stationCode}")]
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> GetQueueByStation(string stationCode)
         {
-            var queue = await _context.RecordStationTasks
-                .Include(t => t.MedicalRecord)
-                .Where(t => t.StationCode == stationCode
-                         && t.Status != StationTaskStatus.StationDone
-                         && t.Status != StationTaskStatus.Skipped)
-                .OrderBy(t => t.MedicalRecord.QueueNo)
-                .Select(t => new {
-                    t.TaskId,
-                    t.MedicalRecordId,
-                    t.MedicalRecord.FullName,
-                    t.MedicalRecord.Gender,
-                    t.MedicalRecord.QueueNo,
-                    t.Status,
-                    t.WaitingSince,
-                    t.StartedAt
-                })
-                .ToListAsync();
-
+            var queue = await _medicalRecordService.GetQueueByStationAsync(stationCode);
             return Ok(queue);
         }
 
         // GET: api/MedicalRecords/queue/{stationCode}/summary
-        // Lightweight count-only endpoint for the QueueDashboard overview cards.
         [HttpGet("queue/{stationCode}/summary")]
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> GetStationQueueSummary(string stationCode)
         {
-            var waitingCount   = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode && t.Status == StationTaskStatus.Waiting);
-            var inProgressCount = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode && t.Status == StationTaskStatus.StationInProgress);
-            var doneToday      = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode
-                              && t.Status == StationTaskStatus.StationDone
-                              && t.CompletedAt.HasValue
-                              && t.CompletedAt.Value.Date == DateTime.Today);
-
-            return Ok(new { stationCode, waitingCount, inProgressCount, doneToday });
+            var summary = await _medicalRecordService.GetStationQueueSummaryAsync(stationCode);
+            return Ok(summary);
         }
 
         // GET: api/MedicalRecords/queue/overview?groupId={groupId}
-        // Returns aggregated queue state across ALL stations for a medical group.
-        // Used by the QueueDashboard to render the station-load heatmap in one request.
         [HttpGet("queue/overview")]
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> GetGroupQueueOverview([FromQuery] int groupId)
         {
-            var activeTasks = await _context.RecordStationTasks
-                .Include(t => t.MedicalRecord)
-                .Include(t => t.Station)
-                .Where(t => t.MedicalRecord.GroupId == groupId
-                         && t.Status != StationTaskStatus.StationDone
-                         && t.Status != StationTaskStatus.Skipped)
-                .GroupBy(t => new { t.StationCode, t.Station.StationName, t.Station.SortOrder })
-                .Select(g => new {
-                    StationCode  = g.Key.StationCode,
-                    StationName  = g.Key.StationName,
-                    SortOrder    = g.Key.SortOrder,
-                    WaitingCount    = g.Count(t => t.Status == StationTaskStatus.Waiting),
-                    InProgressCount = g.Count(t => t.Status == StationTaskStatus.StationInProgress),
-                })
-                .OrderBy(s => s.SortOrder)
-                .ToListAsync();
+            var overview = await _medicalRecordService.GetGroupQueueOverviewAsync(groupId);
+            return Ok(overview);
+        }
 
-            return Ok(activeTasks);
+        // GET: api/MedicalRecords/qc-pending
+        [HttpGet("qc-pending")]
+        [AuthorizePermission("BaoCao.QC")]
+        public async Task<IActionResult> GetQcPendingRecords()
+        {
+            var records = await _medicalRecordService.GetQcPendingRecordsAsync();
+            return Ok(records);
+        }
+
+        // GET: api/MedicalRecords/{id}/export-pdf
+        [HttpGet("{id}/export-pdf")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> ExportPdf(int id)
+        {
+            try
+            {
+                var pdfBytes = await _pdfGenerator.GenerateReportAsync(id);
+                return File(pdfBytes, "application/pdf", $"KhamSucKhoe_{id}.pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

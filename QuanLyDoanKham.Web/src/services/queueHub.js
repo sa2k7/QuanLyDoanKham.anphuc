@@ -61,6 +61,14 @@ class QueueHubService {
             console.log('[SignalR] Reconnected to QueueHub')
             this._emit('Reconnected', null)
         })
+        this.connection.onreconnecting((error) => {
+            console.warn('[SignalR] Reconnecting to QueueHub', error)
+            this._emit('Reconnecting', error ?? null)
+        })
+        this.connection.onclose((error) => {
+            console.warn('[SignalR] Disconnected from QueueHub', error)
+            this._emit('Disconnected', error ?? null)
+        })
 
         try {
             await this.connection.start()

@@ -30,56 +30,9 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
             var result = await query
                 .OrderByDescending(c => c.CreatedAt)
-                .Select(c => new HealthContractDto
-                {
-                    HealthContractId = c.HealthContractId,
-                    CompanyId = c.CompanyId,
-                    ContractCode = c.ContractCode,
-                    ContractName = c.ContractName,
-                    ShortName = c.Company != null ? c.Company.ShortName : null,
-                    CompanyName = c.Company != null ? c.Company.CompanyName : null,
-                    SigningDate = c.SigningDate,
-                    StartDate = c.StartDate,
-                    EndDate = c.EndDate,
-                    UnitPrice = c.UnitPrice,
-                    ExpectedQuantity = c.ExpectedQuantity,
-                    UnitName = c.UnitName,
-                    TotalAmount = c.TotalAmount,
-                    FinalSettlementValue = c.FinalSettlementValue,
-                    Status = c.Status,
-                    CurrentApprovalStep = c.CurrentApprovalStep,
-                    FilePath = c.FilePath,
-                    CreatedByName = c.CreatedByUser != null ? c.CreatedByUser.FullName : null,
-                    CreatedAt = c.CreatedAt,
-                    Notes = c.Notes,
-                    TotalGroups = c.MedicalGroups.Count,
-                    StatusHistories = c.StatusHistories
-                        .OrderByDescending(h => h.ChangedAt)
-                        .Select(h => new ContractStatusHistoryDto
-                        {
-                            Id = h.Id,
-                            OldStatus = h.OldStatus,
-                            NewStatus = h.NewStatus,
-                            Note = h.Note,
-                            ChangedAt = h.ChangedAt,
-                            ChangedBy = h.ChangedBy
-                        }).ToList(),
-                    ApprovalHistories = c.ApprovalHistories
-                        .OrderBy(h => h.StepOrder)
-                        .Select(h => new ContractApprovalHistoryDto
-                        {
-                            Id = h.Id,
-                            StepOrder = h.StepOrder,
-                            StepName = h.StepName,
-                            Action = h.Action,
-                            Note = h.Note,
-                            ApprovedByName = h.ApprovedByUser != null ? h.ApprovedByUser.FullName : null,
-                            ActionDate = h.ActionDate
-                        }).ToList()
-                })
                 .ToListAsync();
 
-            return result;
+            return result.Select(MapToDto);
         }
 
         public async Task<HealthContractDto?> GetContractByIdAsync(int id)
@@ -95,53 +48,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
             if (c == null) return null;
 
-            return new HealthContractDto
-            {
-                HealthContractId = c.HealthContractId,
-                CompanyId = c.CompanyId,
-                ContractCode = c.ContractCode,
-                ContractName = c.ContractName,
-                ShortName = c.Company?.ShortName,
-                CompanyName = c.Company?.CompanyName,
-                SigningDate = c.SigningDate,
-                StartDate = c.StartDate,
-                EndDate = c.EndDate,
-                UnitPrice = c.UnitPrice,
-                ExpectedQuantity = c.ExpectedQuantity,
-                UnitName = c.UnitName,
-                TotalAmount = c.TotalAmount,
-                FinalSettlementValue = c.FinalSettlementValue,
-                Status = c.Status,
-                CurrentApprovalStep = c.CurrentApprovalStep,
-                FilePath = c.FilePath,
-                CreatedByName = c.CreatedByUser?.FullName,
-                CreatedAt = c.CreatedAt,
-                Notes = c.Notes,
-                TotalGroups = c.MedicalGroups.Count,
-                StatusHistories = c.StatusHistories
-                    .OrderByDescending(h => h.ChangedAt)
-                    .Select(h => new ContractStatusHistoryDto
-                    {
-                        Id = h.Id, OldStatus = h.OldStatus, NewStatus = h.NewStatus,
-                        Note = h.Note, ChangedAt = h.ChangedAt, ChangedBy = h.ChangedBy
-                    }).ToList(),
-                ApprovalHistories = c.ApprovalHistories
-                    .OrderBy(h => h.StepOrder)
-                    .Select(h => new ContractApprovalHistoryDto
-                    {
-                        Id = h.Id, StepOrder = h.StepOrder, StepName = h.StepName,
-                        Action = h.Action, Note = h.Note,
-                        ApprovedByName = h.ApprovedByUser?.FullName,
-                        ActionDate = h.ActionDate
-                    }).ToList(),
-                Attachments = c.Attachments
-                    .Select(a => new ContractAttachmentDto
-                    {
-                        Id = a.Id, FileName = a.FileName,
-                        FilePath = a.FilePath, FileType = a.FileType,
-                        UploadedAt = a.UploadedAt, UploadedBy = a.UploadedBy
-                    }).ToList()
-            };
+            return MapToDto(c);
         }
 
         public async Task<(HealthContract? Contract, string? ErrorMessage)> CreateContractAsync(HealthContractDto dto, string username, int? userId)
@@ -153,8 +60,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
             var contractCode = dto.ContractCode;
             if (string.IsNullOrEmpty(contractCode))
             {
-                var count = await _context.Contracts.CountAsync();
-                contractCode = $"HD{DateTime.Now.Year}{(count + 1):D4}";
+                contractCode = await GenerateContractCodeAsync();
             }
 
             var contract = new HealthContract
@@ -255,8 +161,11 @@ namespace QuanLyDoanKham.API.Services.Contracts
             if (contract == null) return (false, "Not Found", null);
             if (contract.Status != "PendingApproval") return (false, "Hợp đồng không ở trạng thái chờ duyệt.", null);
 
-            if (contract.CreatedByUserId.HasValue && contract.CreatedByUserId.Value == userId)
-                return (false, "Người tạo không được tự phê duyệt hợp đồng của chính mình.", null);
+            var user = await _context.Users.FindAsync(userId);
+            bool isAdmin = user?.RoleId == 1;
+
+            if (!isAdmin && contract.CreatedByUserId.HasValue && contract.CreatedByUserId.Value == userId)
+                return (false, "Người tạo không được tự phê duyệt hợp đồng của chính mình. (Chỉ Admin mới có quyền này)", null);
 
             var currentStep = await _context.ContractApprovalSteps
                 .Where(s => s.IsActive && s.StepOrder == contract.CurrentApprovalStep)
@@ -359,18 +268,25 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
             if (dto.Status == "Finished")
             {
-                var unfinishedGroups = await _context.MedicalGroups
-                    .Where(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked")
-                    // Chỉ chặn nếu đoàn khám thực sự có dữ liệu (Bệnh nhân hoặc Nhân viên đã phân công)
-                    .Where(g => _context.MedicalRecords.Any(mr => mr.GroupId == g.GroupId) || 
-                                _context.GroupStaffDetails.Any(sd => sd.GroupId == g.GroupId))
-                    .Select(g => g.GroupName)
-                    .ToListAsync();
+                // Truy vấn người dùng từ cơ sở dữ liệu để kiểm tra quyền Admin (RoleId = 1)
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                bool isAdmin = user?.RoleId == 1;
 
-                if (unfinishedGroups.Any())
+                if (!isAdmin)
                 {
-                    var groupNames = string.Join(", ", unfinishedGroups);
-                    return (false, $"Không thể kết thúc hợp đồng vì còn {unfinishedGroups.Count} đoàn khám chưa hoàn thành: {groupNames}");
+                    // Chỉ cộng tác viên hoặc quản lý thông thường mới bị chặn nếu có đoàn khám chưa hoàn thành
+                    var unfinishedGroups = await _context.MedicalGroups
+                        .Where(g => g.HealthContractId == id && g.Status != "Finished" && g.Status != "Locked")
+                        .Where(g => _context.MedicalRecords.Any(mr => mr.GroupId == g.GroupId) || 
+                                    _context.GroupStaffDetails.Any(sd => sd.GroupId == g.GroupId))
+                        .Select(g => g.GroupName)
+                        .ToListAsync();
+
+                    if (unfinishedGroups.Any())
+                    {
+                        var groupNames = string.Join(", ", unfinishedGroups);
+                        return (false, $"Không thể kết thúc hợp đồng vì còn {unfinishedGroups.Count} đoàn khám chưa hoàn thành: {groupNames}");
+                    }
                 }
             }
 
@@ -433,6 +349,65 @@ namespace QuanLyDoanKham.API.Services.Contracts
             contract.Status = "Approved";
             await _context.SaveChangesAsync();
             return (true, null);
+        }
+
+        // ─── Private Helpers ──────────────────────────────────────────────────
+
+        private HealthContractDto MapToDto(HealthContract c)
+        {
+            return new HealthContractDto
+            {
+                HealthContractId = c.HealthContractId,
+                CompanyId = c.CompanyId,
+                ContractCode = c.ContractCode,
+                ContractName = c.ContractName,
+                ShortName = c.Company?.ShortName,
+                CompanyName = c.Company?.CompanyName,
+                SigningDate = c.SigningDate,
+                StartDate = c.StartDate,
+                EndDate = c.EndDate,
+                UnitPrice = c.UnitPrice,
+                ExpectedQuantity = c.ExpectedQuantity,
+                UnitName = c.UnitName,
+                TotalAmount = c.TotalAmount,
+                FinalSettlementValue = c.FinalSettlementValue,
+                Status = c.Status,
+                CurrentApprovalStep = c.CurrentApprovalStep,
+                FilePath = c.FilePath,
+                CreatedByName = c.CreatedByUser?.FullName,
+                CreatedAt = c.CreatedAt,
+                Notes = c.Notes,
+                TotalGroups = c.MedicalGroups?.Count ?? 0,
+                StatusHistories = c.StatusHistories?
+                    .OrderByDescending(h => h.ChangedAt)
+                    .Select(h => new ContractStatusHistoryDto
+                    {
+                        Id = h.Id, OldStatus = h.OldStatus, NewStatus = h.NewStatus,
+                        Note = h.Note, ChangedAt = h.ChangedAt, ChangedBy = h.ChangedBy
+                    }).ToList() ?? new(),
+                ApprovalHistories = c.ApprovalHistories?
+                    .OrderBy(h => h.StepOrder)
+                    .Select(h => new ContractApprovalHistoryDto
+                    {
+                        Id = h.Id, StepOrder = h.StepOrder, StepName = h.StepName,
+                        Action = h.Action, Note = h.Note,
+                        ApprovedByName = h.ApprovedByUser?.FullName,
+                        ActionDate = h.ActionDate
+                    }).ToList() ?? new(),
+                Attachments = c.Attachments?
+                    .Select(a => new ContractAttachmentDto
+                    {
+                        Id = a.Id, FileName = a.FileName,
+                        FilePath = a.FilePath, FileType = a.FileType,
+                        UploadedAt = a.UploadedAt, UploadedBy = a.UploadedBy
+                    }).ToList() ?? new()
+            };
+        }
+
+        private async Task<string> GenerateContractCodeAsync()
+        {
+            var count = await _context.Contracts.CountAsync();
+            return $"HD{DateTime.Now.Year}{(count + 1):D4}";
         }
     }
 }

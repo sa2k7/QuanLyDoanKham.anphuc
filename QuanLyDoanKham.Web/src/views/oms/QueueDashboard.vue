@@ -5,9 +5,15 @@
         <h1>OMS MONITORING</h1>
         <p>Hệ thống Điều phối Hàng chờ Thời gian thực</p>
       </div>
-      <div class="status-badge" :class="{ connected: isConnected }">
-        <span class="dot"></span>
-        {{ isConnected ? 'REAL-TIME CONNECTED' : 'RECONNECTING...' }}
+      <div class="dashboard-actions">
+        <div class="meta-info" v-if="lastUpdatedAt">Updated: {{ lastUpdatedAt }}</div>
+        <button class="refresh-btn" :disabled="isLoading" @click="fetchAll">
+          {{ isLoading ? 'Refreshing...' : 'Refresh' }}
+        </button>
+        <div class="status-badge" :class="{ connected: isConnected }">
+          <span class="dot"></span>
+          {{ isConnected ? 'REAL-TIME CONNECTED' : 'RECONNECTING...' }}
+        </div>
       </div>
     </header>
 
@@ -31,7 +37,15 @@
               <span class="queue-no">{{ servingNow[station.code].queueNo }}</span>
               <span class="full-name">{{ servingNow[station.code].fullName }}</span>
             </div>
-            <button v-if="can('DieuPhoi.Edit')" @click="cancelRecord(servingNow[station.code].medicalRecordId)" class="cancel-btn" title="Hủy / Bỏ cuộc"><XCircle class="w-4 h-4 text-rose-500" /></button>
+            <button
+              v-if="can('DieuPhoi.Edit')"
+              :disabled="cancelingRecordIds.has(servingNow[station.code].medicalRecordId)"
+              @click="cancelRecord(servingNow[station.code].medicalRecordId)"
+              class="cancel-btn"
+              title="Hủy / Bỏ cuộc"
+            >
+              <XCircle class="w-4 h-4 text-rose-500" />
+            </button>
           </div>
         </div>
         <div class="now-serving empty" v-else>
@@ -46,7 +60,15 @@
                 <span class="q-num">{{ item.queueNo }}</span>
                 <span class="q-name">{{ item.fullName }}</span>
               </div>
-              <button v-if="can('DieuPhoi.Edit')" @click="cancelRecord(item.medicalRecordId)" class="cancel-btn" title="Hủy / Bỏ cuộc"><XCircle class="w-4 h-4 text-rose-500" /></button>
+              <button
+                v-if="can('DieuPhoi.Edit')"
+                :disabled="cancelingRecordIds.has(item.medicalRecordId)"
+                @click="cancelRecord(item.medicalRecordId)"
+                class="cancel-btn"
+                title="Hủy / Bỏ cuộc"
+              >
+                <XCircle class="w-4 h-4 text-rose-500" />
+              </button>
             </li>
           </ul>
           <p v-else class="empty-msg">Chưa có bệnh nhân</p>
@@ -67,62 +89,119 @@ import { usePermission } from '@/composables/usePermission'
 const { can } = usePermission()
 const toast = useToast()
 const isConnected = ref(false)
+const isLoading = ref(false)
+const lastUpdatedAt = ref('')
 const stations = ref([
   { code: 'SINH_HIEU', name: 'Đo sinh hiệu', type: 'Lâm sàng' },
   { code: 'XQUANG', name: 'X-Quang', type: 'Chẩn đoán hình ảnh' },
   { code: 'SIEU_AM', name: 'Siêu âm', type: 'Chẩn đoán hình ảnh' },
   { code: 'NOI_KHOA', name: 'Nội khoa', type: 'Khám chuyên khoa' },
-  { code: 'MAT', name: 'Mắt / Tai Mũi Họng', type: 'Khám chuyên khoa' }
+  { code: 'MAT_TAI_MUI_HONG', name: 'Mắt / Tai Mũi Họng', type: 'Khám chuyên khoa' }
 ])
 
 const queueData = ref({})
 const servingNow = ref({})
+const cancelingRecordIds = ref(new Set())
+let unsubscribeHub = null
+let isUnmounted = false
+let fetchAllTimer = null
+
+const formatTimestamp = (date) => {
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  const seconds = String(date.getSeconds()).padStart(2, '0')
+  return `${hours}:${minutes}:${seconds}`
+}
 
 const fetchQueue = async (stationCode) => {
   try {
     const res = await api.get(`/api/MedicalRecords/queue/${stationCode}`)
-    const allItems = res.data
-    servingNow.value[stationCode] = allItems.find(i => i.status === 'STATION_IN_PROGRESS')
-    queueData.value[stationCode] = allItems.filter(i => i.status === 'WAITING')
+    if (isUnmounted) return
+
+    const allItems = Array.isArray(res.data) ? res.data : []
+    servingNow.value[stationCode] = allItems.find((i) => i.status === 'STATION_IN_PROGRESS')
+    queueData.value[stationCode] = allItems.filter((i) => i.status === 'WAITING')
+    lastUpdatedAt.value = formatTimestamp(new Date())
   } catch (err) {
     console.error(`Error fetching queue for ${stationCode}:`, err)
   }
 }
 
-const fetchAll = () => {
-  stations.value.forEach(s => fetchQueue(s.code))
+const fetchAll = async () => {
+  if (isLoading.value) return
+  isLoading.value = true
+
+  try {
+    await Promise.all(stations.value.map((s) => fetchQueue(s.code)))
+  } finally {
+    isLoading.value = false
+  }
+}
+
+const scheduleFetchAll = () => {
+  if (fetchAllTimer) return
+  fetchAllTimer = setTimeout(() => {
+    fetchAllTimer = null
+    fetchAll()
+  }, 300)
 }
 
 const cancelRecord = async (medicalRecordId) => {
   const reason = prompt('Nhập lý do Hủy / Bỏ cuộc:')
   if (reason === null) return
+  if (cancelingRecordIds.value.has(medicalRecordId)) return
 
+  cancelingRecordIds.value.add(medicalRecordId)
   try {
-    const response = await api.post(`/api/Oms/cancel/${medicalRecordId}`, { reason: reason || 'Bỏ cuộc' })
+    const response = await api.post(`/api/Oms/cancel/${medicalRecordId}`, {
+      reason: reason || 'Bỏ cuộc'
+    })
     toast.success(response.data?.message || 'Đã hủy hồ sơ thành công')
-    fetchAll() // Refresh the queue manually, signalR will also fire, but just to be sure
+    await fetchAll()
   } catch (err) {
     toast.error('Lỗi khi hủy: ' + (err.response?.data?.message || err.message))
+  } finally {
+    cancelingRecordIds.value.delete(medicalRecordId)
   }
 }
 
 onMounted(async () => {
-  fetchAll()
-  
-  await queueHub.start()
-  isConnected.value = true
+  await fetchAll()
 
-  queueHub.onUpdate((event, payload) => {
+  try {
+    await queueHub.start()
+    isConnected.value = true
+  } catch {
+    isConnected.value = false
+  }
+
+  unsubscribeHub = queueHub.onUpdate((event, payload) => {
     if (event === 'QueueUpdated') {
-      fetchAll()
-    } else if (event === 'StationQueueUpdated') {
+      scheduleFetchAll()
+      return
+    }
+
+    if (event === 'StationQueueUpdated' && payload) {
       fetchQueue(payload)
+      return
+    }
+
+    if (event === 'Reconnected') {
+      isConnected.value = true
+      fetchAll()
+      return
+    }
+
+    if (event === 'Reconnecting' || event === 'Disconnected') {
+      isConnected.value = false
     }
   })
 })
 
 onUnmounted(() => {
-  // Logic to stop hub if needed
+  isUnmounted = true
+  if (fetchAllTimer) clearTimeout(fetchAllTimer)
+  unsubscribeHub?.()
 })
 </script>
 
@@ -139,9 +218,37 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 1rem;
   margin-bottom: 2.5rem;
   border-bottom: 1px solid #1e293b;
   padding-bottom: 1rem;
+}
+
+.dashboard-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.meta-info {
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
+.refresh-btn {
+  border: 1px solid #334155;
+  background: #0f172a;
+  color: #e2e8f0;
+  border-radius: 8px;
+  padding: 0.45rem 0.8rem;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .brand h1 {
@@ -258,7 +365,8 @@ onUnmounted(() => {
   border-left: 4px solid #10b981;
 }
 
-.now-serving label, .up-next label {
+.now-serving label,
+.up-next label {
   font-size: 0.7rem;
   font-weight: 800;
   color: #64748b;
@@ -279,6 +387,11 @@ onUnmounted(() => {
   opacity: 0.5;
   transition: opacity 0.2s;
   padding: 4px;
+}
+
+.cancel-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.3;
 }
 
 .cancel-btn:hover {

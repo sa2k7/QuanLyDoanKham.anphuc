@@ -24,14 +24,35 @@
         </div>
       </div>
 
-      <!-- Result Textarea -->
-      <div class="form-group">
-        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Kết quả chi tiết</label>
-        <textarea 
-          v-model="formData.result" 
-          placeholder="Nhập ghi chú kết quả tại đây..."
-          class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 px-4 text-slate-800 font-medium focus:border-indigo-500 focus:bg-white outline-none transition-all min-h-[120px]"
-        ></textarea>
+      <!-- Dynamic Exam Component -->
+      <div class="dynamic-form-area bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+        <component 
+          :is="currentFormComponent" 
+          v-model="formData.resultData"
+        />
+      </div>
+
+      <!-- Attachments / Clinical Images -->
+      <div class="form-group border-t border-slate-100 pt-4">
+        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex justify-between">
+          <span>Hình ảnh Cận Lâm Sàng</span>
+          <span class="text-indigo-400 cursor-pointer hover:underline relative overflow-hidden">
+            + Tải ảnh lên
+            <input type="file" multiple accept="image/*" @change="uploadImages" class="absolute inset-0 opacity-0 cursor-pointer" />
+          </span>
+        </label>
+        
+        <div v-if="uploadError" class="text-red-500 text-xs mb-2 italic">⚠️ {{ uploadError }}</div>
+        <div v-if="uploading" class="text-indigo-500 text-xs flex items-center gap-2 mb-2"><Loader2 class="animate-spin" :size="12" /> Đang tải ảnh lên...</div>
+        
+        <div class="grid grid-cols-4 gap-3 mt-2" v-if="formData.attachments.length > 0">
+          <div v-for="(url, index) in formData.attachments" :key="index" class="relative group aspect-square rounded-xl overflow-hidden border-2 border-slate-100">
+            <img :src="api.defaults.baseURL + url" class="w-full h-full object-cover" />
+            <button @click="removeImage(index)" class="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity transform scale-75 hover:scale-100 shadow-md">
+              <X :size="16" />
+            </button>
+          </div>
+        </div>
       </div>
 
       <!-- Diagnosis Textarea -->
@@ -69,8 +90,11 @@
 
 <script setup>
 import { ref, reactive, computed } from 'vue'
-import { Stethoscope, Activity, ClipboardCheck, Save, Loader2 } from 'lucide-vue-next'
+import { Stethoscope, Activity, ClipboardCheck, Save, Loader2, X } from 'lucide-vue-next'
 import { api } from '@/services/apiClient'
+import VitalsForm from './forms/VitalsForm.vue'
+import EyeExamForm from './forms/EyeExamForm.vue'
+import GeneralExamForm from './forms/GeneralExamForm.vue'
 
 const props = defineProps({
   recordId: { type: Number, required: true },
@@ -83,18 +107,65 @@ const emit = defineEmits(['success'])
 
 const loading = ref(false)
 const error = ref('')
+const uploading = ref(false)
+const uploadError = ref('')
 
 const formData = reactive({
   examType: props.defaultExamType || '',
-  result: '',
-  diagnosis: ''
+  resultData: {},
+  diagnosis: '',
+  attachments: []
+})
+
+const currentFormComponent = computed(() => {
+  switch (props.stationCode) {
+    case 'SINH_HIEU':
+      return VitalsForm
+    case 'MAT_TAI_MUI_HONG':
+      return EyeExamForm
+    default:
+      return GeneralExamForm
+  }
 })
 
 const canSubmit = computed(() => {
-  return formData.examType.trim() !== '' && 
-         formData.result.trim() !== '' && 
-         formData.diagnosis.trim() !== ''
+  // Validate that diagnosis and exam type are not empty
+  if (formData.examType.trim() === '' || formData.diagnosis.trim() === '') return false
+  
+  // Basic validation that SOME data was entered in the dynamic form
+  return Object.keys(formData.resultData).length > 0 && Object.values(formData.resultData).some(v => v !== '')
 })
+
+const uploadImages = async (event) => {
+  const files = event.target.files
+  if (!files || files.length === 0) return
+  
+  uploading.value = true
+  uploadError.value = ''
+  
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    const fd = new FormData()
+    fd.append('file', file)
+    
+    try {
+      const res = await api.post('/api/UploadStore/clinical', fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      formData.attachments.push(res.data.url)
+    } catch (err) {
+      uploadError.value = err.response?.data?.message || 'Có lỗi khi tải ảnh lên.'
+      console.error(err)
+    }
+  }
+  
+  uploading.value = false
+  event.target.value = '' // Reset input
+}
+
+const removeImage = (index) => {
+  formData.attachments.splice(index, 1)
+}
 
 const submitResult = async () => {
   if (!canSubmit.value) return
@@ -103,11 +174,16 @@ const submitResult = async () => {
   error.value = ''
   
   try {
+    const finalResultData = { ...formData.resultData }
+    if (formData.attachments.length > 0) {
+      finalResultData.Attachments = formData.attachments // Will be serialized into JSON
+    }
+
     const payload = {
       medicalRecordId: props.recordId,
       stationCode: props.stationCode,
       examType: formData.examType,
-      result: formData.result,
+      resultData: finalResultData,
       diagnosis: formData.diagnosis,
       doctorStaffId: null // Backend will take from JWT if null, or we can fetch current user ID
     }

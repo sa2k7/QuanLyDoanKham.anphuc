@@ -81,6 +81,15 @@ const routes = [
         component: () => import('../views/oms/QueueDashboard.vue'),
         meta: { requiresAuth: true }
     },
+    {
+        path: '/queue-monitor',
+        name: 'QueueMonitor',
+        component: () => import('../views/QueueMonitor.vue'),
+        meta: {
+            title: 'Màn Hình Gọi Số Công Cộng',
+            layout: 'empty' 
+        }
+    },
 
     {
         path: '/oms/station/:code',
@@ -103,6 +112,15 @@ const routes = [
         name: 'SettlementReport',
         component: () => import('../views/SettlementReport.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
+    },
+    {
+        path: '/master-stats',
+        name: 'MasterStatsDashboard',
+        component: () => import('../views/MasterStatsDashboard.vue'),
+        meta: {
+            title: 'Thống Kê Tổng Hợp',
+            permission: 'Reports.View' 
+        }
     },
 
     // ── Nhân sự ──────────────────────────────────────────────────────
@@ -147,6 +165,16 @@ const routes = [
         name: 'Permissions',
         component: () => import('../views/Permissions.vue'),
         meta: { requiresAuth: true, permission: 'HeThong.RoleManage' }
+    },
+    {
+        path: '/audit-logs',
+        name: 'AuditLogs',
+        component: () => import('../views/AuditLogView.vue'),
+        meta: {
+            requiresAuth: true,
+            title: 'Nhật Ký Thao Tác',
+            permission: 'HeThong.AuditLog'
+        }
     },
 
 

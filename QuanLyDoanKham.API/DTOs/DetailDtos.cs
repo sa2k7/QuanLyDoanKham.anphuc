@@ -106,7 +106,7 @@ namespace QuanLyDoanKham.API.DTOs
         public int MedicalRecordId { get; set; }
         public string StationCode { get; set; } = null!;
         public string ExamType { get; set; } = null!;
-        public string Result { get; set; } = null!;
+        public System.Text.Json.JsonElement ResultData { get; set; } // JSON Object
         public string Diagnosis { get; set; } = null!;
         public int? DoctorStaffId { get; set; }
     }
@@ -115,7 +115,7 @@ namespace QuanLyDoanKham.API.DTOs
     {
         public int ExamResultId { get; set; }
         public string? ExamType { get; set; }
-        public string? Result { get; set; }
+        public object? ResultData { get; set; } // JSON Object returns as object for automatic serialization
         public string? Diagnosis { get; set; }
         public DateTime ExamDate { get; set; }
         public string? DoctorName { get; set; }

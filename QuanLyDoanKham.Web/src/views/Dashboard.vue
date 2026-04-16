@@ -331,7 +331,7 @@
               <SettlementReport v-if="activeMenu === 'settlement-report'" />
               <Patients v-if="activeMenu === 'patients'" />
               <QueueDashboard v-if="activeMenu === 'oms-dashboard'" />
-              <CheckIn v-if="activeMenu === 'oms-checkin'" />
+
               <Payroll v-if="activeMenu === 'payroll'" />
               <Supplies v-if="activeMenu === 'supplies'" />
               
@@ -423,7 +423,6 @@ import Permissions from './Permissions.vue'
 import SettlementReport from './SettlementReport.vue'
 import Patients from './Patients.vue'
 import QueueDashboard from './oms/QueueDashboard.vue'
-import CheckIn from './CheckIn.vue'
 import StationCoordinator from './oms/StationCoordinator.vue'
 import Payroll from './Payroll.vue'
 import Supplies from './Supplies.vue'
@@ -500,7 +499,7 @@ const menuItems = computed(() => [
     { id: 'supplies', name: 'Vật tư', icon: Package, color: 'bg-violet-50 text-violet-600', desc: 'Kho dược & Thiết bị.', permission: 'Kho.View' },
     
     // 3. OMS - Tại điểm khám
-    { id: 'oms-checkin', name: 'Tiếp đón', icon: CalendarCheck, color: 'bg-sky-50 text-sky-600', desc: 'Ghi danh & Cấp số.', permission: 'DoanKham.Edit' },
+
     { id: 'oms-dashboard', name: 'Điều phối', icon: Activity, color: 'bg-rose-50 text-rose-600', desc: 'Quản lý hàng chờ.', permission: 'DoanKham.View' },
     
     // 4. Tài chính & Nhân sự

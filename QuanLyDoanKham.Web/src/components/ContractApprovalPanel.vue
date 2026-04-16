@@ -1,9 +1,9 @@
 <template>
   <!-- Panel workflows phê duyệt hợp đồng — nhúng vào Contracts.vue -->
-  <div class="approval-panel bg-white/50 backdrop-blur-sm border border-slate-100 rounded-[2rem] p-4 shadow-sm mt-4 mb-2 animate-fade-in-up">
+  <div class="approval-panel p-6 border-b border-slate-100">
     <!-- Header trạng thái hiện tại (Compact Version) -->
     <div class="flex items-center gap-3 p-3 rounded-2xl mb-4 border transition-all duration-500" :class="statusClass">
-      <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-white shadow-sm border border-slate-100/50 shrink-0">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center bg-white border border-slate-100/50 shrink-0">
           <span class="text-xl">{{ statusIcon }}</span>
       </div>
       <div class="flex-1 min-w-0">
@@ -18,20 +18,20 @@
     <div class="flex flex-wrap gap-3 mb-6">
       <!-- Draft → Submit -->
       <button v-if="contract.status === 'Draft' && canCreate"
-        class="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 text-white px-6 py-3 rounded-xl font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-widest" 
+        class="flex-1 bg-gradient-to-r from-indigo-500 to-blue-600 text-white px-6 py-3 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-sm uppercase tracking-widest" 
         @click="$emit('submit', contract.healthContractId)">
         <Send class="w-4 h-4" /> <span>GỬI PHÊ DUYỆT</span>
       </button>
 
       <!-- PendingApproval → Approve/Reject (nếu có quyền) -->
       <template v-if="contract.status === 'PendingApproval' && canApprove">
-        <button class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 hover:-translate-y-1 active:scale-95" 
+        <button class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
                 @click="openApproveModal">
-          <CheckCircle class="w-5 h-5" /> <span>PHÊ DUYỆT</span>
+          <CheckCircle class="w-4 h-4" /> <span>PHÊ DUYỆT</span>
         </button>
-        <button class="flex-1 bg-gradient-to-r from-rose-500 to-red-600 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-lg shadow-rose-500/20 hover:shadow-rose-500/40 hover:-translate-y-1 active:scale-95" 
+        <button class="flex-1 bg-gradient-to-r from-rose-500 to-red-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
                 @click="openRejectModal">
-          <XCircle class="w-5 h-5" /> <span>TỪ CHỐI</span>
+          <XCircle class="w-4 h-4" /> <span>TỪ CHỐI</span>
         </button>
       </template>
 
@@ -46,7 +46,7 @@
             <span class="bg-rose-50 text-rose-600 px-4 py-3 rounded-xl font-black text-xs uppercase tracking-widest border border-rose-100 flex items-center gap-2 grow truncate">
                 <Ban class="w-4 h-4" /> Đã từ chối (Vui lòng kiểm tra lý do)
             </span>
-            <button class="bg-amber-400 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 shadow-lg shadow-amber-500/20 hover:shadow-amber-500/40 hover:-translate-y-1" 
+            <button class="bg-amber-400 text-white px-8 py-4 rounded-2xl font-black transition-all flex items-center justify-center gap-3 hover:-translate-y-1" 
                     @click="$emit('reset', contract.healthContractId)">
               <Undo class="w-5 h-5" /> <span>RÚT VỀ NHÁP</span>
             </button>
@@ -63,7 +63,7 @@
         <div v-for="(item, idx) in history" :key="idx"
           class="flex gap-4 p-4 rounded-xl border transition-all hover:shadow-md" 
           :class="item.action === 'Approved' ? 'bg-emerald-50/30 border-emerald-100/50' : 'bg-rose-50/30 border-rose-100/50'">
-          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center border shadow-sm shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center border shrink-0">
             <CheckCircle v-if="item.action === 'Approved'" class="w-5 h-5 text-emerald-500" />
             <XCircle v-else class="w-5 h-5 text-rose-500" />
           </div>
@@ -168,9 +168,9 @@ const acting = ref(false)
 
 const statusMap = {
   Draft:           { label: 'Bản nháp',          icon: '📝', cls: 'bg-slate-50 border-slate-100' },
-  PendingApproval: { label: 'Đang chờ phê duyệt', icon: '⏳', cls: 'bg-amber-50 border-amber-100 shadow-sm shadow-amber-500/5' },
-  Approved:        { label: 'Đã phê duyệt',     icon: '✅', cls: 'bg-blue-50 border-blue-100 shadow-sm shadow-blue-500/5' },
-  Rejected:        { label: 'Bị từ chối',       icon: '❌', cls: 'bg-rose-50 border-rose-100 shadow-sm shadow-rose-500/5' },
+  PendingApproval: { label: 'Đang chờ phê duyệt', icon: '⏳', cls: 'bg-amber-50/50 border-amber-100/50' },
+  Approved:        { label: 'Đã phê duyệt',     icon: '✅', cls: 'bg-blue-50/50 border-blue-100/50' },
+  Rejected:        { label: 'Bị từ chối',       icon: '❌', cls: 'bg-rose-50/50 border-rose-100/50' },
 }
 
 const statusLabel = computed(() => statusMap[props.contract.status]?.label || props.contract.status)
@@ -195,7 +195,8 @@ const doAction = async (action) => {
     await loadHistory()
   } catch (e) {
     console.error(e)
-    alert(e.response?.data?.message || 'Lỗi khi thực hiện hành động.')
+    const errorMsg = e.response?.data?.message || e.response?.data || e.message || 'Lỗi khi thực hiện hành động.';
+    alert(errorMsg)
   } finally {
     acting.value = false
   }

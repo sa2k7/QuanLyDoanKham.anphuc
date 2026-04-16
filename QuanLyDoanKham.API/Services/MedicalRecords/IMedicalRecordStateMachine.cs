@@ -10,6 +10,9 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
         Task<ServiceResult<RecordStationTask>> StartStationAsync(int medicalRecordId, string stationCode, string actorUserId);
         Task<ServiceResult<RecordStationTask>> CompleteStationAsync(int medicalRecordId, string stationCode, string actorUserId, string? resultNotes = null);
         Task<ServiceResult<MedicalRecord>> FinalizeRecordAsync(int medicalRecordId, string actorUserId);
+        
+        // Dynamic additions (Phase 4 Add-on Services)
+        Task<ServiceResult<RecordStationTask>> AddExtraStationAsync(int medicalRecordId, string stationCode, string actorUserId, string? notes = null);
 
         // Exception branches (Plan section 4.3)
         Task<ServiceResult<MedicalRecord>> MarkNoShowAsync(int medicalRecordId, string actorUserId);

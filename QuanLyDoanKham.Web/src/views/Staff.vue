@@ -248,6 +248,12 @@
                                     <option value="Customer">{{ i18n.t('roles.Customer') }}</option>
                                 </select>
                             </div>
+                            <div class="flex flex-col gap-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Số điện thoại</label>
+                                <input v-model="currentStaff.phoneNumber" type="tel" maxlength="10"
+                                    @input="currentStaff.phoneNumber = currentStaff.phoneNumber.replace(/[^\d]/g, '').slice(0, 10)"
+                                    class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
+                            </div>
                         </form>
 
                         <!-- Lịch sử công tác (Read-only) -->
@@ -527,7 +533,7 @@ const openModal = async (staff = null) => {
             }
         }
     } else {
-        currentStaff.value = { fullName: '', email: '', gender: 'Nam', jobTitle: 'Bác sĩ', baseSalary: 1000000, systemRole: 'MedicalStaff' }
+        currentStaff.value = { fullName: '', email: '', phoneNumber: '', gender: 'Nam', jobTitle: 'Bác sĩ', baseSalary: 1000000, systemRole: 'MedicalStaff' }
         jobCategory.value = 'Bác sĩ'
     }
     showModal.value = true

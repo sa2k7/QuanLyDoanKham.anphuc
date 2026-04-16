@@ -31,6 +31,10 @@ const props = defineProps({
   required: {
     type: Boolean,
     default: false
+  },
+  maxlength: {
+    type: [Number, String],
+    default: null
   }
 })
 
@@ -39,7 +43,13 @@ const emit = defineEmits(['update:modelValue'])
 const formatCode = (val) => {
   if (val === null || val === undefined || val === '') return ''
   // Strip non-digits
-  const raw = String(val).replace(/[^\d]/g, '')
+  let raw = String(val).replace(/[^\d]/g, '')
+  
+  // Áp dụng giới hạn độ dài nếu có
+  if (props.maxlength) {
+    raw = raw.slice(0, Number(props.maxlength))
+  }
+
   // Thêm dấu chấm mỗi 3 số từ dưới lên (ví dụ: 090.123.456)
   return raw.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 }
@@ -54,12 +64,18 @@ watch(() => props.modelValue, (newVal) => {
 })
 
 const onInput = (event) => {
-  const value = event.target.value
-  const rawValue = value.replace(/[^\d]/g, '') // Luôn trả về chuỗi thuần túy (gôc) cho backend
+  let value = event.target.value
+  let rawValue = value.replace(/[^\d]/g, '') // Luôn trả về chuỗi thuần túy (gôc) cho backend
   
+  // Áp dụng giới hạn độ dài nếu có
+  if (props.maxlength) {
+    rawValue = rawValue.slice(0, Number(props.maxlength))
+  }
+
   displayValue.value = formatCode(rawValue)
   emit('update:modelValue', rawValue)
 }
+
 
 const onBlur = () => {
   displayValue.value = formatCode(props.modelValue)

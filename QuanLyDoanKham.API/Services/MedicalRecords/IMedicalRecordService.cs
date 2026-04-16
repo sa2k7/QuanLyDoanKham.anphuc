@@ -8,6 +8,16 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
     {
         Task<ServiceResult<List<MedicalRecord>>> BatchIngestAsync(MedicalRecordBatchIngestRequestDto request, string createdBy);
         string GenerateQrToken(int medicalRecordId, int groupId);
+        
+        // Query methods
+        Task<List<MedicalRecordGroupItemDto>> GetByGroupAsync(int groupId);
+        Task<MedicalRecord?> GetByIdAsync(int id);
+        Task<List<StationQueueItemDto>> GetQueueByStationAsync(string stationCode);
+        Task<StationQueueSummaryDto> GetStationQueueSummaryAsync(string stationCode);
+        Task<List<GroupQueueOverviewDto>> GetGroupQueueOverviewAsync(int groupId);
+        Task<List<QcPendingRecordDto>> GetQcPendingRecordsAsync();
+        Task<ServiceResult<List<MedicalRecord>>> BatchIngestFromExcelAsync(int groupId, string filePath, string createdBy);
+        Task<ServiceResult<bool>> DeleteAsync(int id);
     }
 
     public class ServiceResult<T>

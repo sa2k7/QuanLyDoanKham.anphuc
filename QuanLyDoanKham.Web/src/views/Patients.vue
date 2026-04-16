@@ -243,7 +243,8 @@
               <!-- SĐT -->
               <div class="form-group">
                 <label>Số điện thoại</label>
-                <input v-model="form.phoneNumber" type="tel"
+                <input v-model="form.phoneNumber" type="tel" maxlength="10"
+                  @input="form.phoneNumber = form.phoneNumber.replace(/[^\d]/g, '').slice(0, 10)"
                   placeholder="0901234567" class="form-input" />
               </div>
 
@@ -574,20 +575,20 @@ const formatStatus = (s) => {
   const map = {
     CREATED: 'Mới tạo', READY: 'Sẵn sàng', CHECKED_IN: 'Đã check-in',
     IN_PROGRESS: 'Đang khám', STATION_DONE: 'Xong trạm',
-    QC_PENDING: 'Chờ QC', QC_PASSED: 'QC đạt', REPORTED: 'Đã báo cáo', CLOSED: 'Đóng'
+    QC_PENDING: 'Chờ QC', QC_PASSED: 'QC đạt', COMPLETED: 'Hoàn thành'
   }
   return map[s] || s
 }
 
 const getStatusColor = (s) => {
-  if (['CLOSED', 'REPORTED', 'QC_PASSED'].includes(s)) return 'bg-emerald-400'
+  if (['COMPLETED', 'QC_PASSED'].includes(s)) return 'bg-emerald-400'
   if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'bg-blue-400'
   if (s === 'CHECKED_IN') return 'bg-indigo-400'
   return 'bg-slate-300'
 }
 
 const getStatusBadge = (s) => {
-  if (['CLOSED', 'REPORTED', 'QC_PASSED'].includes(s)) return 'badge-green'
+  if (['COMPLETED', 'QC_PASSED'].includes(s)) return 'badge-green'
   if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'badge-blue'
   if (s === 'CHECKED_IN') return 'badge-indigo'
   return 'badge-gray'

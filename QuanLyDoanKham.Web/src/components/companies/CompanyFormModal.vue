@@ -36,11 +36,11 @@
                       </div>
                       <div class="flex flex-col gap-2">
                           <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT liên hệ công ty</label>
-                          <CodeInput v-model="formData.phoneNumber" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
+                          <CodeInput v-model="formData.phoneNumber" :maxlength="10" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="090..." />
                       </div>
                       <div class="flex flex-col gap-2">
                           <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">SĐT người đại diện</label>
-                          <CodeInput v-model="formData.contactPhone" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09x..." />
+                          <CodeInput v-model="formData.contactPhone" :maxlength="10" customClass="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09x..." />
                       </div>
                       <div class="md:col-span-2 flex flex-col gap-2">
                           <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Địa chỉ trụ sở</label>

@@ -218,7 +218,8 @@ namespace QuanLyDoanKham.API.Controllers
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                     RoleId = userRole.RoleId,
                     AvatarPath = staff.AvatarPath,
-                    StaffId = staff.StaffId // Gán StaffId liên kết mới
+                    StaffId = staff.StaffId, // Gán StaffId liên kết mới
+                    IsActive = true // Đảm bảo tài khoản được kích hoạt ngay
                 };
 
                 // Kiểm tra xem username đã tồn tại chưa
@@ -305,6 +306,7 @@ namespace QuanLyDoanKham.API.Controllers
                         userAccount.FullName = staff.FullName;
                         userAccount.AvatarPath = staff.AvatarPath;
                         userAccount.StaffId = staff.StaffId; // Đảm bảo đồng bộ StaffId
+                        userAccount.IsActive = true; // Kích hoạt lại tài khoản nếu nhân viên được update
                         await _context.SaveChangesAsync();
 
                         // Nếu đổi vai trò và có email thì thông báo
@@ -324,7 +326,8 @@ namespace QuanLyDoanKham.API.Controllers
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                             RoleId = newRole.RoleId,
                             AvatarPath = staff.AvatarPath,
-                            StaffId = staff.StaffId // Gán lền kết
+                            StaffId = staff.StaffId, // Gán lền kết
+                            IsActive = true
                         };
                         _context.Users.Add(newUser);
                         await _context.SaveChangesAsync();
@@ -365,6 +368,14 @@ namespace QuanLyDoanKham.API.Controllers
 
             staff.IsActive = false;
             staff.ModifiedDate = DateTime.Now;
+
+            // Đồng bộ vô hiệu hóa tài khoản liên kết
+            var userAccount = await _context.Users.FirstOrDefaultAsync(u => u.StaffId == id);
+            if (userAccount != null)
+            {
+                userAccount.IsActive = false;
+            }
+
             await _context.SaveChangesAsync();
 
             return NoContent();
@@ -484,7 +495,8 @@ namespace QuanLyDoanKham.API.Controllers
                                     FullName = staff.FullName,
                                     PasswordHash = BCrypt.Net.BCrypt.HashPassword("Password@123"),
                                     RoleId = medicalStaffRole.RoleId,
-                                    StaffId = staff.StaffId // Gán liên kết
+                                    StaffId = staff.StaffId, // Gán liên kết
+                                    IsActive = true
                                 };
                                 _context.Users.Add(newUser);
                             }
