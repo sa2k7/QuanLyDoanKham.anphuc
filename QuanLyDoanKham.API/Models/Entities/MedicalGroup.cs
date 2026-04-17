@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -53,5 +53,6 @@ namespace QuanLyDoanKham.API.Models
 
         public ICollection<MedicalGroupPosition> Positions { get; set; } = new List<MedicalGroupPosition>();
         public ICollection<GroupStaffDetail> StaffDetails { get; set; } = new List<GroupStaffDetail>();
+        public ICollection<MedicalRecord> MedicalRecords { get; set; } = new List<MedicalRecord>();
     }
 }

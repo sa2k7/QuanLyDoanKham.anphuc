@@ -166,26 +166,13 @@ namespace QuanLyDoanKham.API.Controllers
 
 
         // ================================================================
-        // POST api/attendance/checkin — Nhân viên quét QR → check-in
+        // POST api/attendance/self-checkin-direct — Một chạm (không cần QR)
         // ================================================================
-        [HttpPost("checkin")]
-        [Authorize] // Yêu cầu đăng nhập để biết danh tính người chấm công
-        public async Task<IActionResult> CheckIn([FromBody] CheckInOutDto dto, [FromServices] Services.QrService qrService)
+        [HttpPost("self-checkin-direct")]
+        [Authorize]
+        public async Task<IActionResult> SelfCheckInDirect([FromBody] int groupId)
         {
-            // 1. Validate QR token bằng QrService (HMAC check)
-            if (string.IsNullOrEmpty(dto.QrToken))
-                return BadRequest(new { message = "Thiếu QR token." });
-
-            if (!qrService.ValidateSignedToken(dto.QrToken, out var tokenGroupId, out var error))
-                return BadRequest(new { message = error });
-
-            if (tokenGroupId != dto.GroupId)
-                return BadRequest(new { message = "Mã QR không khớp với đoàn khám đang chọn." });
-
-            var group = await _context.MedicalGroups.FindAsync(dto.GroupId);
-            if (group == null) return NotFound(new { message = "Không tìm thấy đoàn khám." });
-
-            // 2. Xác định Staff từ User hiện tại
+            // 1. Xác định Staff từ User hiện tại
             var username = User.Identity?.Name;
             if (string.IsNullOrEmpty(username)) return Unauthorized();
 
@@ -194,60 +181,93 @@ namespace QuanLyDoanKham.API.Controllers
 
             int staffId = staff.StaffId;
 
-            // Chống gian lận: Nếu gửi StaffId khác trong DTO mà không phải Admin thì báo lỗi
-            if (dto.StaffId.HasValue && dto.StaffId.Value != staffId && !User.IsInRole("Admin"))
-            {
-                return BadRequest(new { message = "Bạn không thể chấm công hộ người khác." });
-            }
+            // 2. Kiểm tra Đoàn khám
+            var group = await _context.MedicalGroups.FindAsync(groupId);
+            if (group == null) return NotFound(new { message = "Không tìm thấy đoàn khám." });
+
+            // Chống gian lận: Chỉ cho phép nếu đoàn đang Open hoặc InProgress
+            if (group.Status != "Open" && group.Status != "InProgress")
+                return BadRequest(new { message = $"Đoàn khám đang ở trạng thái '{group.Status}', không thể điểm danh." });
+
+            // Chỉ cho phép điểm danh đúng ngày
+            var today = DateTime.Today;
+            if (group.ExamDate.Date != today)
+                return BadRequest(new { message = "Bạn chỉ có thể điểm danh cho đoàn khám diễn ra trong ngày hôm nay." });
 
             // Kiểm tra nhân viên có trong đoàn không
             var groupDetail = await _context.GroupStaffDetails
-                .FirstOrDefaultAsync(gd => gd.GroupId == dto.GroupId && gd.StaffId == staffId);
+                .FirstOrDefaultAsync(gd => gd.GroupId == groupId && gd.StaffId == staffId);
             if (groupDetail == null)
-                return Forbid();
+                return BadRequest(new { message = "Bạn không được phân công tham gia đoàn khám này." });
 
-            // Tìm bản ghi chấm công ngày hôm nay
-            var today = DateTime.Today;
+            // 3. Thực hiện ghi nhận Logic tương tự Check-in QR
             var existing = await _context.ScheduleCalendars
-                .FirstOrDefaultAsync(sc => sc.GroupId == dto.GroupId && sc.StaffId == staffId
+                .FirstOrDefaultAsync(sc => sc.GroupId == groupId && sc.StaffId == staffId
                     && sc.ExamDate.Date == today);
+
+            string actionResult = "";
+            DateTime now = DateTime.Now;
 
             if (existing == null)
             {
                 // Check-in lần đầu
                 _context.ScheduleCalendars.Add(new ScheduleCalendar
                 {
-                    GroupId = dto.GroupId,
+                    GroupId = groupId,
                     StaffId = staffId,
                     ExamDate = today,
                     MedicalGroup = null!,
                     Staff = null!,
-                    CheckInTime = DateTime.Now,
+                    CheckInTime = now,
                     IsConfirmed = false,
-                    Note = dto.Note ?? "Check-in QR"
+                    Note = "Điểm danh trực tiếp qua Dashboard"
                 });
-                await _context.SaveChangesAsync();
-                return Ok(new { message = "Check-in thành công!", action = "CheckIn", time = DateTime.Now });
+                actionResult = "CheckIn";
             }
             else if (existing.CheckOutTime == null)
             {
                 // Check-out
-                existing.CheckOutTime = DateTime.Now;
-
-                // Tính ShiftType: 0.5 nếu < 4h, 1.0 nếu >= 4h
+                existing.CheckOutTime = now;
                 var hours = (existing.CheckOutTime.Value - existing.CheckInTime!.Value).TotalHours;
                 var resolvedShift = hours >= 4 ? 1.0 : 0.5;
                 groupDetail.ShiftType = resolvedShift;
-
                 existing.IsConfirmed = true;
-                await _context.SaveChangesAsync();
-                return Ok(new { message = $"Check-out thành công! Công quy đổi: {resolvedShift} công", action = "CheckOut", time = DateTime.Now, shiftType = resolvedShift });
+                actionResult = "CheckOut";
             }
             else
             {
-                return BadRequest("Nhân viên đã check-in và check-out trong ngày này rồi.");
+                return BadRequest(new { message = "Bạn đã hoàn thành đủ công (Check-in & Check-out) cho đoàn này hôm nay." });
             }
+
+            // 4. Ghi Audit Log cho hành động "Một chạm"
+            var currentUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            if (currentUser != null)
+            {
+                _context.AuditLogs.Add(new AuditLog
+                {
+                    UserId = currentUser.UserId,
+                    Action = actionResult == "CheckIn" ? "SELF_CHECK_IN" : "SELF_CHECK_OUT",
+                    EntityType = "GroupStaffDetail",
+                    EntityId = groupDetail.Id,
+                    OldValue = "",
+                    NewValue = $"[{actionResult}] Staff {staff.FullName} thực hiện điểm danh MỘT CHẠM lúc {now:HH:mm}",
+                    Timestamp = now,
+                    IPAddress = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown"
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { 
+                message = actionResult == "CheckIn" ? "Xác nhận tham gia thành công!" : "Check-out thành công!", 
+                action = actionResult, 
+                time = now 
+            });
         }
+
+        // ================================================================
+        // POST api/attendance/checkin — Nhân viên quét QR → check-in
+        // ================================================================
 
         // ================================================================
         // POST api/attendance/manual — Trưởng đoàn chấm công thủ công

@@ -73,6 +73,18 @@
           </div>
         </div>
         <div class="item-right flex flex-col items-end gap-2">
+          <!-- Quick Check-in Button for Today -->
+          <div v-if="isToday(item.examDate) && item.groupStatus === 'Open'" class="mb-1">
+             <button v-if="!item.checkInTime || !item.checkOutTime"
+                     @click.stop="handleQuickCheckIn(item)"
+                     :disabled="isCheckingIn"
+                     class="px-4 py-2 bg-primary text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all flex items-center gap-2">
+                <div v-if="isCheckingIn" class="w-3 h-3 border-2 border-white border-t-transparent animate-spin rounded-full"></div>
+                <LogIn v-else class="w-3.5 h-3.5" />
+                {{ !item.checkInTime ? 'VÀO ĐOÀN' : 'RỜI ĐOÀN' }}
+             </button>
+          </div>
+
           <span class="shift-badge px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border" :class="item.shiftType >= 1 ? 'bg-indigo-50 text-indigo-600 border-indigo-100' : 'bg-amber-50 text-amber-600 border-amber-100'">
             {{ item.shiftType >= 1 ? i18n.t('schedule.item.shift1') : i18n.t('schedule.item.shift05') }}
           </span>
@@ -99,6 +111,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import apiClient from '../services/apiClient'
 import { useAuthStore } from '../stores/auth'
 import { useI18nStore } from '../stores/i18n'
+import { useToast } from '../composables/useToast'
 import { 
     CalendarCheck, ChevronLeft, ChevronRight, Sun, Wallet, 
     LogIn, LogOut, CalendarOff, Loader2 
@@ -106,6 +119,7 @@ import {
 
 const auth = useAuthStore()
 const i18n = useI18nStore()
+const toast = useToast()
 const now = new Date()
 const currentMonth = ref(now.getMonth() + 1)
 const currentYear  = ref(now.getFullYear())
@@ -143,6 +157,31 @@ const getStatusBorderCls = (s) => {
   if (s === 'Đủ công') return 'border-emerald-100 hover:border-emerald-300'
   if (s === 'Chờ check-out') return 'border-amber-100 hover:border-amber-300'
   return 'border-rose-100 hover:border-rose-300'
+}
+
+const isToday = (dateStr) => {
+    const d = new Date(dateStr)
+    const today = new Date()
+    return d.getDate() === today.getDate() && 
+           d.getMonth() === today.getMonth() && 
+           d.getFullYear() === today.getFullYear()
+}
+
+const isCheckingIn = ref(false)
+const handleQuickCheckIn = async (item) => {
+    const action = !item.checkInTime ? 'VÀO ĐOÀN' : 'RỜI ĐOÀN'
+    if (!confirm(`Bạn xác nhận ${action} cho đoàn ${item.groupName}?`)) return
+
+    isCheckingIn.value = true
+    try {
+        const res = await apiClient.post('/api/Attendance/self-checkin-direct', item.groupId)
+        toast.success(res.data.message)
+        await loadSchedule() // Refresh list
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Lỗi khi điểm danh")
+    } finally {
+        isCheckingIn.value = false
+    }
 }
 
 const loadSchedule = async () => {

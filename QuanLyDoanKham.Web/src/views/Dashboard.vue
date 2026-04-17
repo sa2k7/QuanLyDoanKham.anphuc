@@ -275,6 +275,78 @@
                   </div>
               </div>
 
+              <!-- Today's Assignment (Quick Check-in) -->
+              <div v-if="todayAssignment" class="mb-12 animate-fade-in-up">
+                  <div class="premium-card bg-white border-2 border-primary/20 shadow-xl shadow-primary/5 rounded-[3rem] p-8 md:p-10 relative overflow-hidden group">
+                      <!-- Background Pattern -->
+                      <div class="absolute right-0 top-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+                      
+                      <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
+                          <!-- Icon Container -->
+                          <div class="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary flex-shrink-0 shadow-inner group-hover:rotate-6 transition-transform duration-500">
+                              <CalendarCheck class="w-12 h-12" />
+                          </div>
+
+                          <!-- Info -->
+                          <div class="flex-1 text-center md:text-left">
+                              <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 border border-amber-100">
+                                  <Activity class="w-3 h-3" /> Nhiệm vụ hôm nay
+                              </div>
+                              <h2 class="text-3xl font-black text-slate-800 leading-tight mb-2">{{ todayAssignment.groupName }}</h2>
+                              <div class="flex flex-wrap justify-center md:justify-start items-center gap-4 text-slate-400 font-bold">
+                                  <div class="flex items-center gap-2">
+                                      <Building class="w-4 h-4 text-slate-300" />
+                                      {{ todayAssignment.companyName || 'N/A' }}
+                                  </div>
+                                  <div class="w-1 h-1 rounded-full bg-slate-200"></div>
+                                  <div class="flex items-center gap-2">
+                                      <UserCheck class="w-4 h-4 text-slate-300" />
+                                      Vị trí: <span class="text-slate-600">{{ todayAssignment.workPosition }}</span>
+                                  </div>
+                              </div>
+                          </div>
+
+                          <!-- Action Buttons -->
+                          <div class="flex-shrink-0 flex flex-col items-center gap-3">
+                              <!-- Nếu chưa check-in -->
+                              <template v-if="!todayAssignment.checkInTime">
+                                  <button @click="handleCheckInConfirm" 
+                                          :disabled="isCheckingIn"
+                                          class="px-10 py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group/btn">
+                                      <div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                                      {{ isCheckingIn ? 'Đang xác nhận...' : 'BẤM ĐỂ VÀO ĐOÀN' }}
+                                      <ArrowRight class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
+                                  </button>
+                                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Không cần quét mã QR</p>
+                              </template>
+
+                              <!-- Nếu đã check-in nhưng chưa check-out -->
+                              <template v-else-if="!todayAssignment.checkOutTime">
+                                  <div class="flex flex-col items-center gap-3">
+                                      <div class="flex items-center gap-2 text-emerald-600 font-black text-sm">
+                                          <CheckCircle2 class="w-5 h-5" />
+                                          ĐÃ VÀO ĐOÀN LÚC {{ new Date(todayAssignment.checkInTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) }}
+                                      </div>
+                                      <button @click="handleCheckInConfirm" 
+                                              :disabled="isCheckingIn"
+                                              class="px-8 py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all flex items-center gap-3">
+                                          Tết thúc & Rời đoàn
+                                      </button>
+                                  </div>
+                              </template>
+
+                              <!-- Đã xong cả hai -->
+                              <template v-else>
+                                  <div class="bg-emerald-50 text-emerald-600 px-6 py-4 rounded-2xl border border-emerald-100 flex items-center gap-3 font-black text-sm">
+                                      <ShieldCheck class="w-6 h-6" />
+                                      HOÀN THÀNH NHIỆM VỤ NGÀY HÔM NAY
+                                  </div>
+                              </template>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
               <!-- Welcome & Recent Activity -->
               <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
                   <div class="lg:col-span-2 bg-gradient-to-br from-teal-500 to-primary rounded-[3rem] p-16 text-white relative overflow-hidden shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] min-h-[400px]">
@@ -671,15 +743,52 @@ const handleGlobalKeyDown = (e) => {
     }
 }
 
+// Today's Assignment Logic
+const todayAssignment = ref(null)
+const isCheckingIn = ref(false)
+const showConfirmCheckIn = ref(false)
+
+const fetchTodayAssignment = async () => {
+    try {
+        const res = await apiClient.get('/api/MedicalGroups/today-assignment')
+        todayAssignment.value = res.data
+    } catch (err) {
+        console.warn("Failed to fetch today's assignment", err)
+    }
+}
+
+const handleCheckInConfirm = () => {
+    const action = !todayAssignment.value.checkInTime ? 'VÀO ĐOÀN' : 'RỜI ĐOÀN'
+    if (confirm(`Bạn xác nhận thực hiện ${action} cho đoàn ${todayAssignment.value.groupName}?`)) {
+        performQuickCheckIn()
+    }
+}
+
+const performQuickCheckIn = async () => {
+    isCheckingIn.value = true
+    try {
+        const res = await apiClient.post('/api/Attendance/self-checkin-direct', todayAssignment.value.groupId)
+        toast.success(res.data.message)
+        await fetchTodayAssignment() // Refresh data
+        notificationStore.fetchNotifications()
+    } catch (err) {
+        toast.error(err.response?.data?.message || "Lỗi khi điểm danh")
+    } finally {
+        isCheckingIn.value = false
+    }
+}
+
 onMounted(() => {
     fetchSearchData()
     fetchResetRequests()
     notificationStore.fetchNotifications()
+    fetchTodayAssignment()
     
     // Poll for data every 30s
     const pollInterval = setInterval(() => {
         fetchResetRequests()
         notificationStore.fetchNotifications()
+        fetchTodayAssignment()
     }, 30000)
 
     window.addEventListener('keydown', handleGlobalKeyDown)

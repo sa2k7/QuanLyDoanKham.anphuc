@@ -223,6 +223,46 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Cập nhật trạng thái thành công", status = group.Status });
         }
 
+        // GET: api/MedicalGroups/today-assignment
+        [HttpGet("today-assignment")]
+        [Authorize]
+        public async Task<IActionResult> GetTodayAssignment()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var staff = await _context.Staffs.FirstOrDefaultAsync(s => s.EmployeeCode != null && s.EmployeeCode.ToLower() == username.ToLower());
+            if (staff == null) return NotFound(new { message = "Không tìm thấy hồ sơ nhân sự." });
+
+            var today = DateTime.Today;
+            var assignment = await _context.GroupStaffDetails
+                .Include(gsd => gsd.MedicalGroup)
+                    .ThenInclude(g => g!.HealthContract)
+                        .ThenInclude(c => c!.Company)
+                .Where(gsd => gsd.StaffId == staff.StaffId && gsd.MedicalGroup!.ExamDate.Date == today)
+                .Select(gsd => new
+                {
+                    gsd.Id,
+                    GroupId = gsd.MedicalGroup!.GroupId,
+                    GroupName = gsd.MedicalGroup!.GroupName,
+                    ExamDate = gsd.MedicalGroup!.ExamDate,
+                    CompanyName = (gsd.MedicalGroup != null && gsd.MedicalGroup.HealthContract != null && gsd.MedicalGroup.HealthContract.Company != null) 
+                        ? (gsd.MedicalGroup.HealthContract.Company.ShortName ?? gsd.MedicalGroup.HealthContract.Company.CompanyName) 
+                        : null,
+                    gsd.WorkPosition,
+                    gsd.WorkStatus,
+                    gsd.ShiftType,
+                    gsd.CheckInTime,
+                    gsd.CheckOutTime,
+                    GroupStatus = gsd.MedicalGroup!.Status
+                })
+                .FirstOrDefaultAsync();
+
+            if (assignment == null) return Ok(null);
+
+            return Ok(assignment);
+        }
+
         // GET: api/MedicalGroups/my-schedule — MedicalStaff xem lịch đi đoàn cá nhân
         [HttpGet("my-schedule")]
         [AuthorizePermission("LichKham.ViewOwn")]
