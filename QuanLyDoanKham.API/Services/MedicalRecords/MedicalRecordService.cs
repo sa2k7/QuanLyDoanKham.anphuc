@@ -13,11 +13,16 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
     {
         private readonly ApplicationDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly IGeminiService _geminiService;
 
-        public MedicalRecordService(ApplicationDbContext context, IConfiguration configuration)
+        public MedicalRecordService(
+            ApplicationDbContext context, 
+            IConfiguration configuration,
+            IGeminiService geminiService)
         {
             _context = context;
             _configuration = configuration;
+            _geminiService = geminiService;
         }
 
         public async Task<ServiceResult<List<MedicalRecord>>> BatchIngestAsync(MedicalRecordBatchIngestRequestDto request, string createdBy)
@@ -93,7 +98,11 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                 catch (Exception ex)
                 {
                     await transaction.RollbackAsync();
-                    return ServiceResult<List<MedicalRecord>>.Failure("Lỗi khi nhập dữ liệu hàng loạt: " + ex.Message);
+                    // Log detailed error for debugging
+                    Console.WriteLine($"[ERROR] BatchIngestAsync for Group {request.GroupId} failed: {ex}");
+                    
+                    var innerMsg = ex.InnerException != null ? $" | Inner: {ex.InnerException.Message}" : "";
+                    return ServiceResult<List<MedicalRecord>>.Failure($"Lỗi khi nhập dữ liệu hàng loạt: {ex.Message}{innerMsg}");
                 }
             }
         }
@@ -142,8 +151,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                     IDCardNumber = m.IDCardNumber,
                     Department = m.Department,
                     Status = m.Status,
-                    CheckInAt = m.CheckInAt,
-                    QueueNo = m.QueueNo
+                    CheckInAt = m.CheckInAt
                 })
                 .ToListAsync();
         }
@@ -151,92 +159,9 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
         public async Task<MedicalRecord?> GetByIdAsync(int id)
         {
             return await _context.MedicalRecords
-                .Include(m => m.StationTasks)
                 .FirstOrDefaultAsync(m => m.MedicalRecordId == id);
         }
 
-        public async Task<List<StationQueueItemDto>> GetQueueByStationAsync(string stationCode)
-        {
-            return await _context.RecordStationTasks
-                .Include(t => t.MedicalRecord)
-                .Where(t => t.StationCode == stationCode
-                         && t.Status != StationTaskStatus.StationDone
-                         && t.Status != StationTaskStatus.Skipped)
-                .OrderBy(t => t.MedicalRecord!.QueueNo)
-                .Select(t => new StationQueueItemDto {
-                    TaskId = t.TaskId,
-                    MedicalRecordId = t.MedicalRecordId,
-                    FullName = t.MedicalRecord!.FullName,
-                    Gender = t.MedicalRecord!.Gender,
-                    QueueNo = t.MedicalRecord!.QueueNo,
-                    Status = t.Status,
-                    WaitingSince = t.WaitingSince,
-                    StartedAt = t.StartedAt
-                })
-                .ToListAsync();
-        }
-
-        public async Task<StationQueueSummaryDto> GetStationQueueSummaryAsync(string stationCode)
-        {
-            var waitingCount   = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode && t.Status == StationTaskStatus.Waiting);
-            var inProgressCount = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode && t.Status == StationTaskStatus.StationInProgress);
-            var doneToday      = await _context.RecordStationTasks
-                .CountAsync(t => t.StationCode == stationCode
-                              && t.Status == StationTaskStatus.StationDone
-                              && t.CompletedAt.HasValue
-                              && t.CompletedAt.Value.Date == DateTime.Today);
-
-            return new StationQueueSummaryDto { 
-                StationCode = stationCode, 
-                WaitingCount = waitingCount, 
-                InProgressCount = inProgressCount, 
-                DoneToday = doneToday 
-            };
-        }
-
-        public async Task<List<GroupQueueOverviewDto>> GetGroupQueueOverviewAsync(int groupId)
-        {
-            return await _context.RecordStationTasks
-                .Include(t => t.MedicalRecord)
-                .Include(t => t.Station)
-                .Where(t => t.MedicalRecord!.GroupId == groupId
-                         && t.Status != StationTaskStatus.StationDone
-                         && t.Status != StationTaskStatus.Skipped)
-                .GroupBy(t => new { t.StationCode, t.Station!.StationName, t.Station!.SortOrder })
-                .Select(g => new GroupQueueOverviewDto {
-                    StationCode  = g.Key.StationCode,
-                    StationName  = g.Key.StationName,
-                    SortOrder    = g.Key.SortOrder,
-                    WaitingCount    = g.Count(t => t.Status == StationTaskStatus.Waiting),
-                    InProgressCount = g.Count(t => t.Status == StationTaskStatus.StationInProgress),
-                })
-                .OrderBy(s => s.SortOrder)
-                .ToListAsync();
-        }
-
-        public async Task<List<QcPendingRecordDto>> GetQcPendingRecordsAsync()
-        {
-            return await _context.MedicalRecords
-                .Include(r => r.StationTasks)
-                .Where(r => r.Status == RecordStatus.QcPending)
-                .OrderBy(r => r.CheckInAt)
-                .Select(r => new QcPendingRecordDto
-                {
-                    MedicalRecordId = r.MedicalRecordId,
-                    FullName = r.FullName,
-                    QueueNo = r.QueueNo,
-                    Status = r.Status,
-                    CheckInAt = r.CheckInAt,
-                    StationTasks = r.StationTasks.Select(t => new QcStationTaskStatusDto
-                    {
-                        StationCode = t.StationCode,
-                        Status = t.Status
-                    }).ToList()
-                })
-                .ToListAsync();
-        }
 
         public async Task<ServiceResult<List<MedicalRecord>>> BatchIngestFromExcelAsync(int groupId, string filePath, string createdBy)
         {
@@ -251,7 +176,8 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                     var worksheet = workbook.Worksheets.FirstOrDefault();
                     if (worksheet == null) return ServiceResult<List<MedicalRecord>>.Failure("File không có worksheet.");
 
-                    var rows = worksheet.RangeUsed().RowsUsed().Skip(1); // Skip header
+                    var rows = worksheet.RangeUsed()?.RowsUsed()?.Skip(1); // Skip header
+                    if (rows == null) return ServiceResult<List<MedicalRecord>>.Failure("File rỗng hoặc không có dữ liệu.");
                     foreach (var row in rows)
                     {
                         var fullName = row.Cell(1).GetValue<string>()?.Trim();
@@ -303,9 +229,6 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             {
                 try
                 {
-                    // Xóa các dữ liệu liên quan
-                    var tasks = await _context.RecordStationTasks.Where(t => t.MedicalRecordId == id).ToListAsync();
-                    _context.RecordStationTasks.RemoveRange(tasks);
 
                     if (record.PatientId.HasValue)
                     {
@@ -327,6 +250,57 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                     return ServiceResult<bool>.Failure("Lỗi khi xóa hồ sơ: " + ex.Message);
                 }
             }
+        }
+
+        public async Task<ServiceResult<string>> GenerateAiClinicalSummaryAsync(int recordId)
+        {
+            try
+            {
+                var record = await _context.MedicalRecords.FindAsync(recordId);
+                if (record == null) return ServiceResult<string>.Failure("Không tìm thấy hồ sơ bệnh nhân.");
+
+                var examResults = await _context.ExamResults
+                    .Where(er => er.PatientId == record.PatientId && er.GroupId == record.GroupId)
+                    .ToListAsync();
+
+                if (!examResults.Any())
+                    return ServiceResult<string>.Failure("Chưa có kết quả khám để tóm tắt.");
+
+                var sb = new StringBuilder();
+                sb.AppendLine($"Hãy đóng vai bác sĩ chuyên khoa, tóm tắt kết quả khám sức khỏe cho bệnh nhân {record.FullName}.");
+                sb.AppendLine("Dưới đây là các kết quả chuyên khoa:");
+                foreach (var res in examResults)
+                {
+                    sb.AppendLine($"- {res.ExamType}: {res.Diagnosis}");
+                    if (!string.IsNullOrEmpty(res.Result)) sb.AppendLine($"  Chi tiết: {res.Result}");
+                }
+                sb.AppendLine("\nYêu cầu: Viết bản tóm tắt ngắn gọn, chuyên nghiệp, nêu rõ các vấn đề bất thường chính và đưa ra lời khuyên sức khỏe tổng quát.");
+
+                var summary = await _geminiService.GetStaffSuggestionAsync(sb.ToString());
+                return ServiceResult<string>.Success(summary);
+            }
+            catch (Exception ex)
+            {
+                return ServiceResult<string>.Failure($"Lỗi AI: {ex.Message}");
+            }
+        }
+
+        public async Task<List<MedicalRecordGroupItemDto>> GetQcPendingRecordsAsync()
+        {
+            return await _context.MedicalRecords
+                .Where(m => m.Status == RecordStatus.QcPending)
+                .OrderBy(m => m.UpdatedAt)
+                .Select(m => new MedicalRecordGroupItemDto {
+                    MedicalRecordId = m.MedicalRecordId,
+                    FullName = m.FullName,
+                    DateOfBirth = m.DateOfBirth,
+                    Gender = m.Gender,
+                    IDCardNumber = m.IDCardNumber,
+                    Department = m.Department,
+                    Status = m.Status,
+                    CheckInAt = m.CheckInAt
+                })
+                .ToListAsync();
         }
     }
 }

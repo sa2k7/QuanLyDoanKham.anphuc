@@ -65,11 +65,79 @@
                                   </select>
                               </div>
                           </div>
+
+                          <div class="space-y-2" v-if="modals.staff.data.staffId">
+                              <label class="input-label"><MapPin class="w-3 h-3 text-indigo-400" /> Điểm đón nhân sự</label>
+                              <input v-model="modals.staff.data.pickupLocation" 
+                                     placeholder="VD: Cổng chính, VP Công ty, Tự túc..." 
+                                     class="input-premium" />
+                          </div>
                       </div>
                   </form>
                   <div class="modal-footer">
                       <button @click="$emit('close', 'staff')" class="btn-cancel">Hủy bỏ</button>
                       <button form="staffForm" type="submit" class="btn-confirm bg-slate-900 border-slate-900 shadow-slate-900 hover:bg-teal-600">XÁC NHẬN ĐIỀU ĐỘNG</button>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </Teleport>
+
+    <!-- 4. Edit Group Info Modal -->
+    <Teleport to="body">
+      <div v-if="modals.editGroup && modals.editGroup.show" class="modal-overlay">
+          <div class="modal-content max-w-xl border-indigo-600">
+              <button @click="$emit('close', 'editGroup')" class="btn-close-modal">
+                  <X class="w-5 h-5" />
+              </button>
+              <div class="modal-body">
+                  <div class="flex items-center gap-4 mb-8">
+                      <div class="icon-box bg-indigo-50 text-indigo-600">
+                          <Settings2 class="w-7 h-7" />
+                      </div>
+                      <div>
+                          <h3 class="modal-title">Sửa thông tin đoàn</h3>
+                          <p class="modal-subtitle">Cập nhật lịch trình & Nội dung khám</p>
+                      </div>
+                  </div>
+
+                  <form id="editGroupForm" @submit.prevent="$emit('update-group')" class="space-y-5">
+                      <div class="space-y-2">
+                          <label class="input-label">Tên đoàn khám</label>
+                          <input v-model="modals.editGroup.data.groupName" required class="input-premium" />
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                          <div class="space-y-2">
+                              <label class="input-label">Ngày triển khai</label>
+                              <input v-model="modals.editGroup.data.examDate" type="date" required class="input-premium" />
+                          </div>
+                          <div class="space-y-2">
+                              <label class="input-label">Trạng thái</label>
+                              <select v-model="modals.editGroup.data.status" class="select-premium">
+                                  <option value="Open">Đang triển khai</option>
+                                  <option value="Finished">Đã kết thúc</option>
+                                  <option value="Locked">Đã khóa sổ</option>
+                              </select>
+                          </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                          <div class="space-y-2">
+                              <label class="input-label">Giờ bắt đầu khám</label>
+                              <input v-model="modals.editGroup.data.startTime" placeholder="VD: 07:30" class="input-premium" />
+                          </div>
+                          <div class="space-y-2">
+                              <label class="input-label">Giờ xuất phát</label>
+                              <input v-model="modals.editGroup.data.departureTime" placeholder="VD: 05:30" class="input-premium" />
+                          </div>
+                      </div>
+                      <div class="space-y-2">
+                          <label class="input-label">Nội dung khám</label>
+                          <input v-model="modals.editGroup.data.examContent" placeholder="VD: TỔNG QUÁT..." class="input-premium" />
+                      </div>
+                  </form>
+                  <div class="modal-footer">
+                      <button @click="$emit('close', 'editGroup')" class="btn-cancel">Hủy bỏ</button>
+                      <button form="editGroupForm" type="submit" class="btn-confirm bg-slate-900">LƯU THAY ĐỔI</button>
                   </div>
               </div>
           </div>
@@ -153,7 +221,7 @@
 <script setup>
 import { 
   X, Users as UsersIcon, Stethoscope, CheckCircle2, AlertCircle, 
-  ShieldCheck, QrCode, RefreshCw 
+  ShieldCheck, QrCode, RefreshCw, MapPin, Settings2 
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -166,7 +234,7 @@ const props = defineProps({
   currentPositionName: { type: String, default: '' }
 })
 
-defineEmits(['close', 'add-staff', 'add-position', 'position-change', 'copy-qr-url'])
+defineEmits(['close', 'add-staff', 'add-position', 'position-change', 'copy-qr-url', 'update-group'])
 </script>
 
 <style scoped>

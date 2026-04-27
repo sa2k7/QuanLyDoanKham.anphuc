@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using QuanLyDoanKham.API.Models.Enums;
 
 namespace QuanLyDoanKham.API.Models
 {
@@ -52,9 +53,8 @@ namespace QuanLyDoanKham.API.Models
         [Column(TypeName = "decimal(5, 2)")]
         public decimal VATRate { get; set; } = 0; // Thuế suất GTGT (%)
 
-        // Tráº¡ng thĂ¡i: Draft, PendingApproval, Approved, Rejected, Active, Finished, Locked
-        [MaxLength(50)]
-        public string Status { get; set; } = "Draft";
+        // Trạng thái hợp đồng
+        public ContractStatus Status { get; set; } = ContractStatus.Draft;
 
         public int CurrentApprovalStep { get; set; } = 0; // BÆ°á»›c duyá»‡t hiá»‡n táº¡i
 

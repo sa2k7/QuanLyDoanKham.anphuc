@@ -20,11 +20,34 @@
             <div class="divider"></div>
             <button @click="$emit('export-staff', groupId)" class="btn-mini-action text-emerald-600">Excel</button>
             <div class="divider"></div>
-            <button v-if="status === 'Open' && can('ChamCong.QR')" 
-                    @click="$emit('open-modal', 'qr', groupId)" 
-                    class="btn-mini-action text-purple-600">
-                <QrCode class="w-2.5 h-2.5" /> QR
-            </button>
+            <div v-if="status === 'Open' && can('ChamCong.QR')" class="relative group/qr">
+                <button @click="isQrTime ? $emit('open-modal', 'qr', groupId) : null" 
+                        :class="['btn-mini-action', isQrTime ? 'text-purple-600' : 'text-slate-300 cursor-not-allowed']">
+                    <QrCode class="w-2.5 h-2.5" /> QR
+                </button>
+                <div v-if="!isQrTime" class="absolute bottom-full right-0 mb-2 w-48 p-2 bg-slate-800 text-white text-[10px] font-bold rounded-lg shadow-xl opacity-0 group-hover/qr:opacity-100 pointer-events-none transition-opacity z-10 text-center">
+                    Mã QR chỉ khả dụng trước giờ khám 30 phút.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Dashboard Phân Bổ Nhân Sự AI -->
+    <div v-if="positions && positions.length > 0" class="mb-2">
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div v-for="p in positions" :key="p.positionId" 
+                 class="p-3 bg-white border rounded-xl flex flex-col gap-1 transition-all shadow-sm"
+                 :class="getStaffCount(p.positionName) >= p.requiredCount ? 'border-emerald-200 bg-emerald-50/30' : 'border-amber-200 bg-amber-50/30'">
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 truncate" :title="p.positionName">
+                    {{ p.positionName }}
+                </span>
+                <div class="flex items-baseline gap-1">
+                    <span class="text-lg font-black" :class="getStaffCount(p.positionName) >= p.requiredCount ? 'text-emerald-600' : 'text-amber-600'">
+                        {{ getStaffCount(p.positionName) }}
+                    </span>
+                    <span class="text-[10px] font-bold text-slate-400">/ {{ p.requiredCount }}</span>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -33,8 +56,11 @@
             <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
                 <tr>
                     <th class="p-4 text-center w-16">STT</th>
-                    <th class="p-4">Nhân viên</th>
-                    <th class="p-4">Vị trí trực</th>
+                    <th class="p-4">Họ và Tên</th>
+                    <th class="p-4">Công việc (Vị trí)</th>
+                    <th class="p-4">Chức danh</th>
+                    <th class="p-4">Đơn vị</th>
+                    <th class="p-4">Ghi chú</th>
                     <th class="p-4 text-center">Ca làm</th>
                     <th class="p-4 text-center">Trạng thái</th>
                     <th class="p-4 text-center">Tác vụ</th>
@@ -42,7 +68,7 @@
             </thead>
             <tbody class="divide-y divide-slate-50 text-xs text-slate-600">
                 <tr v-if="staff.length === 0">
-                    <td colspan="6" class="p-8 text-center bg-slate-50/50">
+                    <td colspan="9" class="p-8 text-center bg-slate-50/50">
                         <div class="flex flex-col items-center justify-center text-slate-400">
                             <UsersIcon class="w-8 h-8 mb-3 opacity-20" />
                             <span class="text-[10px] font-black uppercase tracking-widest">Chưa gán nhân sự nào</span>
@@ -53,12 +79,26 @@
                     <td class="p-4 text-center font-black text-slate-400 tabular-nums">{{ String(index + 1).padStart(3, '0') }}</td>
                     <td class="p-4">
                         <div class="font-black text-slate-800 uppercase tracking-widest">{{ s.fullName }}</div>
-                        <div class="text-[9px] text-slate-400 uppercase tracking-widest font-black mt-1">{{ s.jobTitle }}</div>
+                        <div class="text-[9px] text-slate-300 font-bold mt-0.5">{{ s.employeeCode || 'N/A' }}</div>
                     </td>
                     <td class="p-4">
-                        <span class="px-3 py-1 bg-indigo-50 text-primary rounded-lg font-black uppercase tracking-widest text-[9px]">
-                            {{ s.workPosition || 'Chưa gán' }}
+                        <span class="px-2 py-1 bg-indigo-50 text-primary rounded-lg font-black uppercase tracking-widest text-[9px]">
+                            {{ s.workPosition || '---' }}
                         </span>
+                    </td>
+                    <td class="p-4">
+                        <div class="font-black text-slate-500 uppercase tracking-widest text-[9px]">{{ s.jobTitle || '---' }}</div>
+                    </td>
+                    <td class="p-4">
+                        <span :class="[
+                            'px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-tighter',
+                            s.employeeType === 'Internal' ? 'bg-blue-50 text-blue-500' : 'bg-amber-50 text-amber-600'
+                        ]">
+                            {{ s.employeeType === 'Internal' ? 'Nội bộ' : 'Cộng tác' }}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <span class="text-[10px] text-slate-400 italic">{{ s.note || '---' }}</span>
                     </td>
                     <td class="p-4 text-center font-black">{{ s.shiftType === 1 ? 'Cả ngày' : 'Nửa ngày' }}</td>
                     <td class="p-4 text-center">
@@ -96,17 +136,55 @@
 </template>
 
 <script setup>
-import { Users as UsersIcon, Sparkles, RefreshCw, QrCode, LogIn, LogOut, Trash2 } from 'lucide-vue-next'
+import { computed } from 'vue'
+import { Users as UsersIcon, Sparkles, RefreshCw, QrCode, LogIn, LogOut, Trash2, MapPin } from 'lucide-vue-next'
 
 const props = defineProps({
   groupId: { type: Number, required: true },
+  groupExamDate: { type: String, default: null },
+  groupStartTime: { type: String, default: null },
   staff: { type: Array, required: true },
+  positions: { type: Array, default: () => [] },
   can: { type: Function, required: true },
   isAiLoading: { type: Boolean, default: false },
   status: { type: String, default: 'Open' }
 })
 
 defineEmits(['open-modal', 'ai-suggest', 'export-staff', 'check-in', 'check-out', 'remove-staff'])
+
+const getStaffCount = (positionName) => {
+    return props.staff.filter(s => s.workPosition === positionName).length;
+}
+
+const isQrTime = computed(() => {
+    if (!props.groupExamDate) return true;
+    
+    // Parse exam date (ignoring time component)
+    const examDateStr = props.groupExamDate.split('T')[0];
+    const today = new Date();
+    // Offset for local timezone to get YYYY-MM-DD
+    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    
+    // If it's a past date, always show
+    if (examDateStr < todayStr) return true;
+    // If it's a future date, don't show
+    if (examDateStr > todayStr) return false;
+    
+    // It is today. Check start time.
+    if (!props.groupStartTime) return true; // if no start time, assume all day
+    
+    // parse groupStartTime (e.g. "07:30")
+    const [hours, minutes] = props.groupStartTime.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return true; // bad format
+    
+    const startObj = new Date();
+    startObj.setHours(hours, minutes, 0, 0);
+    
+    // subtract 30 minutes from start time
+    const showTime = new Date(startObj.getTime() - 30 * 60000);
+    
+    return today >= showTime;
+});
 
 const getWorkStatusClass = (status) => {
   if (status === 'Đã tham gia') return 'bg-emerald-100 text-emerald-600'

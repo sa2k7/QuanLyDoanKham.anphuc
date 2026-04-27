@@ -84,3 +84,12 @@ BAO_CAO_*.csv
 
 AGENT.md
 CLAUDE.md
+
+# ======================
+# Redundant / Backup Folders
+# ======================
+backend/
+frontend/
+.kiro/
+.qoder/
+api_log.txt

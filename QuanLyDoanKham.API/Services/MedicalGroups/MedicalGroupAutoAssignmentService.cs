@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 using System.Data;
 
 namespace QuanLyDoanKham.API.Services.MedicalGroups
@@ -33,7 +34,7 @@ namespace QuanLyDoanKham.API.Services.MedicalGroups
                 .FirstOrDefaultAsync(c => c.HealthContractId == request.HealthContractId);
 
             if (contract == null) return ApiResult<AutoCreateGroupWithStaffResponseDto>.Failure("Không tìm thấy hợp đồng.");
-            if (contract.Status != "Approved" && contract.Status != "Active")
+            if (contract.Status != ContractStatus.Approved && contract.Status != ContractStatus.Active)
                 return ApiResult<AutoCreateGroupWithStaffResponseDto>.Failure("Hợp đồng chưa được phê duyệt hoặc không còn hiệu lực.");
 
             // 3. Build Staffing Requirements

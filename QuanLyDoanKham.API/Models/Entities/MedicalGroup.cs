@@ -16,12 +16,12 @@ namespace QuanLyDoanKham.API.Models
 
         public DateTime ExamDate { get; set; }
 
-        // Ca / Slot (sĂ¡ng/chiá»u/tá»‘i - cho phĂ©p nhiá»u Ä‘oĂ n/ngĂ y)
+        // Ca / Slot (sáng/chiều/tối - cho phép nhiều đoàn/ngày)
         [MaxLength(20)]
         public string Slot { get; set; } = "FullDay"; // Morning, Afternoon, Evening, FullDay
 
         [MaxLength(50)]
-        public string? TeamCode { get; set; } // PhĂ¢n biá»‡t team A/B náº¿u nhiá»u Ä‘oĂ n/ngĂ y
+        public string? TeamCode { get; set; } // Phân biệt team A/B nếu nhiều đoàn/ngày
 
         public int HealthContractId { get; set; }
         [ForeignKey("HealthContractId")]
@@ -30,6 +30,15 @@ namespace QuanLyDoanKham.API.Models
         // Tráº¡ng thĂ¡i: Draft, Open, InProgress, Finished, Locked
         [MaxLength(50)]
         public string Status { get; set; } = "Draft";
+
+        [MaxLength(50)]
+        public string? StartTime { get; set; } // Giá»  khĂ¡m
+
+        [MaxLength(50)]
+        public string? DepartureTime { get; set; } // Giá»  xuáº¥t phĂ¡t
+
+        [MaxLength(500)]
+        public string? ExamContent { get; set; } = "TỔNG QUÁT"; // Ná»™i dung khĂ¡m
 
         public string? ImportFilePath { get; set; }
 

@@ -27,8 +27,8 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             var record = await _context.MedicalRecords
                 .Include(r => r.Patient)
                 .Include(r => r.MedicalGroup)
-                    .ThenInclude(mg => mg.HealthContract)
-                        .ThenInclude(hc => hc.Company)
+                    .ThenInclude(mg => mg!.HealthContract)
+                        .ThenInclude(hc => hc!.Company)
                 .FirstOrDefaultAsync(r => r.MedicalRecordId == medicalRecordId);
 
             if (record == null) throw new Exception("Không tìm thấy hồ sơ.");

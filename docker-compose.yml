@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: ./QuanLyDoanKham.API
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - AppSettings__Token=${JWT_SECRET}
+      - AppSettings__FrontendUrl=${FRONTEND_URL}
+    volumes:
+      - ./uploads:/app/wwwroot/uploads
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./QuanLyDoanKham.Web
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+    restart: unless-stopped

@@ -102,13 +102,22 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const logout = () => {
-    token.value = null
-    refreshToken.value = null
-    user.value = null
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_refresh_token')
-    localStorage.removeItem('user')
+  const logout = async () => {
+    // Fire-and-forget: invalidate refresh token on server
+    try {
+      if (token.value) {
+        await apiClient.post('/api/Auth/logout')
+      }
+    } catch {
+      // Ignore errors — local cleanup always happens
+    } finally {
+      token.value = null
+      refreshToken.value = null
+      user.value = null
+      localStorage.removeItem('auth_token')
+      localStorage.removeItem('auth_refresh_token')
+      localStorage.removeItem('user')
+    }
   }
 
   const refreshAccessToken = async () => {

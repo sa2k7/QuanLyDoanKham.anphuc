@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 
 namespace QuanLyDoanKham.API.Services
 {
@@ -44,7 +45,7 @@ namespace QuanLyDoanKham.API.Services
 
             // 1.1 Doanh thu phát sinh từ hợp đồng trong kỳ
             var extraRevenue = await _context.Contracts
-                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (decimal?)c.ExtraServiceRevenue) ?? 0;
 
             var totalRevenue = packageRevenue + extraRevenue;
@@ -100,7 +101,7 @@ namespace QuanLyDoanKham.API.Services
 
             // Lấy doanh thu phát sinh (Contract Extras)
             var contractExtraRaw = await _context.Contracts
-                .Where(c => c.EndDate >= trendStart && c.EndDate <= end && c.Status != "Rejected")
+                .Where(c => c.EndDate >= trendStart && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .GroupBy(c => new { c.EndDate.Year, c.EndDate.Month })
                 .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Type = "Extra", Total = g.Sum(c => c.ExtraServiceRevenue) })
                 .ToListAsync();
@@ -153,19 +154,19 @@ namespace QuanLyDoanKham.API.Services
             var packageRevenue = completedRevenueItems.Sum();
             
             var extraRevenue = await _context.Contracts
-                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (decimal?)c.ExtraServiceRevenue) ?? 0;
 
             var revenue = packageRevenue + extraRevenue;
 
             // Doanh thu kế hoạch (để tính variance)
             var plannedRevenue = await _context.Contracts
-                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
+                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (decimal?)c.TotalAmount) ?? 0;
 
             int actualQty = completedRevenueItems.Count;
             int plannedQty = await _context.Contracts
-                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
+                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (int?)c.ExpectedQuantity) ?? 0;
 
             var staffCost = await _context.GroupStaffDetails
@@ -190,7 +191,7 @@ namespace QuanLyDoanKham.API.Services
 
             var topContracts = await _context.Contracts
                 .Include(c => c.Company)
-                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != "Rejected")
+                .Where(c => c.SigningDate >= start && c.SigningDate <= end && c.Status != ContractStatus.Rejected)
                 .OrderByDescending(c => c.TotalAmount)
                 .Take(5)
                 .Select(c => new ContractRevenueDto
@@ -263,7 +264,7 @@ namespace QuanLyDoanKham.API.Services
                 .CountAsync();
 
             var pendingContracts = await _context.Contracts
-                .Where(c => c.Status == "Pending" || c.Status == "Draft")
+                .Where(c => c.Status == ContractStatus.PendingApproval || c.Status == ContractStatus.Draft)
                 .CountAsync();
 
             return new OperationalSummaryDto

@@ -1,14 +1,19 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
-    <div class="max-w-7xl mx-auto w-full p-6">
-      <div class="flex items-center justify-between mb-8 glass-header p-6 rounded-[2rem] shadow-sm">
-        <div>
-          <h1 class="text-3xl font-black text-slate-900 tracking-tight italic uppercase">Đối Soát & Quyết Toán</h1>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phân tích chênh lệch giá trị dự kiến và thực tế.</p>
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
+    <div class="max-w-7xl mx-auto w-full">
+      <div class="flex items-center justify-between mb-8 glass-header p-8 rounded-[2.5rem] shadow-glass border border-white/40">
+        <div class="flex items-center gap-6">
+          <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
+            <Calculator class="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Đối Soát & Quyết Toán</h1>
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Phân tích chênh lệch giá trị dự kiến và thực tế (P&L Audit)</p>
+          </div>
         </div>
-        <div class="flex gap-3">
-          <button @click="loadContracts" class="w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-100 text-slate-400 hover:text-primary transition-all flex items-center justify-center">
-            <RefreshCw class="w-5 h-5" :class="{ 'animate-spin': loading }" />
+        <div class="flex gap-4">
+          <button @click="loadContracts" class="w-14 h-14 bg-white/80 backdrop-blur-md border border-white/40 rounded-[1.25rem] text-slate-600 hover:text-primary hover:scale-105 transition-all shadow-sm flex items-center justify-center group">
+            <RefreshCw class="w-6 h-6" :class="{ 'animate-spin': loading }" />
           </button>
         </div>
       </div>
@@ -16,36 +21,42 @@
       <!-- Contract List -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         <div v-for="c in contracts" :key="c.healthContractId" 
-          class="premium-card p-8 group">
-          <div class="flex justify-between items-start mb-6">
-            <div class="w-14 h-14 bg-primary/10 text-primary rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border border-primary/5">
+          class="glass-card bg-white/60 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/40 shadow-glass hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 flex flex-col relative overflow-hidden group">
+          
+          <div class="flex justify-between items-start mb-8">
+            <div class="w-14 h-14 bg-primary/10 text-primary rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border border-primary/5 group-hover:scale-110 transition-transform">
               <FileText class="w-7 h-7" />
             </div>
-            <span :class="getStatusBadgeClass(c.status)" class="status-badge">
-              {{ c.status === 'Completed' ? 'Đã xong' : 'Đang xử lý' }}
+            <span :class="getStatusBadgeClass(c.status)" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
+              {{ c.status === 'Completed' || c.status === 'Active' ? 'HOÀN TẤT' : 'ĐANG XỬ LÝ' }}
             </span>
           </div>
           
-          <h3 class="font-black text-slate-800 text-lg mb-1 group-hover:text-primary transition-colors">{{ c.contractName }}</h3>
-          <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-8 flex items-center gap-2">
-            <Building2 class="w-3 h-3" /> {{ c.companyName }}
-          </p>
+          <div class="flex-grow">
+            <h3 class="text-xl font-black text-slate-800 mb-2 leading-tight tracking-tight group-hover:text-primary transition-colors italic uppercase">{{ c.contractName }}</h3>
+            <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
+              <Building2 class="w-3 h-3" /> {{ c.companyName }}
+            </p>
 
-          <div class="space-y-3 mb-6">
-            <div class="flex justify-between text-sm">
-              <span class="text-slate-400">Giá trị hợp đồng:</span>
-              <span class="font-bold text-slate-700">{{ formatCurrency(c.totalValue) }}</span>
-            </div>
-            <div class="flex justify-between text-sm">
-              <span class="text-slate-400">Số lượng dự kiến:</span>
-              <span class="font-bold text-slate-700">{{ c.expectedQuantity }} người</span>
+            <div class="space-y-4 mb-8 bg-white/40 p-6 rounded-[1.5rem] border border-white/60 shadow-inner">
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Giá trị hợp đồng</span>
+                <span class="font-black text-slate-800 tabular-nums">{{ formatCurrency(c.totalValue) }}</span>
+              </div>
+              <div class="flex justify-between items-center text-sm">
+                <span class="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Dự kiến khám</span>
+                <span class="font-black text-slate-800 tabular-nums">{{ c.expectedQuantity }} người</span>
+              </div>
             </div>
           </div>
 
           <button @click="viewSettlement(c)" 
-            class="btn-premium primary w-full !rounded-2xl">
-            Sửa Quyết Toán
+            class="btn-premium primary w-full !py-5 !rounded-2xl shadow-lg shadow-primary/20">
+            PHÂN TÍCH QUYẾT TOÁN
           </button>
+
+          <!-- Decoration -->
+          <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
         </div>
       </div>
 

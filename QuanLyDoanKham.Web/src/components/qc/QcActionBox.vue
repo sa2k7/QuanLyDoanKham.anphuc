@@ -15,13 +15,24 @@
     <div class="flex gap-4">
       <button
         v-if="!isRejecting"
+        @click="$emit('ai-summary')"
+        :disabled="actionLoading"
+        class="flex-1 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:from-blue-600 hover:to-cyan-600 active:scale-95 transition-all shadow-xl shadow-cyan-200 disabled:opacity-50"
+      >
+        <Sparkles v-if="!actionLoading" :size="20" />
+        <Loader2 v-else class="animate-spin" :size="20" />
+        KẾT LUẬN AI
+      </button>
+
+      <button
+        v-if="!isRejecting"
         @click="$emit('pass')"
         :disabled="actionLoading"
         class="flex-1 bg-emerald-600 text-white py-4 rounded-2xl font-black flex items-center justify-center gap-2 hover:bg-emerald-700 active:scale-95 transition-all shadow-xl shadow-emerald-200 disabled:opacity-50"
       >
         <CheckCircle2 v-if="!actionLoading" :size="20" />
         <Loader2 v-else class="animate-spin" :size="20" />
-        QC ĐẠT — DUYỆT HỒ SƠ
+        QC ĐẠT
       </button>
 
       <button
@@ -32,7 +43,7 @@
       >
         <Printer v-if="!actionLoading" :size="20" />
         <Loader2 v-else class="animate-spin" :size="20" />
-        XUẤT BÁO CÁO (PDF)
+        IN KẾT QUẢ (PDF)
       </button>
 
       <button
@@ -43,7 +54,7 @@
         title="Chỉ định thêm trạm khám"
       >
         <PlusCircle :size="20" />
-        THÊM TRẠM
+        THÊM
       </button>
 
       <button
@@ -75,7 +86,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { CheckCircle2, Loader2, Send, Printer, PlusCircle } from 'lucide-vue-next'
+import { CheckCircle2, Loader2, Send, Printer, PlusCircle, Sparkles } from 'lucide-vue-next'
 
 defineProps({
   actionLoading: {
@@ -88,7 +99,7 @@ defineProps({
   }
 })
 
-const emit = defineEmits(['pass', 'rework', 'download-pdf', 'assign-extra'])
+const emit = defineEmits(['pass', 'rework', 'download-pdf', 'assign-extra', 'ai-summary'])
 
 const isRejecting = ref(false)
 const reworkReason = ref('')

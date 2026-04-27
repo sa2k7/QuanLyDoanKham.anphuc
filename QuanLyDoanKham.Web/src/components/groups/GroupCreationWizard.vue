@@ -19,28 +19,45 @@
     </div>
 
     <!-- Mode: Manual -->
-    <form v-if="createMode === 'manual'" @submit.prevent="handleManualSubmit" class="flex items-end gap-4 min-w-full">
-        <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
-            <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Hợp đồng mục tiêu</label>
-            <select v-model="manualData.healthContractId" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] uppercase px-4 focus:ring-2 focus:ring-indigo-500/10 outline-none">
-                <option :value="null" disabled>-- Chọn hợp đồng --</option>
-                <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                    [{{ c.contractCode || '---' }}] {{ c.contractName || c.companyName }}
-                </option>
-            </select>
+    <form v-if="createMode === 'manual'" @submit.prevent="handleManualSubmit" class="space-y-4">
+        <div class="flex items-end gap-4 min-w-full">
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Hợp đồng mục tiêu</label>
+                <select v-model="manualData.healthContractId" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] uppercase px-4 focus:ring-2 focus:ring-indigo-500/10 outline-none">
+                    <option :value="null" disabled>-- Chọn hợp đồng --</option>
+                    <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
+                        [{{ c.contractCode || '---' }}] {{ c.contractName || c.companyName }}
+                    </option>
+                </select>
+            </div>
+            <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đoàn khám</label>
+                <input v-model="manualData.groupName" required class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="VD: Khám sức khỏe CB-CNV đợt 1" />
+            </div>
+            <div class="flex-[2] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày triển khai</label>
+                <input v-model="manualData.examDate" type="date" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] px-4" />
+            </div>
         </div>
-        <div class="flex-[3] min-w-0 flex flex-col gap-1.5">
-            <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đoàn khám</label>
-            <input v-model="manualData.groupName" required class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="VD: Khám sức khỏe CB-CNV đợt 1" />
+
+        <div class="flex items-end gap-4 min-w-full">
+            <div class="flex-[2] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Giờ bắt đầu khám</label>
+                <input v-model="manualData.startTime" class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="VD: 07:30" />
+            </div>
+            <div class="flex-[2] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Giờ xuất phát</label>
+                <input v-model="manualData.departureTime" class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="VD: 05:30" />
+            </div>
+            <div class="flex-[5] min-w-0 flex flex-col gap-1.5">
+                <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Nội dung khám</label>
+                <input v-model="manualData.examContent" class="input-premium bg-white border-slate-200 w-full h-11 text-[11px] font-black px-4" placeholder="VD: TỔNG QUÁT, KHÁM PHỤ KHOA..." />
+            </div>
+            <button type="submit" :disabled="isLoading" class="h-11 px-8 rounded-xl bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2">
+                <Loader2 v-if="isLoading" class="w-3 h-3 animate-spin" />
+                KÍCH HOẠT ĐOÀN MỚI
+            </button>
         </div>
-        <div class="flex-[2] min-w-0 flex flex-col gap-1.5">
-            <label class="text-[9px] font-black uppercase tracking-widest text-slate-400 ml-1">Ngày triển khai</label>
-            <input v-model="manualData.examDate" type="date" required class="input-premium bg-white border-slate-200 w-full h-11 font-black text-[11px] px-4" />
-        </div>
-        <button type="submit" :disabled="isLoading" class="h-11 px-8 rounded-xl bg-slate-800 text-white font-black text-[10px] uppercase tracking-widest hover:bg-slate-900 transition-all shadow-lg active:scale-95 shrink-0 flex items-center justify-center gap-2">
-            <Loader2 v-if="isLoading" class="w-3 h-3 animate-spin" />
-            KÍCH HOẠT ĐOÀN MỚI
-        </button>
     </form>
 
     <!-- Mode: Auto-Create -->
@@ -97,7 +114,10 @@ const createMode = ref('manual')
 const manualData = ref({
   healthContractId: null,
   groupName: '',
-  examDate: new Date().toISOString().split('T')[0]
+  examDate: new Date().toISOString().split('T')[0],
+  startTime: '',
+  departureTime: '',
+  examContent: 'TỔNG QUÁT'
 })
 
 const autoData = ref({

@@ -5,6 +5,7 @@ using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 using QuanLyDoanKham.API.Services.MedicalGroups;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,19 +22,22 @@ namespace QuanLyDoanKham.API.Controllers
         private readonly IMedicalGroupAutoAssignmentService _autoAssignmentService;
         private readonly IGroupLifecycleService _lifecycleService;
         private readonly Services.QrService _qrService;
+        private readonly Services.Exports.IExportService _exportService;
 
         public MedicalGroupsController(
             ApplicationDbContext context,
             Services.IGeminiService geminiService,
             IMedicalGroupAutoAssignmentService autoAssignmentService,
             IGroupLifecycleService lifecycleService,
-            Services.QrService qrService)
+            Services.QrService qrService,
+            Services.Exports.IExportService exportService)
         {
             _context = context;
             _geminiService = geminiService;
             _autoAssignmentService = autoAssignmentService;
             _lifecycleService = lifecycleService;
             _qrService = qrService;
+            _exportService = exportService;
         }
 
         // GET: api/MedicalGroups
@@ -55,6 +59,9 @@ namespace QuanLyDoanKham.API.Controllers
                     ShortName = g.HealthContract != null && g.HealthContract.Company != null ? g.HealthContract.Company.ShortName : null,
                     CompanyName = g.HealthContract != null && g.HealthContract.Company != null ? g.HealthContract.Company.CompanyName : null,
                     Status = g.Status,
+                    StartTime = g.StartTime,
+                    DepartureTime = g.DepartureTime,
+                    ExamContent = g.ExamContent,
                     ImportFilePath = g.ImportFilePath
                 })
                 .ToListAsync();
@@ -100,10 +107,10 @@ namespace QuanLyDoanKham.API.Controllers
             if (contract == null) return NotFound("Không tìm thấy hợp đồng.");
             
             // Chặn tạo đoàn khám cho hợp đồng đã kết thúc hoặc bị khóa
-            if (contract.Status == "Finished" || contract.Status == "Locked" || contract.Status == "Rejected")
+            if (contract.Status == ContractStatus.Finished || contract.Status == ContractStatus.Locked || contract.Status == ContractStatus.Rejected)
                 return BadRequest($"Hợp đồng đang ở trạng thái '{contract.Status}', không thể tạo thêm đoàn khám.");
 
-            if (contract.Status != "Active" && contract.Status != "Approved") 
+            if (contract.Status != ContractStatus.Active && contract.Status != ContractStatus.Approved) 
                 return BadRequest("Hợp đồng chưa được phê duyệt. Vui lòng duyệt hợp đồng trước khi tạo đoàn khám.");
 
             var entity = new MedicalGroup
@@ -112,6 +119,9 @@ namespace QuanLyDoanKham.API.Controllers
                 ExamDate = dto.ExamDate,
                 HealthContractId = dto.HealthContractId,
                 Status = "Open",
+                StartTime = dto.StartTime,
+                DepartureTime = dto.DepartureTime,
+                ExamContent = dto.ExamContent ?? "TỔNG QUÁT",
                 ImportFilePath = dto.ImportFilePath,
                 CreatedAt = DateTime.Now,
                 CreatedBy = User.Identity?.Name ?? "system"
@@ -135,6 +145,9 @@ namespace QuanLyDoanKham.API.Controllers
             group.GroupName = dto.GroupName;
             group.ExamDate = dto.ExamDate;
             group.Status = dto.Status ?? group.Status;
+            group.StartTime = dto.StartTime;
+            group.DepartureTime = dto.DepartureTime;
+            group.ExamContent = dto.ExamContent;
             group.ImportFilePath = dto.ImportFilePath;
 
             await _context.SaveChangesAsync();
@@ -150,7 +163,7 @@ namespace QuanLyDoanKham.API.Controllers
                 .Include(c => c.Company)
                 .FirstOrDefaultAsync(c => c.HealthContractId == contractId);
             if (contract == null) return NotFound();
-            if (contract.Status != "Approved" && contract.Status != "Active")
+            if (contract.Status != ContractStatus.Approved && contract.Status != ContractStatus.Active)
                 return BadRequest("Hợp đồng chưa được duyệt hoặc chưa kích hoạt.");
 
             var start = contract.StartDate.Date;
@@ -342,7 +355,12 @@ namespace QuanLyDoanKham.API.Controllers
                     CalculatedSalary = gsd.CalculatedSalary,
                     WorkPosition = gsd.WorkPosition,
                     PositionId = gsd.PositionId,
-                    WorkStatus = gsd.WorkStatus
+                    WorkStatus = gsd.WorkStatus,
+                    PickupLocation = gsd.PickupLocation,
+                    Note = gsd.Note,
+                    BirthYear = gsd.Staff != null ? gsd.Staff.BirthYear : null,
+                    PhoneNumber = gsd.Staff != null ? gsd.Staff.PhoneNumber : null,
+                    EmployeeType = gsd.Staff != null ? gsd.Staff.EmployeeType : null
                 })
                 .ToListAsync();
         }
@@ -383,6 +401,7 @@ namespace QuanLyDoanKham.API.Controllers
                 WorkPosition = dto.WorkPosition,
                 PositionId = dto.PositionId,
                 WorkStatus = dto.WorkStatus ?? "Đang chờ",
+                PickupLocation = dto.PickupLocation,
                 AssignedByUserId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : null,
                 AssignedAt = DateTime.UtcNow
             };
@@ -439,7 +458,7 @@ namespace QuanLyDoanKham.API.Controllers
         {
             var contract = await _context.Contracts.Include(c => c.Company).FirstOrDefaultAsync(c => c.HealthContractId == contractId);
             if (contract == null) return NotFound("Hợp đồng không khả dụng.");
-            if (contract.Status != "Active" && contract.Status != "Approved") return BadRequest("Hợp đồng chưa được phê duyệt.");
+            if (contract.Status != ContractStatus.Active && contract.Status != ContractStatus.Approved) return BadRequest("Hợp đồng chưa được phê duyệt.");
 
             var existingGroupsCount = await _context.MedicalGroups.CountAsync(g => g.HealthContractId == contractId);
             
@@ -691,42 +710,122 @@ namespace QuanLyDoanKham.API.Controllers
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> ExportGroupStaffExcel(int id)
         {
-            var group = await _context.MedicalGroups.FindAsync(id);
+            var group = await _context.MedicalGroups
+                .Include(g => g.HealthContract)
+                .ThenInclude(c => c!.Company)
+                .FirstOrDefaultAsync(g => g.GroupId == id);
+
             if (group == null) return NotFound();
 
             var staff = await _context.GroupStaffDetails
                 .Include(gsd => gsd.Staff)
                 .Where(gsd => gsd.GroupId == id)
+                .OrderBy(gsd => gsd.PositionId)
                 .ToListAsync();
 
             using (var workbook = new ClosedXML.Excel.XLWorkbook())
             {
-                var worksheet = workbook.Worksheets.Add("DoiNguDiKham");
-                worksheet.Cell(1, 1).Value = $"DANH SÁCH NHÂN SỰ: {group.GroupName}";
-                worksheet.Range(1, 1, 1, 5).Merge().Style.Font.Bold = true;
+                var worksheet = workbook.Worksheets.Add("Phân công nhân sự");
                 
-                worksheet.Cell(3, 1).Value = "Mã NV";
-                worksheet.Cell(3, 2).Value = "Họ và Tên";
-                worksheet.Cell(3, 3).Value = "Vị trí tại đoàn";
-                worksheet.Cell(3, 4).Value = "Cấp bậc";
-                worksheet.Cell(3, 5).Value = "Ca làm";
+                // --- 1. HEADER TITLE ---
+                var titleCell = worksheet.Cell(1, 1);
+                titleCell.Value = "DANH SÁCH NHÂN SỰ ĐI ĐOÀN KHÁM SỨC KHỎE";
+                worksheet.Range(1, 1, 1, 10).Merge().Style
+                    .Font.SetBold(true)
+                    .Font.SetFontSize(16)
+                    .Font.SetFontColor(ClosedXML.Excel.XLColor.White)
+                    .Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center)
+                    .Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.FromHtml("#1e40af")); // Màu xanh Blue chuyên nghiệp
+                worksheet.Row(1).Height = 40;
 
-                worksheet.Range(3, 1, 3, 5).Style.Font.Bold = true;
+                // --- 2. ADMINISTRATIVE INFO ---
+                worksheet.Cell(3, 1).Value = "Đoàn khám:";
+                worksheet.Cell(3, 2).Value = group.GroupName;
+                worksheet.Range(3, 2, 3, 4).Merge().Style.Font.SetBold(true);
 
+                worksheet.Cell(3, 6).Value = "Ngày khám:";
+                worksheet.Cell(3, 7).Value = group.ExamDate.ToString("dd/MM/yyyy");
+                worksheet.Cell(3, 7).Style.Font.SetBold(true);
+
+                worksheet.Cell(4, 1).Value = "Nội dung:";
+                worksheet.Cell(4, 2).Value = group.ExamContent ?? "TỔNG QUÁT";
+                worksheet.Range(4, 2, 4, 4).Merge().Style.Font.SetBold(true);
+
+                worksheet.Cell(4, 6).Value = "Giờ khám:";
+                worksheet.Cell(4, 7).Value = group.StartTime ?? "---";
+                worksheet.Cell(4, 7).Style.Font.SetBold(true);
+
+                worksheet.Cell(5, 1).Value = "Công ty:";
+                worksheet.Cell(5, 2).Value = group.HealthContract?.Company?.CompanyName ?? "---";
+                worksheet.Range(5, 2, 5, 4).Merge();
+
+                worksheet.Cell(5, 6).Value = "Giờ xuất phát:";
+                worksheet.Cell(5, 7).Value = group.DepartureTime ?? "---";
+                worksheet.Cell(5, 7).Style.Font.SetBold(true).Font.SetFontColor(ClosedXML.Excel.XLColor.Red);
+
+                // --- 3. TABLE HEADERS ---
+                string[] headers = { "STT", "HỌ VÀ TÊN", "CÔNG VIỆC (VỊ TRÍ)", "NĂM SINH", "CHỨC DANH", "ĐIỆN THOẠI", "ĐƠN VỊ", "GHI CHÚ", "ĐÓN TẠI", "KÝ TÊN" };
+                for (int i = 0; i < headers.Length; i++)
+                {
+                    var cell = worksheet.Cell(7, i + 1);
+                    cell.Value = headers[i];
+                    cell.Style
+                        .Font.SetBold(true)
+                        .Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center)
+                        .Fill.SetBackgroundColor(ClosedXML.Excel.XLColor.FromHtml("#f1f5f9"))
+                        .Border.SetOutsideBorder(ClosedXML.Excel.XLBorderStyleValues.Thin);
+                }
+                worksheet.Row(7).Height = 25;
+
+                // --- 4. DATA ROWS ---
+                int startRow = 8;
                 for (int i = 0; i < staff.Count; i++)
                 {
-                    worksheet.Cell(i + 4, 1).Value = staff[i].Staff?.EmployeeCode;
-                    worksheet.Cell(i + 4, 2).Value = staff[i].Staff?.FullName;
-                    worksheet.Cell(i + 4, 3).Value = staff[i].WorkPosition;
-                    worksheet.Cell(i + 4, 4).Value = staff[i].Staff?.JobTitle;
-                    worksheet.Cell(i + 4, 5).Value = staff[i].ShiftType == 1 ? "Cả ngày" : "Nửa ngày";
+                    var s = staff[i];
+                    worksheet.Cell(startRow + i, 1).Value = i + 1;
+                    worksheet.Cell(startRow + i, 2).Value = s.Staff?.FullName;
+                    worksheet.Cell(startRow + i, 3).Value = s.WorkPosition;
+                    worksheet.Cell(startRow + i, 4).Value = s.Staff?.BirthYear;
+                    worksheet.Cell(startRow + i, 5).Value = s.Staff?.JobTitle;
+                    worksheet.Cell(startRow + i, 6).Value = s.Staff?.PhoneNumber;
+                    worksheet.Cell(startRow + i, 7).Value = (s.Staff?.EmployeeType == "Internal" || s.Staff?.EmployeeType == "NoiBo") ? "NỘI BỘ" : "THUÊ NGOÀI";
+                    worksheet.Cell(startRow + i, 8).Value = s.Note;
+                    worksheet.Cell(startRow + i, 9).Value = s.PickupLocation;
+                    worksheet.Cell(startRow + i, 10).Value = ""; // Ký tên
+
+                    // Style row
+                    var rowRange = worksheet.Range(startRow + i, 1, startRow + i, 10);
+                    rowRange.Style.Border.SetOutsideBorder(ClosedXML.Excel.XLBorderStyleValues.Thin);
+                    rowRange.Style.Alignment.SetVertical(ClosedXML.Excel.XLAlignmentVerticalValues.Center);
+                    worksheet.Cell(startRow + i, 1).Style.Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center);
+                    worksheet.Cell(startRow + i, 4).Style.Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center); // Năm sinh
                 }
+
+                // --- 5. FOOTER & SIGNATURE ---
+                int footerRow = startRow + staff.Count + 2;
+                var dateRange = worksheet.Range(footerRow, 8, footerRow, 10);
+                dateRange.Merge().Value = $"Ngày {DateTime.Now:dd} tháng {DateTime.Now:MM} năm {DateTime.Now:yyyy}";
+                dateRange.Style.Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center).Font.SetItalic(true);
+                
+                var signLabelRange = worksheet.Range(footerRow + 1, 8, footerRow + 1, 10);
+                signLabelRange.Merge().Value = "NGƯỜI LẬP BẢNG";
+                signLabelRange.Style.Font.SetBold(true).Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center);
+                
+                var userNameRange = worksheet.Range(footerRow + 5, 8, footerRow + 5, 10);
+                userNameRange.Merge().Value = User.Identity?.Name ?? "Quản trị viên";
+                userNameRange.Style.Font.SetBold(true).Alignment.SetHorizontal(ClosedXML.Excel.XLAlignmentHorizontalValues.Center);
+
+                // Auto adjust columns
                 worksheet.Columns().AdjustToContents();
+                worksheet.Column(1).Width = 5; // STT
+                worksheet.Column(2).Width = 30; // Họ tên
+                worksheet.Column(3).Width = 20; // Vị trí
+                worksheet.Column(10).Width = 15; // Ký tên
 
                 using (var stream = new MemoryStream())
                 {
                     workbook.SaveAs(stream);
-                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"NhanSu_{group.GroupName}.xlsx");
+                    return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"PhanCong_{group.GroupName}.xlsx");
                 }
             }
         }
@@ -788,34 +887,39 @@ namespace QuanLyDoanKham.API.Controllers
             try {
                 var aiResponse = await _geminiService.GetStaffSuggestionAsync(prompt.ToString());
                 
-                // 1. Trích xuất mảng JSON bằng Regex (Tìm từ [ đến ])
-                var match = Regex.Match(aiResponse, @"\[[\s\S]*\]", RegexOptions.Multiline);
-                if (match.Success) {
-                    aiResponse = match.Value;
-                    
-                    // 2. Xóa bỏ dấu phẩy thừa trước dấu đóng ngoặc (Trailing Commas)
-                    // Ví dụ: [..., {"id": 1}, ] -> [..., {"id": 1}]
-                    aiResponse = Regex.Replace(aiResponse, @",(\s*[\]\}])", "$1");
+                // Loại bỏ Markdown Wrapper nếu có (AI đôi khi vẫn trả về ```json ... ``` dù đã set mimeType)
+                if (aiResponse.StartsWith("```json"))
+                {
+                    aiResponse = aiResponse.Substring(7);
+                    if (aiResponse.EndsWith("```"))
+                    {
+                        aiResponse = aiResponse.Substring(0, aiResponse.Length - 3);
+                    }
+                }
+                else if (aiResponse.StartsWith("```"))
+                {
+                    aiResponse = aiResponse.Substring(3);
+                    if (aiResponse.EndsWith("```"))
+                    {
+                        aiResponse = aiResponse.Substring(0, aiResponse.Length - 3);
+                    }
                 }
                 
-                return Ok(aiResponse);
+                aiResponse = aiResponse.Trim();
+
+                // Kiểm tra xem parse có thành công không
+                using var jsonDoc = System.Text.Json.JsonDocument.Parse(aiResponse);
+                
+                // Return original JSON safely as structure
+                return Content(aiResponse, "application/json");
+            } catch (System.Text.Json.JsonException jsonEx) {
+                // Log lỗi chi tiết ra console
+                Console.WriteLine($"[AI_JSON_ERROR] {DateTime.Now}: {jsonEx.Message}");
+                return BadRequest("AI trả về chuỗi JSON không hợp lệ. Vui lòng thử lại.");
             } catch (Exception ex) {
-                // Log lỗi chi tiết ra console để quản trị viên kiểm tra
                 Console.WriteLine($"[AI_ERROR] {DateTime.Now}: {ex.Message}");
                 return BadRequest("Lỗi khi phân tích Dữ liệu AI: " + ex.Message);
             }
-        }
-
-        // TEST: api/MedicalGroups/{id}/ai-suggest-staff (GET)
-        [HttpGet("{id}/ai-suggest-staff")]
-        [AllowAnonymous] // Cho phép test trực tiếp bằng browser
-        public IActionResult TestAiRoute(int id)
-        {
-            return Ok(new { 
-                message = "Kết nối Backend OK! Route AI đã sẵn sàng.", 
-                groupId = id,
-                timestamp = DateTime.Now 
-            });
         }
 
 
@@ -967,5 +1071,291 @@ namespace QuanLyDoanKham.API.Controllers
                 Supplies = result
             });
         }
+
+        // GET: api/MedicalGroups/{id}/ai-suggest-staff
+        [HttpGet("{id}/ai-suggest-staff")]
+        [AuthorizePermission("AI.SuggestStaff")]
+        public async Task<IActionResult> GetAiStaffSuggestions(int id, [FromQuery] string? positionName)
+        {
+            var suggestionService = new StaffSuggestionService(_context);
+
+            List<StaffSuggestionResult> suggestions;
+            if (!string.IsNullOrEmpty(positionName))
+            {
+                suggestions = await suggestionService.SuggestStaffForPositionAsync(id, positionName);
+            }
+            else
+            {
+                suggestions = await suggestionService.SuggestStaffForGroupAsync(id);
+            }
+
+            return Ok(new
+            {
+                groupId = id,
+                positionName,
+                totalSuggestions = suggestions.Count,
+                suggestions = suggestions.Select(s => new
+                {
+                    s.StaffId,
+                    s.StaffName,
+                    s.StaffType,
+                    s.JobTitle,
+                    s.PositionName,
+                    s.Score,
+                    s.Reason
+                })
+            });
+        }
+
+        // POST: api/MedicalGroups/{id}/apply-suggestion
+        [HttpPost("{id}/apply-suggestion")]
+        [AuthorizePermission("DoanKham.AssignStaff")]
+        public async Task<IActionResult> ApplyStaffSuggestion(int id, [FromBody] ApplySuggestionRequest request)
+        {
+            var group = await _context.MedicalGroups.FindAsync(id);
+            if (group == null) return NotFound("Không tìm thấy đoàn khám");
+
+            var staff = await _context.Staffs.FindAsync(request.StaffId);
+            if (staff == null) return NotFound("Không tìm thấy nhân sự");
+
+            // Kiểm tra nhân sự đã được phân công vào đoàn khám này chưa
+            var existingAssignment = await _context.GroupStaffDetails
+                .FirstOrDefaultAsync(gsd =>
+                    gsd.GroupId == id &&
+                    gsd.StaffId == request.StaffId &&
+                    gsd.ExamDate.Date == group.ExamDate.Date);
+
+            if (existingAssignment != null)
+                return BadRequest(new { message = "Nhân sự đã được phân công vào đoàn khám này" });
+
+            // Kiểm tra nhân sự đã được phân công vào ngày khác chưa
+            var otherAssignment = await _context.GroupStaffDetails
+                .FirstOrDefaultAsync(gsd =>
+                    gsd.StaffId == request.StaffId &&
+                    gsd.ExamDate.Date == group.ExamDate.Date &&
+                    gsd.WorkStatus != "Absent");
+
+            if (otherAssignment != null)
+            {
+                var otherGroup = await _context.MedicalGroups.FindAsync(otherAssignment.GroupId);
+                return BadRequest(new
+                {
+                    message = $"Nhân sự đã được phân công vào đoàn khám khác trong ngày này: {otherGroup?.GroupName}"
+                });
+            }
+
+            // Tạo phân công mới
+            var assignment = new GroupStaffDetail
+            {
+                GroupId = id,
+                StaffId = request.StaffId,
+                WorkPosition = request.PositionName,
+                ExamDate = group.ExamDate,
+                WorkStatus = "Pending",
+                AssignedAt = DateTime.Now,
+                AssignedByUserId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : null
+            };
+
+            _context.GroupStaffDetails.Add(assignment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Đã áp dụng gợi ý phân công",
+                assignmentId = assignment.Id,
+                staffId = request.StaffId,
+                staffName = staff.FullName,
+                positionName = request.PositionName
+            });
+        }
+
+        // GET: api/MedicalGroups/{id}/patients
+        [HttpGet("{id}/patients")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> GetGroupPatients(int id)
+        {
+            var patients = await _context.MedicalRecords
+                .Include(mr => mr.Patient)
+                .Where(mr => mr.GroupId == id)
+                .Select(mr => new
+                {
+                    mr.PatientId,
+                    mr.FullName,
+                    mr.DateOfBirth,
+                    mr.Gender,
+                    PhoneNumber = mr.Patient != null ? mr.Patient.PhoneNumber : "",
+                    mr.Department,
+                    ExamFunction = "",
+                    Notes = "",
+                    AddedAt = mr.CreatedAt
+                })
+                .ToListAsync();
+
+            return Ok(patients);
+        }
+
+        // POST: api/MedicalGroups/{id}/patients/import
+        [HttpPost("{id}/patients/import")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> ImportPatients(int id, [FromBody] List<PatientBatchImportDto> patients)
+        {
+            var group = await _context.MedicalGroups.FindAsync(id);
+            if (group == null) return NotFound("Không tìm thấy đoàn khám");
+
+            var userId = User.FindFirst("UserId")?.Value ?? "system";
+            var importBatchId = Guid.NewGuid().ToString("N").Substring(0, 8);
+            var importedCount = 0;
+            var errors = new List<string>();
+
+            foreach (var patientDto in patients)
+            {
+                try
+                {
+                    // Kiểm tra trùng lặp theo IDCardNumber
+                    if (!string.IsNullOrEmpty(patientDto.IDCardNumber))
+                    {
+                        var existingPatient = await _context.Patients
+                            .FirstOrDefaultAsync(p => p.IDCardNumber == patientDto.IDCardNumber);
+
+                        Patient patient;
+                        if (existingPatient != null)
+                        {
+                            // Cập nhật thông tin nếu đã tồn tại
+                            existingPatient.FullName = patientDto.FullName;
+                            existingPatient.PhoneNumber = patientDto.PhoneNumber;
+                            existingPatient.Department = patientDto.Department;
+                            patient = existingPatient;
+                        }
+                        else
+                        {
+                            // Tạo bệnh nhân mới
+                            patient = new Patient
+                            {
+                                FullName = patientDto.FullName,
+                                DateOfBirth = patientDto.DateOfBirth ?? DateTime.Now.AddYears(-30),
+                                Gender = patientDto.Gender,
+                                IDCardNumber = patientDto.IDCardNumber,
+                                PhoneNumber = patientDto.PhoneNumber,
+                                Department = patientDto.Department,
+                                HealthContractId = group.HealthContractId,
+                                CreatedDate = DateTime.Now
+                            };
+                            _context.Patients.Add(patient);
+                            await _context.SaveChangesAsync();
+                        }
+
+                        // Kiểm tra đã có trong đoàn khám này chưa
+                        var existingInGroup = await _context.MedicalRecords
+                            .AnyAsync(mr => mr.GroupId == id && mr.PatientId == patient.PatientId);
+
+                        if (!existingInGroup)
+                        {
+                            // Thêm vào đoàn khám
+                            var record = new MedicalRecord
+                            {
+                                GroupId = id,
+                                PatientId = patient.PatientId,
+                                FullName = patient.FullName,
+                                DateOfBirth = patient.DateOfBirth,
+                                Gender = patient.Gender,
+                                IDCardNumber = patient.IDCardNumber,
+                                Department = patient.Department,
+                                QrToken = Guid.NewGuid().ToString("N"),
+                                Status = "CREATED",
+                                CreatedAt = DateTime.Now
+                            };
+                            _context.MedicalRecords.Add(record);
+                            importedCount++;
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    errors.Add($"Lỗi với bệnh nhân {patientDto.FullName}: {ex.Message}");
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = $"Đã import {importedCount} bệnh nhân",
+                importBatchId,
+                importedCount,
+                errors = errors.Count > 0 ? errors : null
+            });
+        }
+
+        // DELETE: api/MedicalGroups/{id}/patients/{patientId}
+        [HttpDelete("{id}/patients/{patientId}")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> RemovePatientFromGroup(int id, int patientId)
+        {
+            var record = await _context.MedicalRecords
+                .FirstOrDefaultAsync(mr => mr.GroupId == id && mr.PatientId == patientId);
+
+            if (record == null) return NotFound("Bệnh nhân không có trong đoàn khám này");
+
+            _context.MedicalRecords.Remove(record);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đã xóa bệnh nhân khỏi đoàn khám" });
+        }
+
+        // ================================================================
+        // GET: api/MedicalGroups/{id}/export-patients — Export DS bệnh nhân
+        // ================================================================
+        [HttpGet("{id}/export-patients")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> ExportPatients(int id)
+        {
+            try
+            {
+                var bytes = await _exportService.ExportPatientsByGroupAsync(id);
+                return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"DSCN_Doan{id}_{DateTime.Now:yyyyMMdd}.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // ================================================================
+        // GET: api/MedicalGroups/{id}/export-pnl — Export P&L đoàn khám
+        // ================================================================
+        [HttpGet("{id}/export-pnl")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> ExportPnl(int id)
+        {
+            try
+            {
+                var bytes = await _exportService.ExportGroupPnlAsync(id);
+                return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"PNL_Doan{id}_{DateTime.Now:yyyyMMdd}.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+    }
+
+    public class ApplySuggestionRequest
+    {
+        public int StaffId { get; set; }
+        public string PositionName { get; set; } = null!;
+    }
+
+    public class PatientBatchImportDto
+    {
+        public string FullName { get; set; } = null!;
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? IDCardNumber { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Department { get; set; }
+        public string? ExamFunction { get; set; }
+        public string? Notes { get; set; }
     }
 }

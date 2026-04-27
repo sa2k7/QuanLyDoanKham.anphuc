@@ -5,6 +5,7 @@ using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Services;
 using QuanLyDoanKham.API.Services.MedicalRecords;
 
 namespace QuanLyDoanKham.API.Controllers
@@ -16,11 +17,16 @@ namespace QuanLyDoanKham.API.Controllers
     {
         private readonly IMedicalRecordService _medicalRecordService;
         private readonly IMedicalReportPdfGenerator _pdfGenerator;
+        private readonly IMedicalRecordStateMachine _stateMachine;
 
-        public MedicalRecordsController(IMedicalRecordService medicalRecordService, IMedicalReportPdfGenerator pdfGenerator)
+        public MedicalRecordsController(
+            IMedicalRecordService medicalRecordService, 
+            IMedicalReportPdfGenerator pdfGenerator,
+            IMedicalRecordStateMachine stateMachine)
         {
             _medicalRecordService = medicalRecordService;
             _pdfGenerator = pdfGenerator;
+            _stateMachine = stateMachine;
         }
 
         // POST: api/MedicalRecords/batch-ingest
@@ -86,41 +92,6 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(record);
         }
 
-        // GET: api/MedicalRecords/queue/{stationCode}
-        [HttpGet("queue/{stationCode}")]
-        [AuthorizePermission("DoanKham.View")]
-        public async Task<IActionResult> GetQueueByStation(string stationCode)
-        {
-            var queue = await _medicalRecordService.GetQueueByStationAsync(stationCode);
-            return Ok(queue);
-        }
-
-        // GET: api/MedicalRecords/queue/{stationCode}/summary
-        [HttpGet("queue/{stationCode}/summary")]
-        [AuthorizePermission("DoanKham.View")]
-        public async Task<IActionResult> GetStationQueueSummary(string stationCode)
-        {
-            var summary = await _medicalRecordService.GetStationQueueSummaryAsync(stationCode);
-            return Ok(summary);
-        }
-
-        // GET: api/MedicalRecords/queue/overview?groupId={groupId}
-        [HttpGet("queue/overview")]
-        [AuthorizePermission("DoanKham.View")]
-        public async Task<IActionResult> GetGroupQueueOverview([FromQuery] int groupId)
-        {
-            var overview = await _medicalRecordService.GetGroupQueueOverviewAsync(groupId);
-            return Ok(overview);
-        }
-
-        // GET: api/MedicalRecords/qc-pending
-        [HttpGet("qc-pending")]
-        [AuthorizePermission("BaoCao.QC")]
-        public async Task<IActionResult> GetQcPendingRecords()
-        {
-            var records = await _medicalRecordService.GetQcPendingRecordsAsync();
-            return Ok(records);
-        }
 
         // GET: api/MedicalRecords/{id}/export-pdf
         [HttpGet("{id}/export-pdf")]
@@ -136,6 +107,76 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        // POST: api/MedicalRecords/{id}/ai-clinical-summary
+        [HttpPost("{id}/ai-clinical-summary")]
+        [AuthorizePermission("KetQua.QCApprove")]
+        public async Task<IActionResult> GetAiClinicalSummary(int id)
+        {
+            var result = await _medicalRecordService.GenerateAiClinicalSummaryAsync(id);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(new { summary = result.Data });
+        }
+
+        // ─── Lifecycle Endpoints (Simplified) ────────────────────────────────
+
+        [HttpPost("{id}/checkin")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> CheckIn(int id)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.CheckInAsync(id, userId);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/finalize")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> FinalizeRecord(int id)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.FinalizeRecordAsync(id, userId);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(result);
+        }
+
+        [HttpPost("{id}/qc-pass")]
+        [AuthorizePermission("KetQua.QCApprove")]
+        public async Task<IActionResult> QcPass(int id)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.QCPassAsync(id, userId);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(new { message = "Hồ sơ đã được duyệt QC thành công." });
+        }
+
+        [HttpPost("{id}/qc-rework")]
+        [AuthorizePermission("KetQua.QCApprove")]
+        public async Task<IActionResult> QcRework(int id, [FromBody] string reason)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.QCReworkAsync(id, userId, reason);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(new { message = "Đã trả hồ sơ về bác sĩ để chỉnh sửa." });
+        }
+
+        [HttpPost("{id}/cancel")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> CancelRecord(int id, [FromBody] string reason)
+        {
+            var userId = User.Identity?.Name ?? "system";
+            var result = await _stateMachine.CancelRecordAsync(id, userId, reason);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+            return Ok(new { message = "Hồ sơ đã được hủy thành công." });
+        }
+
+        [HttpGet("qc-pending")]
+        [AuthorizePermission("KetQua.QCApprove")]
+        public async Task<IActionResult> GetQcPending()
+        {
+            var records = await _medicalRecordService.GetQcPendingRecordsAsync();
+            return Ok(records);
         }
     }
 }

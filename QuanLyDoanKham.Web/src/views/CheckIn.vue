@@ -262,6 +262,7 @@ import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Html5QrcodeScanner } from 'html5-qrcode'
 import { useAuthStore } from '../stores/auth'
+import apiClient from '../services/apiClient'
 import { 
   Hospital, UserCheck, Fingerprint, ArrowRight, RefreshCw, 
   Check, X, Loader2, Users, Calendar, User, MessageSquare, AlertCircle,

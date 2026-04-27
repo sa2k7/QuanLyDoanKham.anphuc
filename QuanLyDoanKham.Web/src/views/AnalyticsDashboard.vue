@@ -1,36 +1,38 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
     <!-- Filters & Header Toolbar -->
-    <div class="sticky top-0 z-40 glass-header p-6 mb-8 flex flex-wrap items-center justify-between gap-6 shadow-sm">
-      <div class="flex items-center gap-4">
-        <div class="p-4 bg-primary/10 rounded-2xl shadow-inner">
+    <div class="sticky top-0 z-40 glass-header p-8 mb-8 flex flex-wrap items-center justify-between gap-6 rounded-[2.5rem] shadow-glass border border-white/40 backdrop-blur-xl">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
           <BarChart3 class="w-8 h-8 text-primary" />
         </div>
         <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1">Báo Cáo Chi Tiết</h2>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Theo dõi hiệu suất & vận hành hệ thống</p>
+          <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Trung Tâm Phân Tích</h1>
+          <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Thống kê hiệu suất & Vận hành (BI Analytics)</p>
         </div>
       </div>
 
       <!-- Filter Controls -->
-      <div class="flex items-center gap-3 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-2 px-3 border-r border-slate-200 py-1">
-           <Calendar class="w-4 h-4 text-slate-400" />
-           <input type="date" v-model="filters.startDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-bold text-slate-600 cursor-pointer focus:ring-0" />
-           <span class="text-slate-300 font-black">→</span>
-           <input type="date" v-model="filters.endDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-bold text-slate-600 cursor-pointer focus:ring-0" />
+      <div class="flex items-center gap-4 bg-white/60 p-3 rounded-[1.5rem] border border-white/40 shadow-inner backdrop-blur-md">
+        <div class="flex items-center gap-4 px-4 border-r border-slate-200/50 py-1">
+           <Calendar class="w-5 h-5 text-slate-400" />
+           <div class="flex items-center gap-2">
+             <input type="date" v-model="filters.startDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
+             <span class="text-slate-300 font-black">→</span>
+             <input type="date" v-model="filters.endDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
+           </div>
         </div>
-        <button @click="fetchReportData" class="p-2 hover:bg-slate-50 rounded-xl transition-all group" title="Làm mới dữ liệu">
-          <RefreshCw class="w-4 h-4 text-slate-500 group-active:rotate-180 transition-transform duration-500" />
+        <button @click="fetchReportData" class="w-12 h-12 flex items-center justify-center hover:bg-white/80 rounded-xl transition-all group shadow-sm bg-white/40" title="Làm mới dữ liệu">
+          <RefreshCw class="w-5 h-5 text-slate-500 group-active:rotate-180 transition-transform duration-500" />
         </button>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button @click="handleExport('PDF')" class="btn-premium secondary shadow-sm">
-          <FileDown class="w-3.5 h-3.5" /> Xuất PDF
+      <div class="flex items-center gap-4">
+        <button @click="handleExport('PDF')" class="btn-premium secondary !rounded-xl !px-6 shadow-sm border border-white/40">
+          <FileDown class="w-4 h-4" /> XUẤT PDF
         </button>
-        <button @click="handleExport('Excel')" class="btn-premium primary">
-          <Download class="w-3.5 h-3.5" /> Tải Excel
+        <button @click="handleExport('Excel')" class="btn-premium primary !rounded-xl !px-8 shadow-lg shadow-primary/20">
+          <Download class="w-4 h-4" /> TẢI EXCEL
         </button>
       </div>
     </div>

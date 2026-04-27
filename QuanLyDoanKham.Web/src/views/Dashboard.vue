@@ -235,163 +235,28 @@
                     </div>
                 </div>
 
-                <div class="mt-8 pt-8 border-t border-slate-100">
                     <p class="text-[9px] font-black text-slate-400 text-center uppercase tracking-widest ">Mật khẩu mặc định sau khi cấp lại: <span class="text-indigo-600 font-black">HealthCare2026</span></p>
-                </div>
             </div>
         </div>
       </Teleport>
 
+
+
+
       <!-- View Container -->
       <div class="p-10">
+          <!-- ══ HOME: Role-Based Panel ══════════════════════════════════════ -->
           <div v-if="activeMenu === 'home'" class="animate-fade-in">
-              <!-- Advanced Dashboard Home -->
-              <div class="mb-12">
-                  <div class="flex flex-col md:flex-row md:items-center gap-4 mb-2">
-                      <h1 class="text-4xl font-black text-slate-800 ">
-                        Chào ngày mới, <span class="text-primary italic">{{ authStore.user?.username }}!</span>
-                      </h1>
-                      <div :class="['inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border-2 shadow-sm', getRoleBadgeClass(authStore.userRole)]">
-                          <Shield class="w-4 h-4" />
-                          Phiên làm việc: {{ i18n.t('roles.' + authStore.userRole) }}
-                      </div>
-                  </div>
-                  <p class="text-slate-400 font-black mt-2">Hôm nay là {{ new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
-              </div>
-
-              <!-- Top Stats View -->
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-                  <div v-for="mod in activeModules" :key="mod.id" 
-                       @click="activeMenu = mod.id"
-                       class="premium-card bg-white/95 backdrop-blur-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(16,185,129,0.15)] transition-all duration-300 rounded-[2rem] p-8 group cursor-pointer relative overflow-hidden">
-                      <div class="absolute -right-4 -bottom-4 w-24 h-24 rotate-12 opacity-[0.03] group-hover:opacity-10 transition-all group-hover:scale-125">
-                          <component :is="mod.icon" class="w-full h-full" />
-                      </div>
-                      <div :class="['w-14 h-14 rounded-3xl flex items-center justify-center mb-6 shadow-inner transition-transform group-hover:translate-x-2 duration-500', mod.color]">
-                          <component :is="mod.icon" class="w-7 h-7" />
-                      </div>
-                      <h3 class="text-lg font-black text-slate-800 mb-1 ">{{ mod.name }}</h3>
-                      <p class="text-xs font-black text-slate-400 leading-relaxed">{{ mod.desc }}</p>
-                  </div>
-              </div>
-
-              <!-- Today's Assignment (Quick Check-in) -->
-              <div v-if="todayAssignment" class="mb-12 animate-fade-in-up">
-                  <div class="premium-card bg-white border-2 border-primary/20 shadow-xl shadow-primary/5 rounded-[3rem] p-8 md:p-10 relative overflow-hidden group">
-                      <!-- Background Pattern -->
-                      <div class="absolute right-0 top-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
-                      
-                      <div class="flex flex-col md:flex-row items-center gap-8 relative z-10">
-                          <!-- Icon Container -->
-                          <div class="w-24 h-24 bg-primary/10 rounded-[2rem] flex items-center justify-center text-primary flex-shrink-0 shadow-inner group-hover:rotate-6 transition-transform duration-500">
-                              <CalendarCheck class="w-12 h-12" />
-                          </div>
-
-                          <!-- Info -->
-                          <div class="flex-1 text-center md:text-left">
-                              <div class="inline-flex items-center gap-2 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black uppercase tracking-widest mb-3 border border-amber-100">
-                                  <Activity class="w-3 h-3" /> Nhiệm vụ hôm nay
-                              </div>
-                              <h2 class="text-3xl font-black text-slate-800 leading-tight mb-2">{{ todayAssignment.groupName }}</h2>
-                              <div class="flex flex-wrap justify-center md:justify-start items-center gap-4 text-slate-400 font-bold">
-                                  <div class="flex items-center gap-2">
-                                      <Building class="w-4 h-4 text-slate-300" />
-                                      {{ todayAssignment.companyName || 'N/A' }}
-                                  </div>
-                                  <div class="w-1 h-1 rounded-full bg-slate-200"></div>
-                                  <div class="flex items-center gap-2">
-                                      <UserCheck class="w-4 h-4 text-slate-300" />
-                                      Vị trí: <span class="text-slate-600">{{ todayAssignment.workPosition }}</span>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <!-- Action Buttons -->
-                          <div class="flex-shrink-0 flex flex-col items-center gap-3">
-                              <!-- Nếu chưa check-in -->
-                              <template v-if="!todayAssignment.checkInTime">
-                                  <button @click="handleCheckInConfirm" 
-                                          :disabled="isCheckingIn"
-                                          class="px-10 py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all flex items-center gap-3 group/btn">
-                                      <div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-                                      {{ isCheckingIn ? 'Đang xác nhận...' : 'BẤM ĐỂ VÀO ĐOÀN' }}
-                                      <ArrowRight class="w-5 h-5 group-hover/btn:translate-x-1 transition-transform" />
-                                  </button>
-                                  <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Không cần quét mã QR</p>
-                              </template>
-
-                              <!-- Nếu đã check-in nhưng chưa check-out -->
-                              <template v-else-if="!todayAssignment.checkOutTime">
-                                  <div class="flex flex-col items-center gap-3">
-                                      <div class="flex items-center gap-2 text-emerald-600 font-black text-sm">
-                                          <CheckCircle2 class="w-5 h-5" />
-                                          ĐÃ VÀO ĐOÀN LÚC {{ new Date(todayAssignment.checkInTime).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'}) }}
-                                      </div>
-                                      <button @click="handleCheckInConfirm" 
-                                              :disabled="isCheckingIn"
-                                              class="px-8 py-4 bg-slate-900 text-white rounded-xl font-black uppercase tracking-widest shadow-lg hover:bg-slate-700 transition-all flex items-center gap-3">
-                                          Tết thúc & Rời đoàn
-                                      </button>
-                                  </div>
-                              </template>
-
-                              <!-- Đã xong cả hai -->
-                              <template v-else>
-                                  <div class="bg-emerald-50 text-emerald-600 px-6 py-4 rounded-2xl border border-emerald-100 flex items-center gap-3 font-black text-sm">
-                                      <ShieldCheck class="w-6 h-6" />
-                                      HOÀN THÀNH NHIỆM VỤ NGÀY HÔM NAY
-                                  </div>
-                              </template>
-                          </div>
-                      </div>
-                  </div>
-              </div>
-
-              <!-- Welcome & Recent Activity -->
-              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-                  <div class="lg:col-span-2 bg-gradient-to-br from-teal-500 to-primary rounded-[3rem] p-16 text-white relative overflow-hidden shadow-[0_20px_40px_-15px_rgba(16,185,129,0.3)] min-h-[400px]">
-                      <div class="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/10 to-transparent"></div>
-                      <div class="relative z-10 max-w-2xl">
-                        <div class="inline-flex items-center gap-2 px-4 py-2 bg-white/20 rounded-full text-[10px] font-black uppercase tracking-[0.2em] mb-8">
-                           <Sparkles class="w-3 h-3" /> Digital Healthcare Platform
-                        </div>
-                        <h2 class="text-5xl font-black mb-6 leading-none text-white">Vận hành đoàn khám<br/>với tiêu chuẩn số hóa 100%</h2>
-                        <p class="text-emerald-50 text-lg font-medium leading-relaxed mb-10">Tối ưu quy trình điều động nhân sự, quản lý vật tư và kiểm soát dòng tiền chuyên nghiệp hàng đầu.</p>
-                        <div class="flex gap-4">
-                            <button @click="activeMenu = 'groups'" class="px-10 py-5 bg-white text-emerald-700 rounded-2xl font-black uppercase tracking-widest shadow-xl hover:scale-105 active:scale-95 transition-all">Triển khai đoàn</button>
-                            <button @click="activeMenu = 'staff'" class="px-10 py-5 bg-white/20 border border-white/30 backdrop-blur-md text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/30 transition-all shadow-lg">Đội ngũ y tế</button>
-                        </div>
-                      </div>
-                      <Stethoscope class="absolute -right-20 -bottom-20 w-96 h-96 text-white/5 rotate-12" />
-                  </div>
-
-                  <div class="premium-card bg-white/95 backdrop-blur-md border border-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.04)] transition-all duration-300 rounded-[2.5rem] p-10 flex flex-col h-full">
-                      <div class="flex justify-between items-center mb-8">
-                          <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest ">Thông báo mới</h3>
-                          <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center">
-                              <Bell class="w-4 h-4 text-slate-300" />
-                          </div>
-                      </div>
-                      <div class="flex-1 space-y-6 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-                          <div v-for="n in notificationStore.notifications.slice(0, 3)" :key="n.id" 
-                               class="group cursor-pointer p-4 rounded-2xl hover:bg-slate-50 transition-all relative border border-transparent hover:border-slate-100">
-                              <div v-if="!n.isRead" class="absolute -left-1 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-full"></div>
-                              <p :class="['text-xs leading-relaxed mb-2', !n.isRead ? 'text-slate-900 font-black' : 'text-slate-500']">{{ n.message }}</p>
-                              <span class="text-[8px] font-black text-slate-300 uppercase tracking-widest ">{{ new Date(n.createdAt).toLocaleDateString('vi-VN') }}</span>
-                          </div>
-                          
-                          <div v-if="notificationStore.notifications.length === 0" class="py-10 text-center flex flex-col items-center justify-center opacity-30">
-                              <Inbox class="w-10 h-10 mb-4 text-slate-200" />
-                              <p class="text-[10px] font-black uppercase tracking-widest text-slate-300">Không có thông báo mới</p>
-                          </div>
-                      </div>
-                      <button @click="showNotificationDropdown = true" class="mt-8 w-full py-4 bg-slate-50 text-slate-400 hover:text-primary rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all">
-                          XEM TẤT CẢ THÔNG BÁO
-                      </button>
-                  </div>
-              </div>
+            <component
+              :is="currentHomePanel"
+              :today-assignment="todayAssignment"
+              :is-checking-in="isCheckingIn"
+              @check-in="handleCheckInConfirm"
+              @navigate="(id) => { activeMenu = id; isMobileMenuOpen = false }"
+            />
           </div>
 
+          <!-- ══ OTHER MODULES ══════════════════════════════════════════════════ -->
           <div v-else class="animate-fade-in-up">
               <AnalyticsDashboard v-if="activeMenu === 'analytics' || activeMenu === 'reports'" />
               <Companies v-if="activeMenu === 'companies'" />
@@ -402,12 +267,11 @@
               <Permissions v-if="activeMenu === 'permissions'" />
               <SettlementReport v-if="activeMenu === 'settlement-report'" />
               <Patients v-if="activeMenu === 'patients'" />
-              <QueueDashboard v-if="activeMenu === 'oms-dashboard'" />
-
               <Payroll v-if="activeMenu === 'payroll'" />
               <Supplies v-if="activeMenu === 'supplies'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'patients', 'users', 'permissions', 'analytics', 'reports', 'settlement-report', 'oms-dashboard', 'oms-checkin', 'payroll', 'supplies'].includes(activeMenu)" class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'patients', 'users', 'permissions', 'analytics', 'reports', 'settlement-report', 'payroll', 'supplies'].includes(activeMenu)" 
+                   class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
                 </div>
@@ -417,6 +281,9 @@
           </div>
       </div>
     </main>
+  </div>
+
+
 
     <!-- Change Password Modal (Synchronized Styled) -->
     <Teleport to="body">
@@ -462,8 +329,8 @@
           </div>
       </div>
     </Teleport>
-  </div>
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
@@ -473,34 +340,60 @@ import { useI18nStore } from '../stores/i18n'
 import { useNotificationStore } from '../stores/notification'
 import apiClient from '../services/apiClient'
 import logo from '../assets/logo.svg'
-import {   Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3, 
-  LogOut, Search, ArrowRight, ArrowLeft, Sparkles, Bot, Shield, Wallet,
-  User, KeyRound, X, ChevronDown, ChevronLeft, Bell, PlusCircle, Check, ShieldAlert, Inbox,
-  Building, ShieldCheck, CalendarCheck, Menu, UserRound, Activity, Calculator, History, CheckCircle2,
-  LayoutDashboard, ClipboardList, UserCheck, CreditCard, Settings
+import {
+  Stethoscope, Building2, FileText, Users as UsersIcon, Package, BarChart3,
+  LogOut, Search, ArrowRight, Sparkles, Bot, Shield, Wallet,
+  User, KeyRound, X, ChevronDown, ChevronLeft, Bell, Check, ShieldAlert, Inbox,
+  Building, ShieldCheck, CalendarCheck, Menu, UserRound, Activity, Calculator, CheckCircle2,
+  LayoutDashboard, ClipboardList, UserCheck, Settings
 } from 'lucide-vue-next'
 import { useToast } from '../composables/useToast'
 
 const toast = useToast()
 
-// Import Modules
+// ── Role-Based Menu & Home Panels ───────────────────────────────────────────
+import { useRoleMenu } from '../composables/useRoleMenu'
+import AdminHomePanel    from '../components/home/AdminHomePanel.vue'
+import DoctorHomePanel   from '../components/home/DoctorHomePanel.vue'
+import QcHomePanel       from '../components/home/QcHomePanel.vue'
+import FinanceHomePanel  from '../components/home/FinanceHomePanel.vue'
+import ContractHomePanel from '../components/home/ContractHomePanel.vue'
+
+// ── Module Views ─────────────────────────────────────────────────────────────
 import { usePermission } from '../composables/usePermission'
-import Companies from './Companies.vue'
-import Contracts from './Contracts.vue'
-import Staff from './Staff.vue'
-import Groups from './Groups.vue'
+import Companies        from './Companies.vue'
+import Contracts        from './Contracts.vue'
+import Staff            from './Staff.vue'
+import Groups           from './Groups.vue'
 import AnalyticsDashboard from './AnalyticsDashboard.vue'
-import AccountManager from './Users.vue'
-import Permissions from './Permissions.vue'
+import AccountManager   from './Users.vue'
+import Permissions      from './Permissions.vue'
 import SettlementReport from './SettlementReport.vue'
-import Patients from './Patients.vue'
-import QueueDashboard from './oms/QueueDashboard.vue'
-import StationCoordinator from './oms/StationCoordinator.vue'
-import Payroll from './Payroll.vue'
-import Supplies from './Supplies.vue'
+import Patients         from './Patients.vue'
+import Payroll          from './Payroll.vue'
+import Supplies         from './Supplies.vue'
 
 
 const { can } = usePermission()
+
+// ── Role-Based Menu ───────────────────────────────────────────────────────────
+const {
+  filteredMenuItems: roleFilteredMenuItems,
+  homePanel,
+  themeBg,
+  accentClass,
+  greeting: roleGreeting
+} = useRoleMenu()
+
+// Map panel name → component
+const homePanelComponents = {
+  AdminHomePanel,
+  DoctorHomePanel,
+  QcHomePanel,
+  FinanceHomePanel,
+  ContractHomePanel
+}
+const currentHomePanel = computed(() => homePanelComponents[homePanel.value] || AdminHomePanel)
 
 const getRoleDisplayName = (role) => {
   return i18n.t('roles.' + role)
@@ -559,47 +452,28 @@ const handleChangePassword = async () => {
     }
 }
 
+// menuItems kept for breadcrumb/icon lookup & activeModules widget grid on Admin panel
 const menuItems = computed(() => [
-    // 1. Tổng quan
-    { id: 'home', name: 'Tổng quan', icon: LayoutDashboard, color: 'bg-primary-light text-primary', desc: 'Trung tâm điều chuyển.' },
-    
-    // 2. Kinh doanh & Vận hành (Theo thứ tự yêu cầu)
-    { id: 'companies', name: 'Công ty', icon: Building2, color: 'bg-sky-50 text-sky-600', desc: 'Quản lý thông tin công ty.', permission: 'HopDong.View' },
-    { id: 'contracts', name: 'Hợp đồng', icon: FileText, color: 'bg-teal-50 text-teal-600', desc: 'Pháp lý & Ký kết.', permission: 'HopDong.View' },
-    { id: 'groups', name: 'Đoàn khám', icon: Stethoscope, color: 'bg-primary/10 text-primary', desc: 'Vận hành tuyến đầu.', permission: 'DoanKham.View' },
-    { id: 'patients', name: 'Bệnh nhân', icon: UserRound, color: 'bg-sky-50 text-sky-600', desc: 'Hồ sơ sức khỏe.', permission: 'DoanKham.View' },
-    { id: 'supplies', name: 'Vật tư', icon: Package, color: 'bg-violet-50 text-violet-600', desc: 'Kho dược & Thiết bị.', permission: 'Kho.View' },
-    
-    // 3. OMS - Tại điểm khám
-
-    { id: 'oms-dashboard', name: 'Điều phối', icon: Activity, color: 'bg-rose-50 text-rose-600', desc: 'Quản lý hàng chờ.', permission: 'DoanKham.View' },
-    
-    // 4. Tài chính & Nhân sự
-    { id: 'settlement-report', name: 'Quyết toán', icon: Calculator, color: 'bg-emerald-50 text-emerald-600', desc: 'Đối soát doanh thu.', permission: 'BaoCao.View' },
-    { id: 'staff', name: 'Nhân sự', icon: UsersIcon, color: 'bg-rose-50 text-rose-600', desc: 'Đội ngũ y tế.', permission: 'NhanSu.View' },
-    { id: 'payroll', name: 'Tính lương', icon: Wallet, color: 'bg-emerald-50 text-emerald-600', desc: 'Thanh toán thu nhập.', permission: 'Luong.View' },
-    
-    // 5. Phân tích & Hệ thống
-    { id: 'analytics', name: 'Thống kê', icon: BarChart3, color: 'bg-indigo-50 text-indigo-600', desc: 'Báo cáo vận hành.', permission: 'BaoCao.View' },
-    { id: 'users', name: 'Tài khoản', icon: User, color: 'bg-slate-50 text-slate-600', desc: 'Quản trị truy cập.', permission: 'HeThong.UserManage' },
-    { id: 'permissions', name: 'Phân quyền', icon: ShieldCheck, color: 'bg-slate-900 text-white', desc: 'Bảo mật hệ thống.', permission: 'HeThong.RoleManage' },
+    { id: 'home',             name: 'Tổng quan',   icon: LayoutDashboard, color: 'bg-primary-light text-primary',    desc: 'Trung tâm điều chuyển.' },
+    { id: 'companies',        name: 'Công ty',      icon: Building2,       color: 'bg-sky-50 text-sky-600',           desc: 'Quản lý thông tin công ty.',    permission: 'HopDong.View' },
+    { id: 'contracts',        name: 'Hợp đồng',    icon: FileText,        color: 'bg-teal-50 text-teal-600',        desc: 'Pháp lý & Ký kết.',             permission: 'HopDong.View' },
+    { id: 'groups',           name: 'Đoàn khám',   icon: Stethoscope,     color: 'bg-primary/10 text-primary',      desc: 'Vận hành tuyến đầu.',           permission: 'DoanKham.View' },
+    { id: 'patients',         name: 'Bệnh nhân',   icon: UserRound,       color: 'bg-sky-50 text-sky-600',           desc: 'Hồ sơ sức khỏe.',               permission: 'DoanKham.View' },
+    { id: 'supplies',         name: 'Vật tư',      icon: Package,         color: 'bg-violet-50 text-violet-600',    desc: 'Kho dược & Thiết bị.',          permission: 'Kho.View' },
+    { id: 'settlement-report',name: 'Quyết toán',  icon: Calculator,      color: 'bg-emerald-50 text-emerald-600',  desc: 'Đối soát doanh thu.',           permission: 'BaoCao.View' },
+    { id: 'staff',            name: 'Nhân sự',     icon: UsersIcon,       color: 'bg-rose-50 text-rose-600',        desc: 'Đội ngũ y tế.',                 permission: 'NhanSu.View' },
+    { id: 'payroll',          name: 'Tính lương',  icon: Wallet,          color: 'bg-emerald-50 text-emerald-600',  desc: 'Thanh toán thu nhập.',          permission: 'Luong.View' },
+    { id: 'analytics',        name: 'Thống kê',    icon: BarChart3,       color: 'bg-indigo-50 text-indigo-600',    desc: 'Báo cáo vận hành.',             permission: 'BaoCao.View' },
+    { id: 'users',            name: 'Tài khoản',   icon: User,            color: 'bg-slate-50 text-slate-600',      desc: 'Quản trị truy cập.',            permission: 'HeThong.UserManage' },
+    { id: 'permissions',      name: 'Phân quyền',  icon: ShieldCheck,     color: 'bg-slate-900 text-white',         desc: 'Bảo mật hệ thống.',             permission: 'HeThong.RoleManage' },
 ])
 
+const activeModules = computed(() =>
+    menuItems.value.filter(i => i.id !== 'home' && (!i.permission || can(i.permission)))
+)
 
-const activeModules = computed(() => {
-    return menuItems.value.filter(i => {
-        if (i.id === 'home') return false;
-        if (!i.permission) return true;
-        return can(i.permission);
-    });
-})
-
-const filteredMenuItems = computed(() => {
-    return menuItems.value.filter(i => {
-        if (!i.permission) return true;
-        return can(i.permission);
-    });
-})
+// Sidebar dùng filteredMenuItems từ useRoleMenu — đã được lọc theo role profile
+const filteredMenuItems = roleFilteredMenuItems
 
 const activeMenuName = computed(() => menuItems.value.find(i => i.id === activeMenu.value)?.name || '')
 const itemsBreadcrumb = computed(() => activeMenu.value === 'home' ? (i18n.locale === 'vi' ? 'Hệ thống quản lý' : 'Management System') : (i18n.locale === 'vi' ? 'Module quản trị' : 'Admin Module'))
@@ -643,6 +517,25 @@ const handleProcessReset = async (id) => {
     } catch (err) {
         toast.error("Lỗi khi xử lý yêu cầu")
     }
+}
+
+// Live Chart Data state
+const liveStats = ref([
+    { label: 'Check-in', value: 12, colorClass: 'bg-indigo-400' },
+    { label: 'Tim Mạch', value: 35, colorClass: 'bg-rose-400' },
+    { label: 'Siêu âm', value: 48, colorClass: 'bg-teal-400' },
+    { label: 'X-Quang', value: 24, colorClass: 'bg-primary' },
+    { label: 'Tai-Mũi-Họng', value: 15, colorClass: 'bg-violet-400' },
+    { label: 'Tổng quát', value: 65, colorClass: 'bg-emerald-400' },
+    { label: 'Kết luận', value: 10, colorClass: 'bg-amber-400' }
+])
+
+// Simulate Real-time Data Update
+const updateLiveStats = () => {
+    liveStats.value = liveStats.value.map(s => ({
+        ...s,
+        value: Math.max(5, Math.min(100, s.value + Math.floor(Math.random() * 11) - 5))
+    }))
 }
 
 const fetchSearchData = async () => {
@@ -790,6 +683,13 @@ onMounted(() => {
         notificationStore.fetchNotifications()
         fetchTodayAssignment()
     }, 30000)
+
+    // Chart Data polling
+    const chartInterval = setInterval(() => {
+        if (activeMenu.value === 'home') {
+            updateLiveStats()
+        }
+    }, 3000)
 
     window.addEventListener('keydown', handleGlobalKeyDown)
     document.addEventListener('click', (e) => {

@@ -37,6 +37,8 @@ namespace QuanLyDoanKham.API.Data
         // STAFF
         public DbSet<Staff> Staffs { get; set; }
 
+        // DEPARTMENTS & WORK RULES (Obsolete)
+
         // SCHEDULE
         public DbSet<ScheduleCalendar> ScheduleCalendars { get; set; }
 
@@ -62,8 +64,6 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<Notification> Notifications { get; set; }
         public DbSet<Station> Stations { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
-        public DbSet<RecordStationTask> RecordStationTasks { get; set; }
-        public DbSet<StationTaskEvent> StationTaskEvents { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -123,6 +123,11 @@ namespace QuanLyDoanKham.API.Data
                 .WithMany()
                 .HasForeignKey(c => c.CreatedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Map Status Enum to string in DB
+            modelBuilder.Entity<HealthContract>()
+                .Property(c => c.Status)
+                .HasConversion<string>();
 
             // ContractApprovalHistory -> ApprovedByUser (no cascade)
             modelBuilder.Entity<ContractApprovalHistory>()
@@ -329,35 +334,6 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(m => m.PatientId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            // RecordStationTask configurations
-            modelBuilder.Entity<RecordStationTask>()
-                .HasOne(t => t.MedicalRecord)
-                .WithMany(m => m.StationTasks)
-                .HasForeignKey(t => t.MedicalRecordId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<RecordStationTask>()
-                .HasOne(t => t.Station)
-                .WithMany(s => s.Tasks)
-                .HasForeignKey(t => t.StationCode)
-                .OnDelete(DeleteBehavior.Restrict);
-
-            // Performance index for queue queries (plan section 4.5)
-            modelBuilder.Entity<RecordStationTask>()
-                .HasIndex(t => new { t.StationCode, t.Status });
-
-            // StationTaskEvent configurations
-            modelBuilder.Entity<StationTaskEvent>()
-                .HasOne(e => e.Task)
-                .WithMany(t => t.Events)
-                .HasForeignKey(e => e.TaskId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            modelBuilder.Entity<StationTaskEvent>()
-                .HasOne(e => e.ActorUser)
-                .WithMany()
-                .HasForeignKey(e => e.ActorUserId)
-                .OnDelete(DeleteBehavior.SetNull);
 
             modelBuilder.Entity<Station>()
                 .Property(s => s.DefaultMinutesPerPatient)
@@ -440,46 +416,65 @@ namespace QuanLyDoanKham.API.Data
                 new Permission { PermissionId = 51, PermissionKey = "Kho.Edit", PermissionName = "Nhập xuất kho", Module = "Kho" },
                 // Operational module
                 new Permission { PermissionId = 60, PermissionKey = "QuyetToan.Edit", PermissionName = "Sửa phát sinh quyết toán", Module = "TaiChinh" },
-                new Permission { PermissionId = 61, PermissionKey = "DieuPhoi.Edit", PermissionName = "Hủy ca điều phối", Module = "DieuPhoi" },
                 // PHASE 1: New fine-grained financial permissions
                 new Permission { PermissionId = 62, PermissionKey = "QuyetToan.Calculate", PermissionName = "Tính toán quyết toán", Module = "TaiChinh" },
                 new Permission { PermissionId = 63, PermissionKey = "QuyetToan.Finalize", PermissionName = "Chốt xác nhận quyết toán", Module = "TaiChinh" },
                 new Permission { PermissionId = 64, PermissionKey = "BaoCao.ViewFinance", PermissionName = "Xem báo cáo tài chính P&L", Module = "BaoCao" },
-                new Permission { PermissionId = 65, PermissionKey = "BaoCao.Export", PermissionName = "Xuất báo cáo", Module = "BaoCao" }
+                new Permission { PermissionId = 65, PermissionKey = "BaoCao.Export", PermissionName = "Xuất báo cáo", Module = "BaoCao" },
+                // HeThong module
+                new Permission { PermissionId = 100, PermissionKey = "HeThong.UserManage", PermissionName = "Quản lý người dùng", Module = "HeThong" },
+                new Permission { PermissionId = 101, PermissionKey = "HeThong.RoleManage", PermissionName = "Quản lý vai trò & quyền", Module = "HeThong" },
+
+                // PhongBan module (new)
+                new Permission { PermissionId = 110, PermissionKey = "PhongBan.View", PermissionName = "Xem phòng ban", Module = "PhongBan" },
+                new Permission { PermissionId = 111, PermissionKey = "PhongBan.Edit", PermissionName = "Sửa phòng ban", Module = "PhongBan" },
+
+                // WorkRule module (new)
+                new Permission { PermissionId = 120, PermissionKey = "WorkRule.View", PermissionName = "Xem bảng rule chức năng", Module = "WorkRule" },
+                new Permission { PermissionId = 121, PermissionKey = "WorkRule.Edit", PermissionName = "Sửa bảng rule chức năng", Module = "WorkRule" },
+
+                // AI Suggestion module (new)
+                new Permission { PermissionId = 130, PermissionKey = "AI.SuggestStaff", PermissionName = "AI gợi ý phân công nhân sự", Module = "AI" },
+
+                // Inventory Reports module (new)
+                new Permission { PermissionId = 140, PermissionKey = "Kho.Reports", PermissionName = "Xem báo cáo tồn kho", Module = "Kho" },
+                new Permission { PermissionId = 141, PermissionKey = "Kho.Import", PermissionName = "Import phiếu nhập kho", Module = "Kho" },
+                new Permission { PermissionId = 142, PermissionKey = "Kho.Export", PermissionName = "Export phiếu xuất kho", Module = "Kho" }
+
             );
 
             // Seed RolePermissions - Admin gets all (including Phase 1 new permissions)
-            var adminPermissions = new int[] { 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 20, 21, 30, 31, 32, 40, 41, 50, 51, 60, 61, 62, 63, 64, 65 };
+            var adminPermissions = new int[] { 1, 2, 3, 4, 5, 6, 10, 11, 12, 13, 14, 15, 16, 20, 21, 30, 31, 32, 40, 41, 50, 51, 60, 62, 63, 64, 65, 100, 101, 110, 111, 120, 121, 130, 140, 141, 142 };
             var adminRolePerms = adminPermissions.Select((pid, idx) =>
                 new RolePermission { Id = idx + 1, RoleId = 1, PermissionId = pid }).ToList();
 
-            // Contract Manager
-            var contractPermissions = new int[] { 1, 2, 3, 4, 5, 6 };
+            // Contract Manager (HCNS)
+            var contractPermissions = new int[] { 1, 2, 3, 4, 5, 6, 110, 120 };
             var contractRolePerms = contractPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 100 + idx, RoleId = 3, PermissionId = pid }).ToList();
 
             // Medical Group Manager
-            var mgPermissions = new int[] { 10, 11, 12, 13, 14, 15, 16, 21 };
+            var mgPermissions = new int[] { 10, 11, 12, 13, 14, 15, 16, 21, 30, 130 };
             var mgRolePerms = mgPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 200 + idx, RoleId = 5, PermissionId = pid }).ToList();
 
             // Personnel Manager
-            var hrPermissions = new int[] { 14, 21, 32 };
+            var hrPermissions = new int[] { 14, 21, 32, 100, 110 };
             var hrRolePerms = hrPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 300 + idx, RoleId = 2, PermissionId = pid }).ToList();
 
             // Accountant Role - can calculate and view financial reports
-            var accountantPermissions = new int[] { 1, 40, 60, 62, 63, 64, 65 };
+            var accountantPermissions = new int[] { 1, 40, 60, 62, 63, 64, 65, 110 };
             var accountantRolePerms = accountantPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 600 + idx, RoleId = 9, PermissionId = pid }).ToList();
 
             // QA Role
-            var qaPermissions = new int[] { 10, 21, 40, 41 };
+            var qaPermissions = new int[] { 10, 21, 40, 41, 110 };
             var qaRolePerms = qaPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 400 + idx, RoleId = 11, PermissionId = pid }).ToList();
 
             // Warehouse Manager
-            var whPermissions = new int[] { 50, 51 };
+            var whPermissions = new int[] { 50, 51, 140, 141, 142 };
             var whRolePerms = whPermissions.Select((pid, idx) =>
                 new RolePermission { Id = 500 + idx, RoleId = 6, PermissionId = pid }).ToList();
 

@@ -47,6 +47,9 @@ namespace QuanLyDoanKham.API.Models
         public int? AssignedByUserId { get; set; }
         public DateTime? AssignedAt { get; set; }
 
+        [MaxLength(200)]
+        public string? PickupLocation { get; set; } // Ä Ă³n táº¡i
+
         public string? Note { get; set; }
     }
 }

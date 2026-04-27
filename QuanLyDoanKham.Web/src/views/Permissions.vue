@@ -1,16 +1,18 @@
 <template>
-  <div class="permissions-page animate-fade-in">
-    <div class="page-header mb-8">
-      <div>
-        <h1 class="page-title text-2xl font-black text-slate-800 flex items-center gap-3">
-            <div class="w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center shadow-lg">
-                <ShieldAlert class="w-6 h-6" />
-            </div>
-            {{ i18n.t('permissions.title') }}
-        </h1>
-        <p class="page-subtitle text-slate-400 font-black uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('permissions.subtitle') }}</p>
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
+    <div class="max-w-7xl mx-auto w-full">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-8 glass-header p-8 rounded-[2.5rem] shadow-glass border border-white/40">
+        <div class="flex items-center gap-6">
+          <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
+            <ShieldAlert class="w-8 h-8 text-primary" />
+          </div>
+          <div>
+            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Phân Quyền Hệ Thống</h1>
+            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Quản trị vai trò & Quyền hạn truy cập (RBAC Matrix)</p>
+          </div>
+        </div>
       </div>
-    </div>
 
     <!-- Role Tabs -->
     <div class="role-tabs flex flex-wrap gap-3 mb-8">
@@ -98,6 +100,7 @@
             </div>
         </div>
     </Teleport>
+    </div>
   </div>
 </template>
 

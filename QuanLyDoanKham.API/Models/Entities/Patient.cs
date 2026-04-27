@@ -13,6 +13,11 @@ namespace QuanLyDoanKham.API.Models
         [ForeignKey("HealthContractId")]
         public HealthContract? HealthContract { get; set; }
 
+        // Link truc tiep den Doan kham (de import DSCN va loc theo doan)
+        public int? MedicalGroupId { get; set; }
+        [ForeignKey("MedicalGroupId")]
+        public MedicalGroup? MedicalGroup { get; set; }
+
         [Required]
         [MaxLength(100)]
         public string FullName { get; set; } = null!;
@@ -30,6 +35,11 @@ namespace QuanLyDoanKham.API.Models
 
         [MaxLength(100)]
         public string? Department { get; set; }
+
+        [MaxLength(50)]
+        public string? Source { get; set; } = "Manual"; // Manual, ExcelImport
+
+        public string? Notes { get; set; }
 
         public DateTime CreatedDate { get; set; } = DateTime.Now;
     }

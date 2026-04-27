@@ -6,6 +6,7 @@ using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
 using QuanLyDoanKham.API.Services.MedicalRecords;
+using QuanLyDoanKham.API.Services;
 using System.Data.Common;
 
 namespace QuanLyDoanKham.Api.Tests.Services;
@@ -39,7 +40,9 @@ public class MedicalRecordServiceTests : IDisposable
         audienceSection.Setup(s => s.Value).Returns("QLDK-Test-Audience");
         mockConfig.Setup(c => c.GetSection("AppSettings:Audience")).Returns(audienceSection.Object);
 
-        _service = new MedicalRecordService(_db, mockConfig.Object);
+        var mockGemini = new Mock<IGeminiService>();
+
+        _service = new MedicalRecordService(_db, mockConfig.Object, mockGemini.Object);
     }
 
     [Fact]
@@ -103,61 +106,6 @@ public class MedicalRecordServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task GetQueueByStationAsync_ExcludesDoneAndSkipped()
-    {
-        var group = await SeedGroupAsync(1, "Queue Group");
-        const string stationCode = "SINH_HIEU";
-
-        _db.MedicalRecords.AddRange(
-            NewRecord(1, group.GroupId, "Wait", RecordStatus.CheckedIn, queueNo: 10),
-            NewRecord(2, group.GroupId, "Done", RecordStatus.CheckedIn, queueNo: 5),
-            NewRecord(3, group.GroupId, "Skip", RecordStatus.CheckedIn, queueNo: 1)
-        );
-        await _db.SaveChangesAsync();
-
-        _db.RecordStationTasks.AddRange(
-            new RecordStationTask { MedicalRecordId = 1, StationCode = stationCode, Status = StationTaskStatus.Waiting, QueueNo = 10 },
-            new RecordStationTask { MedicalRecordId = 2, StationCode = stationCode, Status = StationTaskStatus.StationDone, QueueNo = 5 },
-            new RecordStationTask { MedicalRecordId = 3, StationCode = stationCode, Status = StationTaskStatus.Skipped, QueueNo = 1 }
-        );
-        await _db.SaveChangesAsync();
-
-        var result = await _service.GetQueueByStationAsync(stationCode);
-
-        Assert.Single(result);
-        Assert.Equal("Wait", result[0].FullName);
-    }
-
-    [Fact]
-    public async Task GetStationQueueSummaryAsync_ReturnsCorrectCounts()
-    {
-        var group = await SeedGroupAsync(1, "Summary Group");
-        const string stationCode = "SINH_HIEU";
-
-        _db.MedicalRecords.AddRange(
-            NewRecord(1, group.GroupId, "W", RecordStatus.CheckedIn),
-            NewRecord(2, group.GroupId, "IP", RecordStatus.CheckedIn),
-            NewRecord(3, group.GroupId, "D1", RecordStatus.CheckedIn),
-            NewRecord(4, group.GroupId, "D2", RecordStatus.CheckedIn)
-        );
-        await _db.SaveChangesAsync();
-
-        _db.RecordStationTasks.AddRange(
-            new RecordStationTask { MedicalRecordId = 1, StationCode = stationCode, Status = StationTaskStatus.Waiting, QueueNo = 1 },
-            new RecordStationTask { MedicalRecordId = 2, StationCode = stationCode, Status = StationTaskStatus.StationInProgress, QueueNo = 2 },
-            new RecordStationTask { MedicalRecordId = 3, StationCode = stationCode, Status = StationTaskStatus.StationDone, QueueNo = 3, CompletedAt = DateTime.Today },
-            new RecordStationTask { MedicalRecordId = 4, StationCode = stationCode, Status = StationTaskStatus.StationDone, QueueNo = 4, CompletedAt = DateTime.Today.AddDays(-1) }
-        );
-        await _db.SaveChangesAsync();
-
-        var summary = await _service.GetStationQueueSummaryAsync(stationCode);
-
-        Assert.Equal(1, summary.WaitingCount);
-        Assert.Equal(1, summary.InProgressCount);
-        Assert.Equal(1, summary.DoneToday);
-    }
-
-    [Fact]
     public async Task GetQcPendingRecordsAsync_ReturnsOnlyQcPending()
     {
         var group = await SeedGroupAsync(1, "QC Group");
@@ -212,14 +160,13 @@ public class MedicalRecordServiceTests : IDisposable
         return group;
     }
 
-    private static MedicalRecord NewRecord(int id, int groupId, string fullName, string status, int? queueNo = null)
+    private static MedicalRecord NewRecord(int id, int groupId, string fullName, string status)
         => new()
         {
             MedicalRecordId = id,
             GroupId = groupId,
             FullName = fullName,
             Status = status,
-            QueueNo = queueNo,
             QrToken = $"qr-{id}-{Guid.NewGuid():N}",
             CreatedAt = DateTime.Now
         };

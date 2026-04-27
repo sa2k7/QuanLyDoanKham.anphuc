@@ -75,12 +75,16 @@
                 @lock-group="handleLockGroup"
                 @trigger-import="triggerImport"
                 @open-supplies="openSuppliesTab"
+                @edit-group="openEditGroup"
             >
                 <!-- Slots for Table Content -->
                 <template #staffs>
                     <GroupStaffAssignment 
                         :group-id="g.groupId"
+                        :group-exam-date="g.examDate"
+                        :group-start-time="g.startTime"
                         :staff="staffDetails[g.groupId] || []"
+                        :positions="groupPositions[g.groupId] || []"
                         :can="can"
                         :is-ai-loading="isAiLoading && currentAiGroupId === g.groupId"
                         :status="g.status"
@@ -126,6 +130,7 @@
         @add-position="addPosition"
         @position-change="onPositionChange"
         @copy-qr-url="copyQrUrl"
+        @update-group="updateGroup"
     />
 
     <!-- AI Suggestion Result Modal -->
@@ -243,9 +248,10 @@ const isAutoAssignLoading = ref(false)
 
 // Modals State
 const modals = ref({
-    staff: { show: false, groupId: null, data: { staffId: null, shiftType: 1.0, positionId: null, workPosition: '', workStatus: 'Đã tham gia' } },
+    staff: { show: false, groupId: null, data: { staffId: null, shiftType: 1.0, positionId: null, workPosition: '', workStatus: 'Đã tham gia', pickupLocation: '' } },
     position: { show: false, groupId: null, data: { positionName: '', requiredCount: 1 } },
-    qr: { show: false }
+    qr: { show: false },
+    editGroup: { show: false, groupId: null, data: { groupName: '', examDate: '', status: '', startTime: '', departureTime: '', examContent: '' } }
 })
 const qrData = ref(null)
 
@@ -461,6 +467,29 @@ const addPosition = async () => {
         toast.success("Thêm vị trí thành công!")
         modals.value.position.show = false
         fetchGroupPositions(gid)
+    } catch (e) { toast.error(parseApiError(e)) }
+}
+
+const openEditGroup = (group) => {
+    modals.value.editGroup.groupId = group.groupId
+    modals.value.editGroup.data = { 
+        groupName: group.groupName,
+        examDate: group.examDate ? group.examDate.split('T')[0] : '',
+        status: group.status,
+        startTime: group.startTime || '',
+        departureTime: group.departureTime || '',
+        examContent: group.examContent || ''
+    }
+    modals.value.editGroup.show = true
+}
+
+const updateGroup = async () => {
+    try {
+        const gid = modals.value.editGroup.groupId
+        await apiClient.put(`/api/MedicalGroups/${gid}`, modals.value.editGroup.data)
+        toast.success("Đã cập nhật thông tin đoàn!")
+        modals.value.editGroup.show = false
+        fetchData()
     } catch (e) { toast.error(parseApiError(e)) }
 }
 

@@ -5,6 +5,12 @@ import { setupRouterGuards } from './guards'
 const routes = [
     // ── Public ──────────────────────────────────────────────────────
     {
+        path: '/landing-page',
+        name: 'LandingPage',
+        component: () => import('../views/LandingPage.vue'),
+        meta: { guest: true }
+    },
+    {
         path: '/login',
         name: 'Login',
         component: Login,
@@ -38,7 +44,7 @@ const routes = [
     {
         path: '/analytics',
         name: 'Analytics',
-        component: () => import('../views/AnalyticsDashboard.vue'),
+        component: () => import('../views/UnifiedReports.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
 
@@ -74,34 +80,11 @@ const routes = [
         meta: { requiresAuth: true, permission: 'DoanKham.View' }
     },
 
-    // ── OMS Operations ───────────────────────────────────────────────
+    // ── QC ───────────────────────────────────────────────────────────
     {
-        path: '/oms/dashboard',
-        name: 'OmsDashboard',
-        component: () => import('../views/oms/QueueDashboard.vue'),
-        meta: { requiresAuth: true }
-    },
-    {
-        path: '/queue-monitor',
-        name: 'QueueMonitor',
-        component: () => import('../views/QueueMonitor.vue'),
-        meta: {
-            title: 'Màn Hình Gọi Số Công Cộng',
-            layout: 'empty' 
-        }
-    },
-
-    {
-        path: '/oms/station/:code',
-        name: 'OmsStation',
-        component: () => import('../views/oms/StationCoordinator.vue'),
-        meta: { requiresAuth: true }
-    },
-
-    {
-        path: '/oms/qc',
-        name: 'OmsQcReview',
-        component: () => import('../views/oms/QcReview.vue'),
+        path: '/qc',
+        name: 'QcReview',
+        component: () => import('../views/oms/QcReview.vue'), // Keep in oms folder for now or move later
         meta: { requiresAuth: true, permission: 'KetQua.QCApprove' }
     },
 
@@ -137,6 +120,12 @@ const routes = [
         meta: { requiresAuth: true, permission: 'Luong.View' }
     },
     {
+        path: '/attendance-summary',
+        name: 'AttendanceSummary',
+        component: () => import('../views/AttendanceSummary.vue'),
+        meta: { requiresAuth: true, permission: 'ChamCong.ViewAll' }
+    },
+    {
         path: '/supplies',
         name: 'Supplies',
         component: () => import('../views/Supplies.vue'),
@@ -149,7 +138,7 @@ const routes = [
     {
         path: '/reports',
         name: 'Reports',
-        component: () => import('../views/Reports.vue'),
+        component: () => import('../views/UnifiedReports.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
 

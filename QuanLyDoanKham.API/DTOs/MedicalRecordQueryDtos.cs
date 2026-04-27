@@ -13,7 +13,6 @@ namespace QuanLyDoanKham.API.DTOs
         public string? Department { get; set; }
         public string? Status { get; set; }
         public DateTime? CheckInAt { get; set; }
-        public int? QueueNo { get; set; }
     }
 
     public class StationQueueItemDto
@@ -22,7 +21,6 @@ namespace QuanLyDoanKham.API.DTOs
         public int MedicalRecordId { get; set; }
         public string? FullName { get; set; }
         public string? Gender { get; set; }
-        public int? QueueNo { get; set; }
         public string? Status { get; set; }
         public DateTime? WaitingSince { get; set; }
         public DateTime? StartedAt { get; set; }
@@ -49,15 +47,7 @@ namespace QuanLyDoanKham.API.DTOs
     {
         public int MedicalRecordId { get; set; }
         public string? FullName { get; set; }
-        public int? QueueNo { get; set; }
         public string? Status { get; set; }
         public DateTime? CheckInAt { get; set; }
-        public List<QcStationTaskStatusDto> StationTasks { get; set; } = new();
-    }
-
-    public class QcStationTaskStatusDto
-    {
-        public string? StationCode { get; set; }
-        public string? Status { get; set; }
     }
 }

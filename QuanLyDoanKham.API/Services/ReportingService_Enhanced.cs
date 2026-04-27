@@ -6,12 +6,13 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 
 namespace QuanLyDoanKham.API.Services
 {
     /// <summary>
-    /// Enhanced Reporting Service với logic tính toán chính xác hơn cho Quyết toán & Thống kê
-    /// Cải thiện: Tính toán doanh thu phát sinh chính xác, chi phí vật tư theo định mức, lợi nhuận ròng thực tế
+    /// Enhanced Reporting Service với logic tính toán chính xác hơn cho Quyết toán và Thống kê.
+    /// Cải thiện: Tính toán doanh thu phát sinh chính xác, chi phí vật tư theo định mức, lợi nhuận ròng thực tế.
     /// </summary>
     public interface IReportingServiceEnhanced
     {
@@ -78,7 +79,7 @@ namespace QuanLyDoanKham.API.Services
                 .SumAsync(o => (decimal?)o.Amount) ?? 0;
             
             var allContractRevenue = await _context.Contracts
-                .Where(c => c.Status != "Rejected")
+                .Where(c => c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (decimal?)(c.TotalAmount + c.ExtraServiceRevenue)) ?? 0;
             
             var overheadCost = allContractRevenue > 0 
@@ -141,7 +142,7 @@ namespace QuanLyDoanKham.API.Services
 
             // Tính toán tất cả các hợp đồng trong kỳ
             var contracts = await _context.Contracts
-                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .ToListAsync();
 
             decimal totalPackageRevenue = 0;
@@ -235,7 +236,7 @@ namespace QuanLyDoanKham.API.Services
 
             // 1. Ca khám COMPLETED nhưng ngoài gói (Quantity Variance)
             var contractsWithVariance = await _context.Contracts
-                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != "Rejected")
+                .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .ToListAsync();
 
             foreach (var contract in contractsWithVariance)

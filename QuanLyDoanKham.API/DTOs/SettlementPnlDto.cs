@@ -3,7 +3,7 @@ using System;
 namespace QuanLyDoanKham.API.DTOs
 {
     /// <summary>
-    /// Data Transfer Object cho Báo cáo Tối ưu hóa Lợi nhuận (P&L - Profit and Loss).
+    /// Data Transfer Object cho Báo cáo Tối ưu hóa Lợi nhuận (P&amp;L - Profit and Loss).
     /// Tổng hợp doanh thu thực tế, các khoản khấu trừ, VAT và các loại chi phí (Lương, Vật tư)
     /// </summary>
     public class PnlReportDto

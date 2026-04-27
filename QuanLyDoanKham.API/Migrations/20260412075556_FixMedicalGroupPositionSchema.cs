@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
@@ -31,14 +31,16 @@ namespace QuanLyDoanKham.API.Migrations
                 keyColumn: "RoleId",
                 keyValue: 11);
 
-            migrationBuilder.AlterColumn<int>(
+            migrationBuilder.DropColumn(
+                name: "PositionId",
+                table: "MedicalGroupPositions");
+
+            migrationBuilder.AddColumn<int>(
                 name: "PositionId",
                 table: "MedicalGroupPositions",
                 type: "int",
-                nullable: true,
-                oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                nullable: true);
+
 
             migrationBuilder.AddColumn<int>(
                 name: "Id",

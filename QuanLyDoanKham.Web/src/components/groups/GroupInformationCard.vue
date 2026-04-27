@@ -14,12 +14,32 @@
             </div>
         </div>
         <div class="flex items-center gap-3">
+            <!-- New Info Pills -->
+            <div class="hidden md:flex items-center gap-2 mr-4">
+                <div v-if="group.startTime" class="flex flex-col items-end">
+                    <span class="text-[8px] font-black text-white/50 uppercase leading-none">Giờ khám</span>
+                    <span class="text-[10px] font-black text-white">{{ group.startTime }}</span>
+                </div>
+                <div v-if="group.startTime" class="w-px h-6 bg-white/10 mx-1"></div>
+                <div v-if="group.departureTime" class="flex flex-col items-end">
+                    <span class="text-[8px] font-black text-white/50 uppercase leading-none">Xuất phát</span>
+                    <span class="text-[10px] font-black text-white">{{ group.departureTime }}</span>
+                </div>
+            </div>
+
+            <button v-if="group.status === 'Open' && can('DoanKham.Edit')" 
+                    @click="$emit('edit-group', group)" 
+                    class="p-2 hover:bg-white/10 rounded-lg transition-all text-white/70 hover:text-white mr-2"
+                    title="Chỉnh sửa thông tin hành chính">
+                <Settings2 class="w-4 h-4" />
+            </button>
+
             <span :class="['px-3 py-1 rounded-lg text-[8px] font-black uppercase tracking-tighter border border-white/20 shadow-sm leading-none flex items-center h-6', getStatusClass(group.status)]">
                 {{ getStatusLabel(group.status) }}
             </span>
            
            <!-- Action Buttons for Status -->
-           <button v-if="group.status === 'Open' && can('DoanKham.Edit')" @click="$emit('update-status', group.groupId, 'Finished')" class="text-[9px] font-black bg-white text-primary hover:bg-slate-50 px-4 py-2 rounded-xl transition-all shadow-sm">KẾT THÚC ĐOÀN</button>
+           <button v-if="group.status === 'Open' && can('DoanKham.Edit')" @click="$emit('update-status', group.groupId, 'Finished')" class="text-[9px] font-black bg-white text-primary hover:bg-slate-50 px-4 py-2 rounded-xl transition-all shadow-sm ml-2">KẾT THÚC ĐOÀN</button>
            
            <button v-if="group.status === 'Finished' && can('DoanKham.Lock') && lockStatus?.isReadyToLock" 
                    @click="$emit('lock-group', group.groupId)" 
@@ -152,7 +172,7 @@
 import { ref } from 'vue'
 import { 
   Stethoscope, Lock, CheckCircle2, Users, ShieldCheck, 
-  Package, ScanLine, Scale, FileText, FileIcon 
+  Package, ScanLine, Scale, FileText, FileIcon, Settings2 
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -162,7 +182,7 @@ const props = defineProps({
   can: { type: Function, required: true }
 })
 
-const emit = defineEmits(['update-status', 'lock-group', 'trigger-import', 'open-supplies'])
+const emit = defineEmits(['update-status', 'lock-group', 'trigger-import', 'open-supplies', 'edit-group'])
 
 const activeTab = ref('staffs')
 

@@ -55,12 +55,13 @@
                     <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Bệnh nhân</th>
                     <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Định danh</th>
                     <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Phòng ban</th>
+                    <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Chức năng khám</th>
                     <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trạng thái</th>
                     <th class="px-6 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">Thao tác</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-50">
-                <tr v-for="(p, i) in patients" :key="p.medicalRecordId" class="hover:bg-slate-50/50 transition-all group">
+                <tr v-for="(p, i) in patients" :key="p.patientId || p.medicalRecordId" class="hover:bg-slate-50/50 transition-all group">
                     <td class="px-6 py-4 text-[11px] font-black text-slate-700 text-center italic">{{ i + 1 }}</td>
                     <td class="px-6 py-4">
                         <div class="flex items-center gap-3">
@@ -73,9 +74,13 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 font-mono text-[11px] text-slate-500">{{ p.iDCardNumber || '---' }}</td>
+                    <td class="px-6 py-4 font-mono text-[11px] text-slate-500">{{ p.iDCardNumber || p.idCardNumber || '---' }}</td>
                     <td class="px-6 py-4">
                         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-tighter">{{ p.department || '---' }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span v-if="p.examFunction" class="px-2.5 py-1 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-600 text-[9px] font-black uppercase tracking-widest">{{ p.examFunction }}</span>
+                        <span v-else class="text-[10px] text-slate-300 font-bold">---</span>
                     </td>
                     <td class="px-6 py-4">
                         <span :class="['px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border', getStatusColor(p.status)]">
@@ -203,7 +208,8 @@ const enrolling = ref(false)
 const fetchData = async () => {
   try {
     loading.value = true
-    const res = await apiClient.get(`/api/MedicalRecords/by-group/${props.groupId}`)
+    // Gọi đúng API by-group lấy từ MedicalGroupPatient
+    const res = await apiClient.get(`/api/Patients/by-group/${props.groupId}`)
     patients.value = res.data
   } catch (e) {
     console.error(e)
@@ -239,26 +245,28 @@ const handleImportFile = async (e) => {
     if (!file) return
     const formData = new FormData()
     formData.append('file', file)
+    formData.append('groupId', props.groupId)
     try {
         loading.value = true
-        // Upload file first
-        const uploadRes = await apiClient.post(`/api/MedicalGroups/upload-data`, formData)
-        // Ingest data
-        await apiClient.post(`/api/MedicalRecords/batch-ingest-excel?groupId=${props.groupId}&filePath=${uploadRes.data.path}`)
+        // Gọi đúng route import-group → lưu vào MedicalGroupPatient
+        await apiClient.post(`/api/Patients/import-group`, formData)
         toast.success("Đã Import danh sách bệnh nhân vào đoàn!")
         fetchData()
     } catch (e) { toast.error(parseApiError(e)) }
     finally { loading.value = false; e.target.value = '' }
 }
 
+
 const removePatient = async (p) => {
     if (!confirm(`Bạn có chắc muốn gỡ bệnh nhân ${p.fullName} khỏi đoàn này?`)) return
     try {
-        await apiClient.delete(`/api/MedicalRecords/${p.medicalRecordId}`)
-        toast.success("Đã gỡ bệnh nhân khỏi đoàn")
+        // Xóa khỏi MedicalGroupPatient
+        await apiClient.delete(`/api/Patients/group-patient?groupId=${props.groupId}&patientId=${p.patientId || p.id}`)
+        toast.success("Dã gỡ bệnh nhân khỏi đoàn")
         fetchData()
     } catch (e) { toast.error(parseApiError(e)) }
 }
+
 
 const openAddModal = () => {
     enrollSearch.value = ''

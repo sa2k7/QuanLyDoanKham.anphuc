@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using QuanLyDoanKham.API.Models.Enums;
 
 namespace QuanLyDoanKham.API.DTOs
 {
@@ -46,7 +47,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string? UnitName { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal FinalSettlementValue { get; set; }
-        public required string Status { get; set; }
+        public string Status { get; set; } = null!;
         public int CurrentApprovalStep { get; set; }
         public string? FilePath { get; set; }
         public string? CreatedByName { get; set; }
@@ -111,6 +112,9 @@ namespace QuanLyDoanKham.API.DTOs
         public string? ShortName { get; set; }
         public string? CompanyName { get; set; }
         public string? Status { get; set; }
+        public string? StartTime { get; set; }
+        public string? DepartureTime { get; set; }
+        public string? ExamContent { get; set; }
         public string? ImportFilePath { get; set; }
         public string? ManagerName { get; set; }
         public string? GroupLeaderName { get; set; }

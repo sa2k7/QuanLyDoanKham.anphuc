@@ -23,6 +23,10 @@
                 <History class="w-4 h-4" />
                 Lịch Sử
             </button>
+            <button @click="activeTab = 'report'" :class="['px-6 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all duration-300 flex items-center gap-2', activeTab === 'report' ? 'bg-white text-primary shadow-sm scale-105' : 'text-slate-400 hover:text-slate-600']">
+                <FileText class="w-4 h-4" />
+                Báo Cáo
+            </button>
         </div>
 
         <button v-if="can('Kho.Edit') && activeTab === 'inventory'" 
@@ -242,6 +246,62 @@
         </div>
     </div>
 
+    <!-- Report Content Section -->
+    <div v-if="activeTab === 'report'" class="premium-card bg-white border border-slate-100 overflow-hidden flex flex-col min-h-[500px]">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h4 class="text-xs font-black text-slate-800 uppercase tracking-widest">Báo Cáo Tồn Kho Định Kỳ</h4>
+            <div class="flex items-center gap-3">
+                <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200">
+                    <input type="date" v-model="reportFilters.from" class="bg-transparent border-none text-[10px] font-black text-slate-600 outline-none" />
+                    <span class="text-slate-300">→</span>
+                    <input type="date" v-model="reportFilters.to" class="bg-transparent border-none text-[10px] font-black text-slate-600 outline-none" />
+                </div>
+                <button @click="fetchPeriodicReport" class="p-2.5 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all">
+                    <RefreshCw class="w-4 h-4" :class="{'animate-spin': loadingReport}" />
+                </button>
+            </div>
+        </div>
+
+        <div v-if="loadingReport" class="flex-1 flex justify-center items-center py-20">
+            <Loader2 class="w-8 h-8 text-slate-300 animate-spin" />
+        </div>
+
+        <div v-else-if="periodicReport.length > 0" class="overflow-x-auto scrollbar-premium">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="bg-slate-50/50 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                        <th class="p-4 pl-6">Vật Tư</th>
+                        <th class="p-4 text-center">ĐVT</th>
+                        <th class="p-4 text-center text-slate-600">Tồn Đầu Kỳ</th>
+                        <th class="p-4 text-center text-emerald-600">Nhập Trong Kỳ</th>
+                        <th class="p-4 text-center text-rose-600">Xuất Trong Kỳ</th>
+                        <th class="p-4 text-center text-primary">Tồn Cuối Kỳ</th>
+                        <th class="p-4 pr-6 text-right">Tổng Giá Trị</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <tr v-for="r in periodicReport" :key="r.supplyId" class="hover:bg-slate-50/50 transition-all">
+                        <td class="p-4 pl-6">
+                            <p class="font-black text-slate-800 uppercase tracking-widest text-[11px]">{{ r.itemName }}</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ r.category }}</p>
+                        </td>
+                        <td class="p-4 text-center text-[10px] font-black text-slate-500 uppercase">{{ r.unit }}</td>
+                        <td class="p-4 text-center font-black text-slate-600">{{ r.tonDauKy }}</td>
+                        <td class="p-4 text-center font-black text-emerald-600">+{{ r.nhapTrongKy }}</td>
+                        <td class="p-4 text-center font-black text-rose-600">-{{ r.xuatTrongKy }}</td>
+                        <td class="p-4 text-center font-black text-primary text-lg">{{ r.tonCuoiKy }}</td>
+                        <td class="p-4 pr-6 text-right font-black text-slate-700">{{ formatCurrency(r.totalValue) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div v-else class="flex-1 flex flex-col items-center justify-center opacity-30 py-20">
+            <Box class="w-16 h-16 mb-4 text-slate-400" />
+            <p class="text-[10px] font-black uppercase tracking-widest text-slate-500">Chưa có dữ liệu báo cáo</p>
+        </div>
+    </div>
+
     <!-- Modals -->
     <Teleport to="body">
         <!-- Add New Modal -->
@@ -439,7 +499,7 @@ import {
     Package, Box, AlertTriangle, TrendingUp, Search, Plus, 
     X, History, ArrowDownLeft, ArrowUpRight, Stethoscope,
     FlaskConical, Pill, Syringe, ClipboardList, RefreshCw,
-    Save, CheckCircle, Inbox, Trash2, Loader2, AlertCircle
+    Save, CheckCircle, Inbox, Trash2, Loader2, AlertCircle, FileText
 } from 'lucide-vue-next'
 import { useI18nStore } from '../stores/i18n'
 import { usePermission } from '../composables/usePermission'
@@ -459,6 +519,12 @@ const saving = ref(false)
 
 const activeTab = ref('inventory')
 const historyList = ref([])
+const loadingReport = ref(false)
+const periodicReport = ref([])
+const reportFilters = ref({
+    from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
+    to: new Date().toISOString().split('T')[0]
+})
 
 const modals = ref({
     add: { show: false, data: { itemName: '', unit: '', category: 'Vật tư y tế', minStockLevel: 10, typicalUnitPrice: 0 } },
@@ -499,7 +565,24 @@ const fetchSupplies = async () => {
     }
 }
 
-const fetchGroups = async () => {
+const fetchPeriodicReport = async () => {
+    loadingReport.value = true
+    try {
+        const res = await apiClient.get('/api/InventoryReports/periodic-stock-report', {
+            params: {
+                fromDate: reportFilters.value.from,
+                toDate: reportFilters.value.to
+            }
+        })
+        periodicReport.value = res.data.items || []
+    } catch (e) {
+        toast.error(parseApiError(e))
+    } finally {
+        loadingReport.value = false
+    }
+}
+
+const fetchData = async () => {
     try {
         const res = await apiClient.get('/api/MedicalGroups')
         activeGroups.value = (res.data || []).filter(g => g.status === 'Open')
@@ -524,9 +607,6 @@ const formatDate = (dateStr, includeTime = false) => {
     const d = new Date(dateStr)
     return includeTime ? d.toLocaleString('vi-VN') : d.toLocaleDateString('vi-VN')
 }
-
-const importHistory = computed(() => historyList.value.filter(m => m.movementType === 'IN'))
-const exportHistory = computed(() => historyList.value.filter(m => m.movementType === 'OUT'))
 
 // Category Helpers
 const getCategoryIcon = (cat) => {
@@ -631,21 +711,10 @@ const openHistory = async (s) => {
     }
 }
 
-const confirmDelete = async (s) => {
-    if (confirm(`Bạn có chắc muốn xóa vật tư "${s.itemName}" không?`)) {
-        try {
-            await apiClient.delete(`/api/Supplies/${s.supplyId}`)
-            toast.success("Đã xóa vật tư")
-            fetchSupplies()
-        } catch (err) {
-            toast.error(parseApiError(err))
-        }
-    }
-}
-
 onMounted(() => {
     fetchSupplies()
-    fetchGroups()
+    fetchData()
+    fetchPeriodicReport()
 })
 </script>
 

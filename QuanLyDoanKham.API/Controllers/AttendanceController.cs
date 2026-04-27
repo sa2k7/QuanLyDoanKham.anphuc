@@ -396,6 +396,85 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // ================================================================
+        // GET api/attendance/summary-all?month=4&year=2026
+        // Tổng hợp chấm công TẤT CẢ nhân sự trong tháng — dùng cho Admin/Manager
+        // ================================================================
+        [HttpGet("summary-all")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
+        public async Task<IActionResult> GetAllStaffAttendanceSummary(
+            [FromQuery] int month = 0,
+            [FromQuery] int year = 0)
+        {
+            if (month == 0) month = DateTime.Now.Month;
+            if (year == 0) year = DateTime.Now.Year;
+
+            // Lấy tất cả GroupStaffDetails trong tháng có check-in (ScheduleCalendar)
+            var schedules = await _context.ScheduleCalendars
+                .Include(sc => sc.Staff)
+                .Include(sc => sc.MedicalGroup)
+                .Where(sc => sc.ExamDate.Month == month && sc.ExamDate.Year == year)
+                .ToListAsync();
+
+            var groupDetails = await _context.GroupStaffDetails
+                .Where(gd => gd.MedicalGroup.ExamDate.Month == month
+                          && gd.MedicalGroup.ExamDate.Year == year)
+                .ToListAsync();
+
+            // Group by nhân sự
+            var staffSummaries = schedules
+                .GroupBy(sc => sc.StaffId)
+                .Select(g =>
+                {
+                    var firstRecord = g.First();
+                    var staffName = firstRecord.Staff?.FullName ?? $"Staff #{g.Key}";
+                    var employeeCode = firstRecord.Staff?.EmployeeCode ?? "";
+                    var dailyRate = firstRecord.Staff?.DailyRate ?? 0;
+
+                    var workdays = g.Select(sc =>
+                    {
+                        var gd = groupDetails.FirstOrDefault(x => x.GroupId == sc.GroupId && x.StaffId == sc.StaffId!.Value);
+                        var shift = gd?.ShiftType ?? (sc.IsConfirmed ? 1.0 : 0.5);
+                        return new
+                        {
+                            sc.GroupId,
+                            GroupName = sc.MedicalGroup?.GroupName ?? $"Đoàn #{sc.GroupId}",
+                            sc.ExamDate,
+                            ShiftType = shift,
+                            CheckInTime = sc.CheckInTime,
+                            CheckOutTime = sc.CheckOutTime,
+                            WorkStatus = sc.IsConfirmed ? "Đủ công" : (sc.CheckInTime != null ? "Chờ check-out" : "Vắng"),
+                            EarnedAmount = (decimal)shift * dailyRate
+                        };
+                    }).ToList();
+
+                    var totalShift = workdays.Sum(w => w.ShiftType);
+                    var totalEarned = workdays.Sum(w => w.EarnedAmount);
+
+                    return new
+                    {
+                        StaffId = g.Key,
+                        StaffName = staffName,
+                        EmployeeCode = employeeCode,
+                        DailyRate = dailyRate,
+                        TotalDays = totalShift,
+                        TotalEarned = totalEarned,
+                        Workdays = workdays.OrderBy(w => w.ExamDate).ToList()
+                    };
+                })
+                .OrderBy(s => s.StaffName)
+                .ToList();
+
+            return Ok(new
+            {
+                Month = month,
+                Year = year,
+                TotalStaff = staffSummaries.Count,
+                TotalPayroll = staffSummaries.Sum(s => s.TotalEarned),
+                Staffs = staffSummaries
+            });
+        }
+
+        // ================================================================
         // HELPERS
         // ================================================================
         // Method TryDecodeQrToken cũ đã bị thay thế bởi QrService.ValidateSignedToken

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -41,8 +41,6 @@ namespace QuanLyDoanKham.API.Models
         [MaxLength(30)]
         public string Status { get; set; } = "CREATED";
 
-        [MaxLength(50)]
-        public string? CurrentStation { get; set; }
 
         /// <summary>Link to master patient record after dedup</summary>
         public int? PatientId { get; set; }
@@ -52,11 +50,9 @@ namespace QuanLyDoanKham.API.Models
         public DateTime? CheckInAt { get; set; }
         public int? CheckInByUserId { get; set; }
 
-        public int? QueueNo { get; set; }
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
 
-        public ICollection<RecordStationTask> StationTasks { get; set; } = new List<RecordStationTask>();
     }
 }

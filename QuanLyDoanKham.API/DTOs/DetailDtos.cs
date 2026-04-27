@@ -72,6 +72,7 @@ namespace QuanLyDoanKham.API.DTOs
         public double ShiftType { get; set; } // 0.5 (Morning/Afternoon) or 1.0 (Full day)
         public required string WorkPosition { get; set; }
         public string? WorkStatus { get; set; }
+        public string? PickupLocation { get; set; }
         public int? PositionId { get; set; }
     }
 
@@ -91,6 +92,12 @@ namespace QuanLyDoanKham.API.DTOs
         public DateTime? CheckInTime { get; set; } // Gio check-in thuc te
         public DateTime? CheckOutTime { get; set; } // Gio check-out thuc te
         public string? Note { get; set; }
+        public string? PickupLocation { get; set; }
+
+        // ThĂ´ng tin thĂªm cho bĂ¡o cĂ¡o Excel
+        public int? BirthYear { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? EmployeeType { get; set; } // NoiBo, ThueNgoai
     }
 
     // === DIEM DANH / CHECK-IN ===

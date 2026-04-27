@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 
 namespace QuanLyDoanKham.API.Services.Contracts
 {
@@ -23,8 +24,8 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 .Include(c => c.CreatedByUser)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(status))
-                query = query.Where(c => c.Status == status);
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<ContractStatus>(status, true, out var contractStatus))
+                query = query.Where(c => c.Status == contractStatus);
             if (companyId.HasValue)
                 query = query.Where(c => c.CompanyId == companyId.Value);
 
@@ -75,7 +76,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 ExpectedQuantity = dto.ExpectedQuantity,
                 UnitName = string.IsNullOrEmpty(dto.UnitName) ? "Người" : dto.UnitName,
                 TotalAmount = dto.UnitPrice * dto.ExpectedQuantity,
-                Status = "Draft",
+                Status = ContractStatus.Draft,
                 FilePath = dto.FilePath,
                 Notes = dto.Notes,
                 CreatedByUserId = userId,
@@ -92,8 +93,8 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status == "Locked") return (false, "Hợp đồng đã khóa, không thể chỉnh sửa.");
-            if (contract.Status is "Approved" or "Active")
+            if (contract.Status == ContractStatus.Locked) return (false, "Hợp đồng đã khóa, không thể chỉnh sửa.");
+            if (contract.Status is ContractStatus.Approved or ContractStatus.Active)
                 return (false, "Hợp đồng đã được duyệt. Chỉ Admin mới có thể chỉnh sửa.");
 
             contract.CompanyId = dto.CompanyId;
@@ -110,18 +111,18 @@ namespace QuanLyDoanKham.API.Services.Contracts
             contract.UpdatedAt = DateTime.Now;
             contract.UpdatedBy = username;
 
-            if (contract.Status == "Rejected")
+            if (contract.Status == ContractStatus.Rejected)
             {
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
                     HealthContractId = id,
-                    OldStatus = contract.Status,
-                    NewStatus = "Draft",
+                    OldStatus = contract.Status.ToString(),
+                    NewStatus = ContractStatus.Draft.ToString(),
                     ChangedBy = username,
                     ChangedAt = DateTime.Now,
                     Note = "Chỉnh sửa lại sau khi bị từ chối"
                 });
-                contract.Status = "Draft";
+                contract.Status = ContractStatus.Draft;
                 contract.CurrentApprovalStep = 0;
             }
 
@@ -133,7 +134,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found", null);
-            if (contract.Status != "Draft") return (false, $"Chỉ hợp đồng ở trạng thái Draft mới có thể gửi duyệt (hiện tại: {contract.Status}).", null);
+            if (contract.Status != ContractStatus.Draft) return (false, $"Chỉ hợp đồng ở trạng thái Draft mới có thể gửi duyệt (hiện tại: {contract.Status}).", null);
 
             var firstStep = await _context.ContractApprovalSteps
                 .Where(s => s.IsActive).OrderBy(s => s.StepOrder).FirstOrDefaultAsync();
@@ -141,14 +142,14 @@ namespace QuanLyDoanKham.API.Services.Contracts
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
-                OldStatus = "Draft",
-                NewStatus = "PendingApproval",
+                OldStatus = ContractStatus.Draft.ToString(),
+                NewStatus = ContractStatus.PendingApproval.ToString(),
                 ChangedBy = username,
                 ChangedAt = DateTime.Now,
                 Note = $"Gửi phê duyệt - Bước {firstStep?.StepOrder}: {firstStep?.StepName}"
             });
 
-            contract.Status = "PendingApproval";
+            contract.Status = ContractStatus.PendingApproval;
             contract.CurrentApprovalStep = firstStep?.StepOrder ?? 1;
             await _context.SaveChangesAsync();
 
@@ -159,7 +160,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found", null);
-            if (contract.Status != "PendingApproval") return (false, "Hợp đồng không ở trạng thái chờ duyệt.", null);
+            if (contract.Status != ContractStatus.PendingApproval) return (false, "Hợp đồng không ở trạng thái chờ duyệt.", null);
 
             var user = await _context.Users.FindAsync(userId);
             bool isAdmin = user?.RoleId == 1;
@@ -193,8 +194,8 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
                     HealthContractId = id,
-                    OldStatus = "PendingApproval",
-                    NewStatus = "PendingApproval",
+                    OldStatus = ContractStatus.PendingApproval.ToString(),
+                    NewStatus = ContractStatus.PendingApproval.ToString(),
                     ChangedBy = username,
                     ChangedAt = DateTime.Now,
                     Note = $"Đã duyệt bước {currentStep?.StepOrder}. Đang chờ: {nextStep.StepName}"
@@ -204,12 +205,12 @@ namespace QuanLyDoanKham.API.Services.Contracts
             }
             else
             {
-                contract.Status = "Approved";
+                contract.Status = ContractStatus.Approved;
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
                     HealthContractId = id,
-                    OldStatus = "PendingApproval",
-                    NewStatus = "Approved",
+                    OldStatus = ContractStatus.PendingApproval.ToString(),
+                    NewStatus = ContractStatus.Approved.ToString(),
                     ChangedBy = username,
                     ChangedAt = DateTime.Now,
                     Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
@@ -223,7 +224,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status != "PendingApproval") return (false, "Chỉ có thể từ chối hợp đồng đang chờ duyệt.");
+            if (contract.Status != ContractStatus.PendingApproval) return (false, "Chỉ có thể từ chối hợp đồng đang chờ duyệt.");
 
             _context.ContractApprovalHistories.Add(new ContractApprovalHistory
             {
@@ -239,14 +240,14 @@ namespace QuanLyDoanKham.API.Services.Contracts
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
-                OldStatus = contract.Status,
-                NewStatus = "Rejected",
+                OldStatus = contract.Status.ToString(),
+                NewStatus = ContractStatus.Rejected.ToString(),
                 ChangedBy = username,
                 ChangedAt = DateTime.Now,
                 Note = dto.Note ?? "Từ chối hợp đồng"
             });
 
-            contract.Status = "Rejected";
+            contract.Status = ContractStatus.Rejected;
             contract.CurrentApprovalStep = 0;
             await _context.SaveChangesAsync();
             return (true, null);
@@ -256,7 +257,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status == dto.Status) return (true, null);
+            if (Enum.TryParse<ContractStatus>(dto.Status, true, out var dtoStatus) && contract.Status == dtoStatus) return (true, null);
 
             if (dto.Status == "Signed")
             {
@@ -290,17 +291,20 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 }
             }
 
+            if (!Enum.TryParse<ContractStatus>(dto.Status, true, out var newStatus))
+                return (false, $"Trạng thái '{dto.Status}' không hợp lệ.");
+
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
-                OldStatus = contract.Status,
+                OldStatus = contract.Status.ToString(),
                 NewStatus = dto.Status,
                 ChangedBy = username,
                 ChangedAt = DateTime.Now,
                 Note = dto.Note ?? $"Admin chuyển trạng thái sang {dto.Status}"
             });
 
-            contract.Status = dto.Status;
+            contract.Status = newStatus;
             contract.UpdatedAt = DateTime.Now;
             contract.UpdatedBy = username;
             await _context.SaveChangesAsync();
@@ -311,7 +315,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status == "Locked") return (false, "Hợp đồng đang khóa, mở khóa trước khi xóa.");
+            if (contract.Status == ContractStatus.Locked) return (false, "Hợp đồng đang khóa, mở khóa trước khi xóa.");
 
             _context.Contracts.Remove(contract);
             await _context.SaveChangesAsync();
@@ -322,14 +326,14 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status != "Locked")
+            if (contract.Status != ContractStatus.Locked)
             {
                 _context.ContractStatusHistories.Add(new ContractStatusHistory
                 {
-                    HealthContractId = id, OldStatus = contract.Status, NewStatus = "Locked",
+                    HealthContractId = id, OldStatus = contract.Status.ToString(), NewStatus = ContractStatus.Locked.ToString(),
                     ChangedBy = username, ChangedAt = DateTime.Now, Note = "Khóa hợp đồng"
                 });
-                contract.Status = "Locked";
+                contract.Status = ContractStatus.Locked;
                 await _context.SaveChangesAsync();
             }
             return (true, null);
@@ -339,14 +343,14 @@ namespace QuanLyDoanKham.API.Services.Contracts
         {
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
-            if (contract.Status != "Approved" && contract.Status != "Locked") return (false, "Khởi động lại"); // Custom edge
+            if (contract.Status != ContractStatus.Approved && contract.Status != ContractStatus.Locked) return (false, "Khởi động lại"); // Custom edge
 
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
-                HealthContractId = id, OldStatus = contract.Status, NewStatus = "Approved",
+                HealthContractId = id, OldStatus = contract.Status.ToString(), NewStatus = ContractStatus.Approved.ToString(),
                 ChangedBy = username, ChangedAt = DateTime.Now, Note = "Mở khóa hợp đồng"
             });
-            contract.Status = "Approved";
+            contract.Status = ContractStatus.Approved;
             await _context.SaveChangesAsync();
             return (true, null);
         }
@@ -371,7 +375,7 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 UnitName = c.UnitName,
                 TotalAmount = c.TotalAmount,
                 FinalSettlementValue = c.FinalSettlementValue,
-                Status = c.Status,
+                Status = c.Status.ToString(),
                 CurrentApprovalStep = c.CurrentApprovalStep,
                 FilePath = c.FilePath,
                 CreatedByName = c.CreatedByUser?.FullName,

@@ -38,6 +38,5 @@ namespace QuanLyDoanKham.API.Models
 
         public bool IsActive { get; set; } = true;
 
-        public ICollection<RecordStationTask> Tasks { get; set; } = new List<RecordStationTask>();
     }
 }

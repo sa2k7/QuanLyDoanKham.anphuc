@@ -6,6 +6,7 @@ using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 using QuanLyDoanKham.API.Services.Auth;
 using System.Security.Claims;
 
@@ -355,6 +356,25 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Xóa tài khoản thành công" });
         }
 
+        // POST: api/Auth/logout
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout()
+        {
+            var username = User.FindFirst(ClaimTypes.Name)?.Value;
+            if (!string.IsNullOrEmpty(username))
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+                if (user != null)
+                {
+                    user.RefreshToken = null;
+                    user.RefreshTokenExpiry = null;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            return Ok(new { message = "Đăng xuất thành công" });
+        }
+
         [HttpPost("login")]
         [EnableRateLimiting("LoginPolicy")]
         public async Task<ActionResult<AuthResponseDto>> Login(LoginDto request)
@@ -569,7 +589,7 @@ namespace QuanLyDoanKham.API.Controllers
                 var dummyContract = await _context.Contracts.FirstOrDefaultAsync(c => c.ContractCode == "HD_MAU_2026");
                 if (dummyContract == null)
                 {
-                    dummyContract = new HealthContract { ContractCode = "HD_MAU_2026", ContractName = "Hợp đồng Mẫu 2026", CompanyId = dummyCompany.CompanyId, ExpectedQuantity = 100, StartDate = DateTime.Now.Date.AddDays(-30), EndDate = DateTime.Now.Date.AddDays(30), Status = "Active", TotalAmount = 100000000 };
+                    dummyContract = new HealthContract { ContractCode = "HD_MAU_2026", ContractName = "Hợp đồng Mẫu 2026", CompanyId = dummyCompany.CompanyId, ExpectedQuantity = 100, StartDate = DateTime.Now.Date.AddDays(-30), EndDate = DateTime.Now.Date.AddDays(30), Status = ContractStatus.Active, TotalAmount = 100000000 };
                     _context.Contracts.Add(dummyContract);
                     await _context.SaveChangesAsync();
                 }

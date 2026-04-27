@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 
 using Microsoft.Extensions.Logging;
 
@@ -26,11 +27,11 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
         {
             try
             {
-                var record = await LoadRecordWithTasksAsync(dto.MedicalRecordId);
+                var record = await LoadRecordAsync(dto.MedicalRecordId);
                 if (record == null)
                     return ServiceResult<bool>.Failure("Không tìm thấy hồ sơ bệnh nhân.");
 
-                if (record.MedicalGroup?.HealthContract?.Status is "Settled" or "Finalized")
+                if (record.MedicalGroup?.HealthContract?.Status == ContractStatus.Finished || record.MedicalGroup?.HealthContract?.Status == ContractStatus.Locked)
                 {
                     return ServiceResult<bool>.Failure("Hợp đồng đã quyết toán, không thể thay đổi kết quả khám bệnh.");
                 }
@@ -50,23 +51,9 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                     return ServiceResult<bool>.Failure("Lỗi cấu trúc dữ liệu: Hồ sơ chưa được định danh gốc (Thiếu PatientId).");
                 }
 
-                var stationTask = FindStationTask(record, dto.StationCode);
-                if (stationTask == null)
-                    return ServiceResult<bool>.Failure($"Hồ sơ không có chỉ định khám tại trạm '{dto.StationCode}'.");
-
                 // Lưu kết quả y khoa 
                 await UpsertExamResultAsync(record, dto);
                 await _context.SaveChangesAsync();
-
-                // Giao phó logic Hoàn thành trạm, Real-time và Auto QC cho State Machine
-                if (stationTask.Status != StationTaskStatus.StationDone)
-                {
-                    var completeRes = await _stateMachine.CompleteStationAsync(dto.MedicalRecordId, dto.StationCode, actorUserId, $"Kết luận: {dto.Diagnosis}");
-                    if (!completeRes.IsSuccess)
-                    {
-                        throw new Exception("Lỗi StateMachine: " + completeRes.Message);
-                    }
-                }
 
                 return ServiceResult<bool>.Success(true);
             }
@@ -89,16 +76,12 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
 
         // ─── Private Helpers ─────────────────────────────────────────────────
 
-        private Task<MedicalRecord?> LoadRecordWithTasksAsync(int recordId)
+        private Task<MedicalRecord?> LoadRecordAsync(int recordId)
             => _context.MedicalRecords
-                .Include(r => r.StationTasks)
                 .Include(r => r.MedicalGroup)
                     .ThenInclude(mg => mg!.HealthContract)
                 .FirstOrDefaultAsync(r => r.MedicalRecordId == recordId);
 
-
-        private static RecordStationTask? FindStationTask(MedicalRecord record, string stationCode)
-            => record.StationTasks.FirstOrDefault(t => t.StationCode == stationCode);
 
         private async Task UpsertExamResultAsync(MedicalRecord record, SaveExamResultDto dto)
         {
@@ -120,7 +103,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             {
                 _context.ExamResults.Add(new ExamResult
                 {
-                    PatientId    = record.PatientId.Value, 
+                    PatientId    = record.PatientId!.Value, 
                     GroupId      = record.GroupId,
                     ExamType     = dto.ExamType,
                     Result       = jsonString,
@@ -133,8 +116,6 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                 });
             }
         }
-
-
 
         private async Task<List<ExamResultResponseDto>> QueryExamResultsForRecord(MedicalRecord record)
         {

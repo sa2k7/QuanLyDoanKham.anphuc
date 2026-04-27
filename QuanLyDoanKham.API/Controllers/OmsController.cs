@@ -1,124 +1,65 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.Models;
-using QuanLyDoanKham.API.Services.MedicalRecords;
 
 namespace QuanLyDoanKham.API.Controllers
 {
-    [Route("api/[controller]")]
+    /// <summary>OMS (Outpatient Management System) - API cho check-in bệnh nhân ngoại trú</summary>
     [ApiController]
+    [Route("api/[controller]")]
     [Authorize]
     public class OmsController : ControllerBase
     {
-        private readonly IMedicalRecordStateMachine _stateMachine;
-        private readonly IMedicalRecordService _medicalRecordService;
         private readonly ApplicationDbContext _context;
 
-        public OmsController(IMedicalRecordStateMachine stateMachine, IMedicalRecordService medicalRecordService, ApplicationDbContext context)
+        public OmsController(ApplicationDbContext context)
         {
-            _stateMachine = stateMachine;
-            _medicalRecordService = medicalRecordService;
             _context = context;
         }
 
-        [HttpPost("checkin/{medicalRecordId}")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> ManualCheckIn(int medicalRecordId)
+        /// <summary>Check-in bệnh nhân bằng Medical Record ID</summary>
+        [HttpPost("checkin/{recordId}")]
+        public async Task<IActionResult> CheckInPatient(int recordId)
         {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.CheckInAsync(medicalRecordId, userId);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
-        }
+            var userId = int.Parse(User.FindFirst("UserId")?.Value ?? "0");
+            
+            // Tìm medical record
+            var record = await _context.MedicalRecords
+                .Include(r => r.Patient)
+                .Include(r => r.MedicalGroup)
+                .FirstOrDefaultAsync(r => r.MedicalRecordId == recordId);
 
-        [HttpPost("station/{medicalRecordId}/start")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> StartStation(int medicalRecordId, [FromQuery] string stationCode)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.StartStationAsync(medicalRecordId, stationCode, userId);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
-        }
+            if (record == null)
+                return NotFound(new { message = "Không tìm thấy hồ sơ khám" });
 
-        [HttpPost("station/{medicalRecordId}/complete")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> CompleteStation(int medicalRecordId, [FromQuery] string stationCode, [FromQuery] string? notes = null)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.CompleteStationAsync(medicalRecordId, stationCode, userId, notes);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
-        }
+            // Kiểm tra trạng thái
+            if (record.Status == "CheckedIn" || record.Status == "InProgress")
+                return BadRequest(new { message = "Bệnh nhân đã check-in trước đó" });
 
-        [HttpPost("finalize/{medicalRecordId}")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> FinalizeRecord(int medicalRecordId)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.FinalizeRecordAsync(medicalRecordId, userId);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
-        }
+            // Cập nhật trạng thái
+            record.Status = "CheckedIn";
+            record.CheckInAt = DateTime.Now;
 
-        [HttpPost("station/{medicalRecordId}/assign-extra")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> AssignExtraStation(int medicalRecordId, [FromQuery] string stationCode, [FromQuery] string? notes = null)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.AddExtraStationAsync(medicalRecordId, stationCode, userId, notes);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
-        }
+            await _context.SaveChangesAsync();
 
-        // ─── QC Endpoints ────────────────────────────────────────────────────
+            // Tạo số thứ tự (queue number) - giả lập
+            var queueNo = new Random().Next(1, 999);
 
-        /// <summary>GET api/Oms/qc-pending — Danh sách hồ sơ đang chờ QC</summary>
-        [HttpGet("qc-pending")]
-        [AuthorizePermission("KetQua.QCApprove")]
-        public async Task<IActionResult> GetQcPendingRecords()
-        {
-            var records = await _medicalRecordService.GetQcPendingRecordsAsync();
-            return Ok(records);
-        }
-
-        /// <summary>POST api/Oms/qc/{id}/pass — QC Duyệt hồ sơ</summary>
-        [HttpPost("qc/{medicalRecordId}/pass")]
-        [AuthorizePermission("KetQua.QCApprove")]
-        public async Task<IActionResult> QcPass(int medicalRecordId)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.QCPassAsync(medicalRecordId, userId);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(new { message = "Hồ sơ đã được duyệt QC thành công." });
-        }
-
-        /// <summary>POST api/Oms/qc/{id}/rework — QC Trả lại hồ sơ để bổ sung</summary>
-        [HttpPost("qc/{medicalRecordId}/rework")]
-        [AuthorizePermission("KetQua.QCApprove")]
-        public async Task<IActionResult> QcRework(int medicalRecordId, [FromBody] QcReworkRequest request)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.QCReworkAsync(medicalRecordId, userId, request.Reason);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(new { message = "Đã trả hồ sơ về bác sĩ để chỉnh sửa." });
-        }
-
-        [HttpPost("cancel/{medicalRecordId}")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> CancelRecord(int medicalRecordId, [FromBody] CancelRecordRequest request)
-        {
-            var userId = User.Identity?.Name ?? "system";
-            var result = await _stateMachine.CancelRecordAsync(medicalRecordId, userId, request.Reason);
-            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(new { message = "Hồ sơ đã được hủy/bỏ cuộc thành công." });
+            return Ok(new
+            {
+                message = "Check-in thành công",
+                data = new
+                {
+                    medicalRecordId = record.MedicalRecordId,
+                    fullName = record.Patient?.FullName ?? "Không rõ",
+                    queueNo = queueNo.ToString().PadLeft(3, '0'),
+                    serviceName = "Khám tổng quát",
+                    status = record.Status,
+                    checkInAt = record.CheckInAt
+                }
+            });
         }
     }
-
-    public record QcReworkRequest(string Reason);
-    public record CancelRecordRequest(string Reason);
 }
-

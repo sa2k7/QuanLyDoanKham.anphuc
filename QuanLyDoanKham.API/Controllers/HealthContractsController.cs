@@ -5,6 +5,7 @@ using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Models.Enums;
 using QuanLyDoanKham.API.Services.Contracts;
 using QuanLyDoanKham.API.Services.Settlement;
 
@@ -186,6 +187,73 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(new { message = "Upload thành công.", path = relativePath, fileName = file.FileName });
         }
 
+        [HttpGet("{id}/attachments")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.View")]
+        public async Task<IActionResult> GetAttachments(int id)
+        {
+            var attachments = await _context.ContractAttachments
+                .Where(a => a.HealthContractId == id)
+                .OrderByDescending(a => a.UploadedAt)
+                .Select(a => new
+                {
+                    a.Id,
+                    a.FileName,
+                    a.FileType,
+                    a.UploadedAt,
+                    a.UploadedBy
+                })
+                .ToListAsync();
+
+            return Ok(attachments);
+        }
+
+        [HttpGet("{id}/attachments/{attachmentId}/download")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.View")]
+        public async Task<IActionResult> DownloadAttachment(int id, int attachmentId)
+        {
+            var attachment = await _context.ContractAttachments
+                .FirstOrDefaultAsync(a => a.Id == attachmentId && a.HealthContractId == id);
+
+            if (attachment == null) return NotFound();
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath.TrimStart('/'));
+            if (!System.IO.File.Exists(filePath)) return NotFound("File không tồn tại trên server");
+
+            var mimeType = attachment.FileType.ToLower() switch
+            {
+                "pdf" => "application/pdf",
+                "doc" => "application/msword",
+                "docx" => "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "xlsx" => "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                "jpg" or "jpeg" => "image/jpeg",
+                "png" => "image/png",
+                _ => "application/octet-stream"
+            };
+
+            var fileStream = System.IO.File.OpenRead(filePath);
+            return File(fileStream, mimeType, attachment.FileName);
+        }
+
+        [HttpDelete("{id}/attachments/{attachmentId}")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Upload")]
+        public async Task<IActionResult> DeleteAttachment(int id, int attachmentId)
+        {
+            var attachment = await _context.ContractAttachments
+                .FirstOrDefaultAsync(a => a.Id == attachmentId && a.HealthContractId == id);
+
+            if (attachment == null) return NotFound();
+
+            // Delete physical file
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", attachment.FilePath.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+
+            _context.ContractAttachments.Remove(attachment);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Xóa file đính kèm thành công" });
+        }
+
         [HttpDelete("{id}")]
         [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> DeleteContract(int id)
@@ -259,14 +327,14 @@ namespace QuanLyDoanKham.API.Controllers
                 var contract = await _context.Contracts.FindAsync(id);
                 if (contract != null)
                 {
-                    var oldStatus = contract.Status;
-                    contract.Status = "Finished";
+                    var oldStatus = contract.Status.ToString();
+                    contract.Status = ContractStatus.Finished;
                     
                     _context.ContractStatusHistories.Add(new ContractStatusHistory
                     {
                         HealthContractId = id, 
                         OldStatus = oldStatus, 
-                        NewStatus = "Finished",
+                        NewStatus = ContractStatus.Finished.ToString(),
                         ChangedBy = User.Identity?.Name ?? "system", 
                         ChangedAt = DateTime.Now, 
                         Note = "Đã chốt quyết toán chi phí"
@@ -298,8 +366,8 @@ namespace QuanLyDoanKham.API.Controllers
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
-                OldStatus = contract.Status,
-                NewStatus = contract.Status,
+                OldStatus = contract.Status.ToString(),
+                NewStatus = contract.Status.ToString(),
                 ChangedBy = User.Identity?.Name ?? "system",
                 ChangedAt = DateTime.Now,
                 Note = $"Cập nhật doanh thu ngoài gói: {request.ExtraServiceRevenue:N0} VNĐ"
@@ -343,6 +411,72 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 return BadRequest(new { message = ex.Message });
             }
+        }
+
+        [HttpPost("{id}/create-medical-groups")]
+        [AuthorizePermission("DoanKham.Create")]
+        public async Task<IActionResult> AutoCreateMedicalGroups(int id)
+        {
+            var userIdClaim = User.FindFirst("UserId")?.Value;
+            int? userId = int.TryParse(userIdClaim, out var uid) ? uid : null;
+
+            try
+            {
+                var autoCreateService = new AutoCreateMedicalGroupService(_context);
+
+                // Kiểm tra xem hợp đồng đã được duyệt chưa
+                var canCreate = await autoCreateService.CanCreateMedicalGroups(id);
+                if (!canCreate)
+                {
+                    return BadRequest(new
+                    {
+                        message = "Hợp đồng chưa được duyệt. Vui lòng duyệt hợp đồng trước khi tạo đoàn khám."
+                    });
+                }
+
+                var groups = await autoCreateService.CreateMedicalGroupsFromContractAsync(id, userId);
+
+                return Ok(new
+                {
+                    message = $"Đã tạo {groups.Count} đoàn khám từ hợp đồng",
+                    count = groups.Count,
+                    groups = groups.Select(g => new
+                    {
+                        g.GroupId,
+                        g.GroupName,
+                        g.ExamDate,
+                        g.Status
+                    })
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}/medical-groups")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> GetContractMedicalGroups(int id)
+        {
+            var groups = await _context.MedicalGroups
+                .Where(mg => mg.HealthContractId == id)
+                .OrderBy(mg => mg.ExamDate)
+                .Select(mg => new
+                {
+                    mg.GroupId,
+                    mg.GroupName,
+                    mg.ExamDate,
+                    mg.Status,
+                    mg.Slot,
+                    mg.StartTime,
+                    mg.DepartureTime,
+                    StaffCount = mg.StaffDetails.Count,
+                    PatientCount = _context.MedicalRecords.Count(mr => mr.GroupId == mg.GroupId)
+                })
+                .ToListAsync();
+
+            return Ok(groups);
         }
     }
 }

@@ -48,7 +48,6 @@
         <div v-else class="max-w-3xl mx-auto space-y-6 animate-fade-in">
           <QcPatientCard
             :fullName="selectedRecord.fullName"
-            :queueNo="selectedRecord.queueNo"
             :medicalRecordId="selectedRecord.medicalRecordId"
           />
 
@@ -63,15 +62,14 @@
             @pass="handleQcPass"
             @rework="handleQcRework"
             @download-pdf="handleDownloadPdf"
-            @assign-extra="showExtraStationModal = true"
+            @ai-summary="showAiSummaryModal = true"
           />
 
-          <!-- Add Extra Station Modal -->
-          <AddExtraStationModal
-            v-if="showExtraStationModal"
+          <!-- AI Clinical Summary Modal -->
+          <AiClinicalSummaryModal
+            v-if="showAiSummaryModal"
             :medicalRecordId="selectedRecord.medicalRecordId"
-            @close="showExtraStationModal = false"
-            @assigned="onExtraStationAssigned"
+            @close="showAiSummaryModal = false"
           />
         </div>
       </main>
@@ -83,7 +81,7 @@
 import { ref, onMounted } from 'vue'
 import { api } from '@/services/apiClient'
 import { ShieldCheck, RotateCcw, ClipboardCheck } from 'lucide-vue-next'
-import AddExtraStationModal from '@/components/qc/AddExtraStationModal.vue'
+import AiClinicalSummaryModal from '@/components/qc/AiClinicalSummaryModal.vue'
 
 // Sub-components
 import QcSidebar from '@/components/qc/QcSidebar.vue'
@@ -91,8 +89,7 @@ import QcPatientCard from '@/components/qc/QcPatientCard.vue'
 import QcExamHistory from '@/components/qc/QcExamHistory.vue'
 import QcActionBox from '@/components/qc/QcActionBox.vue'
 
-// NB: Register local for Teleport to work
-const showExtraStationModal = ref(false)
+const showAiSummaryModal = ref(false)
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const pendingRecords  = ref([])
@@ -140,7 +137,7 @@ const handleQcPass = async () => {
   actionLoading.value = true
   actionError.value = ''
   try {
-    await api.post(`/api/Oms/qc/${selectedRecord.value.medicalRecordId}/pass`)
+    await api.post(`/api/MedicalRecords/qc/${selectedRecord.value.medicalRecordId}/pass`)
     pendingRecords.value = pendingRecords.value.filter(
       r => r.medicalRecordId !== selectedRecord.value.medicalRecordId
     )
@@ -186,7 +183,7 @@ const handleQcRework = async (reason) => {
   actionLoading.value = true
   actionError.value = ''
   try {
-    await api.post(`/api/Oms/qc/${selectedRecord.value.medicalRecordId}/rework`, {
+    await api.post(`/api/MedicalRecords/qc/${selectedRecord.value.medicalRecordId}/rework`, {
       reason: reason
     })
     pendingRecords.value = pendingRecords.value.filter(
@@ -198,15 +195,6 @@ const handleQcRework = async (reason) => {
   } finally {
     actionLoading.value = false
   }
-}
-
-const onExtraStationAssigned = () => {
-  // Sau khi chỉ định thêm, hồ sơ sẽ quay lại trạng thái IN_PROGRESS
-  // Xoá khỏi danh sách QC pending và bỏ chọn
-  pendingRecords.value = pendingRecords.value.filter(
-    r => r.medicalRecordId !== selectedRecord.value?.medicalRecordId
-  )
-  selectedRecord.value = null
 }
 
 onMounted(fetchPendingRecords)

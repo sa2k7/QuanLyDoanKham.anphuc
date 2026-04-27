@@ -1029,4 +1029,212 @@ async Task SaveAuditLog(string action, string entityType, int entityId,
 
 ---
 
+## 6. Module Import & Export
+
+### 6.1 Import Danh Sách Công Nhan (DSCN) tu Excel
+
+#### 6.1.1 Template Excel
+
+| Cột | Ten | Kieu du lieu | Bat buoc | Ghi chu |
+|-----|-----|-------------|----------|---------|
+| A | STT | int | Co | So thu tu |
+| B | Ho ten | string | Co | Ho va ten day du |
+| C | Ngay sinh | DateTime | Co | dd/MM/yyyy |
+| D | Gioi tinh | string | Co | Nam / Nu |
+| E | So dien thoai | string | Khong | 10-11 so |
+| F | Ma doan kham | int | Co | MedicalGroupId |
+| G | Ghi chu | string | Khong | Benh ly nen, dac diem |
+
+#### 6.1.2 Business Rules
+
+| # | Rule | Validation | Error Message |
+|---|------|------------|---------------|
+| 1 | File dinh dang | `.xlsx` hoac `.xls` | "Chi chap nhan file Excel" |
+| 2 | Sheet dau tien | Sheet[0] | "Khong tim thay du lieu" |
+| 3 | MedicalGroupId ton tai | `Any(g => g.Id == groupId)` | "Ma doan kham khong ton tai" |
+| 4 | Doan chua khoa | `Group.Status != "Locked"` | "Doan da khoa, khong the import" |
+| 5 | Ten khong rong | `!string.IsNullOrWhiteSpace(FullName)` | "Ho ten khong duoc de trong (dong X)" |
+| 6 | Ngay sinh hop le | `DateTime.TryParse` | "Ngay sinh khong hop le (dong X)" |
+| 7 | Gioi tinh hop le | `In ["Nam","Nu","Male","Female"]` | "Gioi tinh khong hop le" |
+| 8 | Trung SDT trong doan | `!Exists(Phone, GroupId)` | Warning: "SDT da ton tai trong doan" |
+
+#### 6.1.3 Import Logic (Pseudo)
+
+```csharp
+async Task<ImportResult> ImportPatientsFromExcel(IFormFile file, int medicalGroupId) {
+    // Validate file + MedicalGroup ton tai + chua Locked
+    // Dung ClosedXML doc lap qua tung dong (bo qua header)
+    // Validate tung dong: FullName, DOB, Gender
+    // Check trung SDT trong cung doan (warning nhung van import)
+    // Insert Patient { FullName, DOB, Gender, Phone, MedicalGroupId, Source="ExcelImport" }
+    // AuditLog: action="IMPORT_PATIENTS", entityType="Patient", entityId=groupId
+    // Tra ve ImportResult { TotalRows, ImportedCount, SkippedCount, Errors[] }
+}
+```
+
+### 6.2 Export Bao Cao
+
+#### 6.2.1 Danh Sach Benh Nhan Theo Doan
+
+```csharp
+async Task<byte[]> ExportPatientsByGroup(int groupId) {
+    // Lay group + company info
+    // Query Patients.Where(p => p.MedicalGroupId == groupId).OrderBy(name)
+    // Tao XLWorkbook: sheet "DSCN" (header + data), sheet "Thong tin" (ten doan, cong ty, ngay, tong so)
+    // Tra ve MemoryStream.ToArray()
+}
+```
+
+#### 6.2.2 Bao Cao P&L Doan Kham
+
+```csharp
+async Task<byte[]> ExportGroupPnl(int groupId) {
+    // Goi _reportingService.CalculateGroupPnlAsync(groupId)
+    // Tao Excel: LaborCost, MaterialCost, OverheadCost, TotalCost
+    // Ghi chu: "So tien nay la chi phi THUC TE, khong lien quan den gia tri hop dong"
+    // Tra ve byte[]
+}
+```
+
+#### 6.2.3 Bang Cham Cong / Luong
+
+```csharp
+async Task<byte[]> ExportPayroll(int month, int year) {
+    // Query PayrollRecords.Where(p => p.Month==month && p.Year==year)
+    // Cot: Ma NV, Ho ten, Cong thuc te, Don gia/ngay, Luong thuc linh
+    // Tra ve byte[]
+}
+```
+
+---
+
+## 7. Module AI Dieu Phoi Nhan Su
+
+### 7.1 Muc tieu
+
+Tu dong goi y nhan su phu hop cho tung vi tri trong doan kham, dua tren:
+- Vai tro chuyen mon (`StaffRole.SpecialtyRequired`)
+- Lich lam viec hien tai (khong trung ngay/ca)
+- So luong da di kham trong thang (can bang workload)
+
+### 7.2 Business Rules
+
+| # | Rule | Validation |
+|---|------|------------|
+| 1 | Chuyen mon khop | `Staff.Specialty == Position.SpecialtyRequired` hoac Position khong yeu cau |
+| 2 | Khong trung lich | `!HasScheduleConflict(staffId, examDate, shiftType)` - Bat buoc |
+| 3 | Nhan vien hoat dong | `Staff.IsActive == true` - Bat buoc |
+| 4 | Workload can bang | Uu tien staff co so ngay kham thang nay thap hon |
+| 5 | Ty le co ban | 1 nhan su / 15 benh nhan |
+
+### 7.3 AI Suggest Algorithm (Pseudo)
+
+```csharp
+async Task<List<SuggestedStaff>> AiSuggestStaffs(int groupId, int positionQuotaId) {
+    // 1. Lay group va quota (Position + Required count)
+    // 2. Query Staffs.Where(IsActive && (Specialty khop hoac khong yeu cau))
+    // 3. Voi moi staff:
+    //    - Check HasScheduleConflict (hard filter, loai neu trung)
+    //    - Tinh Score:
+    //      +10: Khop chuyen khoa chinh xac
+    //      +Min(pastAssignments*2, 10): Co kinh nghiem vi tri nay
+    //      -daysThisMonth*3: Giam diem neu da di nhieu ngay (can bang workload)
+    // 4. Sort by Score desc
+    // 5. Tra ve top `needed` ket qua
+}
+
+class SuggestedStaff {
+    int StaffId; string FullName; string Specialty;
+    int Score; int DaysThisMonth; int PastAssignments; string Reason;
+}
+```
+
+### 7.4 API Endpoint
+
+- `POST /api/ai/suggest-staffs`
+  - Body: `{ groupId, positionQuotaId }`
+  - Response: `[{ staffId, fullName, specialty, score, reason }]`
+  - Auth: `DoanKham.AssignStaff` permission
+
+---
+
+## 8. Module Lich & Thong Bao
+
+### 8.1 Lich Doan Kham (Calendar View)
+
+#### 8.1.1 API
+
+- `GET /api/calendar?month={m}&year={y}`
+  - Response: `[{ date, groups: [{ id, name, companyName, status, assignedStaffs[] }] }]`
+  - Auth: Admin/Manager xem tat ca; MedicalStaff chi xem co minh
+
+- `GET /api/calendar/my-schedule?month={m}&year={y}`
+  - Response: Lich ca nhan (doan nao, ngay nao, vi tri gi)
+
+#### 8.1.2 Frontend
+
+- FullCalendar hoac tu xay dung Grid view
+- Ngay co doan: highlight + click xem chi tiet
+- Filter: Theo trang thai, theo cong ty, theo vi tri can nhan su
+
+### 8.2 Thong Bao (Notifications)
+
+#### 8.2.1 Bang `Notifications`
+
+| Cot | Kieu | Mo ta |
+|-----|------|-------|
+| Id | int | PK |
+| UserId | int | FK Users (null = broadcast) |
+| Type | string | ContractPending, GroupAssigned, ScheduleReminder, PayrollReady |
+| Title | string | Tieu de |
+| Message | string | Noi dung |
+| IsRead | bool | false |
+| CreatedAt | DateTime | Thoi diem tao |
+| ActionUrl | string | Duong dan khi click |
+
+#### 8.2.2 Cac Su Kien Tu Dong Gui Thong Bao
+
+| Su kien | Nguoi nhan | Noi dung | Kenh |
+|---------|-----------|----------|------|
+| Hop dong tao xong, cho duyet | HCNS/Manager co quyen duyet | "Hop dong X can duyet" | SignalR + Badge |
+| Hop dong duyet xong | Nguoi tao | "Hop dong X da duyet" | SignalR |
+| Doan kham sap dien ra (T-1 ngay) | Nhan su trong doan | "Ngay mai ban co lich di kham..." | SignalR |
+| Phan cong vao doan moi | Nhan su duoc them | "Ban duoc phan cong vao doan X" | SignalR |
+| Bang luong da tao | Tung nhan su | "Bang luong T{month}/{year} da san sang" | SignalR |
+| Vat tu sap het (duoi MinStock) | Admin/Kho | "Vat tu X chi con {qty}" | SignalR + Badge |
+
+#### 8.2.3 SignalR Hub
+
+```csharp
+public class NotificationHub : Hub {
+    // User ket noi -> join group theo UserId
+    // Server gui: Clients.Group(userId).SendAsync("ReceiveNotification", notification)
+    // Frontend Vue: lang nghe su kien, hien toast + cap nhat badge
+}
+```
+
+#### 8.2.4 Reminder Job (Hangfire/Quartz)
+
+```csharp
+// Chay moi ngay luc 18:00
+async Task DailyReminderJob() {
+    var tomorrow = DateTime.Today.AddDays(1);
+    var groups = await _context.MedicalGroups
+        .Where(g => g.ExamDate.Date == tomorrow && g.Status != "Cancelled")
+        .Include(g => g.Staffs)
+        .ToListAsync();
+    
+    foreach (var group in groups) {
+        foreach (var staff in group.Staffs) {
+            await _notificationService.SendAsync(staff.UserId, "ScheduleReminder",
+                "Nhac lich di kham",
+                $"Ngay mai ({tomorrow:dd/MM}) ban co lich di kham: {group.GroupName}",
+                $"/medical-groups/{group.Id}");
+        }
+    }
+}
+```
+
+---
+
 *End of Document*

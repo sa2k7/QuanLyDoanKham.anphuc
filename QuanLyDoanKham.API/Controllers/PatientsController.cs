@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.Models;
+using QuanLyDoanKham.API.Services.Imports;
 using ClosedXML.Excel;
 
 namespace QuanLyDoanKham.API.Controllers
@@ -15,11 +16,13 @@ namespace QuanLyDoanKham.API.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly Services.MedicalRecords.IMedicalRecordStateMachine _stateMachine;
+        private readonly Services.Imports.IPatientImportService _importService;
 
-        public PatientsController(ApplicationDbContext context, Services.MedicalRecords.IMedicalRecordStateMachine stateMachine)
+        public PatientsController(ApplicationDbContext context, Services.MedicalRecords.IMedicalRecordStateMachine stateMachine, Services.Imports.IPatientImportService importService)
         {
             _context = context;
             _stateMachine = stateMachine;
+            _importService = importService;
         }
 
         // ================================================================
@@ -44,8 +47,6 @@ namespace QuanLyDoanKham.API.Controllers
 
             if (record == null)
             {
-                // Thử tìm theo Patient (nếu hồ sơ chưa link PatientId nhưng CCCD khớp)
-                // Hoặc tìm Patient trước rồi tìm Record của Patient đó
                 return NotFound(new { message = "Không tìm thấy hồ sơ của bạn trong danh sách khám hôm nay. Vui lòng liên hệ quầy tiếp đón." });
             }
 
@@ -58,33 +59,17 @@ namespace QuanLyDoanKham.API.Controllers
 
             if (!checkInResult.IsSuccess)
             {
-                return BadRequest(new { message = "Lỗi hệ thống khi phân luồng hàng chờ: " + checkInResult.Message });
+                return BadRequest(new { message = "Lỗi hệ thống khi tiếp đón: " + checkInResult.Message });
             }
 
-            // Reload to get QueueNo and next station
             var updatedRecord = await _context.MedicalRecords
-                .Include(m => m.StationTasks)
                 .FirstOrDefaultAsync(m => m.MedicalRecordId == record.MedicalRecordId);
-
-            var firstWaitingStationCode = updatedRecord?.StationTasks
-                .Where(t => t.Status == "WAITING")
-                .OrderBy(t => t.TaskId) // Assuming they were created in order
-                .Select(t => t.StationCode)
-                .FirstOrDefault();
-
-            var stationName = "Khoa/Phòng khám";
-            if (!string.IsNullOrEmpty(firstWaitingStationCode))
-            {
-                var station = await _context.Stations.FirstOrDefaultAsync(s => s.StationCode == firstWaitingStationCode);
-                if (station != null) stationName = station.StationName;
-            }
 
             return Ok(new
             {
-                message = "Báo danh thành công!",
+                message = "Báo danh thành công! Vui lòng di chuyển vào khu vực khám.",
                 fullName = updatedRecord?.FullName ?? record.FullName,
-                queueNo = updatedRecord?.QueueNo,
-                nextStation = stationName
+                status = updatedRecord?.Status
             });
         }
 
@@ -161,7 +146,6 @@ namespace QuanLyDoanKham.API.Controllers
             // Lấy lịch sử hồ sơ khám của bệnh nhân (qua MedicalRecord liên kết PatientId)
             var medicalHistory = await _context.MedicalRecords
                 .Include(m => m.MedicalGroup)
-                .Include(m => m.StationTasks)
                 .Where(m => m.PatientId == id)
                 .OrderByDescending(m => m.CreatedAt)
                 .Select(m => new
@@ -169,12 +153,8 @@ namespace QuanLyDoanKham.API.Controllers
                     m.MedicalRecordId,
                     m.Status,
                     m.CheckInAt,
-                    m.QueueNo,
-                    m.CurrentStation,
                     GroupName = m.MedicalGroup != null ? m.MedicalGroup.GroupName : null,
-                    ExamDate = m.MedicalGroup != null ? m.MedicalGroup.ExamDate : (DateTime?)null,
-                    TasksDone = m.StationTasks.Count(t => t.Status == "STATION_DONE"),
-                    TasksTotal = m.StationTasks.Count
+                    ExamDate = m.MedicalGroup != null ? m.MedicalGroup.ExamDate : (DateTime?)null
                 })
                 .ToListAsync();
 
@@ -221,9 +201,9 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // ================================================================
-        // GET: api/Patients/by-group/{groupId} — Theo đoàn khám (qua MedicalRecord)
+        // GET: api/Patients/by-group-records/{groupId} — Theo đoàn khám (qua MedicalRecord)
         // ================================================================
-        [HttpGet("by-group/{groupId}")]
+        [HttpGet("by-group-records/{groupId}")]
         [AuthorizePermission("DoanKham.View")]
         public async Task<IActionResult> GetByGroup(int groupId)
         {
@@ -240,7 +220,6 @@ namespace QuanLyDoanKham.API.Controllers
                     m.IDCardNumber,
                     m.Status,
                     m.CheckInAt,
-                    m.QueueNo,
                     Department = m.Department,
                 })
                 .OrderBy(m => m.FullName)
@@ -352,90 +331,8 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // ================================================================
-        // POST: api/Patients/import — Nhập hàng loạt từ Excel
+        // [REMOVED] Import cũ theo contractId đã được thay bởi import-group bên dưới
         // ================================================================
-        [HttpPost("import")]
-        [AuthorizePermission("DoanKham.Edit")]
-        public async Task<IActionResult> Import(IFormFile file, [FromQuery] int contractId)
-        {
-            if (file == null || file.Length == 0) return BadRequest(new { message = "Vui lòng chọn file Excel." });
-
-            var contract = await _context.Contracts.FindAsync(contractId);
-            if (contract == null) return BadRequest(new { message = "Hợp đồng không tồn tại." });
-
-            try
-            {
-                using var stream = file.OpenReadStream();
-                using var workbook = new XLWorkbook(stream);
-                var worksheet = workbook.Worksheet(1);
-                var rows = worksheet.RowsUsed().Skip(1); // Bỏ qua header
-
-                var addedCount = 0;
-                var errorCount = 0;
-                var patientsToSave = new List<Patient>();
-
-                foreach (var row in rows)
-                {
-                    try 
-                    {
-                        var fullName = row.Cell(1).GetValue<string>().Trim();
-                        if (string.IsNullOrEmpty(fullName)) continue;
-
-                        var gender = row.Cell(2).GetValue<string>().Trim();
-                        var dobValue = row.Cell(3).Value;
-                        DateTime dob = DateTime.MinValue;
-                        if (dobValue.IsDateTime) dob = dobValue.GetDateTime();
-                        else if (DateTime.TryParse(dobValue.ToString(), out var dt)) dob = dt;
-
-                        var idCard = row.Cell(4).GetValue<string>().Trim();
-                        var phone = row.Cell(5).GetValue<string>().Trim();
-                        var dept = row.Cell(6).GetValue<string>().Trim();
-
-                        // Kiểm tra trùng CCCD trong List chuẩn bị add hoặc trong DB
-                        if (!string.IsNullOrEmpty(idCard))
-                        {
-                            var existsInDb = await _context.Patients.AnyAsync(p => p.HealthContractId == contractId && p.IDCardNumber == idCard);
-                            var existsInBatch = patientsToSave.Any(p => p.IDCardNumber == idCard);
-                            if (existsInDb || existsInBatch)
-                            {
-                                errorCount++;
-                                continue;
-                            }
-                        }
-
-                        patientsToSave.Add(new Patient
-                        {
-                            HealthContractId = contractId,
-                            FullName = fullName,
-                            Gender = gender,
-                            DateOfBirth = dob,
-                            IDCardNumber = idCard,
-                            PhoneNumber = phone,
-                            Department = dept,
-                            CreatedDate = DateTime.Now
-                        });
-                        addedCount++;
-                    }
-                    catch { errorCount++; }
-                }
-
-                if (patientsToSave.Any())
-                {
-                    await _context.Patients.AddRangeAsync(patientsToSave);
-                    await _context.SaveChangesAsync();
-                }
-
-                return Ok(new { 
-                    message = $"Import hoàn tất. Thành công: {addedCount}, Thất bại: {errorCount}.",
-                    addedCount,
-                    errorCount
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = "Lỗi xử lý file Excel: " + ex.Message });
-            }
-        }
 
         // ================================================================
         // GET: api/Patients/export — Xuất danh sách ra Excel
@@ -498,6 +395,92 @@ namespace QuanLyDoanKham.API.Controllers
 
             return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"DanhSachBenhNhan_{DateTime.Now:yyyyMMdd}.xlsx");
         }
+
+        // ================================================================
+        // GET: api/Patients/by-group/{groupId}
+        // ================================================================
+        [HttpGet("by-group/{groupId}")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<ActionResult<IEnumerable<object>>> GetPatientsByGroup(int groupId)
+        {
+            var results = await _context.MedicalRecords
+                .Include(mr => mr.Patient)
+                .Where(mr => mr.GroupId == groupId)
+                .Select(mr => new
+                {
+                    PatientId = mr.PatientId,
+                    MedicalRecordId = mr.MedicalRecordId,
+                    FullName = mr.FullName,
+                    DateOfBirth = mr.DateOfBirth,
+                    Gender = mr.Gender,
+                    IDCardNumber = mr.IDCardNumber,
+                    PhoneNumber = mr.Patient != null ? mr.Patient.PhoneNumber : "",
+                    Department = mr.Department,
+                    ExamFunction = "",
+                    Status = mr.Status
+                })
+                .OrderBy(x => x.FullName)
+                .ToListAsync();
+
+            return Ok(results);
+        }
+
+        // DELETE: api/Patients/group-patient
+        // ================================================================
+        [HttpDelete("group-patient")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> RemovePatientFromGroup([FromQuery] int groupId, [FromQuery] int patientId)
+        {
+            var record = await _context.MedicalRecords
+                .FirstOrDefaultAsync(mr => mr.GroupId == groupId && mr.PatientId == patientId);
+            
+            if (record == null) return NotFound(new { message = "Không tìm thấy bệnh nhân trong đoàn khám này." });
+
+            if (record.Status != "READY" && record.Status != "CREATED")
+            {
+                return BadRequest(new { message = "Không thể gỡ bệnh nhân đã bắt đầu khám hoặc đã có hồ sơ y tế." });
+            }
+
+            _context.MedicalRecords.Remove(record);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đã gỡ bệnh nhân khỏi đoàn khám." });
+        }
+
+        // ================================================================
+        // POST: api/Patients/import-group — Import Excel DSCN vào đoàn khám (qua MedicalGroupPatient)
+        // ================================================================
+        [HttpPost("import-group")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> ImportFromExcel([FromForm] PatientImportDto dto)
+        {
+            if (dto.File == null || dto.File.Length == 0)
+                return BadRequest(new { message = "Vui long chon file Excel" });
+
+            try
+            {
+                var result = await _importService.ImportFromExcelAsync(dto.File, dto.MedicalGroupId);
+                return Ok(result);
+            }
+            catch (ValidationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Loi import: " + ex.Message });
+            }
+        }
+    }
+
+    public class PatientImportDto
+    {
+        public int MedicalGroupId { get; set; }
+        public IFormFile File { get; set; } = null!;
     }
 
     // DTO dùng cho Create và Update

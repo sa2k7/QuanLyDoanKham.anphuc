@@ -1,26 +1,22 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 scrollbar-premium overflow-y-auto font-sans p-6">
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-8 glass-header p-6 rounded-[2rem] shadow-sm">
-      <div>
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight italic uppercase">Quản Lý Bệnh Nhân</h1>
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-1">Lý lịch, hồ sơ chuẩn y khoa và lịch sử thăm khám</p>
+    <div class="flex items-center justify-between mb-8 glass-header p-8 rounded-[2.5rem] shadow-glass border border-white/40 backdrop-blur-xl">
+      <div class="flex items-center gap-6">
+        <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
+          <Users class="w-8 h-8 text-primary" />
+        </div>
+        <div>
+          <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Quản Lý Bệnh Nhân</h1>
+          <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Lý lịch & Hồ sơ chuẩn y khoa (Medical Database)</p>
+        </div>
       </div>
-      <div class="flex gap-3">
-        <button @click="handleExport" class="btn-premium secondary">
-          <Download class="w-4 h-4" /> Xuất Excel
+      <div class="flex gap-4">
+        <button @click="handleExport" class="btn-premium secondary !rounded-xl !px-6 shadow-sm border border-white/40">
+          <Download class="w-4 h-4" /> XUẤT EXCEL
         </button>
-        <button @click="$refs.fileInput.click()" class="btn-premium secondary" :disabled="importing">
-          <Upload v-if="!importing" class="w-4 h-4" />
-          <RefreshCw v-else class="w-4 h-4 animate-spin" />
-          <span>{{ importing ? 'Đang nhập...' : 'Nhập Excel' }}</span>
-        </button>
-        <input type="file" ref="fileInput" class="hidden" accept=".xlsx, .xls" @change="onFileChange" />
-        <button @click="openEnrollModal" class="btn-premium secondary !bg-indigo-50 !text-indigo-600 border-indigo-100">
-          <Calendar class="w-4 h-4" /> Đăng ký khám đoàn
-        </button>
-        <button @click="openAdd" class="btn-premium primary">
-          <UserPlus class="w-5 h-5" /> Thêm Bệnh Nhân
+        <button @click="openAdd" class="btn-premium primary !rounded-xl !px-8 shadow-lg shadow-primary/20">
+          <UserPlus class="w-5 h-5" /> THÊM BỆNH NHÂN
         </button>
       </div>
     </div>
@@ -147,9 +143,6 @@
                 <div class="flex items-center justify-center gap-1 group">
                   <button @click="viewDetail(p)" class="p-2.5 rounded-xl bg-blue-50/50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm border border-blue-100 hover:border-blue-500" title="Xem hồ sơ">
                     <Eye class="w-4 h-4" />
-                  </button>
-                  <button @click="openEnrollModal(p)" class="p-2.5 rounded-xl bg-emerald-50/50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all shadow-sm border border-emerald-100 hover:border-emerald-600" title="Ghi danh vào đoàn">
-                    <Calendar class="w-4 h-4" />
                   </button>
                   <button @click="openEdit(p)" class="p-2.5 rounded-xl bg-indigo-50/50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-indigo-100 hover:border-indigo-500" title="Sửa">
                     <Edit class="w-4 h-4" />
@@ -422,73 +415,7 @@
       </div>
     </Teleport>
 
-    <!-- ENROLL MODAL -->
-    <Teleport to="body">
-      <div v-if="showEnrollModal" class="modal-overlay flex items-center justify-center p-6 z-[120]" @click.self="showEnrollModal = false">
-        <div class="modal-box max-w-lg w-full animate-scale-up">
-          <div class="modal-header bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-8 rounded-t-[2.5rem]">
-            <div class="flex items-center gap-4">
-              <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
-                <Calendar class="w-7 h-7" />
-              </div>
-              <div>
-                <h2 class="text-xl font-black uppercase tracking-tight leading-none mb-1">Ghi Danh Khám Đoàn</h2>
-                <p class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Đăng ký bệnh nhân vào một đợt khám tập trung</p>
-              </div>
-            </div>
-          </div>
 
-          <div class="p-8">
-            <div class="mb-6 p-5 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center gap-4" v-if="enrollTarget">
-                <div class="avatar-circle">{{ enrollTarget.fullName?.charAt(0) }}</div>
-                <div>
-                   <p class="text-[10px] font-black text-emerald-600 uppercase tracking-widest">Bệnh nhân đang chọn</p>
-                   <p class="text-lg font-black text-slate-800">{{ enrollTarget.fullName }}</p>
-                </div>
-            </div>
-
-            <div v-else class="mb-6">
-                <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">1. Tìm bệnh nhân (Chưa bắt buộc)</label>
-                <div class="relative">
-                    <Search class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-300" />
-                    <input type="text" v-model="enrollSearch" @input="searchEnrollTarget" placeholder="Tìm theo tên hoặc CCCD..." class="form-input !pl-12" />
-                </div>
-                <!-- Search Result Dropdown (Simple) -->
-                <div v-if="enrollSearchResults.length > 0" class="mt-2 bg-white border border-slate-100 rounded-xl shadow-lg max-h-40 overflow-y-auto">
-                    <div v-for="p in enrollSearchResults" :key="p.patientId" @click="enrollTarget = p; enrollSearchResults = []" 
-                        class="p-3 hover:bg-slate-50 cursor-pointer flex items-center gap-3 border-b border-slate-50 last:border-0">
-                        <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center text-[10px] font-black">{{ p.fullName?.charAt(0) }}</div>
-                        <div>
-                            <p class="text-xs font-black text-slate-800">{{ p.fullName }}</p>
-                            <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{{ p.iDCardNumber || '—' }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div>
-              <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2 block">2. Chọn Đoàn Khám Đang Mở</label>
-              <select v-model="selectedEnrollGroupId" class="form-input !py-4 !text-base">
-                <option value="">— Chọn đoàn khám mục tiêu —</option>
-                <option v-for="g in openGroups" :key="g.groupId" :value="g.groupId">
-                  [{{ formatDateShort(g.examDate) }}] {{ g.groupName }}
-                </option>
-              </select>
-              <p v-if="openGroups.length === 0" class="text-[10px] font-bold text-rose-500 uppercase mt-2 italic">Hiện không có đoàn khám nào đang mở.</p>
-            </div>
-          </div>
-
-          <div class="p-8 border-t bg-slate-50/50 rounded-b-[2.5rem] flex gap-3">
-             <button @click="showEnrollModal = false" class="flex-1 py-4 text-slate-400 font-black text-xs uppercase tracking-widest">Hủy bỏ</button>
-             <button @click="submitEnroll" :disabled="!selectedEnrollGroupId || !enrollTarget || enrollLoading" 
-                     class="flex-[2] btn-premium primary !bg-emerald-600 !shadow-emerald-100">
-                <Loader2 v-if="enrollLoading" class="w-4 h-4 animate-spin" />
-                <span v-else>XÁC NHẬN GHI DANH</span>
-             </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>
 
@@ -521,30 +448,35 @@ const formError = ref('')
 const importing = ref(false)
 const fileInput = ref(null)
 
-// Enroll State
-const showEnrollModal = ref(false)
-const enrollTarget = ref(null)
-const selectedEnrollGroupId = ref('')
-const openGroups = ref([])
-const enrollLoading = ref(false)
-const enrollSearch = ref('')
-const enrollSearchResults = ref([])
 
 const form = ref(resetForm())
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 const approvedContracts = computed(() => {
-  // Cho phép hiện tất cả hợp đồng có tên, hoặc cho phép cả hợp đồng chưa đặt tên 
-  // để sếp có thể nhập liệu bệnh nhân ngay lập tức mà không bị chặn.
-  return contracts.value.filter(c => 
-    c.status !== 'REJECTED' // Chỉ lọc bỏ các hợp đồng đã bị từ chối hẳn
-  )
+  // Ưu tiên hiển thị các hợp đồng đã được phê duyệt hoặc đang hoạt động.
+  // Loại bỏ các 'Hợp đồng chưa đặt tên' trừ khi chúng đang ở trạng thái Active để giảm nhiễu.
+  return contracts.value.filter(c => {
+    const isUnnamed = c.contractName?.toLowerCase().includes('chưa đặt tên')
+    const isRejected = c.status === 'REJECTED'
+    
+    if (isRejected) return false
+    if (isUnnamed && c.status !== 'ACTIVE' && c.status !== 'Active') return false
+    
+    return true
+  }).sort((a, b) => {
+    // Đưa các hợp đồng có tên thật lên đầu
+    const aUnnamed = a.contractName?.toLowerCase().includes('chưa đặt tên')
+    const bUnnamed = b.contractName?.toLowerCase().includes('chưa đặt tên')
+    if (aUnnamed && !bUnnamed) return 1
+    if (!aUnnamed && bUnnamed) return -1
+    return 0
+  })
 })
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([loadContracts(), loadPatients(), loadOpenGroups()])
+  await Promise.all([loadContracts(), loadPatients()])
 })
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -604,12 +536,6 @@ const loadContracts = async () => {
   }
 }
 
-const loadOpenGroups = async () => {
-    try {
-        const res = await apiClient.get('/api/MedicalGroups')
-        openGroups.value = res.data.filter(g => g.status === 'Open')
-    } catch (e) { console.error('Lỗi tải đoàn khám:', e) }
-}
 
 const loadPatients = async () => {
   loading.value = true
@@ -644,54 +570,6 @@ const viewDetail = async (p) => {
   }
 }
 
-// ─── Enroll Actions ───────────────────────────────────────────────────────────
-const openEnrollModal = (p = null) => {
-    enrollTarget.value = p
-    enrollSearch.value = ''
-    enrollSearchResults.value = []
-    selectedEnrollGroupId.value = ''
-    showEnrollModal.value = true
-}
-
-const searchEnrollTarget = async () => {
-    if (enrollSearch.value.length < 2) {
-        enrollSearchResults.value = []
-        return
-    }
-    try {
-        const res = await apiClient.get(`/api/Patients?search=${enrollSearch.value}&pageSize=5`)
-        enrollSearchResults.value = res.data.items || []
-    } catch (e) { console.error(e) }
-}
-
-const submitEnroll = async () => {
-    if (!enrollTarget.value || !selectedEnrollGroupId.value) return
-    enrollLoading.value = true
-    try {
-        const p = enrollTarget.value
-        const payload = {
-            groupId: Number(selectedEnrollGroupId.value),
-            records: [{
-                fullName: p.fullName,
-                iDCardNumber: p.iDCardNumber,
-                gender: p.gender,
-                dateOfBirth: p.dateOfBirth,
-                department: p.department
-            }]
-        }
-        await apiClient.post('/api/MedicalRecords/batch-ingest', payload)
-        toast.success(`Đã ghi danh ${p.fullName} vào đoàn khám thành công!`)
-        showEnrollModal.value = false
-        // Nếu đang mở trang detail thì load lại để thấy history mới
-        if (showDetail.value && detailData.value?.patientId === p.patientId) {
-            viewDetail(p)
-        }
-    } catch (e) {
-        toast.error(e.response?.data?.message || 'Có lỗi khi ghi danh.')
-    } finally {
-        enrollLoading.value = false
-    }
-}
 
 // ─── Form Actions ─────────────────────────────────────────────────────────────
 const openAdd = () => {

@@ -36,7 +36,6 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
                 return ServiceResult<object>.Success(new {
                     result.Data?.MedicalRecordId,
                     result.Data?.FullName,
-                    result.Data?.QueueNo,
                     result.Data?.Status
                 });
             }
