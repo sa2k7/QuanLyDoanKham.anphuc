@@ -53,15 +53,11 @@ namespace QuanLyDoanKham.API.Controllers
             // Kiểm tra trùng lặp
             if (await _context.Companies.AnyAsync(c => c.CompanyName == dto.CompanyName))
                 return BadRequest("Tên công ty đã tồn tại trong hệ thống.");
-            if (await _context.Companies.AnyAsync(c => c.TaxCode == dto.TaxCode))
-            // Kiểm tra trùng lặp
-            if (await _context.Companies.AnyAsync(c => c.CompanyName == dto.CompanyName))
-                return BadRequest("Tên công ty đã tồn tại trong hệ thống.");
-            if (await _context.Companies.AnyAsync(c => c.TaxCode == dto.TaxCode))
+            if (!string.IsNullOrEmpty(dto.TaxCode) && await _context.Companies.AnyAsync(c => c.TaxCode == dto.TaxCode))
                 return BadRequest("Mã số thuế này đã được đăng ký.");
-            if (await _context.Companies.AnyAsync(c => c.PhoneNumber == dto.PhoneNumber))
+            if (!string.IsNullOrEmpty(dto.PhoneNumber) && await _context.Companies.AnyAsync(c => c.PhoneNumber == dto.PhoneNumber))
                 return BadRequest("Số điện thoại này đã được sử dụng bởi công ty khác.");
-            if (await _context.Companies.AnyAsync(c => c.Address == dto.Address))
+            if (!string.IsNullOrEmpty(dto.Address) && await _context.Companies.AnyAsync(c => c.Address == dto.Address))
                 return BadRequest("Địa chỉ này đã được đăng ký cho một công ty khác.");
 
             var company = new Company

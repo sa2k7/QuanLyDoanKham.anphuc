@@ -1,0 +1,28 @@
+{
+  "user_profile": {
+    "coding_style": "Modern C# Clean Architecture, Vue 3 Composition API",
+    "naming_conventions": {
+      "backend": "PascalCase for Services/Controllers, snake_case for private helpers in some contexts",
+      "frontend": "camelCase for composables, PascalCase for components"
+    },
+    "preferences": [
+      "Ưu tiên gộp các Role thừa để tối giản hệ thống (đã gộp Accountant, GroupLeader, Manager)",
+      "Sử dụng các HomePanel riêng biệt cho Dashboard theo Role",
+      "Thích giao diện Visuals Premium, dark mode và Mermaid graphs",
+      "Sử dụng Git Worktree (Sandbox) để quản lý đa tầng"
+    ]
+  },
+  "project_status": {
+    "critical_entities": [
+      "MedicalRecord",
+      "HealthContract",
+      "SettlementService",
+      "QcReview"
+    ],
+    "learned_lessons": [
+      "Không bao giờ chạy git clean -fd mà không check log",
+      "Database đang trỏ về localhost (SQLEXPRESS) là an toàn để migrate",
+      "Các Role hệ thống đã được đồng bộ hóa từ Backend đến i18n Store"
+    ]
+  }
+}

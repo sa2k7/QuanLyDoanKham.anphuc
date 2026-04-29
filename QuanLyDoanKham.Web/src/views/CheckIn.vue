@@ -40,7 +40,13 @@
               <p>Đang tạo mã bảo mật...</p>
            </div>
            <div v-else-if="activeQr" class="qr-image-box animate-zoom-in">
-              <img :src="'data:image/png;base64,' + activeQr.pngBase64" alt="Active QR" class="main-qr" />
+              <img :src="activeQr.pngBase64" alt="Active QR" class="main-qr" />
+              <div v-if="activeQr.groupName" class="text-xs font-bold text-slate-500 mt-2 text-center">
+                {{ activeQr.groupName }}
+                <span v-if="!activeQr.isToday" class="ml-1 px-2 py-0.5 bg-amber-100 text-amber-600 rounded-full text-[10px] font-black">
+                  {{ new Date(activeQr.examDate).toLocaleDateString('vi-VN') }}
+                </span>
+              </div>
               <div class="qr-expiry-info">
                  <RefreshCw :size="12" class="animate-spin-slow" />
                  Làm mới sau mỗi 60s
@@ -464,7 +470,7 @@ const searchWalkIn = async () => {
 
 const manualCheckInPatient = async (recordId) => {
     try {
-        const res = await apiClient.post(`/api/Oms/checkin/${recordId}`)
+        const res = await apiClient.post(`/api/MedicalRecords/${recordId}/checkin`)
         resultStatus.value = 'success'
         resultMessage.value = 'Tiếp Đón Thành Công!'
         resultData.value = res.data.data
@@ -692,9 +698,8 @@ const submitStaffCheckIn = async () => {
     errorMsg.value = ''
     try {
         const res = await apiClient.post(`/api/Attendance/checkin`, {
-            groupId: groupInfo.value.groupId,
-            staffId: staffId.value,
             qrToken: groupInfo.value.qrToken,
+            staffId: staffId.value,
             note: note.value
         })
         resultStatus.value = 'success'

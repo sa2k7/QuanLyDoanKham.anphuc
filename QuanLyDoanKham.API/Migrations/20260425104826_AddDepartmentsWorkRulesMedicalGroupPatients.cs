@@ -117,77 +117,111 @@ namespace QuanLyDoanKham.API.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.InsertData(
-                table: "Departments",
-                columns: new[] { "DepartmentId", "CreatedAt", "DepartmentCode", "DepartmentName", "Description", "IsActive" },
-                values: new object[,]
-                {
-                    { 1, new DateTime(2026, 4, 25, 17, 48, 24, 761, DateTimeKind.Local).AddTicks(3770), "HCNS", "Hành chính nhân sự", "Quản lý hợp đồng, nhân sự, tính lương", true },
-                    { 2, new DateTime(2026, 4, 25, 17, 48, 24, 761, DateTimeKind.Local).AddTicks(3796), "KHO", "Kho vật tư", "Quản lý nhập xuất kho, tồn kho", true },
-                    { 3, new DateTime(2026, 4, 25, 17, 48, 24, 761, DateTimeKind.Local).AddTicks(3881), "YTE", "Y tế", "Quản lý đoàn khám, khám chữa bệnh", true },
-                    { 4, new DateTime(2026, 4, 25, 17, 48, 24, 761, DateTimeKind.Local).AddTicks(3883), "KT", "Kế toán", "Quản lý tài chính, báo cáo", true },
-                    { 5, new DateTime(2026, 4, 25, 17, 48, 24, 761, DateTimeKind.Local).AddTicks(3884), "QLCL", "Quản lý chất lượng", "QC hồ sơ, kiểm tra chất lượng", true }
-                });
+            // Use IF NOT EXISTS to avoid duplicate key errors
+            var deptSeeds = new (int Id, string Code, string Name, string Desc)[]
+            {
+                (1, "HCNS", "Hành chính nhân sự", "Quản lý hợp đồng, nhân sự, tính lương"),
+                (2, "KHO", "Kho vật tư", "Quản lý nhập xuất kho, tồn kho"),
+                (3, "YTE", "Y tế", "Quản lý đoàn khám, khám chữa bệnh"),
+                (4, "KT", "Kế toán", "Quản lý tài chính, báo cáo"),
+                (5, "QLCL", "Quản lý chất lượng", "QC hồ sơ, kiểm tra chất lượng"),
+            };
+            migrationBuilder.Sql("SET IDENTITY_INSERT [Departments] ON");
+            foreach (var (id, code, name, desc) in deptSeeds)
+            {
+                migrationBuilder.Sql(
+                    $"IF NOT EXISTS (SELECT 1 FROM [Departments] WHERE [DepartmentId] = {id}) " +
+                    $"INSERT INTO [Departments] ([DepartmentId], [CreatedAt], [DepartmentCode], [DepartmentName], [Description], [IsActive]) " +
+                    $"VALUES ({id}, GETDATE(), N'{code}', N'{name}', N'{desc}', 1)");
+            }
+            migrationBuilder.Sql("SET IDENTITY_INSERT [Departments] OFF");
 
-            migrationBuilder.InsertData(
-                table: "Permissions",
-                columns: new[] { "PermissionId", "Module", "PermissionKey", "PermissionName" },
-                values: new object[,]
-                {
-                    { 110, "PhongBan", "PhongBan.View", "Xem phòng ban" },
-                    { 111, "PhongBan", "PhongBan.Edit", "Sửa phòng ban" },
-                    { 120, "WorkRule", "WorkRule.View", "Xem bảng rule chức năng" },
-                    { 121, "WorkRule", "WorkRule.Edit", "Sửa bảng rule chức năng" },
-                    { 130, "AI", "AI.SuggestStaff", "AI gợi ý phân công nhân sự" },
-                    { 140, "Kho", "Kho.Reports", "Xem báo cáo tồn kho" },
-                    { 141, "Kho", "Kho.Import", "Import phiếu nhập kho" },
-                    { 142, "Kho", "Kho.Export", "Export phiếu xuất kho" }
-                });
+            // Use IF NOT EXISTS to avoid duplicate key errors
+            migrationBuilder.Sql("SET IDENTITY_INSERT [Permissions] ON");
+            var permSeeds = new (int Id, string Module, string Key, string Name)[]
+            {
+                (110, "PhongBan", "PhongBan.View", "Xem phòng ban"),
+                (111, "PhongBan", "PhongBan.Edit", "Sửa phòng ban"),
+                (120, "WorkRule", "WorkRule.View", "Xem bảng rule chức năng"),
+                (121, "WorkRule", "WorkRule.Edit", "Sửa bảng rule chức năng"),
+                (130, "AI", "AI.SuggestStaff", "AI gợi ý phân công nhân sự"),
+                (140, "Kho", "Kho.Reports", "Xem báo cáo tồn kho"),
+                (141, "Kho", "Kho.Import", "Import phiếu nhập kho"),
+                (142, "Kho", "Kho.Export", "Export phiếu xuất kho"),
+            };
+            foreach (var (id, module, key, name) in permSeeds)
+            {
+                migrationBuilder.Sql(
+                    $"IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [PermissionId] = {id}) " +
+                    $"INSERT INTO [Permissions] ([PermissionId], [Module], [PermissionKey], [PermissionName]) VALUES ({id}, N'{module}', N'{key}', N'{name}')");
+            }
+            migrationBuilder.Sql("SET IDENTITY_INSERT [Permissions] OFF");
 
-            migrationBuilder.InsertData(
-                table: "RolePermissions",
-                columns: new[] { "Id", "PermissionId", "RoleId" },
-                values: new object[,]
-                {
-                    { 208, 30, 5 },
-                    { 303, 100, 2 },
-                    { 30, 110, 1 },
-                    { 31, 111, 1 },
-                    { 32, 120, 1 },
-                    { 33, 121, 1 },
-                    { 34, 130, 1 },
-                    { 35, 140, 1 },
-                    { 36, 141, 1 },
-                    { 37, 142, 1 },
-                    { 106, 110, 3 },
-                    { 107, 120, 3 },
-                    { 209, 130, 5 },
-                    { 304, 110, 2 },
-                    { 404, 110, 11 },
-                    { 502, 140, 6 },
-                    { 503, 141, 6 },
-                    { 504, 142, 6 },
-                    { 607, 110, 9 }
-                });
+            // Use IF NOT EXISTS to avoid duplicate key errors when re-applying
+            // Also check FK constraint - only insert if Role exists
+            migrationBuilder.Sql("SET IDENTITY_INSERT [RolePermissions] ON");
+            var rolePermSeeds = new (int Id, int PermissionId, int RoleId)[]
+            {
+                (208, 30, 5),
+                (303, 100, 2),
+                (30, 110, 1),
+                (31, 111, 1),
+                (32, 120, 1),
+                (33, 121, 1),
+                (34, 130, 1),
+                (35, 140, 1),
+                (36, 141, 1),
+                (37, 142, 1),
+                (106, 110, 3),
+                (107, 120, 3),
+                (209, 130, 5),
+                (304, 110, 2),
+                (502, 140, 6),
+                (503, 141, 6),
+                (504, 142, 6),
+                (607, 110, 9),
+            };
+            foreach (var (id, permId, roleId) in rolePermSeeds)
+            {
+                migrationBuilder.Sql(
+                    $"IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [Id] = {id}) " +
+                    $"BEGIN " +
+                    $"  IF EXISTS (SELECT 1 FROM [Roles] WHERE [RoleId] = {roleId}) " +
+                    $"  BEGIN " +
+                    $"    IF EXISTS (SELECT 1 FROM [Permissions] WHERE [PermissionId] = {permId}) " +
+                    $"    INSERT INTO [RolePermissions] ([Id], [PermissionId], [RoleId]) VALUES ({id}, {permId}, {roleId}) " +
+                    $"  END " +
+                    $"END");
+            }
+            migrationBuilder.Sql("SET IDENTITY_INSERT [RolePermissions] OFF");
+            // RoleId=11 does not exist in Roles table, skip to avoid FK violation
+            // { 404, 110, 11 } - skipped
 
-            migrationBuilder.InsertData(
-                table: "WorkRules",
-                columns: new[] { "RuleId", "DepartmentId", "Description", "DisplayOrder", "FunctionCode", "FunctionName", "IsActive", "IsRequired", "RequiredPermission" },
-                values: new object[,]
-                {
-                    { 1, 1, null, 1, "HopDong.Create", "Tạo hợp đồng", true, true, "HopDong.Create" },
-                    { 2, 1, null, 2, "HopDong.Approve", "Phê duyệt hợp đồng", true, true, "HopDong.Approve" },
-                    { 3, 1, null, 3, "NhanSu.QLTatCa", "Quản lý tất cả nhân sự", true, true, "HeThong.UserManage" },
-                    { 4, 1, null, 4, "NhanSu.QLHopDong", "Quản lý hợp đồng lao động", true, true, "HeThong.UserManage" },
-                    { 5, 1, null, 5, "NhanSu.QLLuong", "Quản lý tính lương", true, true, "BaoCao.ViewFinance" },
-                    { 10, 2, null, 1, "Kho.Nhap", "Nhập kho", true, true, "Kho.Edit" },
-                    { 11, 2, null, 2, "Kho.Xuat", "Xuất kho", true, true, "Kho.Edit" },
-                    { 12, 2, null, 3, "Kho.QLTon", "Quản lý tồn kho", true, true, "Kho.View" },
-                    { 20, 3, null, 1, "DoanKham.Create", "Tạo đoàn khám", true, true, "DoanKham.Create" },
-                    { 21, 3, null, 2, "DoanKham.Manage", "Quản lý đoàn khám", true, true, "DoanKham.ManageOwn" },
-                    { 22, 3, null, 3, "DoanKham.QRCheckIn", "QR Check-in đoàn khám", true, true, "ChamCong.QR" },
-                    { 23, 3, null, 4, "DoanKham.PhanCong", "Phân công nhân sự đoàn", true, true, "DoanKham.AssignStaff" }
-                });
+            // Use IF NOT EXISTS to avoid duplicate key errors
+            var workRuleSeeds = new (int Id, int DeptId, int Order, string Code, string Name, string Perm)[]
+            {
+                (1, 1, 1, "HopDong.Create", "Tạo hợp đồng", "HopDong.Create"),
+                (2, 1, 2, "HopDong.Approve", "Phê duyệt hợp đồng", "HopDong.Approve"),
+                (3, 1, 3, "NhanSu.QLTatCa", "Quản lý tất cả nhân sự", "HeThong.UserManage"),
+                (4, 1, 4, "NhanSu.QLHopDong", "Quản lý hợp đồng lao động", "HeThong.UserManage"),
+                (5, 1, 5, "NhanSu.QLLuong", "Quản lý tính lương", "BaoCao.ViewFinance"),
+                (10, 2, 1, "Kho.Nhap", "Nhập kho", "Kho.Edit"),
+                (11, 2, 2, "Kho.Xuat", "Xuất kho", "Kho.Edit"),
+                (12, 2, 3, "Kho.QLTon", "Quản lý tồn kho", "Kho.View"),
+                (20, 3, 1, "DoanKham.Create", "Tạo đoàn khám", "DoanKham.Create"),
+                (21, 3, 2, "DoanKham.Manage", "Quản lý đoàn khám", "DoanKham.ManageOwn"),
+                (22, 3, 3, "DoanKham.QRCheckIn", "QR Check-in đoàn khám", "ChamCong.QR"),
+                (23, 3, 4, "DoanKham.PhanCong", "Phân công nhân sự đoàn", "DoanKham.AssignStaff"),
+            };
+            migrationBuilder.Sql("SET IDENTITY_INSERT [WorkRules] ON");
+            foreach (var (id, deptId, order, code, name, perm) in workRuleSeeds)
+            {
+                migrationBuilder.Sql(
+                    $"IF NOT EXISTS (SELECT 1 FROM [WorkRules] WHERE [RuleId] = {id}) " +
+                    $"INSERT INTO [WorkRules] ([RuleId], [DepartmentId], [DisplayOrder], [FunctionCode], [FunctionName], [IsActive], [IsRequired], [RequiredPermission]) " +
+                    $"VALUES ({id}, {deptId}, {order}, N'{code}', N'{name}', 1, 1, N'{perm}')");
+            }
+            migrationBuilder.Sql("SET IDENTITY_INSERT [WorkRules] OFF");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Departments_DepartmentCode",

@@ -41,26 +41,23 @@ namespace QuanLyDoanKham.API.Migrations
                 oldClrType: typeof(string),
                 oldType: "nvarchar(max)");
 
-            migrationBuilder.AddColumn<string>(
-                name: "ActionUrl",
-                table: "Notifications",
-                type: "nvarchar(max)",
-                nullable: true);
+            // Only add ActionUrl if it doesn't exist
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Notifications') AND name = 'ActionUrl')
+                ALTER TABLE [Notifications] ADD [ActionUrl] nvarchar(max) NULL;
+            ");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Title",
-                table: "Notifications",
-                type: "nvarchar(max)",
-                nullable: false,
-                defaultValue: "");
+            // Only add Title if it doesn't exist
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Notifications') AND name = 'Title')
+                ALTER TABLE [Notifications] ADD [Title] nvarchar(max) NOT NULL DEFAULT '';
+            ");
 
-            migrationBuilder.AddColumn<string>(
-                name: "Type",
-                table: "Notifications",
-                type: "nvarchar(50)",
-                maxLength: 50,
-                nullable: false,
-                defaultValue: "");
+            // Only add Type if it doesn't exist
+            migrationBuilder.Sql(@"
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('Notifications') AND name = 'Type')
+                ALTER TABLE [Notifications] ADD [Type] nvarchar(50) NOT NULL DEFAULT '';
+            ");
 
             migrationBuilder.UpdateData(
                 table: "Departments",

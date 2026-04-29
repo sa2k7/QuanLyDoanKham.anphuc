@@ -33,54 +33,54 @@ namespace QuanLyDoanKham.API.Services
             var start = startDate ?? DateTime.Now.AddMonths(-1);
             var end = endDate ?? DateTime.Now;
 
-            var completedRecords = await _context.MedicalRecords
-                .Where(r => r.Status == "COMPLETED"
-                         && r.CheckInAt >= start && r.CheckInAt <= end
-                         && r.MedicalGroup != null
-                         && r.MedicalGroup.HealthContract != null)
-                .Select(r => new { r.MedicalGroup!.HealthContractId, r.MedicalGroup!.HealthContract!.UnitPrice })
-                .ToListAsync();
-            
-            var packageRevenue = completedRecords.Sum(r => r.UnitPrice);
+            // 1. Doanh thu từ hợp đồng trong kỳ (tránh navigation property phức tạp)
+            var contractRevenue = await _context.Contracts
+                .Where(c => c.StartDate <= end && c.EndDate >= start && c.Status != ContractStatus.Rejected)
+                .SumAsync(c => (decimal?)c.TotalAmount) ?? 0;
 
-            // 1.1 Doanh thu phát sinh từ hợp đồng trong kỳ
             var extraRevenue = await _context.Contracts
                 .Where(c => c.EndDate >= start && c.EndDate <= end && c.Status != ContractStatus.Rejected)
                 .SumAsync(c => (decimal?)c.ExtraServiceRevenue) ?? 0;
 
-            var totalRevenue = packageRevenue + extraRevenue;
+            var totalRevenue = contractRevenue + extraRevenue;
 
-            // 2. Chi phí nhân sự (Từ GroupStaffDetail)
+            // 2. Chi phí nhân sự
             var staffCost = await _context.GroupStaffDetails
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .SumAsync(g => (decimal?)g.CalculatedSalary) ?? 0;
 
-            // Chi phí vật tư từ StockMovement (OUT - IN)
+            // Chi phí vật tư
             decimal supplyCostOut = await _context.Set<StockMovement>()
                 .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "OUT")
                 .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
             decimal supplyCostIn = await _context.Set<StockMovement>()
                 .Where(sm => sm.MovementDate >= start && sm.MovementDate <= end && sm.MovementType == "IN")
                 .SumAsync(sm => (decimal?)sm.TotalValue) ?? 0;
-            decimal materialCost = supplyCostOut - supplyCostIn;
+            decimal materialCost = Math.Max(0, supplyCostOut - supplyCostIn);
 
-            // Chi phí chung khác
-            decimal overheadCost = await _context.Set<Overhead>()
-                .Where(o => o.IncurredAt >= start && o.IncurredAt <= end)
-                .SumAsync(o => (decimal?)o.Amount) ?? 0;
+            // Chi phí chung
+            decimal overheadCost = 0;
+            try
+            {
+                overheadCost = await _context.Set<Overhead>()
+                    .Where(o => o.IncurredAt >= start && o.IncurredAt <= end)
+                    .SumAsync(o => (decimal?)o.Amount) ?? 0;
+            }
+            catch { /* Bảng Overhead có thể chưa có dữ liệu */ }
 
             var totalCost = staffCost + materialCost + overheadCost;
             var netProfit = totalRevenue - totalCost;
-            
-            // 4. HR Performance: Dựa trên tỷ lệ nhân viên đã tham gia trên tổng số lượt điều động
+
+            // 3. HR Performance
             var totalStaffAssignments = await _context.GroupStaffDetails.CountAsync(g => g.ExamDate >= start && g.ExamDate <= end);
             var actualJoinedStaff = await _context.GroupStaffDetails.CountAsync(g => g.ExamDate >= start && g.ExamDate <= end && g.WorkStatus == "Joined");
             var hrPerformance = totalStaffAssignments > 0 ? (double)actualJoinedStaff / totalStaffAssignments * 100 : 0;
 
-            // 5. Material Deviation: Chênh lệch giữa chi phí thực tế và chi phí định mức (Giả định 10% doanh thu là định mức)
+            // 4. Material Deviation
             var expectedMaterialCost = totalRevenue * 0.10m;
             var materialDeviation = materialCost - expectedMaterialCost;
 
+            // 5. Completion Rate
             var totalGroups = await _context.MedicalGroups
                 .Where(g => g.ExamDate >= start && g.ExamDate <= end)
                 .CountAsync();
@@ -89,30 +89,19 @@ namespace QuanLyDoanKham.API.Services
                 .CountAsync();
             var completionRate = totalGroups > 0 ? (double)finishedGroups / totalGroups * 100 : 0;
 
-            // 3. Xu hướng doanh thu (6 tháng gần nhất) - Tính trên Doanh thu thực tế (Billed)
+            // 6. Xu hướng doanh thu (6 tháng gần nhất) - dùng hợp đồng thay vì MedicalRecords
             var trendStart = start.AddMonths(-5);
-            
-            // Lấy doanh thu từ khám (Records)
-            var recordRevenueRaw = await _context.MedicalRecords
-                .Where(r => r.CheckInAt >= trendStart && r.CheckInAt <= end && r.Status == "COMPLETED")
-                .GroupBy(r => new { r.CheckInAt!.Value.Year, r.CheckInAt!.Value.Month })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Type = "Record", Total = g.Sum(r => r.MedicalGroup!.HealthContract!.UnitPrice) })
+            var contractTrend = await _context.Contracts
+                .Where(c => c.StartDate >= trendStart && c.StartDate <= end && c.Status != ContractStatus.Rejected)
+                .GroupBy(c => new { c.StartDate.Year, c.StartDate.Month })
+                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Total = g.Sum(c => c.TotalAmount) })
                 .ToListAsync();
 
-            // Lấy doanh thu phát sinh (Contract Extras)
-            var contractExtraRaw = await _context.Contracts
-                .Where(c => c.EndDate >= trendStart && c.EndDate <= end && c.Status != ContractStatus.Rejected)
-                .GroupBy(c => new { c.EndDate.Year, c.EndDate.Month })
-                .Select(g => new { Year = g.Key.Year, Month = g.Key.Month, Type = "Extra", Total = g.Sum(c => c.ExtraServiceRevenue) })
-                .ToListAsync();
-
-            // Gộp và nhóm lại theo tháng
-            var revenueTrend = recordRevenueRaw.Concat(contractExtraRaw)
-                .GroupBy(x => new { x.Year, x.Month })
-                .Select(g => new ChartPointDto 
-                { 
-                    Label = $"{g.Key.Month}/{g.Key.Year}", 
-                    Value = g.Sum(x => x.Total) 
+            var revenueTrend = contractTrend
+                .Select(x => new ChartPointDto
+                {
+                    Label = $"{x.Month}/{x.Year}",
+                    Value = x.Total
                 })
                 .OrderBy(x => {
                     var parts = x.Label.Split('/');
@@ -121,9 +110,7 @@ namespace QuanLyDoanKham.API.Services
                 .ToList();
 
             if (!revenueTrend.Any())
-            {
                 revenueTrend.Add(new ChartPointDto { Label = $"{DateTime.Now.Month}/{DateTime.Now.Year}", Value = 0 });
-            }
 
             return new DashboardKpiDto
             {

@@ -74,38 +74,59 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { Calculator, BarChart3, Wallet, ArrowRight, TrendingUp, CreditCard, FileText, AlertTriangle } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import apiClient from '@/services/apiClient'
 
 defineEmits(['navigate'])
-
 const authStore = useAuthStore()
 
 const todayDateStr = computed(() =>
   new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 )
 
-const financeCards = [
+const stats = ref({ revenue: '—', unsettled: '—', activeContracts: '—', extraCost: '—' })
+
+const fetchStats = async () => {
+  try {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const end = now.toISOString().split('T')[0]
+    const res = await apiClient.get('/api/Reports/dashboard-kpis', { params: { startDate: start, endDate: end } })
+    const d = res.data
+    stats.value.revenue = d.totalRevenue ? d.totalRevenue.toLocaleString('vi-VN') + ' đ' : '0 đ'
+  } catch { /* giữ — */ }
+  try {
+    const res = await apiClient.get('/api/Contracts')
+    const contracts = res.data || []
+    stats.value.activeContracts = contracts.filter(c => c.status === 'Active' || c.status === 'Approved').length
+    stats.value.unsettled = contracts.filter(c => c.status === 'Active').length
+  } catch { /* giữ — */ }
+}
+
+onMounted(fetchStats)
+
+const financeCards = computed(() => [
   {
-    label: 'Doanh thu tháng', value: '—',
+    label: 'Doanh thu tháng', value: stats.value.revenue,
     icon: TrendingUp, bgClass: 'bg-emerald-50', borderClass: 'border-emerald-100',
     iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', valueColor: 'text-emerald-700'
   },
   {
-    label: 'Chưa quyết toán', value: '—',
+    label: 'Chưa quyết toán', value: stats.value.unsettled,
     icon: AlertTriangle, bgClass: 'bg-amber-50', borderClass: 'border-amber-100',
     iconBg: 'bg-amber-100', iconColor: 'text-amber-600', valueColor: 'text-amber-700'
   },
   {
-    label: 'Hợp đồng hiệu lực', value: '—',
+    label: 'Hợp đồng hiệu lực', value: stats.value.activeContracts,
     icon: FileText, bgClass: 'bg-sky-50', borderClass: 'border-sky-100',
     iconBg: 'bg-sky-100', iconColor: 'text-sky-600', valueColor: 'text-sky-700'
   },
   {
-    label: 'Chi phí phát sinh', value: '—',
+    label: 'Chi phí phát sinh', value: stats.value.extraCost,
     icon: CreditCard, bgClass: 'bg-rose-50', borderClass: 'border-rose-100',
     iconBg: 'bg-rose-100', iconColor: 'text-rose-600', valueColor: 'text-rose-700'
   },
-]
+])
 </script>

@@ -43,9 +43,15 @@ Thumbs.db
 
 # ======================
 # AI Agent / IDE
-# ======================
 .gemini/
-.agent/
+.agent/observations/
+.agent/research/
+.agent/brain/
+.agent/logs/
+.agent/*.dat
+.agent/shared-context.json
+.agent/.brainsync-salt
+.agent/.context-key
 .agents/
 .agent-mem/
 .brainsync/

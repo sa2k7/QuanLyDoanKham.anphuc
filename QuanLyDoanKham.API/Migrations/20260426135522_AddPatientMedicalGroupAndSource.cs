@@ -11,6 +11,19 @@ namespace QuanLyDoanKham.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Convert Status from nvarchar to int - first update existing string values to numeric equivalents
+            migrationBuilder.Sql(@"
+                UPDATE [Contracts] SET [Status] = 0 WHERE [Status] = 'Draft' OR [Status] = '0';
+                UPDATE [Contracts] SET [Status] = 1 WHERE [Status] = 'PendingApproval' OR [Status] = '1';
+                UPDATE [Contracts] SET [Status] = 2 WHERE [Status] = 'Approved' OR [Status] = '2';
+                UPDATE [Contracts] SET [Status] = 3 WHERE [Status] = 'Rejected' OR [Status] = '3';
+                UPDATE [Contracts] SET [Status] = 4 WHERE [Status] = 'Active' OR [Status] = '4';
+                UPDATE [Contracts] SET [Status] = 5 WHERE [Status] = 'Finished' OR [Status] = '5';
+                UPDATE [Contracts] SET [Status] = 6 WHERE [Status] = 'Cancelled' OR [Status] = '6';
+                -- Set any remaining unknown values to 0 (Draft)
+                UPDATE [Contracts] SET [Status] = 0 WHERE TRY_CAST([Status] AS int) IS NULL;
+            ");
+
             migrationBuilder.AlterColumn<int>(
                 name: "Status",
                 table: "Contracts",

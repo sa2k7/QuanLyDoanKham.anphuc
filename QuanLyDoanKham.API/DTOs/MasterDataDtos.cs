@@ -47,7 +47,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string? UnitName { get; set; }
         public decimal TotalAmount { get; set; }
         public decimal FinalSettlementValue { get; set; }
-        public string Status { get; set; } = null!;
+        public string? Status { get; set; }
         public int CurrentApprovalStep { get; set; }
         public string? FilePath { get; set; }
         public string? CreatedByName { get; set; }
@@ -162,6 +162,15 @@ namespace QuanLyDoanKham.API.DTOs
         public int? StaffId { get; set; }
         /// <summary>Token từ QR code (mã hóa GroupId + timestamp)</summary>
         public string? QrToken { get; set; }
+        public string? Note { get; set; }
+    }
+
+    public class QrCheckInDto
+    {
+        /// <summary>Token từ QR code (HMAC-signed)</summary>
+        public required string QrToken { get; set; }
+        /// <summary>StaffId — tự động detect từ JWT nếu để 0</summary>
+        public int StaffId { get; set; } = 0;
         public string? Note { get; set; }
     }
 

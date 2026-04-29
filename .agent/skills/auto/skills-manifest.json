@@ -1,0 +1,116 @@
+{
+  "project": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.983Z",
+    "observationCount": 837,
+    "skillCount": 0,
+    "domain": "project",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Project for QuanLyDoanKham.anphuc. 185 gotchas, 159 conventions, 96 fixes."
+  },
+  "vue": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.984Z",
+    "observationCount": 58,
+    "skillCount": 0,
+    "domain": "vue",
+    "triggerGlobs": [
+      "**/*.vue"
+    ],
+    "description": "Vue for QuanLyDoanKham.anphuc. 11 conventions, 22 fixes."
+  },
+  "config": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.983Z",
+    "observationCount": 784,
+    "skillCount": 0,
+    "domain": "config",
+    "triggerGlobs": [
+      "**/*.yaml",
+      "**/*.yml",
+      "**/*.json",
+      "**/*.toml"
+    ],
+    "description": "Config for QuanLyDoanKham.anphuc. 116 gotchas, 136 conventions, 62 fixes."
+  },
+  "sys-07": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.985Z",
+    "observationCount": 0,
+    "skillCount": 1,
+    "domain": "sys_07",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Sys 07 for QuanLyDoanKham.anphuc. ."
+  },
+  "convention": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.985Z",
+    "observationCount": 0,
+    "skillCount": 66,
+    "domain": "convention",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Convention for QuanLyDoanKham.anphuc. ."
+  },
+  "javascript": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.984Z",
+    "observationCount": 16,
+    "skillCount": 0,
+    "domain": "javascript",
+    "triggerGlobs": [
+      "**/*.js",
+      "**/*.jsx"
+    ],
+    "description": "Javascript for QuanLyDoanKham.anphuc. 1 conventions, 2 fixes."
+  },
+  "decision": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.986Z",
+    "observationCount": 0,
+    "skillCount": 14,
+    "domain": "decision",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Decision for QuanLyDoanKham.anphuc. ."
+  },
+  "gotcha": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.985Z",
+    "observationCount": 0,
+    "skillCount": 95,
+    "domain": "gotcha",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Gotcha for QuanLyDoanKham.anphuc. 1 error→fix pairs."
+  },
+  "csharp": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.983Z",
+    "observationCount": 101,
+    "skillCount": 0,
+    "domain": "csharp",
+    "triggerGlobs": [
+      "**/*.cs"
+    ],
+    "description": "Csharp for QuanLyDoanKham.anphuc. 3 gotchas, 15 conventions, 18 fixes."
+  },
+  "problem-fix": {
+    "enabled": true,
+    "lastGenerated": "2026-04-09T14:45:08.986Z",
+    "observationCount": 0,
+    "skillCount": 5,
+    "domain": "problem-fix",
+    "triggerGlobs": [
+      "**/*"
+    ],
+    "description": "Problem Fix for QuanLyDoanKham.anphuc. 16 error→fix pairs."
+  }
+}

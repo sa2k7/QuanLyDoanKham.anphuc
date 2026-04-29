@@ -35,6 +35,8 @@ const ADMIN_MENU = [
   { id: 'analytics',        name: 'Thống kê',    icon: BarChart3,    permission: 'BaoCao.View' },
   { id: 'users',            name: 'Tài khoản',   icon: User,         permission: 'HeThong.UserManage' },
   { id: 'permissions',      name: 'Phân quyền',  icon: ShieldCheck,  permission: 'HeThong.RoleManage' },
+  { id: 'audit-logs',       name: 'Nhật ký',     icon: History,      permission: 'HeThong.AuditLog' },
+  { id: 'admin/permissions-debug', name: 'Debug Quyền', icon: ShieldCheck, permission: 'HeThong.RoleManage' },
 ]
 
 // Bác sĩ / Kỹ Thuật Viên - tập trung vào phòng khám

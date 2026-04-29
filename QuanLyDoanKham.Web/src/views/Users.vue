@@ -282,7 +282,7 @@ import apiClient from '../services/apiClient'
 import { parseApiError } from '../services/errorHelper'
 import { 
     Users as UsersIcon, Plus, MoreHorizontal, ShieldCheck, 
-    X, MapPin, Mail, Calendar, Camera, AtSign, Building2, Stethoscope, UserPlus, Edit3
+    X, MapPin, Mail, Calendar, Camera, AtSign, Building2, Stethoscope, UserPlus, Edit3, Trash2
 } from 'lucide-vue-next'
 import { useToast } from '../composables/useToast'
 import ConfirmDialog from '../components/ConfirmDialog.vue'

@@ -150,7 +150,7 @@
                     <div class="p-4 bg-orange-50 rounded-2xl border border-orange-100 mt-4">
                        <div class="flex justify-between items-center mb-2">
                            <span class="font-black text-orange-800 text-sm uppercase tracking-widest">Phát sinh ngoài gói</span>
-                           <button v-if="!isEditingExtra && authStore.can('QuyetToan.Edit')" @click="startEditingExtra" class="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-100 px-3 py-1 rounded-full uppercase">Sửa đổi</button>
+                           <button v-if="!isEditingExtra && authStore.hasPermission('QuyetToan.Edit')" @click="startEditingExtra" class="text-xs font-bold text-orange-600 hover:text-orange-700 bg-orange-100 px-3 py-1 rounded-full uppercase">Sửa đổi</button>
                        </div>
                        
                        <div v-if="!isEditingExtra">
@@ -211,7 +211,7 @@
                   <button class="flex-1 btn-premium secondary">
                    <Download class="w-4 h-4 text-emerald-500" /> Xuất Excel
                   </button>
-                  <button v-if="authStore.can('HopDong.Approve')" @click="settleContract(selectedSettlement.contractId)" class="flex-1 btn-premium primary !bg-emerald-600 !shadow-emerald-100">
+                  <button v-if="authStore.hasPermission('HopDong.Approve')" @click="settleContract(selectedSettlement.contractId)" class="flex-1 btn-premium primary !bg-emerald-600 !shadow-emerald-100">
                    <CheckCircle class="w-4 h-4" /> Chốt Quyết Toán
                   </button>
                   <button @click="selectedSettlement = null" class="btn-premium secondary">
@@ -314,7 +314,7 @@ const loadContracts = async () => {
 const viewSettlement = async (contract) => {
   loading.value = true
   try {
-    const res = await apiClient.get(`/api/HealthContracts/${contract.healthContractId}/pnl-report`)
+    const res = await apiClient.get(`/api/Contracts/${contract.healthContractId}/pnl-report`)
     selectedSettlement.value = res.data
     
     // Add extra details JSON from the original contract to keep editing capability

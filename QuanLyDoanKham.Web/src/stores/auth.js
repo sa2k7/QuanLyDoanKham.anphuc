@@ -53,7 +53,28 @@ export const useAuthStore = defineStore('auth', () => {
   const hasPermission = (permissionKey) => {
     if (!permissionKey) return true
     if (isAdmin.value) return true
-    return userPermissions.value.includes(permissionKey)
+    const result = userPermissions.value.includes(permissionKey)
+
+    if (import.meta.env.DEV) {
+      console.log(`[Permission Check] ${permissionKey}: ${result ? '✅ GRANTED' : '❌ DENIED'}`)
+      if (!result) {
+        console.log(`[Available Permissions]`, userPermissions.value)
+      }
+    }
+
+    return result
+  }
+
+  /** Helper để debug tất cả permissions của user hiện tại (chỉ dùng trong DEV) */
+  const debugPermissions = () => {
+    if (import.meta.env.DEV) {
+      console.group('[Auth Debug] Current User Permissions')
+      console.log('User:', user.value?.username)
+      console.log('Primary Role:', user.value?.role)
+      console.log('All Roles:', user.value?.roles)
+      console.table(userPermissions.value.map(p => ({ permission: p })))
+      console.groupEnd()
+    }
   }
 
   /** Kiểm tra có ít nhất 1 permission trong danh sách */
@@ -174,6 +195,7 @@ export const useAuthStore = defineStore('auth', () => {
     hasPermission,
     hasAnyPermission,
     hasAllPermissions,
+    debugPermissions,
     // Actions
     login,
     logout,

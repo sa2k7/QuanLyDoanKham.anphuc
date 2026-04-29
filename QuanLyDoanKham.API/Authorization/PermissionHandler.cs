@@ -11,14 +11,14 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 
     protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, PermissionRequirement requirement)
     {
-        // 1) Nháº­n quyá»n tá»« JWT claim (preferrable, khÃ´ng cáº§n DB)
+        // 1) Check permission from JWT claim (fast path — no DB hit)
         if (context.User.Claims.Any(c => c.Type == "permission" && c.Value == requirement.Permission))
         {
             context.Succeed(requirement);
             return;
         }
 
-        // 2) Kiá»ƒm tra Super Admin (Bypass táº¥t cáº£ náº¿u lÃ  Admin Root)
+        // 2) Super Admin bypass (RoleId = 1 in JWT)
         var roleIdClaim = context.User.FindFirst("RoleId")?.Value;
         if (roleIdClaim == "1")
         {
@@ -29,27 +29,41 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         var userIdStr = context.User.FindFirst("UserId")?.Value;
         if (!int.TryParse(userIdStr, out var userId)) return;
 
-        // Fallback: Kiá»ƒm tra DB náº¿u claim RoleId bá»‹ thiáº¿u (Token cÅ©)
-        var user = await _db.Users.FindAsync(userId);
-        if (user != null && user.RoleId == 1)
+        // 3) Fallback DB check — verify Admin by DB in case JWT is stale
+        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
+        if (user == null) return;
+        if (user.RoleId == 1)
         {
             context.Succeed(requirement);
             return;
         }
 
-        // 3) Kiểm tra primary role
-        var hasPerm = await _db.Users
-            .Where(u => u.UserId == userId)
-            .SelectMany(u => u.Role != null ? u.Role.RolePermissions.Select(rp => rp.Permission!.PermissionKey) : Enumerable.Empty<string>())
-            .AnyAsync(pk => pk == requirement.Permission);
+        // 4) Check primary role permissions via JOIN (EF-translatable query)
+        var hasPerm = await _db.RolePermissions
+            .AsNoTracking()
+            .Where(rp => rp.RoleId == user.RoleId
+                      && rp.Permission != null
+                      && rp.Permission.PermissionKey == requirement.Permission)
+            .AnyAsync();
 
-        // 3) Kiá»ƒm tra cÃ¡c role phá»¥ (UserRoles)
+        // 5) Check additional roles (UserRoles many-to-many)
         if (!hasPerm)
         {
-            hasPerm = await _db.UserRoles
+            var additionalRoleIds = await _db.UserRoles
+                .AsNoTracking()
                 .Where(ur => ur.UserId == userId)
-                .SelectMany(ur => ur.Role != null ? ur.Role.RolePermissions.Select(rp => rp.Permission!.PermissionKey) : Enumerable.Empty<string>())
-                .AnyAsync(pk => pk == requirement.Permission);
+                .Select(ur => ur.RoleId)
+                .ToListAsync();
+
+            if (additionalRoleIds.Count > 0)
+            {
+                hasPerm = await _db.RolePermissions
+                    .AsNoTracking()
+                    .Where(rp => additionalRoleIds.Contains(rp.RoleId)
+                              && rp.Permission != null
+                              && rp.Permission.PermissionKey == requirement.Permission)
+                    .AnyAsync();
+            }
         }
 
         if (hasPerm)

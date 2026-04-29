@@ -74,38 +74,61 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import { FileText, Building2, Stethoscope, ArrowRight, CheckCircle2, Clock, TrendingUp, AlertCircle } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import apiClient from '@/services/apiClient'
 
 defineEmits(['navigate'])
-
 const authStore = useAuthStore()
 
 const todayDateStr = computed(() =>
   new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 )
 
-const contractCards = [
+const counts = ref({ active: '—', pending: '—', groups: '—', expiring: '—' })
+
+const fetchCounts = async () => {
+  try {
+    const res = await apiClient.get('/api/Contracts')
+    const contracts = res.data || []
+    const today = new Date()
+    const in30days = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+    counts.value.active = contracts.filter(c => c.status === 'Active' || c.status === 'Approved').length
+    counts.value.pending = contracts.filter(c => c.status === 'PendingApproval' || c.status === 'Draft').length
+    counts.value.expiring = contracts.filter(c => {
+      const end = new Date(c.endDate)
+      return end >= today && end <= in30days
+    }).length
+  } catch { /* giữ — */ }
+  try {
+    const res = await apiClient.get('/api/MedicalGroups')
+    counts.value.groups = (res.data || []).filter(g => g.status === 'Open').length
+  } catch { /* giữ — */ }
+}
+
+onMounted(fetchCounts)
+
+const contractCards = computed(() => [
   {
-    label: 'Hiệu lực', value: '—',
+    label: 'Hiệu lực', value: counts.value.active,
     icon: CheckCircle2, bgClass: 'bg-emerald-50', borderClass: 'border-emerald-100',
     iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', valueColor: 'text-emerald-700'
   },
   {
-    label: 'Chờ ký duyệt', value: '—',
+    label: 'Chờ ký duyệt', value: counts.value.pending,
     icon: Clock, bgClass: 'bg-amber-50', borderClass: 'border-amber-100',
     iconBg: 'bg-amber-100', iconColor: 'text-amber-600', valueColor: 'text-amber-700'
   },
   {
-    label: 'Đoàn đang chạy', value: '—',
+    label: 'Đoàn đang chạy', value: counts.value.groups,
     icon: TrendingUp, bgClass: 'bg-sky-50', borderClass: 'border-sky-100',
     iconBg: 'bg-sky-100', iconColor: 'text-sky-600', valueColor: 'text-sky-700'
   },
   {
-    label: 'Sắp hết hạn', value: '—',
+    label: 'Sắp hết hạn', value: counts.value.expiring,
     icon: AlertCircle, bgClass: 'bg-rose-50', borderClass: 'border-rose-100',
     iconBg: 'bg-rose-100', iconColor: 'text-rose-600', valueColor: 'text-rose-700'
   },
-]
+])
 </script>

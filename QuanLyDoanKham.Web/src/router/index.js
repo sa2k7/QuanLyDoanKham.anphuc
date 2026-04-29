@@ -5,12 +5,6 @@ import { setupRouterGuards } from './guards'
 const routes = [
     // ── Public ──────────────────────────────────────────────────────
     {
-        path: '/landing-page',
-        name: 'LandingPage',
-        component: () => import('../views/LandingPage.vue'),
-        meta: { guest: true }
-    },
-    {
         path: '/login',
         name: 'Login',
         component: Login,
@@ -22,7 +16,7 @@ const routes = [
         component: () => import('../views/Forbidden.vue')
     },
 
-    // ── Chấm công QR (public, không cần đăng nhập) ─────────────────
+    // ── QR Check-in (public) ─────────────────────────────────────────
     {
         path: '/checkin',
         name: 'CheckIn',
@@ -40,12 +34,6 @@ const routes = [
         name: 'Dashboard',
         component: () => import('../views/Dashboard.vue'),
         meta: { requiresAuth: true }
-    },
-    {
-        path: '/analytics',
-        name: 'Analytics',
-        component: () => import('../views/UnifiedReports.vue'),
-        meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
 
     // ── Đối tác ──────────────────────────────────────────────────────
@@ -84,26 +72,16 @@ const routes = [
     {
         path: '/qc',
         name: 'QcReview',
-        component: () => import('../views/oms/QcReview.vue'), // Keep in oms folder for now or move later
+        component: () => import('../views/oms/QcReview.vue'),
         meta: { requiresAuth: true, permission: 'KetQua.QCApprove' }
     },
 
-
-    // ── Quyết toán ────────────────────────────────────────────────
+    // ── Quyết toán ────────────────────────────────────────────────────
     {
         path: '/settlement-report',
         name: 'SettlementReport',
         component: () => import('../views/SettlementReport.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
-    },
-    {
-        path: '/master-stats',
-        name: 'MasterStatsDashboard',
-        component: () => import('../views/MasterStatsDashboard.vue'),
-        meta: {
-            title: 'Thống Kê Tổng Hợp',
-            permission: 'Reports.View' 
-        }
     },
 
     // ── Nhân sự ──────────────────────────────────────────────────────
@@ -126,18 +104,28 @@ const routes = [
         meta: { requiresAuth: true, permission: 'ChamCong.ViewAll' }
     },
     {
+        path: '/my-schedule',
+        name: 'MySchedule',
+        component: () => import('../views/MySchedule.vue'),
+        meta: { requiresAuth: true }
+    },
+    {
         path: '/supplies',
         name: 'Supplies',
         component: () => import('../views/Supplies.vue'),
         meta: { requiresAuth: true, permission: 'Kho.View' }
     },
 
-
-
     // ── Báo cáo ──────────────────────────────────────────────────────
     {
         path: '/reports',
         name: 'Reports',
+        component: () => import('../views/UnifiedReports.vue'),
+        meta: { requiresAuth: true, permission: 'BaoCao.View' }
+    },
+    {
+        path: '/analytics',
+        name: 'Analytics',
         component: () => import('../views/UnifiedReports.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
@@ -159,13 +147,14 @@ const routes = [
         path: '/audit-logs',
         name: 'AuditLogs',
         component: () => import('../views/AuditLogView.vue'),
-        meta: {
-            requiresAuth: true,
-            title: 'Nhật Ký Thao Tác',
-            permission: 'HeThong.AuditLog'
-        }
+        meta: { requiresAuth: true, permission: 'HeThong.AuditLog' }
     },
-
+    {
+        path: '/admin/permissions-debug',
+        name: 'PermissionDebug',
+        component: () => import('../views/admin/PermissionDebug.vue'),
+        meta: { requiresAuth: true, permission: 'HeThong.RoleManage' }
+    },
 
     // ── 404 ─────────────────────────────────────────────────────────
     {

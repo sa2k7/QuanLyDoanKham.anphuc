@@ -69,41 +69,37 @@ namespace QuanLyDoanKham.API.Controllers
         public async Task<IActionResult> GetActiveQrToday([FromServices] Services.QrService qrService, [FromQuery] string? origin = null)
         {
             var today = DateTime.Today;
-            // 1. Tìm đoàn khám sẵn sàng (Open hoặc InProgress) cho hôm nay
+
+            // 1. Ưu tiên đoàn Open hôm nay
             var activeGroup = await _context.MedicalGroups
                 .OrderBy(g => g.GroupId)
                 .FirstOrDefaultAsync(g => g.ExamDate.Date == today && (g.Status == "Open" || g.Status == "InProgress"));
 
-            if (activeGroup == null) 
+            // 2. Fallback: đoàn Open gần nhất — load về memory rồi sort
+            if (activeGroup == null)
             {
-                // 2. Chẩn đoán lý do nếu không tìm thấy đoàn phù hợp
-                var anyToday = await _context.MedicalGroups
-                    .FirstOrDefaultAsync(g => g.ExamDate.Date == today);
-                
-                if (anyToday != null)
-                {
-                    return NotFound(new { 
-                        message = $"Tìm thấy đoàn '{anyToday.GroupName}' cho hôm nay nhưng đang ở trạng thái '{anyToday.Status}'. Vui lòng chuyển trạng thái sang 'Open' để mở QR.",
-                        status = anyToday.Status
-                    });
-                }
+                var openGroups = await _context.MedicalGroups
+                    .Where(g => g.Status == "Open" || g.Status == "InProgress")
+                    .ToListAsync();
 
+                activeGroup = openGroups
+                    .OrderBy(g => Math.Abs((g.ExamDate.Date - today).TotalDays))
+                    .FirstOrDefault();
+            }
+
+            if (activeGroup == null)
+            {
                 var nextGroup = await _context.MedicalGroups
-                    .Where(g => g.ExamDate.Date > today)
+                    .Where(g => g.ExamDate.Date >= today)
                     .OrderBy(g => g.ExamDate)
                     .FirstOrDefaultAsync();
 
                 if (nextGroup != null)
-                {
-                    return NotFound(new { 
-                        message = $"Hôm nay không có đoàn khám. Đoàn tiếp theo diễn ra vào ngày {nextGroup.ExamDate:dd/MM/yyyy} ({nextGroup.GroupName})."
-                    });
-                }
+                    return NotFound(new { message = $"Không có đoàn đang mở. Đoàn tiếp theo: {nextGroup.GroupName} ({nextGroup.ExamDate:dd/MM/yyyy})." });
 
-                return NotFound(new { message = "Hôm nay không có đoàn khám nào diễn ra." });
+                return NotFound(new { message = "Không có đoàn khám nào đang diễn ra." });
             }
 
-            // Sinh token ngắn hạn (12h). Frontend sẽ lo việc làm mới link.
             var token = qrService.GenerateSignedToken(activeGroup.GroupId, 12);
             var baseUrl = !string.IsNullOrEmpty(origin) ? origin : (_configuration["AppSettings:FrontendUrl"] ?? "http://localhost:5173");
             var frontendUrl = $"{baseUrl}/checkin?token={Uri.EscapeDataString(token)}";
@@ -113,10 +109,12 @@ namespace QuanLyDoanKham.API.Controllers
             {
                 groupId = activeGroup.GroupId,
                 groupName = activeGroup.GroupName,
+                examDate = activeGroup.ExamDate,
                 qrToken = token,
                 qrUrl = frontendUrl,
                 pngBase64 = pngBase64,
-                expiresAt = DateTime.Now.AddHours(12)
+                expiresAt = DateTime.Now.AddHours(12),
+                isToday = activeGroup.ExamDate.Date == today
             });
         }
 
@@ -266,8 +264,109 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // ================================================================
-        // POST api/attendance/checkin — Nhân viên quét QR → check-in
+        // POST api/attendance/checkin — Nhân viên quét QR → check-in/check-out
         // ================================================================
+        [HttpPost("checkin")]
+        [AllowAnonymous]  // Staff scan from phone without login session
+        public async Task<IActionResult> CheckInByQr([FromBody] QrCheckInDto dto, [FromServices] Services.QrService qrService)
+        {
+            if (string.IsNullOrEmpty(dto.QrToken))
+                return BadRequest(new { message = "QR token không hợp lệ." });
+
+            // Validate token
+            if (!qrService.ValidateSignedToken(dto.QrToken, out int groupId, out string error))
+                return BadRequest(new { message = error });
+
+            // Xác định nhân sự từ body hoặc JWT claim
+            int staffId = dto.StaffId;
+            if (staffId <= 0)
+            {
+                // Try to get from JWT if authenticated
+                if (User.Identity?.IsAuthenticated == true)
+                {
+                    var username = User.Identity?.Name;
+                    var staff = await _context.Staffs.FirstOrDefaultAsync(s =>
+                        s.EmployeeCode != null && s.EmployeeCode.ToLower() == (username ?? "").ToLower());
+                    if (staff != null) staffId = staff.StaffId;
+                }
+
+                if (staffId <= 0)
+                    return BadRequest(new { message = "Vui lòng nhập Mã nhân viên (Staff ID) để chấm công." });
+            }
+
+            var group = await _context.MedicalGroups.FindAsync(groupId);
+            if (group == null) return NotFound(new { message = "Không tìm thấy đoàn khám." });
+
+            if (group.Status == "Locked" || group.Status == "Finished")
+                return BadRequest(new { message = "Đoàn khám đã kết thúc." });
+
+            var groupDetail = await _context.GroupStaffDetails
+                .FirstOrDefaultAsync(gd => gd.GroupId == groupId && gd.StaffId == staffId);
+            if (groupDetail == null)
+                return BadRequest(new { message = "Bạn không được phân công vào đoàn khám này." });
+
+            var today = group.ExamDate.Date;
+            var existing = await _context.ScheduleCalendars
+                .FirstOrDefaultAsync(sc => sc.GroupId == groupId && sc.StaffId == staffId && sc.ExamDate.Date == today);
+
+            var now = DateTime.Now;
+            string action;
+
+            if (existing == null || existing.CheckInTime == null)
+            {
+                // Check-in
+                if (existing == null)
+                {
+                    existing = new ScheduleCalendar
+                    {
+                        GroupId = groupId,
+                        StaffId = staffId,
+                        ExamDate = today,
+                        MedicalGroup = null!,
+                        Staff = null!,
+                        IsConfirmed = false,
+                        Note = dto.Note ?? "QR Check-in"
+                    };
+                    _context.ScheduleCalendars.Add(existing);
+                }
+                existing.CheckInTime = now;
+                groupDetail.CheckInTime = now;
+                action = "CheckIn";
+            }
+            else if (existing.CheckOutTime == null)
+            {
+                // Check-out
+                existing.CheckOutTime = now;
+                groupDetail.CheckOutTime = now;
+                var hours = (now - existing.CheckInTime!.Value).TotalHours;
+                var shift = hours >= 4 ? 1.0 : 0.5;
+                groupDetail.ShiftType = shift;
+                existing.IsConfirmed = true;
+
+                var staffEntity = await _context.Staffs.FindAsync(staffId);
+                if (staffEntity != null)
+                    groupDetail.CalculatedSalary = (decimal)(shift * (double)staffEntity.DailyRate);
+
+                action = "CheckOut";
+            }
+            else
+            {
+                return BadRequest(new { message = "Bạn đã hoàn thành đủ công cho đoàn này hôm nay." });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = action == "CheckIn" ? $"Check-in thành công lúc {now:HH:mm}!" : $"Check-out thành công! Ca làm: {groupDetail.ShiftType} ngày.",
+                action,
+                groupId,
+                groupName = group.GroupName,
+                staffId,
+                time = now,
+                shiftType = groupDetail.ShiftType
+            });
+        }
 
         // ================================================================
         // POST api/attendance/manual — Trưởng đoàn chấm công thủ công

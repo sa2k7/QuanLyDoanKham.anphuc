@@ -157,33 +157,8 @@ const getStaffCount = (positionName) => {
 }
 
 const isQrTime = computed(() => {
-    if (!props.groupExamDate) return true;
-    
-    // Parse exam date (ignoring time component)
-    const examDateStr = props.groupExamDate.split('T')[0];
-    const today = new Date();
-    // Offset for local timezone to get YYYY-MM-DD
-    const todayStr = new Date(today.getTime() - (today.getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    
-    // If it's a past date, always show
-    if (examDateStr < todayStr) return true;
-    // If it's a future date, don't show
-    if (examDateStr > todayStr) return false;
-    
-    // It is today. Check start time.
-    if (!props.groupStartTime) return true; // if no start time, assume all day
-    
-    // parse groupStartTime (e.g. "07:30")
-    const [hours, minutes] = props.groupStartTime.split(':').map(Number);
-    if (isNaN(hours) || isNaN(minutes)) return true; // bad format
-    
-    const startObj = new Date();
-    startObj.setHours(hours, minutes, 0, 0);
-    
-    // subtract 30 minutes from start time
-    const showTime = new Date(startObj.getTime() - 30 * 60000);
-    
-    return today >= showTime;
+    // Luôn cho phép tạo QR nếu đoàn đang Open — không giới hạn thời gian
+    return true;
 });
 
 const getWorkStatusClass = (status) => {

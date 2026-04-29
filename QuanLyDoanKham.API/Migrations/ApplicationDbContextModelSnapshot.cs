@@ -84,12 +84,24 @@ namespace QuanLyDoanKham.API.Migrations
                         new
                         {
                             RoleId = 7,
+                            Description = "Trưởng đoàn khám",
+                            RoleName = "GroupLeader"
+                        },
+                        new
+                        {
+                            RoleId = 8,
                             Description = "Nhân viên đi đoàn",
                             RoleName = "MedicalStaff"
                         },
                         new
                         {
-                            RoleId = 8,
+                            RoleId = 9,
+                            Description = "Kế toán",
+                            RoleName = "Accountant"
+                        },
+                        new
+                        {
+                            RoleId = 10,
                             Description = "Đại diện doanh nghiệp đối tác",
                             RoleName = "Customer"
                         });
@@ -1689,6 +1701,69 @@ namespace QuanLyDoanKham.API.Migrations
                             Module = "Kho",
                             PermissionKey = "Kho.Export",
                             PermissionName = "Export phiếu xuất kho"
+                        },
+                        new
+                        {
+                            PermissionId = 102,
+                            Module = "HeThong",
+                            PermissionKey = "HeThong.AuditLog",
+                            PermissionName = "Xem nhật ký hệ thống"
+                        },
+                        new
+                        {
+                            PermissionId = 150,
+                            Module = "Luong",
+                            PermissionKey = "Luong.View",
+                            PermissionName = "Xem bảng lương"
+                        },
+                        new
+                        {
+                            PermissionId = 151,
+                            Module = "Luong",
+                            PermissionKey = "Luong.Manage",
+                            PermissionName = "Tính và duyệt lương"
+                        },
+                        new
+                        {
+                            PermissionId = 160,
+                            Module = "NhanSu",
+                            PermissionKey = "NhanSu.View",
+                            PermissionName = "Xem nhân sự"
+                        },
+                        new
+                        {
+                            PermissionId = 161,
+                            Module = "NhanSu",
+                            PermissionKey = "NhanSu.Manage",
+                            PermissionName = "Quản lý nhân sự"
+                        },
+                        new
+                        {
+                            PermissionId = 170,
+                            Module = "KetQua",
+                            PermissionKey = "KetQua.Write",
+                            PermissionName = "Ghi kết quả khám"
+                        },
+                        new
+                        {
+                            PermissionId = 171,
+                            Module = "KetQua",
+                            PermissionKey = "KetQua.QCApprove",
+                            PermissionName = "QC phê duyệt kết quả"
+                        },
+                        new
+                        {
+                            PermissionId = 180,
+                            Module = "BenhNhan",
+                            PermissionKey = "BenhNhan.View",
+                            PermissionName = "Xem bệnh nhân"
+                        },
+                        new
+                        {
+                            PermissionId = 190,
+                            Module = "DieuPhoi",
+                            PermissionKey = "DieuPhoi.Edit",
+                            PermissionName = "Chỉnh sửa điều phối"
                         });
                 });
 
@@ -2217,6 +2292,198 @@ namespace QuanLyDoanKham.API.Migrations
                             Id = 504,
                             PermissionId = 142,
                             RoleId = 6
+                        },
+                        new
+                        {
+                            Id = 1038,
+                            PermissionId = 102,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1039,
+                            PermissionId = 150,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1040,
+                            PermissionId = 151,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1041,
+                            PermissionId = 160,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1042,
+                            PermissionId = 161,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1043,
+                            PermissionId = 170,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1044,
+                            PermissionId = 171,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1045,
+                            PermissionId = 180,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1046,
+                            PermissionId = 190,
+                            RoleId = 1
+                        },
+                        new
+                        {
+                            Id = 1100,
+                            PermissionId = 10,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 1101,
+                            PermissionId = 40,
+                            RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 1200,
+                            PermissionId = 32,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 1201,
+                            PermissionId = 40,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 1202,
+                            PermissionId = 160,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 1203,
+                            PermissionId = 180,
+                            RoleId = 5
+                        },
+                        new
+                        {
+                            Id = 1300,
+                            PermissionId = 160,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 1301,
+                            PermissionId = 161,
+                            RoleId = 2
+                        },
+                        new
+                        {
+                            Id = 1400,
+                            PermissionId = 32,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 1401,
+                            PermissionId = 40,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 1402,
+                            PermissionId = 150,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 1403,
+                            PermissionId = 151,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 1404,
+                            PermissionId = 160,
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 1700,
+                            PermissionId = 15,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 1701,
+                            PermissionId = 20,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 1702,
+                            PermissionId = 30,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 1703,
+                            PermissionId = 31,
+                            RoleId = 7
+                        },
+                        new
+                        {
+                            Id = 1800,
+                            PermissionId = 20,
+                            RoleId = 8
+                        },
+                        new
+                        {
+                            Id = 1801,
+                            PermissionId = 31,
+                            RoleId = 8
+                        },
+                        new
+                        {
+                            Id = 1802,
+                            PermissionId = 170,
+                            RoleId = 8
+                        },
+                        new
+                        {
+                            Id = 1900,
+                            PermissionId = 10,
+                            RoleId = 9
+                        },
+                        new
+                        {
+                            Id = 1901,
+                            PermissionId = 50,
+                            RoleId = 9
+                        },
+                        new
+                        {
+                            Id = 1902,
+                            PermissionId = 150,
+                            RoleId = 9
                         });
                 });
 

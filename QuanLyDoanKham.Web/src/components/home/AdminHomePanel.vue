@@ -53,45 +53,63 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import {
   LayoutDashboard, ShieldCheck, Building2, FileText, Stethoscope,
   UserRound, Activity, Calculator, Users as UsersIcon, Wallet,
   BarChart3, User, Package, Server
 } from 'lucide-vue-next'
 import { useAuthStore } from '@/stores/auth'
+import apiClient from '@/services/apiClient'
 
 const emit = defineEmits(['navigate'])
-
 const authStore = useAuthStore()
 
 const todayDateStr = computed(() =>
   new Date().toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 )
 
-const systemStats = [
+const counts = ref({ groups: '—', contracts: '—', staff: '—', users: '—' })
+
+const fetchCounts = async () => {
+  try {
+    const [groups, contracts, staff, users] = await Promise.allSettled([
+      apiClient.get('/api/MedicalGroups'),
+      apiClient.get('/api/Contracts'),
+      apiClient.get('/api/Staffs'),
+      apiClient.get('/api/Auth/users')
+    ])
+    if (groups.status === 'fulfilled') counts.value.groups = groups.value.data.length
+    if (contracts.status === 'fulfilled') counts.value.contracts = contracts.value.data.length
+    if (staff.status === 'fulfilled') counts.value.staff = staff.value.data.length
+    if (users.status === 'fulfilled') counts.value.users = users.value.data.length
+  } catch { /* giữ nguyên — */ }
+}
+
+onMounted(fetchCounts)
+
+const systemStats = computed(() => [
   {
-    label: 'Đoàn khám', value: '—', target: 'groups',
+    label: 'Đoàn khám', value: counts.value.groups, target: 'groups',
     icon: Stethoscope, bgClass: 'bg-primary/5', borderClass: 'border-primary/10',
     iconBg: 'bg-primary/10', iconColor: 'text-primary', valueColor: 'text-primary'
   },
   {
-    label: 'Hợp đồng HĐ', value: '—', target: 'contracts',
+    label: 'Hợp đồng HĐ', value: counts.value.contracts, target: 'contracts',
     icon: FileText, bgClass: 'bg-teal-50', borderClass: 'border-teal-100',
     iconBg: 'bg-teal-100', iconColor: 'text-teal-600', valueColor: 'text-teal-700'
   },
   {
-    label: 'Nhân sự', value: '—', target: 'staff',
+    label: 'Nhân sự', value: counts.value.staff, target: 'staff',
     icon: UsersIcon, bgClass: 'bg-rose-50', borderClass: 'border-rose-100',
     iconBg: 'bg-rose-100', iconColor: 'text-rose-600', valueColor: 'text-rose-700'
   },
   {
-    label: 'Người dùng HT', value: '—', target: 'users',
+    label: 'Người dùng HT', value: counts.value.users, target: 'users',
     icon: User, bgClass: 'bg-slate-50', borderClass: 'border-slate-200',
     iconBg: 'bg-slate-200', iconColor: 'text-slate-600', valueColor: 'text-slate-800'
   },
-]
-
+])
 
 const quickNavItems = [
   { id: 'companies',         name: 'Công ty',      desc: 'Đối tác',      icon: Building2,   bgClass: 'bg-sky-50',     borderClass: 'border-sky-100',     iconBg: 'bg-sky-100',     iconColor: 'text-sky-600' },

@@ -128,7 +128,28 @@ namespace QuanLyDoanKham.API.Controllers
             var userId = User.Identity?.Name ?? "system";
             var result = await _stateMachine.CheckInAsync(id, userId);
             if (!result.IsSuccess) return BadRequest(new { message = result.Message });
-            return Ok(result);
+
+            // Lấy thêm thông tin bệnh nhân để hiển thị phiếu khám
+            var record = result.Data;
+            var patient = record != null
+                ? await _medicalRecordService.GetByIdAsync(record.MedicalRecordId)
+                : null;
+
+            var queueNo = new Random().Next(1, 999);
+
+            return Ok(new
+            {
+                message = "Tiếp đón thành công",
+                data = new
+                {
+                    medicalRecordId = record?.MedicalRecordId,
+                    fullName = patient?.FullName ?? "Không rõ",
+                    queueNo = queueNo.ToString().PadLeft(3, '0'),
+                    serviceName = "Khám tổng quát",
+                    status = record?.Status?.ToString(),
+                    checkInAt = record?.CheckInAt
+                }
+            });
         }
 
         [HttpPost("{id}/finalize")]

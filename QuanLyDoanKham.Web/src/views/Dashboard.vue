@@ -258,19 +258,22 @@
 
           <!-- ══ OTHER MODULES ══════════════════════════════════════════════════ -->
           <div v-else class="animate-fade-in-up">
-              <AnalyticsDashboard v-if="activeMenu === 'analytics' || activeMenu === 'reports'" />
+              <UnifiedReports    v-if="activeMenu === 'analytics' || activeMenu === 'reports'" />
               <Companies v-if="activeMenu === 'companies'" />
               <Contracts v-if="activeMenu === 'contracts'" />
               <Staff v-if="activeMenu === 'staff'" />
               <Groups v-if="activeMenu === 'groups'" />
               <AccountManager v-if="activeMenu === 'users'" />
               <Permissions v-if="activeMenu === 'permissions'" />
-              <SettlementReport v-if="activeMenu === 'settlement-report'" />
-              <Patients v-if="activeMenu === 'patients'" />
-              <Payroll v-if="activeMenu === 'payroll'" />
-              <Supplies v-if="activeMenu === 'supplies'" />
+              <SettlementReport  v-if="activeMenu === 'settlement-report'" />
+              <Patients          v-if="activeMenu === 'patients'" />
+              <Payroll           v-if="activeMenu === 'payroll'" />
+              <Supplies          v-if="activeMenu === 'supplies'" />
+              <AttendanceSummary v-if="activeMenu === 'attendance-summary'" />
+              <MySchedule        v-if="activeMenu === 'my-schedule'" />
+              <AuditLogView      v-if="activeMenu === 'audit-logs'" />
               
-              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'patients', 'users', 'permissions', 'analytics', 'reports', 'settlement-report', 'payroll', 'supplies'].includes(activeMenu)" 
+              <div v-if="!['companies', 'contracts', 'staff', 'groups', 'patients', 'users', 'permissions', 'analytics', 'reports', 'settlement-report', 'payroll', 'supplies', 'attendance-summary', 'my-schedule', 'audit-logs'].includes(activeMenu)" 
                    class="flex flex-col items-center justify-center py-40 bg-white rounded-[4rem] border-4 border-dashed border-slate-50">
                 <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mb-6">
                     <component :is="activeIcon" class="w-12 h-12 text-slate-100" />
@@ -365,13 +368,16 @@ import Companies        from './Companies.vue'
 import Contracts        from './Contracts.vue'
 import Staff            from './Staff.vue'
 import Groups           from './Groups.vue'
-import AnalyticsDashboard from './AnalyticsDashboard.vue'
+import UnifiedReports       from './UnifiedReports.vue'
 import AccountManager   from './Users.vue'
 import Permissions      from './Permissions.vue'
-import SettlementReport from './SettlementReport.vue'
-import Patients         from './Patients.vue'
-import Payroll          from './Payroll.vue'
-import Supplies         from './Supplies.vue'
+import SettlementReport   from './SettlementReport.vue'
+import Patients           from './Patients.vue'
+import Payroll            from './Payroll.vue'
+import Supplies           from './Supplies.vue'
+import AttendanceSummary  from './AttendanceSummary.vue'
+import MySchedule         from './MySchedule.vue'
+import AuditLogView       from './AuditLogView.vue'
 
 
 const { can } = usePermission()
@@ -466,6 +472,9 @@ const menuItems = computed(() => [
     { id: 'analytics',        name: 'Thống kê',    icon: BarChart3,       color: 'bg-indigo-50 text-indigo-600',    desc: 'Báo cáo vận hành.',             permission: 'BaoCao.View' },
     { id: 'users',            name: 'Tài khoản',   icon: User,            color: 'bg-slate-50 text-slate-600',      desc: 'Quản trị truy cập.',            permission: 'HeThong.UserManage' },
     { id: 'permissions',      name: 'Phân quyền',  icon: ShieldCheck,     color: 'bg-slate-900 text-white',         desc: 'Bảo mật hệ thống.',             permission: 'HeThong.RoleManage' },
+    { id: 'audit-logs',       name: 'Nhật ký',     icon: ClipboardList,   color: 'bg-amber-50 text-amber-600',      desc: 'Lịch sử thao tác.',             permission: 'HeThong.AuditLog' },
+    { id: 'my-schedule',      name: 'Lịch của tôi',icon: CalendarCheck,   color: 'bg-indigo-50 text-indigo-600',    desc: 'Lịch đoàn khám cá nhân.' },
+    { id: 'attendance-summary',name: 'Chấm công',  icon: Activity,        color: 'bg-violet-50 text-violet-600',    desc: 'Tổng hợp chấm công.',           permission: 'ChamCong.ViewAll' },
 ])
 
 const activeModules = computed(() =>

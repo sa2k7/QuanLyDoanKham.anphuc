@@ -139,6 +139,11 @@ namespace QuanLyDoanKham.API.Services.Contracts
             var firstStep = await _context.ContractApprovalSteps
                 .Where(s => s.IsActive).OrderBy(s => s.StepOrder).FirstOrDefaultAsync();
 
+            if (firstStep == null)
+            {
+                return (false, "Hệ thống chưa cấu hình các bước phê duyệt hợp đồng. Vui lòng liên hệ Admin.", null);
+            }
+
             _context.ContractStatusHistories.Add(new ContractStatusHistory
             {
                 HealthContractId = id,
@@ -146,11 +151,11 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 NewStatus = ContractStatus.PendingApproval.ToString(),
                 ChangedBy = username,
                 ChangedAt = DateTime.Now,
-                Note = $"Gửi phê duyệt - Bước {firstStep?.StepOrder}: {firstStep?.StepName}"
+                Note = $"Gửi phê duyệt - Bước {firstStep.StepOrder}: {firstStep.StepName}"
             });
 
             contract.Status = ContractStatus.PendingApproval;
-            contract.CurrentApprovalStep = firstStep?.StepOrder ?? 1;
+            contract.CurrentApprovalStep = firstStep.StepOrder;
             await _context.SaveChangesAsync();
 
             return (true, null, firstStep?.StepName);

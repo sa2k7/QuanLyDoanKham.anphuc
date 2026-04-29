@@ -124,10 +124,11 @@ namespace QuanLyDoanKham.API.Data
                 .HasForeignKey(c => c.CreatedByUserId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            // Map Status Enum to string in DB
+            // Status stored as int in DB (enum numeric value)
+            // HasConversion<string>() removed — DB column is int, not nvarchar
             modelBuilder.Entity<HealthContract>()
                 .Property(c => c.Status)
-                .HasConversion<string>();
+                .HasConversion<int>();
 
             // ContractApprovalHistory -> ApprovedByUser (no cascade)
             modelBuilder.Entity<ContractApprovalHistory>()

@@ -24,11 +24,11 @@ namespace QuanLyDoanKham.API.Controllers
         /// </summary>
         [HttpGet]
         [AuthorizePermission("HeThong.AuditLog")]
-        public async Task<IActionResult> GetLogs([FromQuery] DateTime? start, [FromQuery] DateTime? end, [FromQuery] string? module, [FromQuery] string? username)
+        public async Task<IActionResult> GetLogs([FromQuery] DateTime? start, [FromQuery] DateTime? end, [FromQuery] string? module, [FromQuery] string? username, [FromQuery] string? action)
         {
             try
             {
-                var logs = await _auditLogService.GetLogsAsync(start, end, module, username);
+                var logs = await _auditLogService.GetLogsAsync(start, end, module, username, action);
                 return Ok(logs);
             }
             catch (Exception ex)
