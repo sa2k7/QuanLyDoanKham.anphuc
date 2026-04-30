@@ -1,16 +1,16 @@
 <template>
   <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans">
     
-    <!-- Top Bar -->
-    <div class="sticky top-0 z-40 glass-header p-6 mb-8 flex flex-wrap items-center justify-between gap-6 shadow-sm">
-      <div class="flex items-center gap-4">
-        <div class="p-4 bg-emerald-50 rounded-2xl shadow-inner border border-emerald-100">
-          <Wallet class="w-8 h-8 text-emerald-600" />
-        </div>
-        <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1">Bảng Lương Tổng Hợp</h2>
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Quản lý lương và thù lao nhân sự toàn tuyến</p>
-        </div>
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <Wallet class="w-6 h-6" />
+          </div>
+          Bảng Lương Tổng Hợp
+        </h2>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Quản lý lương và thù lao nhân sự toàn tuyến</p>
       </div>
 
       <div class="flex items-center gap-3">

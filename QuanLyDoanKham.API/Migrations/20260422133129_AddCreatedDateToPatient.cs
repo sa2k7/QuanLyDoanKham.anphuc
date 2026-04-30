@@ -11,12 +11,12 @@ namespace QuanLyDoanKham.API.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<DateTime>(
-                name: "CreatedDate",
-                table: "Patients",
-                type: "datetime2",
-                nullable: false,
-                defaultValue: DateTime.Now);
+// migrationBuilder.AddColumn<DateTime>(
+//     name: "CreatedDate",
+//     table: "Patients",
+//     type: "datetime2",
+//     nullable: false,
+//     defaultValue: DateTime.Now);
         }
 
         /// <inheritdoc />

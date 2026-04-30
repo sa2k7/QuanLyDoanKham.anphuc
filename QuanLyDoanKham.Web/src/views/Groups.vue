@@ -3,13 +3,13 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
         <div>
-            <h1 class="text-3xl font-black text-slate-900 tracking-tighter uppercase italic flex items-center gap-4">
-                <div class="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3">
+            <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
                     <Building2 class="text-white w-6 h-6" />
                 </div>
                 Quản lý Đoàn khám
-            </h1>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1">Điều phối nhân sự & Theo dõi vận hành thực tế</p>
+            </h2>
+            <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Điều phối nhân sự & Theo dõi vận hành thực tế</p>
         </div>
         <div class="flex gap-4">
             <button v-if="can('DoanKham.Create')" @click="showForm = !showForm" 

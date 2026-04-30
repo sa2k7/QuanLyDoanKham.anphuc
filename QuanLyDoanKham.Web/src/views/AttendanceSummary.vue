@@ -1,16 +1,16 @@
 <template>
   <div class="h-full flex flex-col bg-slate-50 min-h-screen pb-12 overflow-y-auto font-sans">
 
-    <!-- ── Top Bar ──────────────────────────────────────────────────── -->
-    <div class="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-100 px-8 py-5 flex flex-wrap items-center justify-between gap-4 shadow-sm">
-      <div class="flex items-center gap-4">
-        <div class="p-3 bg-violet-50 rounded-2xl shadow-inner border border-violet-100">
-          <ClipboardCheck class="w-7 h-7 text-violet-600" />
-        </div>
-        <div>
-          <h1 class="text-2xl font-black text-slate-800 tracking-tight leading-none mb-0.5">Kiểm Tra Chấm Công</h1>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng hợp nhân sự đã đi làm theo tháng</p>
-        </div>
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <ClipboardCheck class="w-6 h-6" />
+          </div>
+          Kiểm Tra Chấm Công
+        </h2>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Tổng hợp nhân sự đã đi làm theo tháng</p>
       </div>
 
       <div class="flex items-center gap-3">

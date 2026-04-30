@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -58,7 +58,7 @@ namespace QuanLyDoanKham.API.Migrations
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "PatientId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.NoAction);
                 });
 
             migrationBuilder.CreateTable(
@@ -194,8 +194,6 @@ namespace QuanLyDoanKham.API.Migrations
                     $"END");
             }
             migrationBuilder.Sql("SET IDENTITY_INSERT [RolePermissions] OFF");
-            // RoleId=11 does not exist in Roles table, skip to avoid FK violation
-            // { 404, 110, 11 } - skipped
 
             // Use IF NOT EXISTS to avoid duplicate key errors
             var workRuleSeeds = new (int Id, int DeptId, int Order, string Code, string Name, string Perm)[]

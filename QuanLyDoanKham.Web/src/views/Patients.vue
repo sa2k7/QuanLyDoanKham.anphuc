@@ -1,15 +1,15 @@
 <template>
   <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
-    <!-- Page Header -->
-    <div class="flex items-center justify-between mb-8 glass-header p-8 rounded-[2.5rem] shadow-glass border border-white/40 backdrop-blur-xl">
-      <div class="flex items-center gap-6">
-        <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
-          <Users class="w-8 h-8 text-primary" />
-        </div>
-        <div>
-          <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Quản Lý Bệnh Nhân</h1>
-          <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Lý lịch & Hồ sơ chuẩn y khoa (Medical Database)</p>
-        </div>
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <Users class="w-6 h-6" />
+          </div>
+          Quản Lý Bệnh Nhân
+        </h2>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Lý lịch & Hồ sơ chuẩn y khoa (Medical Database)</p>
       </div>
       <div class="flex gap-4">
         <button @click="handleExport" class="btn-premium secondary !rounded-xl !px-6 shadow-sm border border-white/40">

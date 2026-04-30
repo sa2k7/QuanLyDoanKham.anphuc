@@ -1,15 +1,15 @@
 <template>
   <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
     <div class="max-w-7xl mx-auto w-full">
-      <div class="flex items-center justify-between mb-8 glass-header p-8 rounded-[2.5rem] shadow-glass border border-white/40">
-        <div class="flex items-center gap-6">
-          <div class="w-16 h-16 bg-white/40 backdrop-blur-xl rounded-[1.5rem] flex items-center justify-center shadow-inner border border-white/40">
-            <Calculator class="w-8 h-8 text-primary" />
-          </div>
-          <div>
-            <h1 class="text-4xl font-black text-slate-900 tracking-tighter italic uppercase leading-none">Đối Soát & Quyết Toán</h1>
-            <p class="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 ml-1 opacity-70">Phân tích chênh lệch giá trị dự kiến và thực tế (P&L Audit)</p>
-          </div>
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div>
+          <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+            <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+              <Calculator class="w-6 h-6" />
+            </div>
+            Đối Soát & Quyết Toán
+          </h2>
+          <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Phân tích chênh lệch giá trị dự kiến và thực tế (P&L Audit)</p>
         </div>
         <div class="flex gap-4">
           <button @click="loadContracts" class="w-14 h-14 bg-white/80 backdrop-blur-md border border-white/40 rounded-[1.25rem] text-slate-600 hover:text-primary hover:scale-105 transition-all shadow-sm flex items-center justify-center group">
@@ -18,61 +18,116 @@
         </div>
       </div>
 
-      <!-- Contract List -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <div v-for="c in contracts" :key="c.healthContractId" 
-          class="glass-card bg-white/60 backdrop-blur-md rounded-[2.5rem] p-8 border border-white/40 shadow-glass hover:-translate-y-1 hover:shadow-primary/10 transition-all duration-300 flex flex-col relative overflow-hidden group">
-          
-          <div class="flex justify-between items-start mb-8">
-            <div class="w-14 h-14 bg-primary/10 text-primary rounded-[1.25rem] flex items-center justify-center text-2xl shadow-inner border border-primary/5 group-hover:scale-110 transition-transform">
-              <FileText class="w-7 h-7" />
+      <!-- Search & Filter -->
+      <div class="premium-card bg-white rounded-[2rem] shadow-sm mb-8 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex items-center gap-4 bg-white/50">
+            <div class="relative group flex-1">
+                <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                <input v-model="searchQuery" placeholder="Tìm tên hợp đồng, công ty..."
+                       class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-slate-200 focus:border-primary/30 focus:ring-2 focus:ring-primary/10 outline-none font-semibold text-sm text-slate-600 shadow-sm transition-all" />
             </div>
-            <span :class="getStatusBadgeClass(c.status)" class="px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-sm">
-              {{ c.status === 'Completed' || c.status === 'Active' ? 'HOÀN TẤT' : 'ĐANG XỬ LÝ' }}
-            </span>
-          </div>
-          
-          <div class="flex-grow">
-            <h3 class="text-xl font-black text-slate-800 mb-2 leading-tight tracking-tight group-hover:text-primary transition-colors italic uppercase">{{ c.contractName }}</h3>
-            <p class="text-[10px] text-slate-400 font-black uppercase tracking-[0.2em] mb-8 flex items-center gap-2">
-              <Building2 class="w-3 h-3" /> {{ c.companyName }}
-            </p>
-
-            <div class="space-y-4 mb-8 bg-white/40 p-6 rounded-[1.5rem] border border-white/60 shadow-inner">
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Giá trị hợp đồng</span>
-                <span class="font-black text-slate-800 tabular-nums">{{ formatCurrency(c.totalValue) }}</span>
-              </div>
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-400 font-bold uppercase tracking-widest text-[9px]">Dự kiến khám</span>
-                <span class="font-black text-slate-800 tabular-nums">{{ c.expectedQuantity }} người</span>
-              </div>
+            <div class="px-4 py-2 bg-white rounded-xl border border-slate-100 text-[10px] font-semibold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+                Kết quả: <span class="text-primary font-bold">{{ filteredContracts.length }}</span>
             </div>
-          </div>
+        </div>
 
-          <button @click="viewSettlement(c)" 
-            class="btn-premium primary w-full !py-5 !rounded-2xl shadow-lg shadow-primary/20">
-            PHÂN TÍCH QUYẾT TOÁN
-          </button>
-
-          <!-- Decoration -->
-          <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="bg-slate-50 text-[10px] font-semibold uppercase tracking-widest text-slate-500 border-b border-slate-100">
+              <tr>
+                <th class="p-4 text-center w-16">STT</th>
+                <th class="p-4">Thông tin hợp đồng</th>
+                <th class="p-4">Doanh nghiệp</th>
+                <th class="p-4 text-right">Giá trị HĐ</th>
+                <th class="p-4 text-center">Dự kiến</th>
+                <th class="p-4 text-center">Trạng thái</th>
+                <th class="p-4 text-center">Tác vụ</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+              <tr v-for="(c, index) in filteredContracts" :key="c.healthContractId"
+                @click="viewSettlement(c)"
+                class="text-sm hover:bg-sky-50/50 transition-all duration-200 group cursor-pointer border-b border-slate-50 last:border-0">
+                <td class="p-4 text-center font-semibold text-slate-400 tabular-nums">
+                  {{ String(index + 1).padStart(3, '0') }}
+                </td>
+                <td class="p-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300">
+                      <FileText class="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div class="font-bold text-slate-800 uppercase italic leading-tight group-hover:text-primary transition-colors">{{ c.contractName }}</div>
+                      <div class="text-[9px] text-slate-400 font-bold uppercase tracking-wider mt-1">{{ c.contractCode || 'HĐ-' + c.healthContractId }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="p-4">
+                  <div class="flex items-center gap-2 font-semibold text-slate-600">
+                    <Building2 class="w-4 h-4 text-slate-300" />
+                    {{ c.companyName }}
+                  </div>
+                </td>
+                <td class="p-4 text-right font-black text-slate-700 tabular-nums">
+                  {{ formatCurrency(c.totalValue) }}
+                </td>
+                <td class="p-4 text-center">
+                  <span class="px-3 py-1 bg-slate-100 rounded-lg font-bold text-slate-600 text-xs shadow-sm">
+                    {{ c.expectedQuantity }} người
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <span :class="getStatusBadgeClass(c.status)" class="px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm">
+                    {{ c.status === 'Completed' || c.status === 'Active' ? 'HOÀN TẤT' : 'ĐANG XỬ LÝ' }}
+                  </span>
+                </td>
+                <td class="p-4 text-center">
+                  <button @click.stop="viewSettlement(c)" 
+                    class="btn-action-premium variant-indigo scale-90"
+                    title="Phân tích quyết toán">
+                    <Activity class="w-5 h-5" />
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="filteredContracts.length === 0">
+                <td colspan="7" class="py-20 text-center">
+                  <div class="flex flex-col items-center justify-center gap-4">
+                    <Calculator class="w-12 h-12 text-slate-200" />
+                    <p class="text-slate-400 font-semibold uppercase tracking-widest text-xs">Không tìm thấy hợp đồng phù hợp</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
 
       <!-- Settlement Detail Modal -->
-      <div v-if="selectedSettlement" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
-        <div class="bg-white rounded-[2.5rem] w-full max-w-2xl overflow-hidden shadow-2xl animate-fade-in-up border border-white/20">
-          <div class="bg-primary p-12 text-white relative overflow-hidden">
-            <div class="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-            <button @click="selectedSettlement = null" class="absolute top-8 right-8 text-white/60 hover:text-white transition-all hover:rotate-90">
-              <X class="w-8 h-8 font-black" />
-            </button>
-            <h2 class="text-4xl font-black mb-2 tracking-premium">Quyết Toán</h2>
-            <p class="text-sm font-bold opacity-70 uppercase tracking-widest">{{ selectedSettlement.contractName }}</p>
-          </div>
-          
-          <div class="p-10">
+      <Teleport to="body">
+        <div v-if="selectedSettlement" class="modal-overlay flex items-center justify-center p-4" @click.self="selectedSettlement = null">
+          <div class="modal-box w-full max-w-2xl overflow-hidden animate-scale-up !rounded-[2.5rem] flex flex-col max-h-[90vh]">
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-12 text-white relative overflow-hidden shrink-0">
+              <div class="absolute -right-10 -top-10 w-64 h-64 bg-primary/20 rounded-full blur-[80px]"></div>
+              <button @click="selectedSettlement = null" class="absolute top-8 right-8 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all group z-10">
+                <X class="w-5 h-5 text-white/70 group-hover:text-white group-hover:rotate-90 transition-all" />
+              </button>
+              
+              <div class="relative z-10">
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-14 h-14 bg-primary rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+                    <Calculator class="w-7 h-7" />
+                  </div>
+                  <div>
+                    <h2 class="text-4xl font-black tracking-tight italic uppercase">QUYẾT TOÁN</h2>
+                    <p class="text-[10px] font-bold opacity-60 uppercase tracking-[0.2em] mt-1">Audit Report Analysis</p>
+                  </div>
+                </div>
+                <div class="h-px w-24 bg-gradient-to-r from-primary to-transparent mb-4"></div>
+                <p class="text-lg font-black text-white/90 uppercase tracking-widest leading-tight max-w-md">{{ selectedSettlement.contractName }}</p>
+              </div>
+            </div>
+            
+            <div class="p-10 overflow-y-auto custom-scrollbar flex-1">
              <!-- Revenue & Gross Profit -->
              <div class="grid grid-cols-2 gap-6 mb-8">
                 <!-- Net Revenue -->
@@ -218,17 +273,15 @@
                    ĐÓNG
                   </button>
               </div>
-          </div>
+            </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </Teleport>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { RefreshCw, FileText, Building2, X, Calculator, Users, Clock, Download, CheckCircle, AlertTriangle, Activity, Package, ArrowRight, Trash2 } from 'lucide-vue-next'
+import { RefreshCw, FileText, Building2, X, Calculator, Users, Clock, Download, CheckCircle, AlertTriangle, Activity, Package, ArrowRight, Trash2, Search } from 'lucide-vue-next'
 import apiClient from '../services/apiClient'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
@@ -238,7 +291,18 @@ const toast = useToast()
 const authStore = useAuthStore()
 const loading = ref(false)
 const contracts = ref([])
+const searchQuery = ref('')
 const selectedSettlement = ref(null)
+
+const filteredContracts = computed(() => {
+  if (!searchQuery.value) return contracts.value
+  const q = searchQuery.value.toLowerCase()
+  return contracts.value.filter(c => 
+    c.contractName?.toLowerCase().includes(q) || 
+    c.companyName?.toLowerCase().includes(q) ||
+    c.contractCode?.toLowerCase().includes(q)
+  )
+})
 
 // Extra Service editing state
 const isEditingExtra = ref(false)

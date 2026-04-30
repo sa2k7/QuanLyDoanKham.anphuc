@@ -1,19 +1,19 @@
 <template>
   <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in-up">
-    <!-- Header -->
-    <div class="flex-shrink-0 mb-4 p-5 bg-white rounded-3xl shadow-sm border border-slate-100 flex flex-wrap items-center justify-between gap-4">
-      <div class="flex items-center gap-4">
-        <div class="w-12 h-12 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-200">
-          <BarChart3 class="w-6 h-6" />
-        </div>
-        <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Thống Kê Tổng Hợp</h2>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Báo cáo hiệu suất & Phân tích kinh doanh</p>
-        </div>
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+      <div>
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
+            <BarChart3 class="w-6 h-6" />
+          </div>
+          Thống Kê Tổng Hợp
+        </h2>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Báo cáo hiệu suất & Phân tích kinh doanh</p>
       </div>
       
       <div class="flex items-center gap-3">
-        <div class="flex items-center gap-2 bg-slate-50 p-2 rounded-2xl border border-slate-100">
+        <div class="flex items-center gap-2 bg-white p-2 rounded-2xl border border-slate-200 shadow-sm">
           <input type="date" v-model="filters.from" class="bg-transparent border-none text-xs font-bold text-slate-600 outline-none" />
           <span class="text-slate-300">→</span>
           <input type="date" v-model="filters.to" class="bg-transparent border-none text-xs font-bold text-slate-600 outline-none" />

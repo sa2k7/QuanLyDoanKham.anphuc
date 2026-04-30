@@ -1,15 +1,15 @@
 <template>
   <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans p-6">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
       <div>
-        <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20">
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
+          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <Package class="w-6 h-6" />
           </div>
           {{ i18n.t('supplies.title') || 'Kho Vật Tư Y Tế' }}
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[9px] mt-2">Quản lý nhập xuất & theo dõi tồn kho tiêu hao</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Quản lý nhập xuất & theo dõi tồn kho tiêu hao</p>
       </div>
 
       <div class="flex items-center gap-4">

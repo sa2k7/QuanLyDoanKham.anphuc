@@ -1,18 +1,18 @@
 <template>
   <div class="space-y-6 animate-fade-in pb-20">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
       <div>
-        <h2 class="text-3xl font-black text-slate-800 flex items-center gap-3">
+        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
           <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
             <ShieldCheck class="w-6 h-6" />
           </div>
           {{ isAdmin ? i18n.t('users.title') : i18n.t('users.profileTitle') }}
         </h2>
-        <p class="text-slate-400 font-black uppercase tracking-[0.3em] text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
       </div>
       <button v-if="isAdmin" @click="openCreateModal" 
-              class="btn-premium bg-primary text-white px-8 py-3 shadow-lg">
+              class="btn-premium primary px-8 py-3 shadow-lg">
         <UserPlus class="w-5 h-5" />
         <span class="">{{ i18n.t('users.addBtn') }}</span>
       </button>
@@ -163,102 +163,105 @@
 
     <!-- MODAL: CREATE / EDIT USER -->
     <Teleport to="body">
-      <div v-if="modal.show" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/80 backdrop-blur-md p-4 overflow-y-auto">
-          <div class="bg-white w-full max-w-xl rounded-[3rem] border-2 border-slate-900 shadow-2xl animate-fade-in-up relative overflow-hidden mt-auto mb-auto">
-              <!-- Border Overlay -->
-              <div class="absolute inset-0 rounded-[inherit] border-2 border-slate-900 pointer-events-none z-50"></div>
-              
+      <div v-if="modal.show" class="modal-overlay flex items-center justify-center p-4" @click.self="modal.show = false">
+          <div class="modal-box w-full max-w-xl animate-scale-up !rounded-[3rem] overflow-hidden flex flex-col max-h-[90vh]">
               <!-- Header Accent Line -->
-              <div class="absolute top-0 left-0 right-0 h-4 bg-gradient-to-r from-teal-400 to-teal-600 z-0"></div>
+              <div class="h-3 bg-gradient-to-r from-teal-400 to-indigo-600 shrink-0"></div>
               
-              <button @click="modal.show = false" class="absolute top-8 right-8 bg-white p-2 rounded-full hover:bg-slate-100 transition-all text-slate-400 z-[60] flex items-center justify-center border-2 border-slate-900 shadow-[2px_2px_0px_#0f172a]">
-                  <X class="w-5 h-5" />
-              </button>
-              
-              <div class="relative z-10 pt-12">
-                  <div class="p-10 pb-6">
-                      <div class="flex items-center gap-4 mb-8">
-                          <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-3xl flex items-center justify-center shadow-inner border border-indigo-100">
-                              <UserPlus v-if="!modal.isEdit" class="w-7 h-7" />
-                              <Edit3 v-else class="w-7 h-7" />
-                          </div>
-                          <div>
-                              <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest">{{ modal.isEdit ? i18n.t('users.formTitleEdit') : i18n.t('users.formTitleAdd') }}</h3>
-                              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('users.formSubtitle') }}</p>
-                          </div>
+              <div class="relative p-10 pb-6 shrink-0 border-b border-slate-50 bg-white/50">
+                  <button @click="modal.show = false" class="absolute top-8 right-8 w-10 h-10 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-all text-slate-400 z-50 border border-slate-100">
+                      <X class="w-5 h-5" />
+                  </button>
+                  
+                  <div class="flex items-center gap-4">
+                      <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner border border-indigo-100">
+                          <UserPlus v-if="!modal.isEdit" class="w-7 h-7" />
+                          <Edit3 v-else class="w-7 h-7" />
                       </div>
-
-              <form id="userForm" @submit.prevent="handleSubmit" class="space-y-6">
-                  <!-- Avatar Upload -->
-                  <div class="flex flex-col items-center space-y-4 mb-6">
-                      <div class="w-24 h-24 rounded-3xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:border-indigo-400 transition-colors">
-                          <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
-                          <Camera v-else class="w-8 h-8 text-slate-300 group-hover:text-indigo-400 transition-colors" />
-                          <label class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity">
-                              <span class="text-white text-[10px] font-black uppercase tracking-widest ">Thay ảnh</span>
-                              <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
-                          </label>
+                      <div>
+                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest leading-tight">
+                              {{ modal.isEdit ? i18n.t('users.formTitleEdit') : 'CẤP TÀI KHOẢN MỚI' }}
+                          </h3>
+                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phân quyền và bảo mật truy cập hệ thống</p>
                       </div>
                   </div>
+              </div>
 
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
-                      <div class="flex flex-col gap-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh đăng nhập</label>
-                          <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="VD: bacsi_binh" />
-                      </div>
-                      
-                      <div class="flex flex-col gap-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ khoản</label>
-                          <input v-model="form.fullName" required class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="Nhập họ tên đầy đủ..."
-                                 @input="generateUsername(form.fullName)" />
-                      </div>
+              <!-- Scrollable Content -->
+              <div class="p-10 flex-1 overflow-y-auto custom-scrollbar bg-white">
+                <form id="userForm" @submit.prevent="handleSubmit" class="space-y-6">
+                    <!-- Avatar Upload -->
+                    <div class="flex flex-col items-center space-y-4 mb-8">
+                        <div class="w-24 h-24 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:border-indigo-400 transition-all shadow-inner">
+                            <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
+                            <Camera v-else class="w-8 h-8 text-slate-300 group-hover:text-indigo-400 transition-colors" />
+                            <label class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm">
+                                <span class="text-white text-[10px] font-black uppercase tracking-widest ">Thay ảnh</span>
+                                <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
+                            </label>
+                        </div>
+                    </div>
 
-                      <div class="flex flex-col gap-2 md:col-span-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
-                          <input v-model="form.email" type="email" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="vidu@gmail.com..." />
-                      </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh đăng nhập</label>
+                            <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium" placeholder="VD: bacsi_binh" />
+                        </div>
+                        
+                        <div class="flex flex-col gap-2">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ khoản</label>
+                            <input v-model="form.fullName" required class="input-premium" placeholder="Nhập họ tên đầy đủ..."
+                                   @input="generateUsername(form.fullName)" />
+                        </div>
 
-                      <div class="flex flex-col gap-2 md:col-span-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò (Đa nhiệm)</label>
-                          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                              <label v-for="role in availableRoles" :key="role.id" 
-                                     class="flex items-center gap-3 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600"
-                                     :class="{'bg-indigo-50 border-indigo-200 text-indigo-700': form.selectedRoleIds.includes(role.id)}">
-                                  <input type="checkbox" :value="role.id" v-model="form.selectedRoleIds" class="w-4 h-4 accent-indigo-600 shrink-0" />
-                                  <span class="truncate">{{ i18n.t('roles.' + role.key) }}</span>
-                              </label>
-                          </div>
-                      </div>
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
+                            <input v-model="form.email" type="email" class="input-premium" placeholder="vidu@gmail.com..." />
+                        </div>
 
-                      <div class="flex flex-col gap-2 md:col-span-2" :class="{ 'opacity-50 pointer-events-none': !form.selectedRoleIds.includes(8) }">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp (Chỉ dành cho KH cấp Company)</label>
-                          <select v-model="form.companyId" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full">
-                              <option :value="null">-- Hệ điều hành HealthCare --</option>
-                              <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
-                          </select>
-                      </div>
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò (Đa nhiệm)</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label v-for="role in availableRoles" :key="role.id" 
+                                       class="flex items-center gap-3 p-4 rounded-2xl border border-slate-100 cursor-pointer hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600 shadow-sm"
+                                       :class="{'bg-indigo-50 !border-indigo-200 text-indigo-700': form.selectedRoleIds.includes(role.id)}">
+                                    <input type="checkbox" :value="role.id" v-model="form.selectedRoleIds" class="w-5 h-5 accent-indigo-600 shrink-0" />
+                                    <span class="truncate">{{ i18n.t('roles.' + role.key) }}</span>
+                                </label>
+                            </div>
+                        </div>
 
-                      <div class="flex flex-col gap-2 md:col-span-2">
-                          <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                              {{ modal.isEdit ? 'Đổi mật khẩu (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
-                          </label>
-                          <div class="relative">
-                              <input v-model="form.password" 
-                                     @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
-                                     :required="!modal.isEdit" type="text" class="input-premium bg-slate-50 border-slate-200 focus:bg-white w-full font-mono" />
-                              <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
-                          </div>
-                      </div>
-                  </div>
+                        <div class="flex flex-col gap-2 md:col-span-2" :class="{ 'opacity-50 pointer-events-none': !form.selectedRoleIds.includes(8) }">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp (Chỉ dành cho KH cấp Company)</label>
+                            <select v-model="form.companyId" class="input-premium">
+                                <option :value="null">-- Hệ điều hành HealthCare --</option>
+                                <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
+                            </select>
+                        </div>
 
-                  </form>
-                  </div>
+                        <div class="flex flex-col gap-2 md:col-span-2">
+                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
+                                {{ modal.isEdit ? 'Đổi mật khẩu (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
+                            </label>
+                            <div class="relative">
+                                <input v-model="form.password" 
+                                       @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
+                                       :required="!modal.isEdit" type="text" class="input-premium font-mono" />
+                                <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+              </div>
 
-                  <div class="p-10 pt-0 bg-white border-t border-slate-50 relative z-20">
-                      <button form="userForm" type="submit" class="w-full btn-premium bg-indigo-600 text-white shadow-indigo-600/20 py-6">
-                          {{ modal.isEdit ? 'LƯU THÔNG TIN TÀI KHOẢN' : 'KHOÁI TẠO TÀI KHOẢN TRUY CẬP' }}
-                      </button>
-                  </div>
+              <!-- Footer Section -->
+              <div class="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 shrink-0">
+                  <button @click="modal.show = false" type="button" class="flex-1 btn-premium secondary">
+                      HỦY
+                  </button>
+                  <button form="userForm" type="submit" class="flex-[2] btn-premium primary !py-4 shadow-xl shadow-indigo-200">
+                      {{ modal.isEdit ? 'LƯU THÔNG TIN' : 'TẠO TÀI KHOẢN' }}
+                  </button>
               </div>
           </div>
       </div>
