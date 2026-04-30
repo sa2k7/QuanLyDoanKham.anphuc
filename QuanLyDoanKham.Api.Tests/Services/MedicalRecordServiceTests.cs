@@ -1,5 +1,6 @@
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using QuanLyDoanKham.API.Models.Enums;
 using Microsoft.Extensions.Configuration;
 using Moq;
 using QuanLyDoanKham.API.Data;
@@ -140,7 +141,7 @@ public class MedicalRecordServiceTests : IDisposable
             StartDate = DateTime.Today,
             EndDate = DateTime.Today.AddDays(1),
             TotalAmount = 1000,
-            Status = "Active"
+            Status = ContractStatus.Active
         };
 
         var group = new MedicalGroup

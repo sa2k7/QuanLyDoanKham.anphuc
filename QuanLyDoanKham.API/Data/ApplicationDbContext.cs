@@ -325,7 +325,7 @@ namespace QuanLyDoanKham.API.Data
 
             modelBuilder.Entity<MedicalRecord>()
                 .HasOne(m => m.MedicalGroup)
-                .WithMany()
+                .WithMany(mg => mg.MedicalRecords)
                 .HasForeignKey(m => m.GroupId)
                 .OnDelete(DeleteBehavior.Cascade);
 

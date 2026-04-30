@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
+using QuanLyDoanKham.API.Models.Enums;
 using Moq;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
@@ -106,7 +107,7 @@ public class ExamServiceTests : IDisposable
             StartDate = DateTime.Today,
             EndDate = DateTime.Today.AddDays(1),
             TotalAmount = 1000,
-            Status = "Active"
+            Status = ContractStatus.Active
         };
 
         var group = new MedicalGroup
