@@ -281,8 +281,12 @@ namespace QuanLyDoanKham.API.Controllers
             int staffId = dto.StaffId;
             if (staffId <= 0)
             {
+                var staffIdClaim = User.FindFirst("StaffId")?.Value;
+                if (int.TryParse(staffIdClaim, out var claimStaffId))
+                    staffId = claimStaffId;
+
                 // Try to get from JWT if authenticated
-                if (User.Identity?.IsAuthenticated == true)
+                if (staffId <= 0 && User.Identity?.IsAuthenticated == true)
                 {
                     var username = User.Identity?.Name;
                     var staff = await _context.Staffs.FirstOrDefaultAsync(s =>
@@ -418,9 +422,15 @@ namespace QuanLyDoanKham.API.Controllers
         // GET api/attendance/summary/{staffId}?month=4&year=2026
         // ================================================================
         [HttpGet("summary/{staffId}")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
+        [Authorize]
         public async Task<IActionResult> GetAttendanceSummary(int staffId, [FromQuery] int month, [FromQuery] int year)
         {
+            var staffIdClaim = User.FindFirst("StaffId")?.Value;
+            var canViewAll = User.HasClaim("permission", "ChamCong.ViewAll")
+                || User.FindFirst("RoleId")?.Value == "1";
+            var isOwnSummary = int.TryParse(staffIdClaim, out var currentStaffId) && currentStaffId == staffId;
+            if (!canViewAll && !isOwnSummary) return Forbid();
+
             if (month == 0) month = DateTime.Now.Month;
             if (year == 0) year = DateTime.Now.Year;
 

@@ -137,7 +137,7 @@ const handleQcPass = async () => {
   actionLoading.value = true
   actionError.value = ''
   try {
-    await api.post(`/api/MedicalRecords/qc/${selectedRecord.value.medicalRecordId}/pass`)
+    await api.post(`/api/MedicalRecords/${selectedRecord.value.medicalRecordId}/qc-pass`)
     pendingRecords.value = pendingRecords.value.filter(
       r => r.medicalRecordId !== selectedRecord.value.medicalRecordId
     )
@@ -183,7 +183,7 @@ const handleQcRework = async (reason) => {
   actionLoading.value = true
   actionError.value = ''
   try {
-    await api.post(`/api/MedicalRecords/qc/${selectedRecord.value.medicalRecordId}/rework`, {
+    await api.post(`/api/MedicalRecords/${selectedRecord.value.medicalRecordId}/qc-rework`, {
       reason: reason
     })
     pendingRecords.value = pendingRecords.value.filter(

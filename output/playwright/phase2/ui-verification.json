@@ -1,0 +1,206 @@
+{
+  "checks": [
+    {
+      "user": "contract_creator",
+      "path": "/companies",
+      "label": "Companies shows demo company",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\contract_creator__companies.png",
+      "expected": [
+        "Demo Safe Company 20260502041621"
+      ],
+      "foundSnippet": "Danh sách Công ty QUẢN LÝ THÔNG TIN CÁC CÔNG TY VÀ ĐỐI TÁC DOANH NGHIỆP KẾT QUẢ: 6 STT THÔNG TIN DOANH NGHIỆP NGƯỜI ĐẠI DIỆN MÃ THUẾ SĐT CÔNG TY SĐT ĐẠI DIỆN TÁC VỤ 001 C CÔNG TY CỔ PHẦN SÀI GÒN HỘI AN sang trần 4000387930 02353921656 0987654311 002 C CÔNG TY CỔ PHẦN THIỆN NHÂN ĐÀ NẴNG trung hiếu 0401737898 0964641111 0987654321 003 C CÔNG TY CỔ PHẦN ĐỒNG NAI -2 bình lê 3602863520 0933 029 999 0987654321 004 C CÔNG TY CỔ PHẦN FPT NGUYỄN VĂN KHOA 0101248141 0123456789 0123456789 005 D DEMO20260502041451 Demo Safe Company 20260502041451 9260502041451 0905020414 0987654321 006 D DEMO20260502041621 Demo Safe Company 20260502041621 9260502041621 0905020416 0987654321 "
+    },
+    {
+      "user": "contract_creator",
+      "path": "/contracts",
+      "label": "Contracts approved tab shows contract",
+      "pass": false,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\contract_creator__contracts.png",
+      "expected": [
+        "HD-DEMO-20260502041621",
+        "Demo Health Contract 20260502041621"
+      ],
+      "foundSnippet": "Hợp đồng Dịch vụ KINH DOANH: KHAI BÁO DOANH THU & HỢP ĐỒNG THÊM HỢP ĐỒNG NHÁP (000) CHỜ DUYỆT (000) PHÊ DUYỆT (002) TRIỂN KHAI (001) KẾT THÚC (000) TỪ CHỐI (000) # STT ĐẠI DIỆN HỢP ĐỒNG THÀNH TIỀN & QUY MÔ THỜI HẠN TRẠNG THÁI THAO TÁC KHÔNG TÌM THẤY HỢP ĐỒNG NÀO"
+    },
+    {
+      "user": "medical_group_manager",
+      "path": "/groups",
+      "label": "Groups shows demo group",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\medical_group_manager__groups.png",
+      "expected": [
+        "Demo Group 20260502041621"
+      ],
+      "foundSnippet": "Quản lý Đoàn khám ĐIỀU PHỐI NHÂN SỰ & THEO DÕI VẬN HÀNH THỰC TẾ THÊM ĐOÀN MỚI XUẤT EXCEL TỔNG ĐOÀN KHÁM 2 ĐANG THỰC HIỆN 2 HOÀN TẤT 0 KHÓA SỔ 0 ĐANG THỰC HIỆN (2) LƯU TRỮ / ĐÃ KHÓA (0) Demo Group 20260502041621 [HĐ-3] • DEMO20260502041621 • 3/5/2026 GIỜ KHÁM 07:30 XUẤT PHÁT 06:30 ĐANG TRIỂN KHAI KẾT THÚC ĐOÀN NHÂN SỰ ĐI ĐOÀN BỆNH NHÂN VẬT TƯ & HAO PHÍ CỔNG BÁO DANH ĐỘI NGŨ ĐI ĐOÀN EXCEL QR STT HỌ VÀ TÊN CÔNG VIỆC (VỊ TRÍ) CHỨC DANH ĐƠN VỊ GHI CHÚ CA LÀM TRẠNG THÁI TÁC VỤ CHƯA GÁN NHÂN SỰ NÀO DỮ LIỆU KẾT QUẢ & TÀI LIỆU ĐOÀN IMPORT KẾT QUẢ Demo Group 20260502041451 [HĐ-2] • DEMO20260502041451 • 3/5/2026 GIỜ KHÁM 07:30 XUẤT PHÁT 06:30 ĐANG TRIỂN KHAI KẾT THÚC ĐOÀN NHÂN SỰ ĐI "
+    },
+    {
+      "user": "medical_group_manager",
+      "path": "/patients",
+      "label": "Patients shows imported patients",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\medical_group_manager__patients.png",
+      "expected": [
+        "Demo Patient A 20260502041621"
+      ],
+      "foundSnippet": "Quản Lý Bệnh Nhân LÝ LỊCH & HỒ SƠ CHUẨN Y KHOA (MEDICAL DATABASE) XUẤT THÊM MỚI Tất cả hợp đồng Demo Health Contract 20260502041621 Demo Health Contract 20260502041451 ABC TỔNG BỆNH NHÂN 3 CÓ HỒ SƠ 0 KHÁM XONG 0 CHỜ KHÁM 3 # BỆNH NHÂN GT NGÀY SINH CCCD/CMND ĐIỆN THOẠI ĐƠN VỊ HỢP ĐỒNG THAO TÁC 1 D DEMO PATIENT C 20260502041621 M 15/3/1988 — 0933333333 Kho DEMO HEALTH CONTRACT 20260502041621 2 D DEMO PATIENT B 20260502041621 O 20/2/1992 — 0922222222 Ke toan DEMO HEALTH CONTRACT 20260502041621 3 D DEMO PATIENT A 20260502041621 M 10/1/1990 — 0911111111 San xuat DEMO HEALTH CONTRACT 20260502041621 "
+    },
+    {
+      "user": "group_leader",
+      "path": "/groups",
+      "label": "GroupLeader can view group",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\group_leader__groups.png",
+      "expected": [
+        "Demo Group 20260502041621"
+      ],
+      "foundSnippet": "Quản lý Đoàn khám ĐIỀU PHỐI NHÂN SỰ & THEO DÕI VẬN HÀNH THỰC TẾ XUẤT EXCEL TỔNG ĐOÀN KHÁM 2 ĐANG THỰC HIỆN 2 HOÀN TẤT 0 KHÓA SỔ 0 ĐANG THỰC HIỆN (2) LƯU TRỮ / ĐÃ KHÓA (0) Demo Group 20260502041621 [HĐ-3] • DEMO20260502041621 • 3/5/2026 GIỜ KHÁM 07:30 XUẤT PHÁT 06:30 ĐANG TRIỂN KHAI NHÂN SỰ ĐI ĐOÀN BỆNH NHÂN VẬT TƯ & HAO PHÍ CỔNG BÁO DANH ĐỘI NGŨ ĐI ĐOÀN EXCEL QR STT HỌ VÀ TÊN CÔNG VIỆC (VỊ TRÍ) CHỨC DANH ĐƠN VỊ GHI CHÚ CA LÀM TRẠNG THÁI TÁC VỤ CHƯA GÁN NHÂN SỰ NÀO DỮ LIỆU KẾT QUẢ & TÀI LIỆU ĐOÀN IMPORT KẾT QUẢ Demo Group 20260502041451 [HĐ-2] • DEMO20260502041451 • 3/5/2026 GIỜ KHÁM 07:30 XUẤT PHÁT 06:30 ĐANG TRIỂN KHAI NHÂN SỰ ĐI ĐOÀN BỆNH NHÂN VẬT TƯ & HAO PHÍ CỔNG BÁO "
+    },
+    {
+      "user": "group_leader",
+      "path": "/attendance-summary",
+      "label": "GroupLeader can view attendance",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\group_leader__attendance_summary.png",
+      "expected": [
+        "Staff User"
+      ],
+      "foundSnippet": "Kiểm Tra Chấm Công TỔNG HỢP NHÂN SỰ ĐÃ ĐI LÀM THEO THÁNG Năm 2026 Năm 2025 Năm 2024 Năm 2023 Tháng 1 Tháng 2 Tháng 3 Tháng 4 Tháng 5 Tháng 6 Tháng 7 Tháng 8 Tháng 9 Tháng 10 Tháng 11 Tháng 12 TỔNG QUỸ LƯƠNG 250.000 đ Tháng 5/2026 SỐ NHÂN SỰ ĐÃ ĐI LÀM 1 người TỔNG NGÀY CÔNG TOÀN TUYẾN 0.5 ngày DANH SÁCH CHI TIẾT NHẤN VÀO TÊN NHÂN SỰ ĐỂ XEM LỊCH ĐI KHÁM CHI TIẾT STT NHÂN SỰ SỐ ĐOÀN NGÀY CÔNG ĐƠN GIÁ/NGÀY TIỀN CÔNG 1 S STAFF USER staff_user 1 0.5 500.000 đ 250.000 đ "
+    },
+    {
+      "user": "warehouse_staff",
+      "path": "/supplies",
+      "label": "Supplies shows stock item",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\warehouse_staff__supplies.png",
+      "expected": [
+        "Demo Gauze 20260502041621"
+      ],
+      "foundSnippet": "Kho Vật tư Y tế QUẢN LÝ NHẬP XUẤT & THEO DÕI TỒN KHO TIÊU HAO TỒN KHO LỊCH SỬ BÁO CÁO THÊM VẬT TƯ TỔNG LOẠI VẬT TƯ 2 SẮP HẾT HÀNG 0 GIÁ TRỊ KHO ƯỚC TÍNH 485.000 ₫ DANH MỤC TỒN KHO THỰC TẾ VẬT TƯ & PHÂN LOẠI ĐƠN VỊ TỒN KHO TRẠNG THÁI GIÁ THAM KHẢO THAO TÁC DEMO GAUZE 20260502041621 VAT TU Y TE HOP 15 NGƯỠNG: 5 DUY TRÌ ỔN ĐỊNH 25.000 ₫ KIM TIEM VẬT TƯ Y TẾ CAI 11 NGƯỠNG: 10 DUY TRÌ ỔN ĐỊNH 10.000 ₫ "
+    },
+    {
+      "user": "payroll_accountant",
+      "path": "/payroll",
+      "label": "Payroll page loads staff payroll",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\payroll_accountant__payroll.png",
+      "expected": [
+        "Staff User"
+      ],
+      "foundSnippet": "Bảng Lương Tổng Hợp QUẢN LÝ LƯƠNG VÀ THÙ LAO NHÂN SỰ TOÀN TUYẾN Năm 2026 Năm 2025 Năm 2024 Năm 2023 Năm 2022 Tháng 1 Tháng 2 Tháng 3 Tháng 4 Tháng 5 Tháng 6 Tháng 7 Tháng 8 Tháng 9 Tháng 10 Tháng 11 Tháng 12 CHẠY TÍNH LƯƠNG XUẤT EXCEL TỔNG QUỸ LƯƠNG ĐỢT NÀY 0 đ + Thanh toán qua chuyển khoản 100% SỐ LƯỢNG NHÂN SỰ 9 người TỔNG NGÀY CÔNG TOÀN TUYẾN 0 ngày BẢNG CHI TIẾT THÙ LAO ĐÃ TỰ ĐỘNG TỔNG HỢP TỪ DỮ LIỆU CHẤM CÔNG STT CÁN BỘ / NHÂN SỰ LƯỢT THAM GIA NGÀY CÔNG QUY ĐỔI LƯƠNG CƠ BẢN THỰC LÃNH 1 System Administrator QUAN TRI HE THONG 0 0 12.000.000 đ 0 đ 2 Contract Creator TAO HOP DONG 0 0 12.000.000 đ 0 đ 3 Contract Approver DUYET HOP DONG 0 0 12.000.000 đ 0 đ 4 Medic"
+    },
+    {
+      "user": "payroll_accountant",
+      "path": "/settlement-report",
+      "label": "Settlement page loads contract dataset",
+      "pass": true,
+      "screenshot": "D:\\QuanLyDoanKham-NEW\\output\\playwright\\phase2\\payroll_accountant__settlement_report.png",
+      "expected": [
+        "Demo Health Contract 20260502041621"
+      ],
+      "foundSnippet": "Đối Soát & Quyết Toán PHÂN TÍCH CHÊNH LỆCH GIÁ TRỊ DỰ KIẾN VÀ THỰC TẾ (P&L AUDIT) KẾT QUẢ: 3 STT HỢP ĐỒNG DOANH NGHIỆP GIÁ TRỊ DỰ KIẾN TRẠNG THÁI TÁC VỤ 001 DEMO HEALTH CONTRACT 20260502041621 HD-DEMO-20260502041621 Demo Safe Company 20260502041621 0 ₫ 3 người ĐANG XỬ LÝ 002 DEMO HEALTH CONTRACT 20260502041451 HD-DEMO-20260502041451 Demo Safe Company 20260502041451 0 ₫ 3 người ĐANG XỬ LÝ 003 ABC HD20260001 sang trần 0 ₫ 100 người HOÀN TẤT "
+    }
+  ],
+  "warnings": [
+    {
+      "user": "contract_creator",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "contract_creator",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/MedicalGroups: Status 403 "
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/MedicalGroups/today-assignment: Status 404 {message: Không tìm thấy hồ sơ nhân sự.}"
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/Staffs: Status 403 "
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/groups",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "medical_group_manager",
+      "url": "http://127.0.0.1:5173/groups",
+      "message": "[API Error] /api/Staffs: Status 403 "
+    },
+    {
+      "user": "group_leader",
+      "url": "http://127.0.0.1:5173/groups",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "group_leader",
+      "url": "http://127.0.0.1:5173/groups",
+      "message": "[API Error] /api/Staffs: Status 403 "
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/Staffs: Status 403 "
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/Auth/users: Status 403 "
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/Contracts: Status 403 "
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/",
+      "message": "[API Error] /api/MedicalGroups: Status 403 "
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/supplies",
+      "message": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "user": "warehouse_staff",
+      "url": "http://127.0.0.1:5173/supplies",
+      "message": "[API Error] /api/MedicalGroups: Status 403 "
+    }
+  ]
+}

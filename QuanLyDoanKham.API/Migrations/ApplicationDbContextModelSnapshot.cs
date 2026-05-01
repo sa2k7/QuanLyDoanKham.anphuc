@@ -104,6 +104,12 @@ namespace QuanLyDoanKham.API.Migrations
                             RoleId = 10,
                             Description = "Đại diện doanh nghiệp đối tác",
                             RoleName = "Customer"
+                        },
+                        new
+                        {
+                            RoleId = 11,
+                            Description = "Quản lý chất lượng (QC/QA)",
+                            RoleName = "QA"
                         });
                 });
 

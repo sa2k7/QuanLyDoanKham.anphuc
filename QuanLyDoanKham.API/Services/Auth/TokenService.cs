@@ -35,6 +35,8 @@ namespace QuanLyDoanKham.API.Services.Auth
             if (user.CompanyId.HasValue)
                 claims.Add(new Claim("CompanyId", user.CompanyId.Value.ToString()));
 
+            if (user.StaffId.HasValue)
+                claims.Add(new Claim("StaffId", user.StaffId.Value.ToString()));
 
             var configKey = _configuration.GetSection("AppSettings:Token").Value
                 ?? throw new InvalidOperationException("CRITICAL: AppSettings:Token is missing!");

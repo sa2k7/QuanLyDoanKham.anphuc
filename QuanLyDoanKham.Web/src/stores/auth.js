@@ -29,6 +29,7 @@ export const useAuthStore = defineStore('auth', () => {
   const fullName = computed(() => user.value?.fullName || '')
   const username = computed(() => user.value?.username || '')
   const companyId = computed(() => user.value?.companyId || null)
+  const staffId = computed(() => user.value?.staffId || null)
   const departmentId = computed(() => user.value?.departmentId || null)
   const departmentName = computed(() => user.value?.departmentName || '')
   const avatarPath = computed(() => user.value?.avatarPath || null)
@@ -104,6 +105,7 @@ export const useAuthStore = defineStore('auth', () => {
         roles: data.roles || [],   // tất cả roles
         permissions: data.permissions || [], // tất cả permissions
         companyId: data.companyId,
+        staffId: data.staffId,
         departmentId: data.departmentId,
         departmentName: data.departmentName,
         avatarPath: data.avatarPath
@@ -155,6 +157,7 @@ export const useAuthStore = defineStore('auth', () => {
         role: data.role,
         roles: data.roles || [],
         permissions: data.permissions || [],
+        staffId: data.staffId,
         avatarPath: data.avatarPath
       }
       localStorage.setItem('auth_token', token.value)
@@ -186,6 +189,7 @@ export const useAuthStore = defineStore('auth', () => {
     fullName,
     username,
     companyId,
+    staffId,
     departmentId,
     departmentName,
     avatarPath,

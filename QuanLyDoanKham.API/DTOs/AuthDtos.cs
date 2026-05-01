@@ -66,6 +66,7 @@ namespace QuanLyDoanKham.API.DTOs
         public List<string> Permissions { get; set; } = new();
 
         public int? CompanyId { get; set; }
+        public int? StaffId { get; set; }
         public string? AvatarPath { get; set; }
     }
 
@@ -120,6 +121,7 @@ namespace QuanLyDoanKham.API.DTOs
         public List<string> Permissions { get; set; } = new();
 
         public int? CompanyId { get; set; }
+        public int? StaffId { get; set; }
         public string? CompanyName { get; set; }
         public string? Email { get; set; }
         public string? AvatarPath { get; set; }

@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using QuanLyDoanKham.API.Authorization;
 using QuanLyDoanKham.API.Services;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,7 @@ namespace QuanLyDoanKham.API.Controllers
         /// Lấy chi tiết quyết toán cho một hợp đồng cụ thể
         /// </summary>
         [HttpGet("detail/{healthContractId}")]
+        [AuthorizePermission("QuyetToan.Calculate")]
         public async Task<IActionResult> GetSettlementDetail(int healthContractId)
         {
             try
@@ -40,6 +42,7 @@ namespace QuanLyDoanKham.API.Controllers
         /// Lấy thống kê tổng hợp (Master Stats) cho toàn bộ hệ thống
         /// </summary>
         [HttpGet("master-stats")]
+        [AuthorizePermission("BaoCao.ViewFinance")]
         public async Task<IActionResult> GetMasterStats([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try
@@ -57,6 +60,7 @@ namespace QuanLyDoanKham.API.Controllers
         /// Lấy danh sách các ca khám "lệch" (Outliers) để đối soát
         /// </summary>
         [HttpGet("reconciliation-list")]
+        [AuthorizePermission("QuyetToan.Calculate")]
         public async Task<IActionResult> GetReconciliationList([FromQuery] DateTime? startDate, [FromQuery] DateTime? endDate)
         {
             try

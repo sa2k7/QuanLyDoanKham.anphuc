@@ -688,7 +688,7 @@ const handleFileUpload = async (e) => {
     const formData = new FormData()
     formData.append('file', file)
     try {
-        await apiClient.post(`/api/Contracts/${currentUploadId.value}/upload`, formData)
+        await apiClient.post(`/api/Contracts/${currentUploadId.value}/attachments`, formData)
         toast.success("Đã tải lên văn bản hợp đồng!")
         fetchList()
     } catch (err) { 
@@ -800,7 +800,7 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '---'
 
 const goToSettlement = (id) => {
   detailsModal.value.show = false
-  router.push({ path: '/finance/settlement', query: { contractId: id } })
+  router.push({ path: '/settlement-report', query: { contractId: id } })
 }
 
 onMounted(() => {

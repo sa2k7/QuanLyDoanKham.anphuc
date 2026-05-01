@@ -75,6 +75,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                     Roles = allRoles,
                     Permissions = allPermissions,
                     CompanyId = user.CompanyId,
+                    StaffId = user.StaffId,
                     AvatarPath = user.AvatarPath
                 });
             }
@@ -122,6 +123,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                 Roles = allRoles,
                 Permissions = allPermissions,
                 CompanyId = user.CompanyId,
+                StaffId = user.StaffId,
                 AvatarPath = user.AvatarPath
             });
         }

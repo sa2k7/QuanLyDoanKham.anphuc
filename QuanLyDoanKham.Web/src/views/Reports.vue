@@ -232,13 +232,12 @@ const fetchStats = async () => {
         const reqContracts = apiClient.get('/api/Contracts')
         const reqGroups = apiClient.get('/api/MedicalGroups')
         const reqSupplies = apiClient.get('/api/Supplies')
-        const reqDepts = apiClient.get('/api/Departments')
-        const reqStaff = apiClient.get('/api/Staff')
+        const reqStaff = apiClient.get('/api/Staffs')
         const reqPatients = apiClient.get('/api/Patients')
         const reqFinancial = apiClient.get('/api/Reports/financial', { params })
 
-        const [resContracts, resGroups, resSupplies, resDepts, resStaff, resPatients, resFinancial] = await Promise.all([
-            reqContracts, reqGroups, reqSupplies, reqDepts, reqStaff, reqPatients, reqFinancial
+        const [resContracts, resGroups, resSupplies, resStaff, resPatients, resFinancial] = await Promise.all([
+            reqContracts, reqGroups, reqSupplies, reqStaff, reqPatients, reqFinancial
         ])
 
         // Process Contracts
@@ -256,14 +255,19 @@ const fetchStats = async () => {
         // Process Groups
         totalGroups.value = resGroups.data ? resGroups.data.length : 0
 
-        // Process Departments
-        totalDepartments.value = resDepts.data ? resDepts.data.length : 0
-
         // Process Staff
-        totalStaff.value = resStaff.data ? resStaff.data.length : 0
+        const staff = resStaff.data || []
+        totalStaff.value = staff.length
 
         // Process Patients
-        totalPatients.value = resPatients.data ? resPatients.data.length : 0
+        const patients = Array.isArray(resPatients.data)
+            ? resPatients.data
+            : (resPatients.data?.items || resPatients.data?.data || [])
+        totalPatients.value = patients.length
+        totalDepartments.value = new Set([
+            ...staff.map(s => s.departmentName).filter(Boolean),
+            ...patients.map(p => p.department).filter(Boolean)
+        ]).size
 
         // Process Financial (Gross Profit)
         actualRevenue.value = resFinancial.data?.totalGrossProfit || 0

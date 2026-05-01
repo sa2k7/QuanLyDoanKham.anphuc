@@ -219,6 +219,11 @@ var app = builder.Build();
 
 app.UseMiddleware<QuanLyDoanKham.API.Middleware.GlobalExceptionMiddleware>();
 
+if (app.Environment.IsDevelopment())
+{
+    await BusinessTestSeed.SeedAsync(app.Services);
+}
+
 app.UseSwagger();
 app.UseSwaggerUI();
 

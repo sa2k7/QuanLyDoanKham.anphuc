@@ -68,6 +68,7 @@ namespace QuanLyDoanKham.API.Controllers
                 RoleId = u.RoleId,
                 Roles = u.UserRoles.Select(ur => ur.Role?.RoleName).OfType<string>().ToList(),
                 CompanyId = u.CompanyId,
+                StaffId = u.StaffId,
                 CompanyName = u.Company?.CompanyName,
                 Email = u.Email,
                 AvatarPath = u.AvatarPath,
@@ -121,6 +122,7 @@ namespace QuanLyDoanKham.API.Controllers
                 Roles = allRoles.ToList(),
                 Permissions = allPerms.ToList(),
                 CompanyId = user.CompanyId,
+                StaffId = user.StaffId,
                 CompanyName = user.Company?.CompanyName,
                 Email = user.Email,
                 AvatarPath = user.AvatarPath,
@@ -140,6 +142,7 @@ namespace QuanLyDoanKham.API.Controllers
             user.FullName = dto.FullName ?? user.FullName;
             user.RoleId = (dto.RoleId.HasValue && dto.RoleId.Value > 0) ? dto.RoleId.Value : user.RoleId;
             user.CompanyId = dto.CompanyId;
+            user.StaffId = dto.StaffId;
             user.Email = dto.Email;
             user.AvatarPath = dto.AvatarPath ?? user.AvatarPath;
             if (dto.IsActive.HasValue) user.IsActive = dto.IsActive.Value;
@@ -441,7 +444,8 @@ namespace QuanLyDoanKham.API.Controllers
                 RoleId = newUser.RoleId,
                 RoleName = (await _context.Roles.FindAsync(newUser.RoleId))?.RoleName,
                 Email = newUser.Email,
-                CompanyId = newUser.CompanyId
+                CompanyId = newUser.CompanyId,
+                StaffId = newUser.StaffId
             });
         }
 

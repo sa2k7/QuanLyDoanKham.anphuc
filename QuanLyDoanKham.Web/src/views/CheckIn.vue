@@ -360,13 +360,13 @@ const autoDetectStaff = async () => {
 
         // Thử lấy profile mới nhất để có EmployeeCode
         const res = await apiClient.get('/api/Auth/profile')
-        const employeeCode = res.data?.employeeCode || username
-        
-        if (employeeCode) {
-            const staffRes = await apiClient.get(`/api/Staff/code/${employeeCode}`)
-            if (staffRes.data && staffRes.data.staffId) {
-                staffId.value = staffRes.data.staffId
-            }
+        if (res.data?.staffId) {
+            staffId.value = res.data.staffId
+            return
+        }
+
+        if (/^\d+$/.test(username || '')) {
+            staffId.value = Number(username)
         }
     } catch (e) {
         console.warn("Auto detect staff failed", e)
@@ -429,7 +429,7 @@ const processScannedData = async (token) => {
 const processPatientCheckIn = async (token) => {
     loading.value = true
     try {
-        const res = await apiClient.post('/api/CheckIn/scan', { token })
+        const res = await apiClient.post('/api/MedicalRecords/checkin-token', { qrToken: token })
         resultStatus.value = 'success'
         resultMessage.value = 'Tiếp Đón Thành Công!'
         resultData.value = res.data
@@ -451,7 +451,7 @@ const searchWalkIn = async () => {
         
         let allPatients = []
         for (const g of activeGroups) {
-            const res = await apiClient.get(`/api/MedicalRecords/group/${g.groupId}`)
+            const res = await apiClient.get(`/api/MedicalRecords/by-group/${g.groupId}`)
             allPatients = allPatients.concat(res.data)
         }
         

@@ -512,7 +512,7 @@ namespace QuanLyDoanKham.API.Controllers
         // POST: api/Staffs/{id}/calculate-payroll — Tính toán lương tự động
         // ================================================================
         [HttpPost("{id}/calculate-payroll")]
-        [AuthorizePermission("NhanSu.Manage")]
+        [AuthorizePermission("Luong.Manage")]
         public async Task<IActionResult> CalculatePayroll(int id, [FromQuery] int month, [FromQuery] int year, [FromServices] Services.PayrollService payrollService)
         {
             if (month <= 0 || year <= 0) return BadRequest("Tháng và năm không hợp lệ.");
@@ -524,7 +524,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         [HttpPost("calculate-payroll-all")]
-        [AuthorizePermission("NhanSu.Manage")]
+        [AuthorizePermission("Luong.Manage")]
         public async Task<IActionResult> CalculateAllPayroll([FromQuery] int month, [FromQuery] int year, [FromServices] Services.PayrollService payrollService)
         {
             if (month <= 0 || year <= 0) return BadRequest("Tháng và năm không hợp lệ.");
@@ -537,7 +537,7 @@ namespace QuanLyDoanKham.API.Controllers
         // GET: api/Staffs/{id}/payroll-summary — Tổng hợp lương nhân viên
         // ================================================================
         [HttpGet("{id}/payroll-summary")]
-        [AuthorizePermission("NhanSu.View")]
+        [AuthorizePermission("Luong.View")]
         public async Task<IActionResult> GetPayrollSummary(int id)
         {
             var shifts = await _context.GroupStaffDetails

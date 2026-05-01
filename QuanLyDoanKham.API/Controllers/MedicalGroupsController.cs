@@ -391,6 +391,23 @@ namespace QuanLyDoanKham.API.Controllers
             if (isOverlapping)
                 return BadRequest($"Nhân viên {staff.FullName} đã được phân công vào đoàn khác trong ngày {examDate:dd/MM/yyyy}.");
 
+            int? assignmentPositionId = null;
+            if (dto.PositionId.HasValue)
+            {
+                var isBasePosition = await _context.Positions.AnyAsync(p => p.PositionId == dto.PositionId.Value);
+                if (isBasePosition)
+                {
+                    assignmentPositionId = dto.PositionId.Value;
+                }
+                else
+                {
+                    var groupPosition = await _context.MedicalGroupPositions
+                        .AsNoTracking()
+                        .FirstOrDefaultAsync(p => p.Id == dto.PositionId.Value && p.GroupId == id);
+                    assignmentPositionId = groupPosition?.PositionId;
+                }
+            }
+
             var detail = new GroupStaffDetail
             {
                 GroupId = id,
@@ -399,7 +416,7 @@ namespace QuanLyDoanKham.API.Controllers
                 CalculatedSalary = staff.BaseSalary * (decimal)dto.ShiftType,
                 ExamDate = examDate,
                 WorkPosition = dto.WorkPosition,
-                PositionId = dto.PositionId,
+                PositionId = assignmentPositionId,
                 WorkStatus = dto.WorkStatus ?? "Đang chờ",
                 PickupLocation = dto.PickupLocation,
                 AssignedByUserId = int.TryParse(User.FindFirst("UserId")?.Value, out var uid) ? uid : null,

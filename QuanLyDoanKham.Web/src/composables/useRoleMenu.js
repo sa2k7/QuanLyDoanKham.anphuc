@@ -62,6 +62,13 @@ const FINANCE_MENU = [
   { id: 'supplies',         name: 'Vật tư',      icon: Package,     permission: 'Kho.View' },
 ]
 
+const ACCOUNTANT_MENU = [
+  { id: 'home',             name: 'Tổng quan',   icon: LayoutDashboard },
+  { id: 'settlement-report',name: 'Quyết toán',  icon: Calculator,  permission: 'BaoCao.View' },
+  { id: 'analytics',        name: 'Thống kê',    icon: BarChart3,   permission: 'BaoCao.View' },
+  { id: 'payroll',          name: 'Tính lương',  icon: Wallet,      permission: 'Luong.View' },
+]
+
 // QC / OMS Manager
 const QC_MENU = [
   { id: 'home',          name: 'Giám sát',      icon: LayoutDashboard },
@@ -79,6 +86,25 @@ const CONTRACT_MENU = [
 ]
 
 // ── ROLE PROFILES ─────────────────────────────────────────────────────────────
+
+const CONTRACT_CREATE_MENU = [
+  { id: 'home',      name: 'Tổng quan',    icon: LayoutDashboard },
+  { id: 'companies', name: 'Công ty',      icon: Building2,   permission: 'HopDong.View' },
+  { id: 'contracts', name: 'Hợp đồng',     icon: FileText,    permission: 'HopDong.View' },
+]
+
+const CONTRACT_APPROVE_MENU = [
+  { id: 'home',      name: 'Tổng quan',    icon: LayoutDashboard },
+  { id: 'contracts', name: 'Hợp đồng',     icon: FileText,    permission: 'HopDong.View' },
+]
+
+const GROUP_LEADER_MENU = [
+  { id: 'home',      name: 'Tổng quan',    icon: LayoutDashboard },
+  { id: 'groups',    name: 'Đoàn khám',    icon: Stethoscope, permission: 'DoanKham.View' },
+  { id: 'patients',  name: 'Bệnh nhân',    icon: UserRound,   permission: 'DoanKham.View' },
+  { id: 'my-schedule', name: 'Lịch của tôi', icon: ClipboardList },
+  { id: 'attendance-summary', name: 'Chấm công', icon: ClipboardCheck, permission: 'ChamCong.ViewAll' },
+]
 
 const ROLE_PROFILES = {
   Admin: {
@@ -121,6 +147,26 @@ const ROLE_PROFILES = {
     defaultMenu: 'home',
     greeting: 'Trung tâm hợp đồng'
   },
+  ContractCreator: {
+    menuItems: CONTRACT_CREATE_MENU,
+    homePanel: 'ContractHomePanel',
+    themeColor: 'text-teal-700',
+    themeBg: 'from-teal-600 to-emerald-500',
+    accentClass: 'bg-teal-600 text-white',
+    roleLabel: 'Tạo hợp đồng',
+    defaultMenu: 'home',
+    greeting: 'Luồng tạo hợp đồng'
+  },
+  ContractApprover: {
+    menuItems: CONTRACT_APPROVE_MENU,
+    homePanel: 'ContractHomePanel',
+    themeColor: 'text-cyan-700',
+    themeBg: 'from-cyan-600 to-teal-500',
+    accentClass: 'bg-cyan-600 text-white',
+    roleLabel: 'Duyệt hợp đồng',
+    defaultMenu: 'home',
+    greeting: 'Luồng duyệt hợp đồng'
+  },
   PersonnelManager: {
     menuItems: [
       { id: 'home',    name: 'Tổng quan',  icon: LayoutDashboard },
@@ -145,6 +191,26 @@ const ROLE_PROFILES = {
     roleLabel: 'Kế toán / Tài chính',
     defaultMenu: 'home',
     greeting: 'Bảng tài chính'
+  },
+  Accountant: {
+    menuItems: ACCOUNTANT_MENU,
+    homePanel: 'FinanceHomePanel',
+    themeColor: 'text-emerald-700',
+    themeBg: 'from-emerald-500 to-teal-400',
+    accentClass: 'bg-emerald-500 text-white',
+    roleLabel: 'Kế toán',
+    defaultMenu: 'home',
+    greeting: 'Bảng tài chính'
+  },
+  GroupLeader: {
+    menuItems: GROUP_LEADER_MENU,
+    homePanel: 'DoctorHomePanel',
+    themeColor: 'text-sky-700',
+    themeBg: 'from-sky-600 to-indigo-500',
+    accentClass: 'bg-sky-600 text-white',
+    roleLabel: 'Trưởng đoàn',
+    defaultMenu: 'home',
+    greeting: 'Lịch và chấm công đoàn'
   },
   WarehouseManager: {
     menuItems: [
@@ -192,10 +258,14 @@ export function useRoleMenu() {
     const priorityOrder = [
       'Admin',
       'MedicalGroupManager',
+      'GroupLeader',
       'MedicalStaff',
+      'ContractCreator',
+      'ContractApprover',
       'ContractManager',
       'PersonnelManager',
       'PayrollManager',
+      'Accountant',
       'WarehouseManager'
     ]
 

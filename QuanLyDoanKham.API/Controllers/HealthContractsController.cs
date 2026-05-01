@@ -81,7 +81,7 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         [HttpPost("{id}/submit")]
-        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Approve")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("HopDong.Edit")]
         public async Task<IActionResult> SubmitForApproval(int id)
         {
             var username = User.Identity?.Name ?? "system";

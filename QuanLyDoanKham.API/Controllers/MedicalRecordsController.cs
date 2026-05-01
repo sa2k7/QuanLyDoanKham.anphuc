@@ -18,15 +18,18 @@ namespace QuanLyDoanKham.API.Controllers
         private readonly IMedicalRecordService _medicalRecordService;
         private readonly IMedicalReportPdfGenerator _pdfGenerator;
         private readonly IMedicalRecordStateMachine _stateMachine;
+        private readonly ICheckInService _checkInService;
 
         public MedicalRecordsController(
             IMedicalRecordService medicalRecordService, 
             IMedicalReportPdfGenerator pdfGenerator,
-            IMedicalRecordStateMachine stateMachine)
+            IMedicalRecordStateMachine stateMachine,
+            ICheckInService checkInService)
         {
             _medicalRecordService = medicalRecordService;
             _pdfGenerator = pdfGenerator;
             _stateMachine = stateMachine;
+            _checkInService = checkInService;
         }
 
         // POST: api/MedicalRecords/batch-ingest
@@ -54,6 +57,21 @@ namespace QuanLyDoanKham.API.Controllers
         {
             var records = await _medicalRecordService.GetByGroupAsync(groupId);
             return Ok(records);
+        }
+
+        // POST: api/MedicalRecords/checkin-token
+        [HttpPost("checkin-token")]
+        [AllowAnonymous]
+        public async Task<IActionResult> CheckInByToken([FromBody] QrCheckInDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.QrToken))
+                return BadRequest(new { message = "QR token không hợp lệ." });
+
+            var actor = User.Identity?.Name ?? "SYSTEM";
+            var result = await _checkInService.ProcessCheckInTokenAsync(dto.QrToken, actor);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Message });
+
+            return Ok(result.Data);
         }
 
         // POST: api/MedicalRecords/batch-ingest-excel

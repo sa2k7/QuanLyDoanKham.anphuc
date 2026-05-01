@@ -164,7 +164,7 @@ const groupedPermissions = computed(() => {
 
 async function loadUsers() {
   try {
-    const res = await apiClient.get('/api/Users')
+    const res = await apiClient.get('/api/Auth/users')
     users.value = res.data || []
   } catch (e) {
     console.error('Failed to load users', e)

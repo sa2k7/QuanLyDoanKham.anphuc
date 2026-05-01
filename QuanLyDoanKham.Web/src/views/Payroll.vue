@@ -199,12 +199,25 @@ const formatCurrency = (val) => {
     return val.toLocaleString('vi-VN') + ' đ'
 }
 
-const exportExcel = () => {
-    toast.show('Đang xuất bảng lương ra file Excel...', 'success')
-    setTimeout(() => {
-        // Giả lập redirect file
-        window.open(`/api/Reports/export-excel?startDate=${selectedYear.value}-${String(selectedMonth.value).padStart(2,'0')}-01`, '_blank')
-    }, 1000)
+const exportExcel = async () => {
+    try {
+        toast.show('Đang xuất bảng lương ra file Excel...', 'success')
+        const startDate = `${selectedYear.value}-${String(selectedMonth.value).padStart(2, '0')}-01`
+        const res = await apiClient.get('/api/Reports/export-excel', {
+            params: { startDate },
+            responseType: 'blob'
+        })
+        const url = URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.download = `Payroll_${selectedYear.value}_${String(selectedMonth.value).padStart(2, '0')}.xlsx`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(url)
+    } catch (err) {
+        toast.show(parseApiError(err), 'error')
+    }
 }
 
 onMounted(() => {

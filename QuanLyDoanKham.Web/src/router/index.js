@@ -41,7 +41,7 @@ const routes = [
         path: '/companies',
         name: 'Companies',
         component: () => import('../views/Companies.vue'),
-        meta: { requiresAuth: true, roles: ['Admin', 'ContractManager', 'PersonnelManager'] }
+        meta: { requiresAuth: true, permission: 'HopDong.View' }
     },
 
     // ── Hợp đồng ────────────────────────────────────────────────────
