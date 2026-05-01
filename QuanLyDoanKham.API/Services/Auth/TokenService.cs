@@ -46,7 +46,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                 issuer: _configuration.GetSection("AppSettings:Issuer").Value ?? "QuanLyDoanKham",
                 audience: _configuration.GetSection("AppSettings:Audience").Value ?? "QuanLyDoanKham",
                 claims: claims,
-                expires: DateTime.Now.AddHours(8),
+                expires: DateTime.UtcNow.AddHours(8),
                 signingCredentials: creds
             );
 

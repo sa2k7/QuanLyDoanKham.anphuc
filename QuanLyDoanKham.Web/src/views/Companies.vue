@@ -1,21 +1,21 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-20 p-6">
+  <div class="space-y-4 animate-fade-in p-3 bg-slate-50 relative overflow-y-auto h-full scrollbar-premium">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
       <div>
-        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <Building2 class="w-6 h-6" />
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
+            <Building2 class="w-4.5 h-4.5" />
           </div>
           {{ i18n.t('companies.title') }}
         </h2>
-        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('companies.subtitle') }}</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">{{ i18n.t('companies.subtitle') }}</p>
       </div>
       <button v-if="authStore.hasAnyRole('Admin', 'ContractManager')"
               @click="showForm = !showForm"
               :disabled="isLoading"
-               class="btn-premium primary shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:-translate-y-1 transition-all">
-        <Plus class="w-5 h-5" />
+               class="h-8 px-3 bg-primary text-white rounded-lg font-black text-[9px] uppercase shadow-sm flex items-center gap-1.5 hover:bg-primary/90 transition-all">
+        <Plus class="w-4 h-4" />
         <span>{{ showForm ? i18n.t('companies.cancelBtn') : i18n.t('companies.addBtn') }}</span>
       </button>
     </div>
@@ -24,22 +24,22 @@
     <CompanyInlineForm v-if="showForm" @cancel="showForm = false" @save="onSaveCompany" />
 
     <!-- Search & List Component -->
-    <div class="premium-card bg-white/95 backdrop-blur-xl rounded-[2rem] shadow-xl border border-slate-100 overflow-hidden relative">
+    <div class="premium-card bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden relative">
         <!-- Loading Overlay -->
-        <div v-if="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-[2rem]">
-          <div class="flex flex-col items-center gap-3">
-            <div class="w-10 h-10 border-3 border-slate-200 border-t-primary rounded-full animate-spin"></div>
-            <p class="text-xs font-semibold text-slate-600 uppercase tracking-widest">Đang tải...</p>
+        <div v-if="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex items-center justify-center rounded-xl">
+          <div class="flex flex-col items-center gap-2">
+            <div class="w-8 h-8 border-2 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+            <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Đang tải...</p>
           </div>
         </div>
 
-        <div class="p-6 border-b border-slate-100 flex items-center gap-4 bg-white/50">
+        <div class="p-3 border-b border-slate-100 flex items-center gap-3 bg-white/50">
             <div class="relative group flex-1">
-                <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 w-3.5 h-3.5" />
                 <input v-model="searchQuery" placeholder="Tìm tên công ty, mã số thuế..."
-                       class="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 focus:border-primary/30 focus:ring-2 focus:ring-primary/10 outline-none font-semibold text-sm text-slate-600 shadow-sm transition-all" />
+                       class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white border border-slate-200 focus:border-primary/30 outline-none font-bold text-[11px] text-slate-600 shadow-sm transition-all" />
             </div>
-            <div class="px-4 py-2 bg-white rounded-xl border border-slate-100 text-[10px] font-semibold text-slate-400 uppercase tracking-widest whitespace-nowrap">
+            <div class="px-3 py-1.5 bg-slate-50 rounded-lg border border-slate-100 text-[8px] font-black text-slate-400 uppercase tracking-widest whitespace-nowrap">
                 Kết quả: <span class="text-primary font-bold">{{ filteredList.length }}</span>
             </div>
         </div>

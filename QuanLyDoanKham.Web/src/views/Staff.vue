@@ -1,87 +1,87 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in-up pb-12 pr-4 scrollbar-premium overflow-y-auto font-sans p-6">
+  <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in-up p-3 scrollbar-premium overflow-y-auto font-sans">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-4">
       <div>
-        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <UsersIcon class="w-6 h-6" />
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
+            <UsersIcon class="w-4.5 h-4.5" />
           </div>
           {{ i18n.t('staff.title') }}
         </h2>
-        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">{{ i18n.t('staff.subtitle') }}</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[8px] mt-0.5">{{ i18n.t('staff.subtitle') }}</p>
       </div>
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2">
         <button v-if="can('NhanSu.Manage')" 
                 @click="exportStaff" 
-                class="btn-premium bg-white border border-slate-200 text-slate-600 px-6 py-3 shadow-sm hover:bg-slate-50">
-          <Download class="w-4 h-4 mr-2" />
-          <span class="text-[10px] font-black uppercase tracking-widest">XUẤT EXCEL</span>
+                class="btn-premium h-8 bg-white border border-slate-200 text-slate-600 px-3 shadow-sm hover:bg-slate-50">
+          <Download class="w-3 h-3 mr-1" />
+          <span class="text-[8px] font-black uppercase tracking-widest">XUẤT</span>
         </button>
         <button v-if="can('NhanSu.Manage')" 
                 @click="triggerImport" 
-                class="btn-premium bg-primary/10 text-primary px-6 py-3 shadow-sm hover:bg-primary/20">
-          <UploadIcon class="w-4 h-4 mr-2" />
-          <span class="text-[10px] font-black uppercase tracking-widest">NHẬP EXCEL</span>
+                class="btn-premium h-8 bg-primary/10 text-primary px-3 shadow-sm hover:bg-primary/20">
+          <UploadIcon class="w-3 h-3 mr-1" />
+          <span class="text-[8px] font-black uppercase tracking-widest">NHẬP</span>
         </button>
         <button v-if="can('NhanSu.Manage')" 
                 @click="openModal()" 
-                class="btn-premium primary">
-          <Plus class="w-5 h-5" />
+                class="btn-premium primary h-8 !rounded-lg !px-4 text-[9px] font-black">
+          <Plus class="w-3.5 h-3.5 mr-1" />
           <span>{{ i18n.t('staff.addBtn') }}</span>
         </button>
       </div>
     </div>
     
     <!-- Stats Summary -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      <div class="premium-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 bg-primary/10 text-primary rounded-2xl flex items-center justify-center shadow-inner">
-          <UsersIcon class="w-6 h-6" />
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+      <div class="premium-card p-2 flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-primary/10 text-primary rounded-lg flex items-center justify-center shadow-inner">
+          <UsersIcon class="w-4 h-4" />
         </div>
         <div>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng nhân sự</p>
-          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.length }}</p>
+          <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">Tổng nhân sự</p>
+          <p class="text-base font-black text-slate-900 tabular-nums">{{ list.length }}</p>
         </div>
       </div>
-      <div class="premium-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center shadow-inner">
-          <CheckCircle2 class="w-6 h-6" />
+      <div class="premium-card p-2 flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shadow-inner">
+          <CheckCircle2 class="w-4 h-4" />
         </div>
         <div>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đi đoàn</p>
-          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.filter(s => s.isWorking).length }}</p>
+          <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">Đi đoàn</p>
+          <p class="text-base font-black text-slate-900 tabular-nums">{{ list.filter(s => s.isWorking).length }}</p>
         </div>
       </div>
-      <div class="premium-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-2xl flex items-center justify-center shadow-inner">
-          <Clock class="w-6 h-6" />
+      <div class="premium-card p-2 flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center shadow-inner">
+          <Clock class="w-4 h-4" />
         </div>
         <div>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Nghỉ</p>
-          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ list.filter(s => !s.isWorking).length }}</p>
+          <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">Nghỉ</p>
+          <p class="text-base font-black text-slate-900 tabular-nums">{{ list.filter(s => !s.isWorking).length }}</p>
         </div>
       </div>
-      <div class="premium-card p-6 flex items-center gap-4">
-        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center shadow-inner">
-          <DollarSign class="w-6 h-6" />
+      <div class="premium-card p-2 flex items-center gap-2.5">
+        <div class="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center shadow-inner">
+          <DollarSign class="w-4 h-4" />
         </div>
         <div>
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Tổng lương</p>
-          <p class="text-2xl font-black text-slate-900 tabular-nums">{{ formatPrice(list.reduce((sum, s) => sum + (s.baseSalary || 0), 0)) }}</p>
+          <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest">Tổng lương</p>
+          <p class="text-base font-black text-slate-900 tabular-nums">{{ formatPrice(list.reduce((sum, s) => sum + (s.baseSalary || 0), 0)) }}</p>
         </div>
       </div>
     </div>
 
     <!-- Search & List -->
     <div class="premium-card overflow-hidden">
-        <div class="p-6 border-b border-slate-50 flex flex-col md:flex-row gap-4 bg-slate-50/10">
+        <div class="p-2.5 border-b border-slate-50 flex flex-col md:flex-row gap-2 bg-slate-50/10">
             <div class="relative group flex-1">
-                <Search class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 w-4 h-4" />
+                <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 w-3 h-3" />
                 <input v-model="searchQuery" placeholder="Tìm tên hoặc mã nhân viên..." 
-                       class="w-full pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 focus:border-primary/20 outline-none font-black text-xs text-slate-600 shadow-sm transition-all" />
+                       class="w-full pl-9 pr-3 py-1 rounded-lg bg-white border border-slate-200 focus:border-primary/20 outline-none font-bold text-[11px] text-slate-600 shadow-sm transition-all" />
             </div>
-            <select v-model="activeTab" class="px-4 py-2 rounded-xl bg-white border border-slate-200 font-black text-xs uppercase tracking-widest text-slate-500 outline-none min-w-[200px]">
+            <select v-model="activeTab" class="px-3 py-1 rounded-lg bg-white border border-slate-200 font-bold text-[11px] uppercase tracking-widest text-slate-500 outline-none min-w-[160px]">
                 <option value="All">Tất cả chức danh ({{ list.length }})</option>
                 <option v-for="role in roles" :key="role" :value="role">
                     {{ role }} ({{ list.filter(s => s.jobTitle === role).length }})
@@ -91,55 +91,55 @@
 
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <thead class="bg-slate-50 text-[8px] font-black uppercase tracking-widest text-slate-400">
                     <tr>
-                        <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
-                        <th class="p-4">{{ i18n.t('staff.table.info') }}</th>
-                        <th class="p-4">{{ i18n.t('staff.table.title') }}</th>
-                        <th class="p-4">Vai trò</th>
-                        <th class="p-4 text-center">Trạng thái</th>
-                        <th class="p-4 text-right">{{ i18n.t('staff.table.salary') }}</th>
-                        <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
+                        <th class="p-2 text-center w-10">#</th>
+                        <th class="p-2">Nhân sự</th>
+                        <th class="p-2">Chức danh</th>
+                        <th class="p-2">Vai trò</th>
+                        <th class="p-2 text-center">Trạng thái</th>
+                        <th class="p-2 text-right">Lương/Ngày</th>
+                        <th class="p-2 text-center">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                     <tr v-for="(item, index) in filteredList" :key="item.staffId" 
-                        class="text-xs hover:bg-slate-50/50 transition-all cursor-pointer" @click="openModal(item)">
-                        <td class="p-4 text-center font-black text-slate-400">{{ String(index + 1).padStart(3, '0') }}</td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
+                        class="text-[10.5px] hover:bg-slate-50/50 transition-all cursor-pointer" @click="openModal(item)">
+                        <td class="p-2 text-center font-black text-slate-400">{{ index + 1 }}</td>
+                        <td class="p-2">
+                            <div class="flex items-center gap-1.5">
+                                <div class="w-7 h-7 rounded bg-slate-50 border border-slate-100 flex-shrink-0">
                                     <img v-if="item.avatarPath" :src="`/${item.avatarPath}`" class="w-full h-full object-cover" />
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${item.fullName}`" class="w-full h-full" />
                                 </div>
                                 <div>
-                                    <div class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600">{{ item.fullName }}</div>
-                                    <div class="text-[9px] font-black text-slate-400 mt-1 uppercase tracking-widest">{{ item.employeeCode }}</div>
+                                    <div class="font-bold text-slate-800 uppercase tracking-wide truncate max-w-[150px]">{{ item.fullName }}</div>
+                                    <div class="text-[7px] font-black text-slate-400 uppercase tracking-widest">{{ item.employeeCode }}</div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-4 font-black text-slate-500 uppercase tracking-widest">{{ item.jobTitle }}</td>
-                        <td class="p-4">
-                            <span class="inline-flex px-2 py-1 rounded-md bg-slate-100 text-slate-600 font-black text-[9px] uppercase tracking-widest ">
+                        <td class="p-2 font-bold text-slate-500 uppercase tracking-widest text-[8.5px]">{{ item.jobTitle }}</td>
+                        <td class="p-2">
+                            <span class="inline-flex px-1 py-0.5 rounded bg-slate-100 text-slate-600 font-black text-[7.5px] uppercase tracking-widest ">
                                 {{ i18n.t('roles.' + (item.systemRole || 'MedicalStaff')) }}
                             </span>
                         </td>
-                        <td class="p-4 text-center">
-                            <span v-if="item.isWorking" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest ">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                Đi đoàn
+                        <td class="p-2 text-center">
+                            <span v-if="item.isWorking" class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 text-[8px] font-black uppercase tracking-widest ">
+                                <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                                Đoàn
                             </span>
-                            <span v-else class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-widest ">
+                            <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-50 text-slate-400 text-[8px] font-black uppercase tracking-widest ">
                                 Nghỉ
                             </span>
                         </td>
-                        <td class="p-4 text-right font-black text-slate-700">
+                        <td class="p-2 text-right font-bold text-slate-700 tabular-nums">
                             {{ formatPrice(item.baseSalary || 0) }}
                         </td>
-                        <td class="p-4 text-center">
+                        <td class="p-2 text-center">
                             <button v-if="can('NhanSu.Manage')" 
-                                    @click.stop="openModal(item)" class="btn-action-premium variant-indigo text-slate-400" title="Cập nhật">
-                                <Edit3 class="w-5 h-5" />
+                                    @click.stop="openModal(item)" class="p-1 rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm">
+                                <Edit3 class="w-3.5 h-3.5" />
                             </button>
                         </td>
                     </tr>
@@ -158,85 +158,85 @@
 
     <!-- Staff Detail Modal -->
     <Teleport to="body">
-      <div v-if="showModal" class="modal-overlay flex items-center justify-center p-4" @click.self="showModal = false">
-        <div class="modal-box w-full max-w-4xl animate-scale-up !rounded-[2.5rem] overflow-hidden flex flex-col">
+      <div v-if="showModal" class="modal-overlay flex items-center justify-center p-3" @click.self="showModal = false">
+        <div class="modal-box w-full max-w-4xl animate-scale-up !rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Header Section -->
-            <div class="bg-gradient-to-r from-sky-500 to-indigo-600 text-white p-8 relative shrink-0">
+            <div class="bg-indigo-600 text-white p-3 relative shrink-0">
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-4">
-                        <div class="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner">
-                            <UsersIcon class="w-7 h-7" />
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center shadow-inner">
+                            <UsersIcon class="w-4 h-4" />
                         </div>
                         <div>
-                            <h2 class="text-2xl font-black uppercase tracking-tight italic leading-none mb-1">
+                            <h2 class="text-base font-black uppercase tracking-tight italic leading-none">
                                 {{ currentStaff.staffId ? currentStaff.fullName : i18n.t('staff.formTitle') }}
                             </h2>
-                            <p class="text-xs font-bold text-white/60 uppercase tracking-widest">
-                                Mã NS: <span class="text-white font-black">{{ currentStaff.employeeCode || 'TỰ ĐỘNG' }}</span>
+                            <p class="text-[7.5px] font-bold text-white/60 uppercase tracking-widest mt-0.5">
+                                ID: <span class="text-white font-black">{{ currentStaff.employeeCode || 'AUTO' }}</span>
                             </p>
                         </div>
                     </div>
-                    <button @click="showModal = false" class="w-10 h-10 rounded-xl bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all">
-                        <X class="w-5 h-5" />
+                    <button @click="showModal = false" class="w-7 h-7 rounded-lg bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all">
+                        <X class="w-4 h-4" />
                     </button>
                 </div>
 
                 <!-- Tab Navigation inside Header -->
-                <div class="flex gap-4 mt-8">
+                <div class="flex gap-1.5 mt-3">
                     <button v-for="tab in modalTabs" :key="tab.id"
                             @click="activeModalTab = tab.id"
-                            :class="['px-4 py-2 text-[10px] font-black uppercase tracking-widest transition-all rounded-xl',
-                                     activeModalTab === tab.id ? 'bg-white text-sky-600 shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/10']">
+                            :class="['px-2.5 py-1 text-[8px] font-black uppercase tracking-widest transition-all rounded-md',
+                                     activeModalTab === tab.id ? 'bg-white text-indigo-600 shadow-md' : 'text-white/70 hover:text-white hover:bg-white/10']">
                         {{ tab.label }}
                     </button>
                 </div>
             </div>
 
             <!-- Modal Content -->
-            <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+            <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
                 <!-- TAB 1: Thông tin cơ bản -->
                 <div v-if="activeModalTab === 'info'" class="animate-fade-in">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="grid grid-cols-1 lg:grid-cols-4 gap-5">
                         <!-- Basic Info Form -->
-                        <div class="lg:col-span-2">
-                            <form id="staffForm" @submit.prevent="saveStaff" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Họ và Tên *</label>
-                                    <input v-model="currentStaff.fullName" required class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="Nguyễn Văn A" />
+                        <div class="lg:col-span-3">
+                            <form id="staffForm" @submit.prevent="saveStaff" class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2.5">
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Họ và Tên *</label>
+                                    <input v-model="currentStaff.fullName" required class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold" placeholder="Nguyễn Văn A" />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Giới tính</label>
-                                    <select v-model="currentStaff.gender" class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full">
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Giới tính</label>
+                                    <select v-model="currentStaff.gender" class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold">
                                         <option value="Nam">Nam</option>
                                         <option value="Nữ">Nữ</option>
                                     </select>
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Chức danh</label>
-                                    <select v-model="jobCategory" required class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-xs">
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Chức danh</label>
+                                    <select v-model="jobCategory" required class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold">
                                         <option v-for="job in standardJobs" :key="job" :value="job">{{ job }}</option>
                                         <option value="Khác">Khác...</option>
                                     </select>
                                 </div>
-                                <div v-if="jobCategory === 'Khác'" class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-indigo-400 italic">Chức danh cụ thể *</label>
-                                    <input v-model="currentStaff.jobTitle" required class="input-premium py-2.5 bg-slate-50 focus:bg-white w-full border-indigo-200" placeholder="VD: Lái xe..." />
+                                <div v-if="jobCategory === 'Khác'" class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-indigo-400 italic">Chức danh cụ thể *</label>
+                                    <input v-model="currentStaff.jobTitle" required class="input-premium py-1.5 bg-slate-50 focus:bg-white w-full border-indigo-200 text-[11px] font-bold" placeholder="VD: Lái xe..." />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Lương / Ngày công *</label>
-                                    <CurrencyInput v-model="currentStaff.baseSalary" required class="!py-2.5" />
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Lương / Ngày công *</label>
+                                    <CurrencyInput v-model="currentStaff.baseSalary" required class="!py-1.5 text-[11px] font-bold" />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">CCCD / CMND</label>
-                                    <input v-model="currentStaff.idCardNumber" class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="001..." />
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">CCCD / CMND</label>
+                                    <input v-model="currentStaff.idCardNumber" class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold" placeholder="001..." />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Email</label>
-                                    <input v-model="currentStaff.email" type="email" class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="nhanvien@gmail.com" />
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Email</label>
+                                    <input v-model="currentStaff.email" type="email" class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold" placeholder="nhanvien@gmail.com" />
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Vai trò hệ thống</label>
-                                    <select v-model="currentStaff.systemRole" class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full" required>
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Vai trò hệ thống</label>
+                                    <select v-model="currentStaff.systemRole" class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold" required>
                                         <option value="Admin">{{ i18n.t('roles.Admin') }}</option>
                                         <option value="PersonnelManager">{{ i18n.t('roles.PersonnelManager') }}</option>
                                         <option value="ContractManager">{{ i18n.t('roles.ContractManager') }}</option>
@@ -247,34 +247,34 @@
                                         <option value="Customer">{{ i18n.t('roles.Customer') }}</option>
                                     </select>
                                 </div>
-                                <div class="flex flex-col gap-1.5">
-                                    <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 ">Số điện thoại</label>
-                                    <input v-model="currentStaff.phoneNumber" class="input-premium py-2.5 bg-slate-50 border-slate-200 focus:bg-white w-full" placeholder="09..." />
+                                <div class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Số điện thoại</label>
+                                    <input v-model="currentStaff.phoneNumber" class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold" placeholder="09..." />
                                 </div>
                             </form>
                         </div>
                         
                         <!-- Side Actions -->
-                        <div class="space-y-6">
-                            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
-                                <div @click="triggerAvatarUpload" class="w-32 h-32 mx-auto rounded-[2rem] overflow-hidden bg-slate-50 border-4 border-slate-50 shadow-inner group cursor-pointer relative mb-4">
+                        <div class="space-y-3">
+                            <div class="bg-white p-3 rounded-xl border border-slate-100 shadow-sm text-center">
+                                <div @click="triggerAvatarUpload" class="w-16 h-16 mx-auto rounded-xl overflow-hidden bg-slate-50 border-2 border-slate-50 shadow-inner group cursor-pointer relative mb-1.5">
                                     <img v-if="currentStaff.avatarPath" :src="`/${currentStaff.avatarPath}`" class="w-full h-full object-cover" />
                                     <div v-else class="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                                        <Camera class="w-8 h-8 mb-1" />
-                                        <span class="text-[8px] font-black uppercase tracking-widest">Click Tải lên</span>
+                                        <Camera class="w-5 h-5 mb-0.5" />
+                                        <span class="text-[6px] font-black uppercase tracking-widest">Tải lên</span>
                                     </div>
-                                    <div class="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-white font-black text-[10px]">THAY ĐỔI</div>
+                                    <div class="absolute inset-0 bg-primary/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all text-white font-black text-[8px]">SỬA</div>
                                 </div>
                                 <input type="file" ref="avatarInput" class="hidden" @change="onAvatarChange" />
-                                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest ">Ảnh đại diện nội bộ</p>
+                                <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest ">Ảnh đại diện</p>
                             </div>
 
-                            <div v-if="currentStaff.staffId" class="bg-indigo-600 text-white p-6 rounded-3xl shadow-xl shadow-indigo-100 flex flex-col justify-between h-36 relative overflow-hidden">
+                            <div v-if="currentStaff.staffId" class="bg-indigo-600 text-white p-3 rounded-xl shadow-lg shadow-indigo-100 flex flex-col justify-between h-20 relative overflow-hidden">
                                 <div class="relative z-10">
-                                    <p class="text-[9px] font-black uppercase opacity-60 mb-2 tracking-[0.2em]">Thù lao tạm tính</p>
-                                    <p class="text-3xl font-black ">{{ formatPrice(currentStaff.shifts?.reduce((sum, s) => sum + s.calculatedSalary, 0) || 0) }}</p>
+                                    <p class="text-[7px] font-black uppercase opacity-60 mb-0.5 tracking-[0.2em]">Thù lao tạm tính</p>
+                                    <p class="text-base font-black ">{{ formatPrice(currentStaff.shifts?.reduce((sum, s) => sum + s.calculatedSalary, 0) || 0) }}</p>
                                 </div>
-                                <Wallet class="absolute -right-4 -bottom-4 w-20 h-20 opacity-10 rotate-12" />
+                                <Wallet class="absolute -right-1 -bottom-1 w-12 h-12 opacity-10 rotate-12" />
                             </div>
                         </div>
                     </div>
@@ -397,16 +397,16 @@
             </div>
 
             <!-- Footer Section -->
-            <div class="p-8 border-t border-slate-50 flex justify-between gap-4 bg-slate-50/50 shrink-0">
-                <button v-if="currentStaff.staffId && can('HeThong.UserManage')" @click="deleteStaff" type="button" class="w-12 h-12 rounded-2xl bg-white text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-100 shadow-sm">
-                    <Trash2 class="w-5 h-5" />
+            <div class="p-3 border-t border-slate-50 flex justify-between gap-2 bg-slate-50/50 shrink-0">
+                <button v-if="currentStaff.staffId && can('HeThong.UserManage')" @click="deleteStaff" type="button" class="h-8 w-8 rounded-lg bg-white text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-100 shadow-sm">
+                    <Trash2 class="w-4 h-4" />
                 </button>
                 <div class="flex-1"></div>
-                <div class="flex gap-4">
-                    <button @click="showModal = false" class="px-8 py-3 text-slate-400 font-black uppercase tracking-widest text-xs hover:text-slate-600 transition-colors">
+                <div class="flex gap-2">
+                    <button @click="showModal = false" class="px-4 py-1.5 text-slate-400 font-black uppercase tracking-widest text-[9px] hover:text-slate-600 transition-colors">
                         {{ i18n.t('common.cancel') }}
                     </button>
-                    <button form="staffForm" type="submit" class="bg-slate-900 text-white px-10 py-3 rounded-2xl font-black shadow-xl hover:bg-slate-800 transition-all uppercase tracking-widest text-xs">
+                    <button form="staffForm" type="submit" class="bg-slate-900 text-white px-6 py-1.5 rounded-lg font-black shadow-lg hover:bg-slate-800 transition-all uppercase tracking-widest text-[9px]">
                         {{ i18n.t('common.save') }}
                     </button>
                 </div>

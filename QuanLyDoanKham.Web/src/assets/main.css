@@ -22,6 +22,7 @@
 body {
   background-color: var(--color-bg-light);
   color: #0f172a;
+  font-size: 13px; /* Thu nhỏ cỡ chữ cơ sở */
 }
 
 /* Typography Utilities */
@@ -37,9 +38,9 @@ body {
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border-radius: 2rem;
+  border-radius: 1.25rem; /* Giảm từ 2rem */
   border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 15px -5px rgba(0, 0, 0, 0.04);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -78,8 +79,8 @@ body {
 }
 
 .professional-table th {
-  padding: 1.25rem 1.5rem;
-  font-size: 10px;
+  padding: 0.75rem 1rem; /* Giảm từ 1.25rem 1.5rem */
+  font-size: 9px; /* Giảm từ 10px */
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -88,10 +89,10 @@ body {
 }
 
 .professional-table td {
-  padding: 1.25rem 1.5rem;
+  padding: 0.75rem 1rem; /* Giảm từ 1.25rem 1.5rem */
   border-bottom: 1px solid #f8fafc;
   transition: all 0.2s ease;
-  font-size: 13px;
+  font-size: 12px; /* Giảm từ 13px */
   color: #334155;
 }
 
@@ -122,12 +123,12 @@ body {
 /* Premium Inputs */
 .input-premium {
   width: 100%;
-  padding: 0.875rem 1.25rem;
-  border-radius: 1.25rem;
+  padding: 0.625rem 1rem; /* Giảm từ 0.875rem 1.25rem */
+  border-radius: 0.75rem; /* Giảm từ 1.25rem */
   background-color: #ffffff;
   border: 1px solid #e2e8f0;
   outline: none;
-  font-size: 14px;
+  font-size: 13px; /* Giảm từ 14px */
   font-weight: 500;
   color: #0f172a;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -144,11 +145,11 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 1.25rem;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem; /* Giảm từ 0.75rem 1.5rem */
+  border-radius: 0.75rem; /* Giảm từ 1.25rem */
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px; /* Giảm từ 12px */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -267,7 +268,7 @@ body {
 
 .modal-box {
   background: white;
-  border-radius: 2rem;
+  border-radius: 1.25rem; /* Giảm từ 2rem */
   box-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.8);
   max-height: 90vh;
@@ -313,13 +314,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 0.75rem;
+  width: 28px; /* Giảm từ 32px */
+  height: 28px;
+  border-radius: 0.5rem; /* Giảm từ 0.75rem */
   background: linear-gradient(135deg, #0ea5e9, #0284c7);
   color: white;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 11px; /* Giảm từ 12px */
 }
 
 /* Badge Styles */
@@ -354,9 +355,9 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 0.75rem;
+  width: 32px; /* Giảm từ 40px */
+  height: 32px;
+  border-radius: 0.625rem; /* Giảm từ 0.75rem */
   border: 1px solid #e2e8f0;
   background: white;
   transition: all 0.2s ease;

@@ -1,77 +1,79 @@
 <template>
-  <div class="space-y-6 animate-fade-in pb-20">
+  <div class="space-y-4 animate-fade-in p-3 bg-slate-50 relative overflow-y-auto h-full scrollbar-premium">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
       <div>
-        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <ShieldCheck class="w-6 h-6" />
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
+            <ShieldCheck class="w-4.5 h-4.5" />
           </div>
           {{ isAdmin ? i18n.t('users.title') : i18n.t('users.profileTitle') }}
         </h2>
-        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">{{ isAdmin ? i18n.t('users.subtitle').replace('{0}', users.length) : i18n.t('users.profileSubtitle') }}</p>
       </div>
       <button v-if="isAdmin" @click="openCreateModal" 
-              class="btn-premium primary px-8 py-3 shadow-lg">
-        <UserPlus class="w-5 h-5" />
-        <span class="">{{ i18n.t('users.addBtn') }}</span>
+              class="h-8 px-3 bg-primary text-white rounded-lg font-black text-[9px] uppercase shadow-sm flex items-center gap-1.5 hover:bg-primary/90 transition-all">
+        <UserPlus class="w-3.5 h-3.5" />
+        <span>{{ i18n.t('users.addBtn') }}</span>
       </button>
     </div>
 
 
 
     <!-- ADMIN VIEW: USER LIST -->
-    <div v-if="isAdmin" class="premium-card bg-white rounded-[2rem] shadow-[4px_4px_0px_#0f172a] border-2 border-slate-900 overflow-hidden mb-20">
+    <div v-if="isAdmin" class="premium-card bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden mb-6">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
-                <thead class="bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                <thead class="bg-slate-50 text-[8px] font-black uppercase tracking-widest text-slate-400 border-b border-slate-100">
                     <tr>
-                        <th class="p-4 text-center w-16">{{ i18n.t('common.stt') }}</th>
-                        <th class="p-4">{{ i18n.t('users.table.account') }}</th>
-                        <th class="p-4">{{ i18n.t('users.table.role') }}</th>
-                        <th class="p-4 text-center">{{ i18n.t('common.actions') }}</th>
+                        <th class="px-3 py-2 text-center w-12">{{ i18n.t('common.stt') }}</th>
+                        <th class="px-3 py-2">{{ i18n.t('users.table.account') }}</th>
+                        <th class="px-3 py-2">{{ i18n.t('users.table.role') }}</th>
+                        <th class="px-3 py-2 text-center">{{ i18n.t('common.actions') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
-                    <tr v-for="(u, index) in users" :key="u.username" class="text-xs hover:bg-slate-50/50 transition-all">
-                        <td class="p-4 text-center font-black text-slate-400 tabular-nums">
-                            {{ String(index + 1).padStart(3, '0') }}
+                    <tr v-for="(u, index) in users" :key="u.username" class="text-[9.5px] hover:bg-slate-50/50 transition-all border-b border-slate-50 last:border-0">
+                        <td class="px-2 py-1.5 text-center font-bold text-slate-400 tabular-nums">
+                            {{ index + 1 }}
                         </td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-xl bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
-                                    <div v-if="u.username === 'admin'" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white animate-pulse z-10"></div>
+                        <td class="px-2 py-1.5">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded bg-slate-50 border border-slate-100 overflow-hidden flex-shrink-0 relative">
+                                    <div v-if="u.username === 'admin'" class="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-emerald-500 rounded-full border border-white animate-pulse z-10"></div>
                                     <img v-if="u.avatarPath" :src="`/${u.avatarPath}`" class="w-full h-full object-cover" />
                                     <img v-else :src="`https://api.dicebear.com/7.x/avataaars/svg?seed=${u.username}`" class="w-full h-full object-cover" />
                                 </div>
                                 <div>
-                                    <h4 class="font-black text-slate-800 uppercase tracking-widest group-hover:text-indigo-600 transition-colors">{{ fixEncoding(u.fullName) || i18n.t('users.unnamed') }}</h4>
-                                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em] mt-1 flex items-center gap-1">
-                                        <AtSign class="w-3 h-3 text-indigo-400" /> {{ u.username }}
-                                    </p>
-                                    <p v-if="u.email" class="text-[9px] font-black text-emerald-500 uppercase tracking-[0.3em] flex items-center gap-1">
-                                        <Mail class="w-3 h-3" /> {{ u.email }}
-                                    </p>
+                                    <h4 class="font-bold text-slate-800 uppercase italic tracking-tight leading-tight">{{ fixEncoding(u.fullName) || i18n.t('users.unnamed') }}</h4>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <p class="text-[6.5px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-0.5">
+                                            <AtSign class="w-2 h-2 text-indigo-400" /> {{ u.username }}
+                                        </p>
+                                        <p v-if="u.email" class="text-[6.5px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-0.5 border-l border-slate-100 pl-1.5 ml-1">
+                                            <Mail class="w-2 h-2" /> {{ u.email }}
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </td>
-                        <td class="p-4">
+                        <td class="px-2 py-1.5">
                             <div class="flex flex-wrap gap-1">
-                                <span class="inline-flex items-center px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 text-[9px] font-black uppercase tracking-widest border border-indigo-100">
+                                <span class="inline-flex items-center px-1 py-0.5 rounded bg-indigo-50 text-indigo-600 text-[7px] font-black uppercase tracking-widest border border-indigo-100 shadow-sm">
                                     {{ i18n.t('roles.' + u.roleName) }}
                                 </span>
-                                <span v-for="secRole in u.roles" :key="secRole" class="inline-flex items-center px-2 py-1 rounded-lg bg-slate-50 text-slate-500 text-[9px] font-black uppercase tracking-widest border border-slate-200">
+                                <span v-for="secRole in u.roles" :key="secRole" class="inline-flex items-center px-1 py-0.5 rounded bg-slate-50 text-slate-500 text-[7px] font-black uppercase tracking-widest border border-slate-200 shadow-sm">
                                     {{ i18n.t('roles.' + secRole) }}
                                 </span>
                             </div>
                         </td>
-                        <td class="p-4 text-center">
-                            <div class="flex items-center justify-center gap-3">
-                                <button @click="openEditModal(u)" class="btn-action-premium variant-indigo text-slate-400" title="Hiệu chỉnh">
-                                    <Edit3 class="w-5 h-5" />
+                        <td class="px-2 py-1.5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button @click="openEditModal(u)" class="w-6 h-6 rounded bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition-all shadow-sm">
+                                    <Edit3 class="w-3 h-3" />
                                 </button>
-                                <button v-if="u.username !== 'admin'" @click="handleDelete(u.username)" class="btn-action-premium variant-rose text-slate-400" title="Xóa tài khoản">
-                                    <Trash2 class="w-5 h-5" />
+                                <button v-if="u.username !== 'admin'" @click="handleDelete(u.username)" class="w-6 h-6 rounded bg-rose-50 text-rose-600 flex items-center justify-center hover:bg-rose-600 hover:text-white transition-all shadow-sm">
+                                    <Trash2 class="w-3 h-3" />
                                 </button>
                             </div>
                         </td>
@@ -163,103 +165,99 @@
 
     <!-- MODAL: CREATE / EDIT USER -->
     <Teleport to="body">
-      <div v-if="modal.show" class="modal-overlay flex items-center justify-center p-4" @click.self="modal.show = false">
-          <div class="modal-box w-full max-w-xl animate-scale-up !rounded-[3rem] overflow-hidden flex flex-col max-h-[90vh]">
-              <!-- Header Accent Line -->
-              <div class="h-3 bg-gradient-to-r from-teal-400 to-indigo-600 shrink-0"></div>
-              
-              <div class="relative p-10 pb-6 shrink-0 border-b border-slate-50 bg-white/50">
-                  <button @click="modal.show = false" class="absolute top-8 right-8 w-10 h-10 rounded-2xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-all text-slate-400 z-50 border border-slate-100">
-                      <X class="w-5 h-5" />
+      <div v-if="modal.show" class="modal-overlay flex items-center justify-center p-3" @click.self="modal.show = false">
+          <div class="modal-box w-full max-w-xl animate-scale-up !rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+              <div class="relative p-3.5 pb-3 shrink-0 border-b border-slate-50 bg-indigo-600 text-white">
+                  <button @click="modal.show = false" class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-white z-50">
+                      <X class="w-4 h-4" />
                   </button>
                   
-                  <div class="flex items-center gap-4">
-                      <div class="w-14 h-14 bg-indigo-50 text-indigo-600 rounded-2xl flex items-center justify-center shadow-inner border border-indigo-100">
-                          <UserPlus v-if="!modal.isEdit" class="w-7 h-7" />
-                          <Edit3 v-else class="w-7 h-7" />
+                  <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center shadow-inner">
+                          <UserPlus v-if="!modal.isEdit" class="w-4 h-4" />
+                          <Edit3 v-else class="w-4 h-4" />
                       </div>
                       <div>
-                          <h3 class="text-2xl font-black text-slate-800 uppercase tracking-widest leading-tight">
+                          <h3 class="text-base font-black uppercase tracking-tight italic leading-none">
                               {{ modal.isEdit ? i18n.t('users.formTitleEdit') : 'CẤP TÀI KHOẢN MỚI' }}
                           </h3>
-                          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Phân quyền và bảo mật truy cập hệ thống</p>
+                          <p class="text-[7.5px] font-bold text-white/60 uppercase tracking-widest mt-0.5">Phân quyền và bảo mật truy cập hệ thống</p>
                       </div>
                   </div>
               </div>
 
-              <!-- Scrollable Content -->
-              <div class="p-10 flex-1 overflow-y-auto custom-scrollbar bg-white">
-                <form id="userForm" @submit.prevent="handleSubmit" class="space-y-6">
+               <div class="p-4 flex-1 overflow-y-auto custom-scrollbar bg-white">
+                <form id="userForm" @submit.prevent="handleSubmit" class="space-y-4">
                     <!-- Avatar Upload -->
-                    <div class="flex flex-col items-center space-y-4 mb-8">
-                        <div class="w-24 h-24 rounded-[2rem] bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:border-indigo-400 transition-all shadow-inner">
+                    <div class="flex flex-col items-center space-y-2 mb-4">
+                        <div class="w-16 h-16 rounded-xl bg-slate-50 border-2 border-dashed border-slate-200 flex items-center justify-center overflow-hidden relative group cursor-pointer hover:border-indigo-400 transition-all shadow-inner">
                             <img v-if="avatarPreview" :src="avatarPreview" class="w-full h-full object-cover" />
-                            <Camera v-else class="w-8 h-8 text-slate-300 group-hover:text-indigo-400 transition-colors" />
+                            <Camera v-else class="w-6 h-6 text-slate-300 group-hover:text-indigo-400 transition-colors" />
                             <label class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity backdrop-blur-sm">
-                                <span class="text-white text-[10px] font-black uppercase tracking-widest ">Thay ảnh</span>
+                                <span class="text-white text-[7px] font-black uppercase tracking-widest ">SỬA</span>
                                 <input type="file" @change="onFileChange" class="hidden" accept="image/*" />
                             </label>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-6">
-                        <div class="flex flex-col gap-2">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Định danh đăng nhập</label>
-                            <input v-model="form.username" :disabled="modal.isEdit" required class="input-premium" placeholder="VD: bacsi_binh" />
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Tên đăng nhập</label>
+                            <input v-model="form.username" :disabled="modal.isEdit" required class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner disabled:opacity-50" placeholder="VD: bacsi_binh" />
                         </div>
                         
-                        <div class="flex flex-col gap-2">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Họ và Tên chủ khoản</label>
-                            <input v-model="form.fullName" required class="input-premium" placeholder="Nhập họ tên đầy đủ..."
+                        <div class="flex flex-col gap-1">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Họ và Tên</label>
+                            <input v-model="form.fullName" required class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner" placeholder="Nhập họ tên..."
                                    @input="generateUsername(form.fullName)" />
                         </div>
 
-                        <div class="flex flex-col gap-2 md:col-span-2">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Địa chỉ Email (Gmail)</label>
-                            <input v-model="form.email" type="email" class="input-premium" placeholder="vidu@gmail.com..." />
+                        <div class="flex flex-col gap-1 md:col-span-2">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Email (Gmail)</label>
+                            <input v-model="form.email" type="email" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner" placeholder="vidu@gmail.com..." />
                         </div>
 
-                        <div class="flex flex-col gap-2 md:col-span-2">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đặc quyền Vai trò (Đa nhiệm)</label>
-                            <div class="grid grid-cols-2 gap-3">
+                        <div class="flex flex-col gap-1 md:col-span-2">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Vai trò hệ thống</label>
+                            <div class="grid grid-cols-2 gap-1.5">
                                 <label v-for="role in availableRoles" :key="role.id" 
-                                       class="flex items-center gap-3 p-4 rounded-2xl border border-slate-100 cursor-pointer hover:bg-slate-50 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600 shadow-sm"
+                                       class="flex items-center gap-2 p-1.5 rounded-lg border border-slate-100 cursor-pointer hover:bg-slate-50 transition-all font-black text-[8px] uppercase tracking-widest text-slate-600 shadow-sm"
                                        :class="{'bg-indigo-50 !border-indigo-200 text-indigo-700': form.selectedRoleIds.includes(role.id)}">
-                                    <input type="checkbox" :value="role.id" v-model="form.selectedRoleIds" class="w-5 h-5 accent-indigo-600 shrink-0" />
+                                    <input type="checkbox" :value="role.id" v-model="form.selectedRoleIds" class="w-3.5 h-3.5 accent-indigo-600 shrink-0" />
                                     <span class="truncate">{{ i18n.t('roles.' + role.key) }}</span>
                                 </label>
                             </div>
                         </div>
 
-                        <div class="flex flex-col gap-2 md:col-span-2" :class="{ 'opacity-50 pointer-events-none': !form.selectedRoleIds.includes(8) }">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">Đơn vị quản lý trực tiếp (Chỉ dành cho KH cấp Company)</label>
-                            <select v-model="form.companyId" class="input-premium">
+                        <div class="flex flex-col gap-1 md:col-span-2" :class="{ 'opacity-50 pointer-events-none': !form.selectedRoleIds.includes(8) }">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Đơn vị quản lý</label>
+                            <select v-model="form.companyId" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner">
                                 <option :value="null">-- Hệ điều hành HealthCare --</option>
                                 <option v-for="c in companies" :key="c.companyId" :value="c.companyId">{{ c.companyName }}</option>
                             </select>
                         </div>
 
-                        <div class="flex flex-col gap-2 md:col-span-2">
-                            <label class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 ml-1">
-                                {{ modal.isEdit ? 'Đổi mật khẩu (Bỏ trống nếu không đổi)' : 'Mật khẩu bảo mật' }}
+                        <div class="flex flex-col gap-1 md:col-span-2">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">
+                                {{ modal.isEdit ? 'Đổi mật khẩu' : 'Mật khẩu' }}
                             </label>
                             <div class="relative">
                                 <input v-model="form.password" 
                                        @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
-                                       :required="!modal.isEdit" type="text" class="input-premium font-mono" />
-                                <span v-if="!modal.isEdit" class="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-black text-emerald-500 uppercase tracking-widest">Mặc định</span>
+                                       :required="!modal.isEdit" type="text" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold font-mono text-[11px] text-slate-700 shadow-inner" />
+                                <span v-if="!modal.isEdit" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[6px] font-black text-emerald-500 uppercase tracking-widest">Default</span>
                             </div>
                         </div>
                     </div>
                 </form>
               </div>
 
-              <!-- Footer Section -->
-              <div class="p-8 border-t border-slate-100 bg-slate-50/50 flex flex-col md:flex-row gap-4 shrink-0">
-                  <button @click="modal.show = false" type="button" class="flex-1 btn-premium secondary">
+               <!-- Footer Section -->
+              <div class="p-3 border-t border-slate-100 bg-slate-50/50 flex gap-2 shrink-0">
+                  <button @click="modal.show = false" type="button" class="flex-1 h-8 bg-white border border-slate-200 text-slate-500 rounded-lg font-black text-[9px] uppercase hover:bg-slate-50 transition-all">
                       HỦY
                   </button>
-                  <button form="userForm" type="submit" class="flex-[2] btn-premium primary !py-4 shadow-xl shadow-indigo-200">
+                  <button form="userForm" type="submit" class="flex-[2] h-8 bg-indigo-600 text-white rounded-lg font-black text-[9px] uppercase shadow-md shadow-indigo-100 hover:bg-indigo-700 transition-all">
                       {{ modal.isEdit ? 'LƯU THÔNG TIN' : 'TẠO TÀI KHOẢN' }}
                   </button>
               </div>

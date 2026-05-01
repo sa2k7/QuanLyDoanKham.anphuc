@@ -1,133 +1,174 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
-    <div class="max-w-7xl mx-auto w-full">
+  <div class="h-full flex flex-col bg-slate-50 relative animate-fade-in p-3 scrollbar-premium overflow-y-auto font-sans">
+    <div class="max-w-full mx-auto w-full">
       <!-- Header Section -->
-      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
         <div>
-          <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-            <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-              <ShieldAlert class="w-6 h-6" />
+          <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+            <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-sm">
+              <ShieldCheck class="w-4.5 h-4.5" />
             </div>
             Phân Quyền Hệ Thống
           </h2>
-          <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Quản trị vai trò & Quyền hạn truy cập (RBAC Matrix)</p>
+          <p class="text-slate-400 font-bold uppercase tracking-[0.2em] text-[7.5px] mt-0.5">Quản trị vai trò & Quyền hạn truy cập (RBAC Matrix)</p>
         </div>
       </div>
 
-    <!-- Role Tabs -->
-    <div class="role-tabs flex flex-wrap gap-3 mb-8">
-      <button v-for="role in roles" :key="role.roleId"
-        class="role-tab px-6 py-2 rounded-full font-black text-xs uppercase tracking-widest transition-all border-2" 
-        :class="selectedRoleId === role.roleId ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-indigo-200'"
-        @click="selectRole(role.roleId)">
-        {{ getRoleLabel(role.roleName) }}
-      </button>
-    </div>
-
-    <!-- Permission Matrix -->
-    <div v-if="selectedRole" class="permission-matrix premium-card bg-white rounded-[2rem] border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] overflow-hidden p-8">
-      <div class="matrix-header flex justify-between items-center mb-8 pb-6 border-b border-slate-50">
-        <div>
-            <h3 class="text-xl font-black text-slate-800 uppercase tracking-widest">{{ getRoleLabel(selectedRole.roleName) }}</h3>
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">{{ i18n.t('permissions.list') }}</p>
-        </div>
-        <div class="matrix-actions flex gap-3">
-          <button class="btn-premium variant-indigo scale-90" @click="toggleAll(true)">
-            <CheckCheck class="w-4 h-4" /> {{ i18n.t('permissions.selectAll') }}
-          </button>
-          <button class="btn-premium variant-slate scale-90" @click="toggleAll(false)">
-            <X class="w-4 h-4" /> {{ i18n.t('permissions.deselect') }}
-          </button>
-          <button class="btn-premium bg-emerald-600 text-white hover:bg-emerald-700 scale-90 px-6 transition-colors" @click="restoreDefaults" :disabled="saving || restoring">
-            <RefreshCcw v-if="!restoring" class="w-4 h-4" />
-            <Loader2 v-else class="w-4 h-4 animate-spin" />
-            {{ restoring ? i18n.t('permissions.restoring') : i18n.t('permissions.restore') }}
-          </button>
-          <button class="btn-premium bg-slate-900 text-white scale-90 px-8" @click="savePermissions" :disabled="saving || restoring">
-            <Loader2 v-if="saving" class="w-4 h-4 animate-spin" />
-            <Save v-else class="w-4 h-4" />
-            {{ saving ? i18n.t('permissions.saving') : i18n.t('permissions.save') }}
-          </button>
-        </div>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-        <div v-for="(modulePerms, module) in permsByModule" :key="module" class="perm-module bg-slate-50/30 p-6 rounded-3xl border border-slate-100">
-          <div class="module-header flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-            <div class="flex items-center gap-3">
-                <span class="module-icon text-xl">{{ getModuleIcon(module) }}</span>
-                <span class="module-name font-black text-slate-700 uppercase tracking-widest text-sm">{{ getModuleLabel(module) }}</span>
+      <div class="flex flex-col lg:flex-row gap-4">
+        <!-- Left Column: Roles List -->
+        <div class="w-full lg:w-56 flex-shrink-0">
+          <div class="premium-card bg-white rounded-lg shadow-sm overflow-hidden border border-slate-100">
+            <div class="p-2.5 border-b border-slate-50 bg-slate-50/50">
+              <h3 class="text-[7.5px] font-black text-slate-400 uppercase tracking-[0.2em] italic">Danh Sách Vai Trò</h3>
             </div>
-            <label class="toggle-all-module flex items-center gap-2 cursor-pointer group">
-              <input type="checkbox"
-                class="w-4 h-4 accent-indigo-600 rounded"
-                :checked="isModuleAllChecked(module)"
-                :indeterminate.prop="isModuleIndeterminate(module)"
-                @change="toggleModule(module, $event.target.checked)" />
-              <span class="text-[10px] font-black text-slate-400 group-hover:text-indigo-600 uppercase tracking-widest transition-colors">{{ i18n.t('permissions.all') }}</span>
-            </label>
+            <div class="p-1.5 flex flex-col gap-1">
+              <button v-for="role in roles" :key="role.roleId"
+                @click="selectRole(role)"
+                class="text-left px-2.5 py-1.5 rounded-lg transition-all duration-300 font-bold text-[10px] flex items-center justify-between group"
+                :class="selectedRole?.roleId === role.roleId
+                  ? 'bg-primary/10 text-primary border border-primary/20 shadow-sm'
+                  : 'text-slate-500 hover:bg-slate-50 hover:text-slate-700 border border-transparent'">
+                <span class="truncate uppercase">{{ role.description || role.roleName }}</span>
+                <ChevronRight class="w-3 h-3 transition-all duration-300 flex-shrink-0"
+                  :class="selectedRole?.roleId === role.roleId
+                    ? 'opacity-100 translate-x-0'
+                    : 'opacity-0 -translate-x-1 group-hover:opacity-60 group-hover:translate-x-0'" />
+              </button>
+            </div>
           </div>
-          <div class="perm-list grid grid-cols-1 gap-2">
-            <label v-for="perm in modulePerms" :key="perm.permissionId" 
-              class="perm-item flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer"
-              :class="checkedPerms.includes(perm.permissionId) ? 'bg-white border-slate-900 shadow-[2px_2px_0px_#0f172a]' : 'bg-transparent border-transparent text-slate-400 hover:bg-white hover:border-slate-100'">
-              <input type="checkbox"
-                class="w-4 h-4 accent-indigo-600 rounded"
-                :value="perm.permissionId"
-                v-model="checkedPerms" />
-              <div class="perm-info flex flex-col">
-                <span class="perm-name text-xs font-black uppercase tracking-widest" :class="checkedPerms.includes(perm.permissionId) ? 'text-slate-800' : 'text-slate-400'">{{ perm.permissionName }}</span>
-                <code class="perm-key text-[9px] font-mono mt-0.5" :class="checkedPerms.includes(perm.permissionId) ? 'text-indigo-500' : 'text-slate-300'">{{ perm.permissionKey }}</code>
+        </div>
+
+        <!-- Right Column: Permission Matrix -->
+        <div class="flex-1 min-w-0">
+          <div class="premium-card bg-white rounded-xl shadow-sm overflow-hidden relative border border-slate-100" style="min-height: 520px;">
+            <!-- Loading Overlay -->
+            <div v-if="loadingPerms" class="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-10 rounded-xl">
+              <Loader2 class="w-8 h-8 text-primary animate-spin" />
+            </div>
+
+            <!-- Empty State -->
+            <div v-if="!selectedRole && !loadingPerms" class="absolute inset-0 flex flex-col items-center justify-center text-slate-300">
+              <ShieldAlert class="w-16 h-16 mb-3" />
+              <p class="font-bold text-sm text-slate-400">Chọn một vai trò bên trái</p>
+              <p class="text-[11px] text-slate-300">để xem và chỉnh sửa phân quyền.</p>
+            </div>
+
+            <!-- Matrix Content -->
+            <template v-if="selectedRole && !loadingPerms">
+              <!-- Sticky Header Bar -->
+              <div class="p-3 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-white/80 backdrop-blur-md sticky top-0 z-[5]">
+                <div>
+                  <h3 class="text-[11px] font-bold text-slate-800 italic uppercase">
+                    Phân quyền: <span class="text-primary">{{ selectedRole.description || selectedRole.roleName }}</span>
+                  </h3>
+                  <p class="text-[7.5px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">
+                    {{ checkedPerms.length }} / {{ totalPermissionCount }} quyền active
+                  </p>
+                </div>
+                <div class="flex gap-1.5">
+                  <button class="h-7 px-2.5 rounded-lg border border-slate-200 text-slate-500 text-[8.5px] font-black uppercase tracking-wider hover:border-primary hover:text-primary transition-all shadow-sm"
+                    @click="toggleAll(true)">
+                    Chọn hết
+                  </button>
+                  <button class="h-7 px-2.5 rounded-lg border border-slate-200 text-slate-500 text-[8.5px] font-black uppercase tracking-wider hover:border-rose-400 hover:text-rose-500 transition-all shadow-sm"
+                    @click="toggleAll(false)">
+                    Bỏ chọn
+                  </button>
+                  <button class="h-7 px-3 rounded-lg bg-primary text-white text-[8.5px] font-black uppercase tracking-wider hover:shadow-md hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center gap-1.5"
+                    @click="savePermissions" :disabled="saving">
+                    <Save class="w-3 h-3" />
+                    {{ saving ? 'LƯU...' : 'LƯU' }}
+                  </button>
+                </div>
               </div>
-            </label>
+
+              <div class="p-3 grid grid-cols-1 xl:grid-cols-2 gap-2.5">
+                <div v-for="(modulePerms, module) in permsByModule" :key="module"
+                  class="bg-slate-50/50 rounded-lg border border-slate-100 overflow-hidden hover:border-slate-200 transition-colors">
+                  <!-- Module Header -->
+                  <div class="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between bg-white/60">
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-sm italic opacity-80">{{ getModuleIcon(module) }}</span>
+                      <span class="font-black text-[9px] text-slate-700 uppercase tracking-wider">{{ getModuleLabel(module) }}</span>
+                    </div>
+                    <label class="flex items-center gap-1.5 cursor-pointer group">
+                      <input type="checkbox" class="sr-only peer"
+                        :checked="isModuleAllChecked(module)"
+                        @change="toggleModule(module, $event.target.checked)" />
+                      <div class="relative w-6 h-3.5 bg-slate-200 peer-checked:bg-primary rounded-full transition-colors duration-300 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-transform after:duration-300 peer-checked:after:translate-x-2.5 shadow-inner"></div>
+                      <span class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest group-hover:text-primary transition-colors">Tất cả</span>
+                    </label>
+                  </div>
+                  <!-- Permission Items -->
+                  <div class="p-1.5 flex flex-col gap-0.5">
+                    <label v-for="perm in modulePerms" :key="perm.permissionId"
+                      class="flex items-center gap-2 px-2 py-1 rounded cursor-pointer transition-all duration-200"
+                      :class="checkedPerms.includes(perm.permissionId)
+                        ? 'bg-white border border-primary/20 shadow-sm'
+                        : 'hover:bg-white/60 border border-transparent'">
+                      <input type="checkbox" class="sr-only peer"
+                        :value="perm.permissionId"
+                        v-model="checkedPerms" />
+                      <!-- Toggle Switch -->
+                      <div class="relative w-7 h-3.5 bg-slate-200 peer-checked:bg-emerald-500 rounded-full transition-colors duration-300 flex-shrink-0 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-2.5 after:w-2.5 after:transition-transform after:duration-300 peer-checked:after:translate-x-3.5 shadow-inner"></div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="text-[10px] font-bold transition-colors duration-200 leading-tight"
+                          :class="checkedPerms.includes(perm.permissionId) ? 'text-slate-800' : 'text-slate-400'">
+                          {{ perm.permissionName }}
+                        </span>
+                        <code class="text-[6.5px] font-mono truncate transition-colors duration-200 mt-0.5"
+                          :class="checkedPerms.includes(perm.permissionId) ? 'text-primary/60' : 'text-slate-300'">
+                          {{ perm.permissionKey }}
+                        </code>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              </div>
+            </template>
           </div>
         </div>
       </div>
-    </div>
-
-    <div v-if="loading" class="flex justify-center py-20">
-        <Loader2 class="w-10 h-10 animate-spin text-slate-200" />
     </div>
 
     <!-- Toast notification -->
     <Teleport to="body">
-        <div v-if="toast.show" class="fixed bottom-10 right-10 z-[200] animate-fade-in-up">
-            <div class="px-8 py-4 rounded-2xl border-2 border-slate-900 shadow-[4px_4px_0px_#0f172a] flex items-center gap-4"
-                 :class="toast.type === 'success' ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
-                <CheckCircle2 v-if="toast.type === 'success'" class="w-6 h-6" />
-                <AlertCircle v-else class="w-6 h-6" />
-                <div class="font-black uppercase tracking-widest text-xs">{{ toast.message }}</div>
-            </div>
+      <Transition name="toast-slide">
+        <div v-if="toastState.show" class="fixed bottom-8 right-8 z-[200]">
+          <div class="px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border"
+               :class="toastState.type === 'success'
+                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                 : 'bg-rose-50 text-rose-700 border-rose-200'">
+            <CheckCircle2 v-if="toastState.type === 'success'" class="w-5 h-5 flex-shrink-0" />
+            <AlertCircle v-else class="w-5 h-5 flex-shrink-0" />
+            <span class="font-bold text-sm">{{ toastState.message }}</span>
+          </div>
         </div>
+      </Transition>
     </Teleport>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import apiClient from '../services/apiClient'
-import { 
-    ShieldAlert, CheckCheck, X, Save, Loader2, CheckCircle2, AlertCircle, RefreshCcw 
+import {
+  ShieldCheck, ShieldAlert, ChevronRight, Save, Loader2,
+  CheckCheck, X, CheckCircle2, AlertCircle
 } from 'lucide-vue-next'
-import { usePermission } from '../composables/usePermission'
-import { useI18nStore } from '../stores/i18n'
 import { useAuthStore } from '../stores/auth'
 
-const i18n = useI18nStore()
 const auth = useAuthStore()
-const { can } = usePermission()
+
 const roles = ref([])
 const permissions = ref([])
-const rolePermissions = ref({}) // { roleId: [permissionId, ...] }
-const selectedRoleId = ref(null)
+const selectedRole = ref(null)
 const checkedPerms = ref([])
-const loading = ref(false)
+const loadingPerms = ref(false)
 const saving = ref(false)
-const restoring = ref(false)
-const toast = ref({ show: false, type: 'success', message: '' })
+const toastState = ref({ show: false, type: 'success', message: '' })
 
-const selectedRole = computed(() => roles.value.find(r => r.roleId === selectedRoleId.value))
+// ── Computed ──
 
 const permsByModule = computed(() => {
   const groups = {}
@@ -138,198 +179,133 @@ const permsByModule = computed(() => {
   return groups
 })
 
+const totalPermissionCount = computed(() => permissions.value.length)
+
 const isModuleAllChecked = (module) =>
-  permsByModule.value[module].every(p => checkedPerms.value.includes(p.permissionId))
+  permsByModule.value[module]?.every(p => checkedPerms.value.includes(p.permissionId)) ?? false
 
-const isModuleIndeterminate = (module) => {
-  const perms = permsByModule.value[module]
-  const checked = perms.filter(p => checkedPerms.value.includes(p.permissionId))
-  return checked.length > 0 && checked.length < perms.length
-}
+// ── Actions ──
 
-const toggleModule = (module, val) => {
-  const ids = permsByModule.value[module].map(p => p.permissionId)
-  if (val) {
-    checkedPerms.value = [...new Set([...checkedPerms.value, ...ids])]
+const toggleModule = (module, isChecked) => {
+  const modulePermIds = permsByModule.value[module].map(p => p.permissionId)
+  if (isChecked) {
+    checkedPerms.value = [...new Set([...checkedPerms.value, ...modulePermIds])]
   } else {
-    checkedPerms.value = checkedPerms.value.filter(id => !ids.includes(id))
+    checkedPerms.value = checkedPerms.value.filter(id => !modulePermIds.includes(id))
   }
 }
 
-const toggleAll = (val) => {
-  checkedPerms.value = val ? permissions.value.map(p => p.permissionId) : []
+const toggleAll = (isChecked) => {
+  checkedPerms.value = isChecked ? permissions.value.map(p => p.permissionId) : []
 }
 
-const getRoleLabel = (name) => {
-  return i18n.t('roles.' + name)
-}
-
-const getModuleLabel = (m) => {
-  const map = {
-    HopDong: '📄 Hợp đồng & Doanh nghiệp', DoanKham: '🩺 Vận hành Đoàn khám', LichKham: '📅 Lịch khám & Điều phối',
-    ChamCong: '✅ Chấm công & Lương', Kho: '📦 Kho dược & Vật tư', Luong: '💰 Kế toán Tài chính',
-    NhanSu: '👤 Quản trị Nhân lực', BaoCao: '📊 Hệ thống Báo cáo', HeThong: '⚙️ Cấu hình Hệ thống'
+const selectRole = async (role) => {
+  selectedRole.value = role
+  loadingPerms.value = true
+  try {
+    const res = await apiClient.get(`/api/roles/${role.roleId}/permissions`)
+    checkedPerms.value = [...res.data]
+  } catch (error) {
+    console.error('Lỗi khi tải quyền vai trò:', error)
+    checkedPerms.value = []
+    showToast('error', 'Không thể tải quyền của vai trò này.')
+  } finally {
+    loadingPerms.value = false
   }
-  return map[m] || m
-}
-
-const getModuleIcon = (m) => {
-  const map = { HopDong:'📄', DoanKham:'🩺', LichKham:'📅', ChamCong:'✅',
-    Kho:'📦', Luong:'💰', NhanSu:'👤', BaoCao:'📊', HeThong:'⚙️' }
-  return map[m] || '🔧'
-}
-
-const selectRole = async (roleId) => {
-  selectedRoleId.value = roleId
-  // Load permissions của role này nếu chưa có
-  if (!rolePermissions.value[roleId]) {
-    try {
-      const res = await apiClient.get(`/api/Auth/role-permissions/${roleId}`)
-      rolePermissions.value[roleId] = res.data.map(p => p.permissionId)
-    } catch {
-      rolePermissions.value[roleId] = []
-    }
-  }
-  checkedPerms.value = [...(rolePermissions.value[roleId] || [])]
 }
 
 const savePermissions = async () => {
+  if (!selectedRole.value) return
   saving.value = true
   try {
-    await apiClient.put(`/api/Auth/role-permissions/${selectedRoleId.value}`, {
-      permissionIds: checkedPerms.value
-    })
-    rolePermissions.value[selectedRoleId.value] = [...checkedPerms.value]
-    
-    // Nếu đang sửa quyền của chính role hiện tại, cần làm mới JWT
-    if (auth.userRole === selectedRole.value?.roleName || selectedRole.value?.roleName === 'Admin') {
-      try {
-        await auth.refreshAccessToken()
-      } catch (e) {
-        console.warn('Could not refresh token automatically', e)
+    await apiClient.post(`/api/roles/${selectedRole.value.roleId}/permissions`, checkedPerms.value)
+
+    // Refresh JWT if editing own role or Admin
+    if (auth.userRole === selectedRole.value.roleName || selectedRole.value.roleName === 'Admin') {
+      try { await auth.refreshAccessToken() } catch (e) {
+        console.warn('Không thể tự động làm mới token:', e)
       }
     }
 
-    showToast('success', 'Cập nhật quyền thành công!')
-  } catch (e) {
-    showToast('error', e.response?.data?.message || 'Lỗi khi cập nhật quyền.')
+    showToast('success', 'Cập nhật phân quyền thành công! Lịch sử đã được ghi nhận.')
+  } catch (error) {
+    showToast('error', error.response?.data?.message || 'Có lỗi xảy ra khi lưu phân quyền.')
   } finally {
     saving.value = false
   }
 }
 
+// ── UI Helpers ──
 
 const showToast = (type, message) => {
-  toast.value = { show: true, type, message }
-  setTimeout(() => { toast.value.show = false }, 3000)
+  toastState.value = { show: true, type, message }
+  setTimeout(() => { toastState.value.show = false }, 4000)
 }
 
-const restoreDefaults = async () => {
-  if (!confirm('Bạn có chắc chắn muốn khôi phục phân quyền của vai trò này về mặc định ban đầu không? (Quyền hiện tại sẽ bị ghi đè)')) return;
-  restoring.value = true;
-  try {
-    const res = await apiClient.post(`/api/Auth/restore-default-permissions/${selectedRoleId.value}`);
-    // Tải lại các quyền sau khi khôi phục
-    const permRes = await apiClient.get(`/api/Auth/role-permissions/${selectedRoleId.value}`);
-    rolePermissions.value[selectedRoleId.value] = permRes.data.map(p => p.permissionId);
-    checkedPerms.value = [...rolePermissions.value[selectedRoleId.value]];
-    showToast('success', res.data?.message || 'Khôi phục mặc định thành công!');
-  } catch (e) {
-    showToast('error', e.response?.data?.message || 'Lỗi khi khôi phục quyền mặc định.');
-  } finally {
-    restoring.value = false;
+const getModuleLabel = (moduleKey) => {
+  const moduleLabels = {
+    HopDong: 'Hợp đồng',
+    DoanKham: 'Đoàn khám',
+    LichKham: 'Lịch khám',
+    ChamCong: 'Chấm công',
+    BaoCao: 'Thống kê & Báo cáo',
+    Kho: 'Kho Vật tư',
+    TaiChinh: 'Quyết toán',
+    HeThong: 'Tài khoản & Hệ thống',
+    PhongBan: 'Nhân sự',
+    WorkRule: 'Work Rule',
+    AI: 'Gợi ý AI'
   }
+  return moduleLabels[moduleKey] || moduleKey
 }
+
+const getModuleIcon = (moduleKey) => {
+  const moduleIcons = {
+    HopDong: '📄', DoanKham: '🩺', LichKham: '📅', ChamCong: '✅',
+    BaoCao: '📊', Kho: '📦', TaiChinh: '💰', HeThong: '⚙️',
+    PhongBan: '👥', WorkRule: '🔧', AI: '🤖'
+  }
+  return moduleIcons[moduleKey] || '🔒'
+}
+
+// ── Init ──
 
 onMounted(async () => {
-  loading.value = true
   try {
     const [rolesRes, permsRes] = await Promise.all([
-      apiClient.get('/api/Auth/roles'),
-      apiClient.get('/api/Auth/permissions')
+      apiClient.get('/api/roles'),
+      apiClient.get('/api/permissions/matrix')
     ])
     roles.value = rolesRes.data
-    permissions.value = permsRes.data
-    if (roles.value.length > 0) await selectRole(roles.value[0].roleId)
-  } catch (e) {
-      console.error("Lỗi s khởi tạo phân quyền:", e)
-  } finally {
-    loading.value = false
+
+    // Flatten matrix (API returns grouped) into a flat list
+    const allPermissions = []
+    permsRes.data.forEach(group => {
+      group.permissions.forEach(p => allPermissions.push(p))
+    })
+    permissions.value = allPermissions
+
+    // Auto-select first role
+    if (roles.value.length > 0) {
+      await selectRole(roles.value[0])
+    }
+  } catch (error) {
+    console.error('Lỗi khởi tạo phân quyền:', error)
   }
 })
 </script>
 
 <style scoped>
-.permissions-page { padding: 24px; max-width: 1100px; margin: 0 auto; }
-.page-header { margin-bottom: 24px; }
-.page-title { font-size: 1.6rem; font-weight: 700; margin: 0; color: var(--text-primary, #1e293b); }
-.page-title i { margin-right: 10px; color: var(--primary, #6366f1); }
-.page-subtitle { color: var(--text-muted, #64748b); margin: 4px 0 0; }
-
-.role-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
-.role-tab {
-  padding: 8px 16px; border: 2px solid var(--border, #e2e8f0); border-radius: 20px;
-  background: var(--card-bg, #fff); cursor: pointer; font-size: 0.85rem; font-weight: 500;
-  color: var(--text-secondary, #475569); transition: all .15s;
+.toast-slide-enter-active,
+.toast-slide-leave-active {
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.role-tab.active { border-color: var(--primary, #6366f1); background: var(--primary, #6366f1); color: #fff; }
-.role-tab:hover:not(.active) { border-color: var(--primary, #6366f1); color: var(--primary, #6366f1); }
-
-.permission-matrix {
-  background: var(--card-bg, #fff); border-radius: 14px; padding: 24px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.08); border: 1px solid var(--border, #e2e8f0);
+.toast-slide-enter-from {
+  transform: translateX(120%);
+  opacity: 0;
 }
-.matrix-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+.toast-slide-leave-to {
+  transform: translateX(120%);
+  opacity: 0;
 }
-.matrix-header h3 { margin: 0; font-size: 1.1rem; }
-.matrix-actions { display: flex; gap: 8px; }
-
-.admin-notice {
-  padding: 16px 20px; background: linear-gradient(135deg, #fef3c7, #fde68a);
-  border-radius: 10px; color: #92400e; font-size: 0.9rem; display: flex;
-  align-items: center; gap: 10px;
-}
-.admin-notice i { font-size: 1.2rem; }
-
-.perm-module { margin-bottom: 20px; }
-.module-header {
-  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
-  background: var(--hover, #f8fafc); border-radius: 10px; margin-bottom: 10px;
-}
-.module-icon { font-size: 1.2rem; }
-.module-name { font-weight: 600; flex: 1; color: var(--text-primary, #1e293b); }
-.toggle-all-module { display: flex; align-items: center; gap: 6px; font-size: 0.82rem; cursor: pointer; color: var(--text-muted, #64748b); }
-
-.perm-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; padding: 0 4px; }
-.perm-item {
-  display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px;
-  border: 1px solid var(--border, #e2e8f0); border-radius: 8px; cursor: pointer;
-  transition: all .12s; background: var(--card-bg, #fff);
-}
-.perm-item.active { border-color: var(--primary, #6366f1); background: #eef2ff; }
-.perm-item input[type="checkbox"] { margin-top: 2px; cursor: pointer; accent-color: var(--primary, #6366f1); }
-.perm-info { display: flex; flex-direction: column; gap: 2px; }
-.perm-name { font-size: 0.88rem; font-weight: 500; color: var(--text-primary, #1e293b); }
-.perm-key { font-size: 0.72rem; color: var(--text-muted, #64748b); font-family: monospace; background: var(--hover, #f1f5f9); padding: 1px 4px; border-radius: 4px; }
-
-.btn { padding: 8px 16px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.85rem; transition: all .15s; display: flex; align-items: center; gap: 6px; }
-.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
-.btn-primary { background: var(--primary, #6366f1); color: #fff; }
-.btn-primary:hover:not(:disabled) { background: #4f46e5; }
-.btn-outline { background: transparent; border: 1px solid var(--border, #e2e8f0); color: var(--text-secondary, #475569); }
-.btn-outline:hover { border-color: var(--primary, #6366f1); color: var(--primary, #6366f1); }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
-
-.loading-overlay { display: flex; justify-content: center; padding: 60px; }
-
-.toast {
-  position: fixed; bottom: 24px; right: 24px; padding: 14px 20px;
-  border-radius: 10px; color: #fff; font-weight: 600; display: flex;
-  align-items: center; gap: 10px; z-index: 2000; animation: slideIn .3s ease;
-}
-.toast.success { background: #10b981; }
-.toast.error { background: #ef4444; }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 </style>

@@ -62,7 +62,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                 var refreshTokenHash = _tokenService.HashRefreshToken(originalRefreshToken);
 
                 user.RefreshToken = refreshTokenHash;
-                user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
+                user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
                 await _context.SaveChangesAsync();
 
                 return (true, "Thành công", new AuthResponseDto
@@ -95,7 +95,7 @@ namespace QuanLyDoanKham.API.Services.Auth
                     .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.RefreshToken == hashedInputToken);
 
-            if (user == null || user.RefreshTokenExpiry < DateTime.Now)
+            if (user == null || user.RefreshTokenExpiry < DateTime.UtcNow)
                 return (false, "Phiên đăng nhập không hợp lệ hoặc đã hết hạn.", null);
 
             if (user.Role == null)
@@ -109,7 +109,7 @@ namespace QuanLyDoanKham.API.Services.Auth
             var newRefreshTokenHash = _tokenService.HashRefreshToken(newOriginalRefreshToken);
 
             user.RefreshToken = newRefreshTokenHash;
-            user.RefreshTokenExpiry = DateTime.Now.AddDays(7);
+            user.RefreshTokenExpiry = DateTime.UtcNow.AddDays(7);
             await _context.SaveChangesAsync();
 
             return (true, "Thành công", new AuthResponseDto

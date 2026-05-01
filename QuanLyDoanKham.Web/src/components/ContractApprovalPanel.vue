@@ -154,7 +154,7 @@ const props = defineProps({
   totalSteps: { type: Number, default: 2 }
 })
 
-const emit = defineEmits(['submit', 'reset', 'approved', 'rejected'])
+const emit = defineEmits(['submit', 'reset', 'approved', 'rejected', 'refresh'])
 
 const { can } = usePermission()
 const canCreate = computed(() => can('HopDong.Create'))
@@ -192,6 +192,7 @@ const doAction = async (action) => {
     showApproveModal.value = false
     showRejectModal.value  = false
     emit(action === 'Approve' ? 'approved' : 'rejected')
+    emit('refresh')
     await loadHistory()
   } catch (e) {
     console.error(e)

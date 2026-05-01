@@ -54,6 +54,9 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
         public async Task<(HealthContract? Contract, string? ErrorMessage)> CreateContractAsync(HealthContractDto dto, string username, int? userId)
         {
+            if (dto.EndDate < dto.StartDate)
+                return (null, "Ngày kết thúc không thể trước ngày bắt đầu.");
+
             if (await _context.Contracts.AnyAsync(c =>
                 c.CompanyId == dto.CompanyId && c.SigningDate.Date == dto.SigningDate.Date))
                 return (null, "Công ty này đã có hợp đồng ký vào ngày này.");
@@ -91,6 +94,9 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
         public async Task<(bool Success, string? ErrorMessage)> UpdateContractAsync(int id, HealthContractDto dto, string username)
         {
+            if (dto.EndDate < dto.StartDate)
+                return (false, "Ngày kết thúc không thể trước ngày bắt đầu.");
+
             var contract = await _context.Contracts.FindAsync(id);
             if (contract == null) return (false, "Not Found");
             if (contract.Status == ContractStatus.Locked) return (false, "Hợp đồng đã khóa, không thể chỉnh sửa.");

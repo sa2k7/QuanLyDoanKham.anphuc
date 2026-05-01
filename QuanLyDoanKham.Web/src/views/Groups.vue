@@ -1,23 +1,23 @@
 <template>
-  <div class="p-8 bg-slate-50 min-h-screen">
+  <div class="p-3 bg-slate-50 min-h-screen">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
         <div>
-            <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-                <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-                    <Building2 class="text-white w-6 h-6" />
+            <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
+                    <Building2 class="text-white w-4.5 h-4.5" />
                 </div>
                 Quản lý Đoàn khám
             </h2>
-            <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Điều phối nhân sự & Theo dõi vận hành thực tế</p>
+            <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">Điều phối nhân sự & Theo dõi vận hành thực tế</p>
         </div>
-        <div class="flex gap-4">
+        <div class="flex gap-2">
             <button v-if="can('DoanKham.Create')" @click="showForm = !showForm" 
-                    class="h-12 px-8 rounded-2xl bg-primary text-white font-black text-[11px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-xl shadow-primary/20 active:scale-95 flex items-center gap-3">
-                <Plus class="w-4 h-4" /> THÊM ĐOÀN MỚI
+                    class="h-8 px-3 rounded-lg bg-primary text-white font-black text-[9px] uppercase tracking-widest hover:bg-primary/90 transition-all shadow-sm flex items-center gap-1.5">
+                <Plus class="w-3.5 h-3.5" /> THÊM ĐOÀN MỚI
             </button>
-            <button @click="exportGroups" class="h-12 px-6 rounded-2xl bg-white border-2 border-slate-200 text-slate-600 font-black text-[11px] uppercase tracking-widest hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm flex items-center gap-3">
-                <Download class="w-4 h-4" /> Xuất Excel
+            <button @click="exportGroups" class="h-8 px-3 rounded-lg bg-white border border-slate-200 text-slate-600 font-black text-[9px] uppercase tracking-widest hover:border-emerald-500 hover:text-emerald-600 transition-all shadow-sm flex items-center gap-1.5">
+                <Download class="w-3.5 h-3.5" /> Xuất Excel
             </button>
         </div>
     </div>
@@ -41,26 +41,26 @@
     />
 
     <!-- Main List Container -->
-    <div class="premium-card bg-white rounded-[2.5rem] p-4 border border-slate-100 shadow-sm relative overflow-hidden">
-        <div class="flex gap-2 p-1 bg-slate-50 rounded-2xl border border-slate-100 mb-8 max-w-fit">
-            <button @click="activeTab = 'Open'" :class="['px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all', activeTab === 'Open' ? 'bg-white text-primary shadow-lg' : 'text-slate-400 hover:text-slate-600']">
+    <div class="premium-card bg-white rounded-xl p-2 border border-slate-100 shadow-sm relative overflow-hidden">
+        <div class="flex gap-1 p-1 bg-slate-50 rounded-lg border border-slate-100 mb-3 max-w-fit">
+            <button @click="activeTab = 'Open'" :class="['px-3 py-1 rounded-md font-black text-[8px] uppercase tracking-widest transition-all', activeTab === 'Open' ? 'bg-white text-primary shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600']">
                 Đang thực hiện ({{ openGroups.length }})
             </button>
-            <button @click="activeTab = 'Closed'" :class="['px-8 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest transition-all', activeTab === 'Closed' ? 'bg-white text-slate-600 shadow-lg' : 'text-slate-400 hover:text-slate-600']">
+            <button @click="activeTab = 'Closed'" :class="['px-3 py-1 rounded-md font-black text-[8px] uppercase tracking-widest transition-all', activeTab === 'Closed' ? 'bg-white text-slate-600 shadow-sm border border-slate-100' : 'text-slate-400 hover:text-slate-600']">
                 Lưu trữ / Đã khóa ({{ closedGroups.length }})
             </button>
         </div>
 
-        <div v-if="loading" class="flex flex-col items-center justify-center py-32 gap-4">
-            <Loader2 class="w-10 h-10 animate-spin text-primary opacity-20" />
-            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Đang nạp dữ liệu đoàn...</span>
+        <div v-if="loading" class="flex flex-col items-center justify-center py-20 gap-3">
+            <Loader2 class="w-8 h-8 animate-spin text-primary opacity-20" />
+            <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Đang nạp dữ liệu đoàn...</span>
         </div>
 
-        <div v-else-if="filteredGroups.length === 0" class="py-32 text-center">
-            <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search class="w-8 h-8 text-slate-200" />
+        <div v-else-if="filteredGroups.length === 0" class="py-20 text-center">
+            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Search class="w-6 h-6 text-slate-200" />
             </div>
-            <h3 class="text-sm font-black text-slate-400 uppercase tracking-widest">Không tìm thấy đoàn khám nào</h3>
+            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Không tìm thấy đoàn khám nào</h3>
         </div>
 
         <div v-else class="grid gap-0">
@@ -135,54 +135,60 @@
 
     <!-- AI Suggestion Result Modal -->
     <Teleport to="body">
-        <div v-if="showAiModal" class="modal-overlay">
-            <div class="modal-content max-w-2xl border-indigo-600">
-                <div class="modal-body">
-                    <div class="flex items-center gap-4 mb-8">
-                        <div class="icon-box bg-indigo-50 text-indigo-600">
-                            <Sparkles class="w-7 h-7" />
+        <div v-if="showAiModal" class="modal-overlay flex items-center justify-center p-3">
+            <div class="modal-box w-full max-w-xl animate-scale-up !rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="relative p-3.5 pb-3 shrink-0 border-b border-slate-50 bg-indigo-600 text-white">
+                    <button @click="showAiModal = false" class="absolute top-3 right-3 w-7 h-7 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all text-white z-50">
+                        <X class="w-4 h-4" />
+                    </button>
+                    
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center shadow-inner">
+                            <Sparkles class="w-4 h-4" />
                         </div>
                         <div>
-                            <h3 class="modal-title italic">AI Đề xuất nhân sự</h3>
-                            <p class="modal-subtitle">Dựa trên chuyên môn & Kết quả khám trung bình</p>
+                            <h3 class="text-base font-black uppercase tracking-tight italic leading-none">AI Đề xuất nhân sự</h3>
+                            <p class="text-[7.5px] font-bold text-white/60 uppercase tracking-widest mt-0.5">Dựa trên chuyên môn & Kết quả khám trung bình</p>
                         </div>
                     </div>
-                    
-                    <div class="bg-indigo-50/50 p-6 rounded-2xl border border-indigo-100 mb-8">
-                        <div class="max-h-[400px] overflow-y-auto">
+                </div>
+                
+                <div class="p-4 flex-1 overflow-y-auto custom-scrollbar bg-white">
+                    <div class="bg-indigo-50/50 p-2.5 rounded-lg border border-indigo-100 mb-4">
+                        <div class="max-h-[250px] overflow-y-auto scrollbar-premium">
                             <table class="w-full text-left">
-                                <thead class="text-[9px] font-black uppercase text-indigo-400">
+                                <thead class="text-[7px] font-black uppercase text-indigo-400">
                                     <tr>
-                                        <th class="pb-4">Nhân viên</th>
-                                        <th class="pb-4">Vị trí gợi ý</th>
-                                        <th class="pb-4">Lý do</th>
-                                        <th class="pb-4 text-center">Ca làm</th>
+                                        <th class="pb-2">Nhân viên</th>
+                                        <th class="pb-2">Vị trí gợi ý</th>
+                                        <th class="pb-2">Lý do</th>
+                                        <th class="pb-2 text-center">Ca</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="s in aiSuggestions" :key="s.staffId" class="text-xs border-t border-indigo-100/50">
-                                        <td class="py-4 font-black text-slate-700 uppercase">
-                                            {{ staffList.find(st => st.staffId === s.staffId)?.fullName || 'Không xác định' }}
+                                    <tr v-for="s in aiSuggestions" :key="s.staffId" class="text-[10px] border-t border-indigo-100/50">
+                                        <td class="py-2 font-black text-slate-700 uppercase">
+                                            {{ staffList.find(st => st.staffId === sid)?.fullName || 'Không xác định' }}
                                         </td>
-                                        <td class="py-4">
-                                            <span class="px-3 py-1 bg-white text-indigo-600 rounded-lg font-black uppercase tracking-widest text-[9px] border border-indigo-100/50">
+                                        <td class="py-2">
+                                            <span class="px-1.5 py-0.5 bg-white text-indigo-600 rounded font-black uppercase tracking-widest text-[7px] border border-indigo-100/50">
                                                 {{ s.workPosition }}
                                             </span>
                                         </td>
-                                        <td class="py-4 text-slate-500 italic text-[11px] leading-relaxed">"{{ s.reason }}"</td>
-                                        <td class="py-4 text-center font-black">{{ s.shiftType === 1 ? 'Cả ngày' : 'Nửa ngày' }}</td>
+                                        <td class="py-2 text-slate-500 italic text-[9px] leading-relaxed">"{{ s.reason }}"</td>
+                                        <td class="py-2 text-center font-black">{{ s.shiftType === 1 ? 'Cả' : 'Nửa' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <div class="flex gap-4">
-                         <button @click="applyAiSuggestions" class="flex-1 bg-slate-900 text-white py-4 rounded-2xl font-black hover:bg-indigo-600 transition-all shadow-xl shadow-slate-200 flex items-center justify-center gap-3">
-                            <Sparkles class="w-5 h-5" />
-                            ÁP DỤNG TOÀN BỘ GỢI Ý
+                    <div class="flex gap-2">
+                         <button @click="applyAiSuggestions" class="flex-[2] bg-indigo-600 text-white h-9 rounded-lg font-black hover:bg-indigo-700 transition-all shadow-md shadow-indigo-100 flex items-center justify-center gap-2 text-[10px] uppercase tracking-widest">
+                            <Sparkles class="w-3.5 h-3.5" />
+                            ÁP DỤNG TOÀN BỘ
                         </button>
-                        <button @click="showAiModal = false" class="px-8 py-4 bg-white border-2 border-slate-100 rounded-2xl font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[10px]">
+                        <button @click="showAiModal = false" class="flex-1 h-9 bg-white border border-slate-200 rounded-lg font-black text-slate-400 hover:bg-slate-50 transition-all uppercase tracking-widest text-[9px]">
                             HỦY BỎ
                         </button>
                     </div>
@@ -656,7 +662,7 @@ onMounted(fetchData)
 
 .premium-card {
   background: white;
-  border-radius: 2rem;
+  border-radius: 1rem;
   border: 1px solid rgba(226, 232, 240, 0.8);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
@@ -676,7 +682,7 @@ onMounted(fetchData)
 .modal-content {
   background: white;
   width: 100%;
-  border-radius: 2.5rem;
+  border-radius: 1.5rem;
   border-width: 2px;
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   position: relative;
@@ -685,11 +691,11 @@ onMounted(fetchData)
 }
 
 .modal-body {
-  padding: 2.5rem;
+  padding: 1.5rem;
 }
 
 .modal-title {
-  font-size: 1.5rem;
+  font-size: 1.15rem;
   font-weight: 900;
   color: #1e293b;
   text-transform: uppercase;
@@ -697,7 +703,7 @@ onMounted(fetchData)
 }
 
 .modal-subtitle {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 900;
   color: #94a3b8;
   text-transform: uppercase;
@@ -706,9 +712,9 @@ onMounted(fetchData)
 }
 
 .icon-box {
-  width: 3.5rem;
-  height: 3.5rem;
-  border-radius: 1.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -14,6 +14,7 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         // 1) Check permission from JWT claim (fast path — no DB hit)
         if (context.User.Claims.Any(c => c.Type == "permission" && c.Value == requirement.Permission))
         {
+            Console.WriteLine($"[AUTH] Permission GRANTED from JWT: {requirement.Permission} for user {context.User.Identity?.Name}");
             context.Succeed(requirement);
             return;
         }
@@ -22,12 +23,17 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
         var roleIdClaim = context.User.FindFirst("RoleId")?.Value;
         if (roleIdClaim == "1")
         {
+            Console.WriteLine($"[AUTH] Permission GRANTED via Admin bypass (RoleId=1) for {context.User.Identity?.Name}");
             context.Succeed(requirement);
             return;
         }
 
         var userIdStr = context.User.FindFirst("UserId")?.Value;
-        if (!int.TryParse(userIdStr, out var userId)) return;
+        if (!int.TryParse(userIdStr, out var userId)) 
+        {
+            Console.WriteLine($"[AUTH] Permission DENIED: UserId claim missing or invalid for {context.User.Identity?.Name}");
+            return;
+        }
 
         // 3) Fallback DB check — verify Admin by DB in case JWT is stale
         var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.UserId == userId);
@@ -68,7 +74,12 @@ public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
 
         if (hasPerm)
         {
+            Console.WriteLine($"[AUTH] Permission GRANTED from DB: {requirement.Permission} for UserId {userId}");
             context.Succeed(requirement);
+        }
+        else
+        {
+            Console.WriteLine($"[AUTH] Permission DENIED from DB: {requirement.Permission} for UserId {userId}");
         }
     }
 }

@@ -139,8 +139,8 @@ const routes = [
     },
     {
         path: '/permissions',
-        name: 'Permissions',
-        component: () => import('../views/Permissions.vue'),
+        name: 'PermissionManagement',
+        component: () => import('../views/PermissionManagement.vue'),
         meta: { requiresAuth: true, permission: 'HeThong.RoleManage' }
     },
     {

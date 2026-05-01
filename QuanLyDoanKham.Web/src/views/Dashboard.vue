@@ -5,64 +5,63 @@
 
     <!-- Sidebar Navigation -->
     <aside :class="['sidebar-gradient border-r border-slate-100 flex flex-col h-screen fixed md:sticky top-0 z-[60] shadow-[20px_0_40px_-20px_rgba(0,0,0,0.03)] flex-shrink-0 transition-all duration-300 ease-in-out', 
-                    isSidebarCollapsed ? 'w-24' : 'w-60',
+                    isSidebarCollapsed ? 'w-12' : 'w-40',
                     isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0']">
       <!-- Collapse Toggle Button (Desktop) -->
       <button @click="isSidebarCollapsed = !isSidebarCollapsed" 
-              class="hidden md:flex absolute -right-4 top-10 w-8 h-8 bg-white border border-slate-100 rounded-full items-center justify-center shadow-lg text-slate-400 hover:text-primary z-[70] transition-all"
+              class="hidden md:flex absolute -right-3.5 top-8 w-7 h-7 bg-white border border-slate-100 rounded-full items-center justify-center shadow-lg text-slate-400 hover:text-primary z-[70] transition-all"
               :class="{'rotate-180': isSidebarCollapsed}">
-        <ChevronLeft class="w-4 h-4" />
+        <ChevronLeft class="w-3.5 h-3.5" />
       </button>
 
       <!-- Logo Section -->
-      <div class="p-6 pb-8 flex items-center gap-3 cursor-pointer group overflow-hidden" @click="activeMenu = 'home'">
-        <div class="bg-white p-1 rounded-2xl transition-all group-hover:rotate-6 shadow-lg shadow-primary/20 flex-shrink-0 border border-slate-100">
-          <img :src="logo" class="w-10 h-10 object-contain" alt="Logo" />
+      <div class="p-3 pb-3 flex items-center gap-1.5 cursor-pointer group overflow-hidden" @click="activeMenu = 'home'">
+        <div class="bg-white p-1 rounded-lg transition-all group-hover:rotate-6 shadow-sm flex-shrink-0 border border-slate-100">
+          <img :src="logo" class="w-6 h-6 object-contain" alt="Logo" />
         </div>
         <div v-show="!isSidebarCollapsed" class="transition-opacity duration-300">
-          <h1 class="font-bold text-lg text-slate-900 leading-tight tracking-tight">ĐA KHOA <span class="text-primary italic">AN PHÚC</span></h1>
-          <p class="text-[8px] font-semibold text-slate-400 uppercase tracking-[0.3em] mt-1">Hệ thống Điều hành</p>
+          <h1 class="font-black text-[12px] text-slate-900 leading-none tracking-tight uppercase italic">AN PHÚC</h1>
+          <p class="text-[5.5px] font-bold text-slate-400 uppercase tracking-[0.25em] mt-0.5">ADMIN SYSTEM</p>
         </div>
       </div>
 
       <!-- Menu Items -->
-      <nav class="flex-1 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+      <nav class="flex-1 px-1.5 space-y-0.5 overflow-y-auto custom-scrollbar">
         <button v-for="item in filteredMenuItems" :key="item.id"
                 @click="activeMenu = item.id; isMobileMenuOpen = false"
-                :class="['w-full flex items-center flex-nowrap gap-4 px-5 py-4 rounded-2xl font-bold text-sm transition-all group relative overflow-hidden', 
-                         activeMenu === item.id ? 'bg-primary text-white shadow-xl shadow-primary/20' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
+                :class="['w-full flex items-center flex-nowrap gap-2 px-2.5 py-1.5 rounded-lg font-bold text-[9.5px] transition-all group relative overflow-hidden', 
+                         activeMenu === item.id ? 'bg-primary text-white shadow-md shadow-primary/10' : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600',
                          isSidebarCollapsed ? 'justify-center px-0' : '']">
-          <component :is="item.icon" :class="['w-5 h-5 flex-shrink-0 transition-transform group-hover:scale-110', activeMenu === item.id ? 'text-white' : 'text-slate-300 group-hover:text-primary']" />
-          <span v-show="!isSidebarCollapsed" class="tracking-[0.2em] uppercase whitespace-nowrap flex-shrink-0 transition-opacity duration-300">{{ item.name }}</span>
+          <component :is="item.icon" :class="['w-4 h-4 flex-shrink-0 transition-transform group-hover:scale-110', activeMenu === item.id ? 'text-white' : 'text-slate-300 group-hover:text-primary']" />
+          <span v-show="!isSidebarCollapsed" class="tracking-[0.1em] uppercase whitespace-nowrap flex-shrink-0 transition-opacity duration-300">{{ item.name }}</span>
           
-          <div v-if="activeMenu === item.id" class="absolute right-0 top-0 bottom-0 w-1.5 bg-white/20"></div>
-          <ArrowRight v-if="activeMenu !== item.id && !isSidebarCollapsed" class="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0" />
+          <div v-if="activeMenu === item.id" class="absolute right-0 top-0 bottom-0 w-0.5 bg-white/20"></div>
+          <ArrowRight v-if="activeMenu !== item.id && !isSidebarCollapsed" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </button>
       </nav>
-
-      <!-- User Profile Card -->
-      <div :class="['border-t border-slate-100 bg-slate-50/50 transition-all duration-300', isSidebarCollapsed ? 'p-4' : 'p-6']">
-        <div :class="['bg-white rounded-2xl shadow-sm border border-slate-100 group relative transition-all duration-300', isSidebarCollapsed ? 'p-3 flex justify-center' : 'p-4']">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
-              <User class="w-5 h-5" />
+      <!-- User Profile Card -->
+      <div :class="['border-t border-slate-100 bg-slate-50/50 transition-all duration-300', isSidebarCollapsed ? 'p-2' : 'p-3']">
+        <div :class="['bg-white rounded-lg shadow-sm border border-slate-100 group relative transition-all duration-300', isSidebarCollapsed ? 'p-1 flex justify-center' : 'p-2']">
+          <div class="flex items-center gap-1.5">
+            <div class="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center text-primary flex-shrink-0">
+              <User class="w-3.5 h-3.5" />
             </div>
             <div v-show="!isSidebarCollapsed" class="flex-1 min-w-0 transition-opacity duration-300">
-              <p class="text-xs font-black text-slate-800 truncate">{{ authStore.user?.username }}</p>
-              <p class="text-[9px] font-black text-primary uppercase tracking-[0.3em]">{{ i18n.t('roles.' + authStore.userRole) }}</p>
+              <p class="text-[9px] font-black text-slate-800 truncate leading-none mb-0.5">{{ authStore.user?.username }}</p>
+              <p class="text-[7px] font-black text-primary uppercase tracking-[0.2em] leading-none">{{ i18n.t('roles.' + authStore.userRole) }}</p>
             </div>
-            <button v-show="!isSidebarCollapsed" @click="isUserMenuOpen = !isUserMenuOpen" class="p-2 hover:bg-slate-50 rounded-lg transition-all">
-              <ChevronDown class="w-4 h-4 text-slate-400" :class="{'rotate-180': isUserMenuOpen}" />
+            <button v-show="!isSidebarCollapsed" @click="isUserMenuOpen = !isUserMenuOpen" class="p-1 hover:bg-slate-50 rounded transition-all">
+              <ChevronDown class="w-3 h-3 text-slate-400" :class="{'rotate-180': isUserMenuOpen}" />
             </button>
           </div>
 
           <!-- Mini Dropdown -->
-          <div v-if="isUserMenuOpen" class="absolute bottom-full left-0 right-0 mb-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-2 animate-slide-up z-[70]">
-            <button @click="showPasswordModal = true; isUserMenuOpen = false" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-slate-50 text-xs font-black text-slate-600 transition-all">
-              <KeyRound class="w-4 h-4" /> <span class="">ĐỔI MẬT KHẨU</span>
+          <div v-if="isUserMenuOpen" class="absolute bottom-full left-0 right-0 mb-1.5 bg-white rounded-xl shadow-2xl border border-slate-100 p-1.5 animate-slide-up z-[70]">
+            <button @click="showPasswordModal = true; isUserMenuOpen = false" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 text-[9px] font-black text-slate-600 transition-all">
+              <KeyRound class="w-3.5 h-3.5" /> <span class="">ĐỔI MẬT KHẨU</span>
             </button>
-            <button @click="handleLogout" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-rose-50 text-xs font-black text-rose-500 transition-all">
-              <LogOut class="w-4 h-4" /> <span class="">ĐĂNG XUẤT</span>
+            <button @click="handleLogout" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-rose-50 text-[9px] font-black text-rose-500 transition-all">
+              <LogOut class="w-3.5 h-3.5" /> <span class="">ĐĂNG XUẤT</span>
             </button>
           </div>
         </div>
@@ -72,54 +71,53 @@
     <!-- Main Content Area -->
     <main class="flex-1 h-screen overflow-y-auto relative custom-scrollbar w-full">
       <!-- Top Header / Global Search -->
-      <header class="h-24 glass-header shadow-sm flex items-center px-4 md:px-10 sticky top-0 z-50">
-        <div class="flex-1 flex items-center gap-4 md:gap-8 overflow-hidden">
-          <button @click="isMobileMenuOpen = true" class="p-2 -ml-2 text-slate-400 hover:text-primary transition-colors md:hidden focus:outline-none">
-            <Menu class="w-6 h-6" />
+      <header class="h-11 bg-white/80 backdrop-blur-md border-b border-slate-100 shadow-sm flex items-center px-4 md:px-5 sticky top-0 z-50">
+        <div class="flex-1 flex items-center gap-3 md:gap-5 overflow-hidden">
+          <button @click="isMobileMenuOpen = true" class="p-1.5 -ml-1 text-slate-400 hover:text-primary transition-colors md:hidden focus:outline-none">
+            <Menu class="w-4.5 h-4.5" />
           </button>
           <div class="items-center gap-2 hidden sm:flex">
-            <h2 class="text-xl font-black text-slate-800 uppercase tracking-widest whitespace-nowrap ">{{ activeMenuName }}</h2>
-            <div class="w-1 h-1 rounded-full bg-slate-300"></div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">{{ itemsBreadcrumb }}</p>
+            <h2 class="text-[13px] font-black text-slate-800 uppercase tracking-widest whitespace-nowrap ">{{ activeMenuName }}</h2>
+            <div class="w-0.5 h-0.5 rounded-full bg-slate-300"></div>
+            <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-[0.2em] whitespace-nowrap">{{ itemsBreadcrumb }}</p>
           </div>
 
           <!-- Global Search -->
-          <div class="relative w-full max-w-xl group">
-            <Search class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-300 group-focus-within:text-primary transition-colors" />
+          <div class="relative w-full max-w-sm group">
+            <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-300 group-focus-within:text-primary transition-colors" />
             <input type="text" 
                    v-model="searchQuery"
                    @input="handleSearch"
                    @focus="isSearchFocused = true"
                    :placeholder="i18n.t('common.searchPlaceholder')"
-                   class="w-full pl-14 pr-20 py-4 bg-slate-50 border border-slate-200 focus:bg-white focus:border-primary/30 focus:shadow-[0_0_0_4px_rgba(16,185,129,0.1)] rounded-2xl outline-none font-black text-slate-800 transition-all shadow-inner" />
-            <div class="absolute right-6 top-1/2 -translate-y-1/2 flex gap-1">
-              <span class="px-2 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-400 shadow-sm">CTRL</span>
-              <span class="px-2 py-1 bg-white border border-slate-200 rounded-md text-[9px] font-black text-slate-400 shadow-sm">K</span>
+                   class="w-full pl-8 pr-12 py-1.5 bg-slate-50 border border-slate-100 focus:bg-white focus:border-primary/20 rounded text-[10px] font-bold text-slate-800 transition-all shadow-inner outline-none" />
+            <div class="absolute right-2.5 top-1/2 -translate-y-1/2 flex gap-1">
+              <span class="px-1 py-0.5 bg-white border border-slate-100 rounded text-[6px] font-black text-slate-300">K</span>
             </div>
 
             <!-- Enhanced Search Results -->
-            <div v-if="searchResults.length > 0 && isSearchFocused" class="absolute top-full left-0 right-0 mt-4 bg-white rounded-[2rem] shadow-2xl border-2 border-slate-50 overflow-hidden z-[100] animate-scale-up">
+            <div v-if="searchResults.length > 0 && isSearchFocused" class="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-scale-up">
               <div v-for="res in searchResults" :key="res.id" 
                    @click="navigateSearchResult(res)"
-                   class="flex items-center p-5 hover:bg-indigo-50/50 cursor-pointer border-b border-slate-50 last:border-none transition-all group">
-                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center mr-5 shadow-sm group-hover:scale-110 transition-transform duration-500', 
+                   class="flex items-center p-2.5 hover:bg-indigo-50/50 cursor-pointer border-b border-slate-50 last:border-none transition-all group">
+                <div :class="['w-8 h-8 rounded-lg flex items-center justify-center mr-3 shadow-sm group-hover:scale-110 transition-transform duration-500', 
                      res.type === 'company' ? 'bg-sky-50 text-sky-600' : 
                      res.type === 'contract' ? 'bg-teal-50 text-teal-600' :
                      res.type === 'staff' ? 'bg-rose-50 text-rose-600' :
                      res.type === 'group' ? 'bg-primary/10 text-primary' :
                      'bg-violet-50 text-violet-600']">
-                  <component :is="getSearchIcon(res.type)" class="w-6 h-6" />
+                  <component :is="getSearchIcon(res.type)" class="w-4 h-4" />
                 </div>
                 <div class="flex-1">
-                  <p class="font-black text-slate-800 leading-tight">{{ res.name }}</p>
-                  <div class="flex items-center gap-2 mt-0.5">
-                    <span class="text-[9px] font-black uppercase tracking-widest text-slate-400 ">{{ getResTypeName(res.type) }}</span>
-                    <div class="w-1 h-1 rounded-full bg-slate-200"></div>
-                    <span class="text-[9px] font-black text-slate-400">ID: #{{ res.id }}</span>
+                  <p class="font-black text-[10.5px] text-slate-800 leading-tight uppercase italic">{{ res.name }}</p>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">{{ getResTypeName(res.type) }}</span>
+                    <div class="w-0.5 h-0.5 rounded-full bg-slate-200"></div>
+                    <span class="text-[7.5px] font-bold text-slate-400 uppercase italic">ID: {{ res.id }}</span>
                   </div>
                 </div>
-                <div class="w-10 h-10 rounded-full border border-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-4 group-hover:translate-x-0">
-                  <ArrowRight class="w-4 h-4 text-primary" />
+                <div class="w-7 h-7 rounded-full border border-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0">
+                  <ArrowRight class="w-3.5 h-3.5 text-primary" />
                 </div>
               </div>
             </div>
@@ -127,73 +125,59 @@
         </div>
 
         <!-- Language Switcher & Notifications -->
-        <div class="flex items-center gap-4">
+        <div class="flex items-center gap-3">
           <!-- Language Selector -->
-          <div class="flex bg-slate-100 p-1 rounded-xl">
+          <div class="flex bg-slate-100 p-0.5 rounded-lg">
             <button @click="i18n.setLocale('vi')" 
-                    :class="['px-3 py-1.5 rounded-lg text-[10px] font-black transition-all', i18n.locale === 'vi' ? 'bg-white shadow-sm text-primary' : 'text-slate-400']">
+                    :class="['px-1.5 py-1 rounded text-[8px] font-black transition-all', i18n.locale === 'vi' ? 'bg-white shadow-sm text-primary' : 'text-slate-400']">
               VN
             </button>
             <button @click="i18n.setLocale('en')" 
-                    :class="['px-3 py-1.5 rounded-lg text-[10px] font-black transition-all', i18n.locale === 'en' ? 'bg-white shadow-sm text-primary' : 'text-slate-400']">
+                    :class="['px-1.5 py-1 rounded text-[8px] font-black transition-all', i18n.locale === 'en' ? 'bg-white shadow-sm text-primary' : 'text-slate-400']">
               EN
             </button>
           </div>
 
           <div class="relative notification-area">
             <button @click="showNotificationDropdown = !showNotificationDropdown"
-                    class="p-4 bg-slate-50 text-slate-400 rounded-2xl hover:text-primary transition-all relative">
-              <Bell class="w-6 h-6" />
-              <div v-if="notificationStore.unreadCount > 0" class="absolute top-3 right-3 text-[8px] flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-rose-500 text-white rounded-full border-2 border-white font-black tabular-nums">
+                    class="p-1.5 bg-slate-50 text-slate-400 rounded-lg hover:text-primary transition-all relative">
+              <Bell class="w-4.5 h-4.5" />
+              <div v-if="notificationStore.unreadCount > 0" class="absolute -top-1 -right-1 text-[7px] flex items-center justify-center min-w-[14px] h-3.5 px-1 bg-rose-500 text-white rounded-full border border-white font-black tabular-nums">
                 {{ notificationStore.unreadCount > 99 ? '99+' : notificationStore.unreadCount }}
               </div>
             </button>
 
             <!-- Notification Dropdown -->
-            <div v-if="showNotificationDropdown" class="absolute top-full right-0 mt-4 w-96 bg-white rounded-[2rem] shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-scale-up">
-              <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
-                <h3 class="font-black text-slate-800 text-sm uppercase tracking-[0.2em]">Thông báo nội bộ</h3>
-                <button v-if="notificationStore.unreadCount > 0" @click="notificationStore.markAllAsRead()" class="text-[10px] font-black text-primary hover:underline uppercase tracking-widest ">Đã đọc tất cả</button>
+            <div v-if="showNotificationDropdown" class="absolute top-full right-0 mt-3 w-80 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-[100] animate-scale-up">
+              <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+                <h3 class="font-black text-slate-800 text-[10px] uppercase tracking-[0.2em]">Thông báo</h3>
+                <button v-if="notificationStore.unreadCount > 0" @click="notificationStore.markAllAsRead()" class="text-[9px] font-black text-primary hover:underline uppercase tracking-widest ">Đã đọc hết</button>
               </div>
               
-              <div class="max-h-[28rem] overflow-y-auto custom-scrollbar">
+              <div class="max-h-96 overflow-y-auto custom-scrollbar">
                 <div v-for="n in notificationStore.notifications" :key="n.id" 
-                     :class="['p-5 border-b border-slate-50 last:border-none transition-all flex gap-4 group cursor-default', !n.isRead ? 'bg-indigo-50/30' : 'hover:bg-slate-50/50']">
-                  <div :class="['w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center', !n.isRead ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 text-slate-300']">
-                    <Sparkles class="w-5 h-5" />
+                     :class="['p-4 border-b border-slate-50 last:border-none transition-all flex gap-3 group cursor-default', !n.isRead ? 'bg-indigo-50/30' : 'hover:bg-slate-50/50']">
+                  <div :class="['w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center', !n.isRead ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-slate-100 text-slate-300']">
+                    <Sparkles class="w-4 h-4" />
                   </div>
                   <div class="flex-1">
-                    <p :class="['text-xs leading-relaxed', !n.isRead ? 'text-slate-900 font-black' : 'text-slate-500']">{{ n.message }}</p>
-                    <div class="flex items-center justify-between mt-2">
-                      <span class="text-[9px] font-black text-slate-400 uppercase tracking-[0.3em]">{{ new Date(n.createdAt).toLocaleString('vi-VN') }}</span>
-                      <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p :class="['text-[10px] leading-relaxed', !n.isRead ? 'text-slate-900 font-black' : 'text-slate-500']">{{ n.message }}</p>
+                    <div class="flex items-center justify-between mt-1.5">
+                      <span class="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">{{ new Date(n.createdAt).toLocaleString('vi-VN', {hour:'2-digit', minute:'2-digit'}) }}</span>
+                      <div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button v-if="!n.isRead" @click="notificationStore.markAsRead(n.id)" class="p-1 hover:text-primary"><Check class="w-3 h-3" /></button>
                         <button @click="notificationStore.deleteNotification(n.id)" class="p-1 hover:text-rose-500"><X class="w-3 h-3" /></button>
                       </div>
                     </div>
                   </div>
                 </div>
-                
-                <div v-if="notificationStore.notifications.length === 0" class="py-16 text-center">
-                  <div class="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <Bell class="w-6 h-6 text-slate-200" />
-                  </div>
-                  <p class="text-[10px] font-black uppercase tracking-widest text-slate-300">Không có thông báo mới</p>
-                </div>
-              </div>
-
-              <div v-if="authStore.isAdmin && resetRequests.length > 0" class="p-4 bg-rose-50/50 border-t border-rose-100">
-                  <button @click="showResetModal = true; showNotificationDropdown = false" class="w-full py-4 bg-rose-500 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.3em] shadow-lg shadow-rose-200 flex items-center justify-center gap-2">
-                    <ShieldAlert class="w-4 h-4" />
-                    {{ resetRequests.length }} YÊU CẦU CẤP LẠI MK
-                  </button>
               </div>
             </div>
           </div>
 
-          <div class="w-px h-10 bg-slate-100"></div>
-          <button @click="activeMenu = 'reports'" class="flex items-center gap-3 px-6 py-3 bg-slate-900 text-white rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-slate-200 active:scale-95 transition-all">
-             <BarChart3 class="w-5 h-5 text-indigo-400" />
+          <div class="w-px h-6 bg-slate-100"></div>
+          <button @click="activeMenu = 'reports'" class="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg font-black text-[10px] uppercase tracking-widest shadow shadow-slate-200 active:scale-95 transition-all">
+             <BarChart3 class="w-4 h-4 text-indigo-400" />
              {{ i18n.locale === 'vi' ? 'Thống kê' : 'Reports' }}
           </button>
         </div>
@@ -244,7 +228,7 @@
 
 
       <!-- View Container -->
-      <div class="p-10">
+      <div class="p-6">
           <!-- ══ HOME: Role-Based Panel ══════════════════════════════════════ -->
           <div v-if="activeMenu === 'home'" class="animate-fade-in">
             <component

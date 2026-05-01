@@ -1,47 +1,46 @@
 <template>
-  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in pb-12 p-6 scrollbar-premium overflow-y-auto font-sans">
-    <!-- Filters & Header Toolbar -->
+  <div class="h-full flex flex-col dashboard-gradient relative animate-fade-in p-3 scrollbar-premium overflow-y-auto font-sans">
     <!-- Header Section -->
-    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 p-6">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-3">
       <div>
-        <h2 class="text-3xl font-bold text-slate-800 flex items-center gap-3">
-          <div class="w-12 h-12 bg-primary text-white rounded-2xl flex items-center justify-center shadow-lg">
-            <BarChart3 class="w-6 h-6" />
+        <h2 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+          <div class="w-8 h-8 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
+            <BarChart3 class="w-4.5 h-4.5" />
           </div>
           Trung Tâm Phân Tích
         </h2>
-        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[10px] mt-2">Thống kê hiệu suất & Vận hành (BI Analytics)</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">Thống kê hiệu suất & Vận hành (BI Analytics)</p>
       </div>
 
       <!-- Filter Controls -->
-      <div class="flex items-center gap-4 bg-white p-3 rounded-[1.5rem] border border-slate-200 shadow-sm">
-        <div class="flex items-center gap-4 px-4 border-r border-slate-200/50 py-1">
-           <Calendar class="w-5 h-5 text-slate-400" />
-           <div class="flex items-center gap-2">
-             <input type="date" v-model="filters.startDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
-             <span class="text-slate-300 font-black">→</span>
-             <input type="date" v-model="filters.endDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-xs font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
+      <div class="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-slate-200 shadow-sm">
+        <div class="flex items-center gap-2 px-3 border-r border-slate-200/50 py-0.5">
+           <Calendar class="w-4 h-4 text-slate-400" />
+           <div class="flex items-center gap-1.5">
+             <input type="date" v-model="filters.startDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-[10px] font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
+             <span class="text-slate-300 font-black text-[10px]">→</span>
+             <input type="date" v-model="filters.endDate" @change="fetchReportData" class="bg-transparent border-none outline-none text-[10px] font-black text-slate-600 cursor-pointer focus:ring-0 uppercase tracking-tighter" />
            </div>
         </div>
-        <button @click="fetchReportData" class="w-12 h-12 flex items-center justify-center hover:bg-slate-50 rounded-xl transition-all group shadow-sm bg-white" title="Làm mới dữ liệu">
-          <RefreshCw class="w-5 h-5 text-slate-500 group-active:rotate-180 transition-transform duration-500" />
+        <button @click="fetchReportData" class="w-8 h-8 flex items-center justify-center hover:bg-slate-50 rounded-lg transition-all group shadow-sm bg-white" title="Làm mới dữ liệu">
+          <RefreshCw class="w-4 h-4 text-slate-500 group-active:rotate-180 transition-transform duration-500" />
         </button>
       </div>
 
-      <div class="flex items-center gap-4">
-        <button @click="handleExport('PDF')" class="btn-premium secondary !rounded-xl !px-6 shadow-sm border border-slate-200">
-          <FileDown class="w-4 h-4" /> XUẤT PDF
+      <div class="flex items-center gap-2">
+        <button @click="handleExport('PDF')" class="h-8 px-3 bg-white border border-slate-200 text-slate-600 rounded-lg font-black text-[9px] uppercase hover:bg-slate-50 transition-all shadow-sm flex items-center gap-1.5">
+          <FileDown class="w-3.5 h-3.5" /> XUẤT PDF
         </button>
-        <button @click="handleExport('Excel')" class="btn-premium primary !rounded-xl !px-8 shadow-lg shadow-primary/20">
-          <Download class="w-4 h-4" /> TẢI EXCEL
+        <button @click="handleExport('Excel')" class="h-8 px-4 bg-primary text-white rounded-lg font-black text-[9px] uppercase shadow-md shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-1.5">
+          <Download class="w-3.5 h-3.5" /> TẢI EXCEL
         </button>
       </div>
     </div>
 
     <!-- MAIN CONTENT START -->
-    <div class="px-6 pb-20 max-w-[1600px] mx-auto w-full">
-      <!-- 1. P&L CONTROL CENTER WIDGETS -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 mt-4">
+    <div class="pb-10 max-w-[1600px] mx-auto w-full">
+      <!-- 1. KPI WIDGETS -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         <StatCard 
           title="LÃI/LỖ RÒNG (P&L)" 
           :value="formatCurrency(kpis.netProfit)" 
@@ -50,7 +49,6 @@
           :trendColor="kpis.netProfit > 0 ? 'emerald' : 'rose'" 
           subtext="Doanh thu - Chi phí vận hành" 
           variant="indigo" 
-          class="glass-stat shadow-glass"
         />
         
         <StatCard 
@@ -61,7 +59,6 @@
           subtext="Tỷ lệ tham gia thực tế" 
           :progress="kpis.hrPerformance || 0" 
           variant="emerald"
-          class="glass-stat shadow-glass"
         />
 
         <StatCard 
@@ -72,7 +69,6 @@
           :trendColor="kpis.materialDeviation <= 0 ? 'emerald' : 'amber'" 
           subtext="Thực tế vs. Định mức (10%)" 
           variant="sky"
-          class="glass-stat shadow-glass"
         />
 
         <StatCard 
@@ -83,106 +79,105 @@
           subtext="Tiến độ hoàn thành" 
           :progress="kpis.completionRate || 0" 
           variant="rose"
-          class="glass-stat shadow-glass"
         />
       </div>
 
       <!-- 2. Charts & Performance Matrix -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
         <!-- Revenue Trend Analysis -->
-        <div class="lg:col-span-2 premium-card p-8 relative overflow-hidden group glass-card shadow-glass">
-          <div class="flex items-center justify-between mb-8">
+        <div class="lg:col-span-2 premium-card p-4 relative overflow-hidden group bg-white border border-slate-100 shadow-sm rounded-xl">
+          <div class="flex items-center justify-between mb-4">
              <div>
-                <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Biểu đồ Xu hướng Doanh thu</h3>
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dữ liệu 6 tháng gần nhất</p>
+                <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm italic">Xu hướng Doanh thu</h3>
+                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Dữ liệu 6 tháng gần nhất</p>
              </div>
-             <div class="flex gap-2 items-center">
-                <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/40"></span>
-                <span class="text-[10px] font-black text-primary uppercase tracking-widest">Realtime Sync</span>
+             <div class="flex gap-1.5 items-center">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span class="text-[8px] font-black text-primary uppercase tracking-widest">Sync</span>
              </div>
           </div>
           
-          <div class="h-64 flex items-end justify-between gap-4 px-4 relative mt-4">
+          <div class="h-48 flex items-end justify-between gap-3 px-2 relative mt-2">
              <div v-for="(point, i) in kpis.revenueTrend" :key="i" class="flex-grow flex flex-col items-center group/bar cursor-default">
                 <div class="relative w-full flex flex-col items-center">
-                   <div class="absolute -top-12 scale-0 group-hover/bar:scale-100 transition-all duration-300 bg-slate-900 text-white text-[10px] px-3 py-1.5 rounded-xl font-black whitespace-nowrap z-10 shadow-xl border border-white/10 tabular-nums">
+                   <div class="absolute -top-10 scale-0 group-hover/bar:scale-100 transition-all duration-300 bg-slate-900 text-white text-[8px] px-2 py-1 rounded-lg font-black whitespace-nowrap z-10 shadow-xl tabular-nums">
                       {{ formatFullCurrency(point.value) }}
                    </div>
-                   <div class="w-full bg-slate-50/50 rounded-2xl h-48 flex items-end overflow-hidden group-hover/bar:bg-slate-100/50 transition-colors border border-slate-100/50">
-                      <div class="w-full bg-primary/20 group-hover/bar:bg-primary transition-all duration-700 shadow-[0_-4px_12px_rgba(var(--primary-rgb),0.1)]" :style="{ height: (point.value / (maxRevenue || 1) * 100) + '%' }"></div>
+                   <div class="w-full bg-slate-50/50 rounded-lg h-36 flex items-end overflow-hidden group-hover/bar:bg-slate-100 transition-colors border border-slate-50">
+                      <div class="w-full bg-primary/20 group-hover/bar:bg-primary transition-all duration-500" :style="{ height: (point.value / (maxRevenue || 1) * 100) + '%' }"></div>
                    </div>
                 </div>
-                <span class="mt-4 text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ point.label }}</span>
+                <span class="mt-2 text-[8px] font-black text-slate-400 uppercase tracking-tighter">{{ point.label }}</span>
              </div>
           </div>
         </div>
 
         <!-- 2.2 Operation Deadlines Widget -->
-        <div class="premium-card p-8 flex flex-col group/alerts glass-card shadow-glass">
-          <div class="flex items-center justify-between mb-6">
-             <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Thông báo & Deadline</h3>
-             <div class="p-2 bg-indigo-50 rounded-xl">
-               <BellRing class="text-indigo-500 w-5 h-5" />
+        <div class="premium-card p-4 flex flex-col group/alerts bg-white border border-slate-100 shadow-sm rounded-xl">
+          <div class="flex items-center justify-between mb-3">
+             <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm italic">Deadline & Cảnh báo</h3>
+             <div class="p-1.5 bg-indigo-50 rounded-lg">
+               <BellRing class="text-indigo-500 w-4 h-4" />
              </div>
           </div>
-          <div class="flex-grow space-y-4">
-             <div v-if="!kpis.upcomingDeadlines || kpis.upcomingDeadlines.length === 0" class="flex flex-col items-center justify-center h-full opacity-30 italic text-sm py-10">
-                <FileText class="w-12 h-12 mb-2 opacity-20" />
-                <p class="font-bold text-slate-400">Không có deadline gần</p>
+          <div class="flex-grow space-y-2.5">
+             <div v-if="!kpis.upcomingDeadlines || kpis.upcomingDeadlines.length === 0" class="flex flex-col items-center justify-center h-full opacity-30 py-8">
+                <FileText class="w-8 h-8 mb-2 opacity-20" />
+                <p class="font-bold text-[10px] text-slate-400">Không có deadline</p>
              </div>
-             <div v-for="item in kpis.upcomingDeadlines" :key="item.id" class="p-5 rounded-[2rem] bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group scale-100 hover:scale-[1.02] duration-300">
-                <div class="flex justify-between items-start mb-2">
-                   <p class="text-xs font-black text-slate-700 uppercase tracking-tight">{{ item.name }}</p>
-                   <span class="px-2 py-0.5 rounded-full text-[8px] font-black uppercase tracking-widest bg-indigo-500 text-white">{{ item.daysRemaining }} ngày</span>
+             <div v-for="item in kpis.upcomingDeadlines" :key="item.id" class="p-3 rounded-xl bg-slate-50 border border-slate-100 hover:border-indigo-200 transition-all group scale-100 hover:scale-[1.01] duration-300">
+                <div class="flex justify-between items-start mb-1">
+                   <p class="text-[9px] font-black text-slate-700 uppercase tracking-tight leading-none">{{ item.name }}</p>
+                   <span class="px-1.5 py-0.5 rounded bg-indigo-500 text-white text-[7px] font-black uppercase tracking-widest">{{ item.daysRemaining }}d</span>
                 </div>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{{ item.company }}</p>
+                <p class="text-[8px] text-slate-400 font-bold uppercase tracking-widest">{{ item.company }}</p>
              </div>
           </div>
-          <button class="mt-6 py-4 bg-slate-50 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:bg-slate-100 transition-all border border-slate-100">Xem tất cả</button>
+          <button class="mt-4 py-2 bg-slate-50 rounded-lg text-[8px] font-black uppercase tracking-widest text-slate-500 hover:bg-slate-100 transition-all border border-slate-100">XEM TẤT CẢ</button>
         </div>
       </div>
 
       <!-- 3. Financial & Efficiency Grid -->
-      <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
+      <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <!-- 3.1 Top Performers (HR Analysis) -->
-        <div class="premium-card overflow-hidden flex flex-col">
-          <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
+        <div class="premium-card overflow-hidden flex flex-col bg-white border border-slate-100 shadow-sm rounded-xl">
+          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
             <div>
-              <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Hiệu suất Nhân sự Top Đầu</h3>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phân tích tần suất làm việc & thu nhập</p>
+              <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm italic">Hiệu suất Nhân sự</h3>
+              <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Phân tích tần suất & thu nhập</p>
             </div>
-            <div class="p-3 bg-indigo-50 rounded-2xl shadow-sm">
-              <Users2 class="w-6 h-6 text-indigo-500" />
+            <div class="p-1.5 bg-indigo-50 rounded-lg">
+              <Users2 class="w-4 h-4 text-indigo-500" />
             </div>
           </div>
-          <div class="p-4 flex-grow">
+          <div class="p-1 flex-grow">
             <div class="overflow-x-auto">
               <table class="w-full text-left">
                 <thead>
-                  <tr>
-                     <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] border-b border-slate-50">Nhân sự</th>
-                     <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center border-b border-slate-50">Số đoàn</th>
-                     <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center border-b border-slate-50">Ngày công</th>
-                     <th class="px-4 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-right border-b border-slate-50">Tổng thu nhập</th>
+                  <tr class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-50">
+                     <th class="px-3 py-2">Nhân sự</th>
+                     <th class="px-3 py-2 text-center">Số đoàn</th>
+                     <th class="px-3 py-2 text-center">Ngày công</th>
+                     <th class="px-3 py-2 text-right">Tổng thu nhập</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                   <tr v-for="staff in staffEfficiency.slice(0, 5)" :key="staff.staffName" class="hover:bg-slate-50/50 transition-all group">
-                     <td class="px-4 py-5">
-                        <div class="flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-400 text-xs shadow-inner">
+                     <td class="px-3 py-2">
+                        <div class="flex items-center gap-2">
+                          <div class="w-6 h-6 rounded bg-slate-100 flex items-center justify-center font-black text-slate-400 text-[9px] shadow-inner">
                             {{ staff.staffName.charAt(0) }}
                           </div>
                           <div>
-                            <p class="font-black text-slate-800 text-sm leading-none mb-1 group-hover:text-primary transition-colors">{{ staff.staffName }}</p>
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{{ staff.role }}</p>
+                            <p class="font-black text-slate-800 text-[10px] leading-none mb-0.5 group-hover:text-primary transition-colors uppercase italic">{{ staff.staffName }}</p>
+                            <p class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">{{ staff.role }}</p>
                           </div>
                         </div>
                      </td>
-                     <td class="px-4 py-5 text-center font-black text-slate-700 tabular-nums text-sm">{{ staff.totalGroups }}</td>
-                     <td class="px-4 py-5 text-center font-bold text-slate-500 tabular-nums text-sm">{{ staff.daysWorked }} <span class="text-[9px] text-slate-300">d</span></td>
-                     <td class="px-4 py-5 text-right">
-                        <span class="font-black text-emerald-600 text-xs tracking-tighter tabular-nums px-3 py-1.5 bg-emerald-50 rounded-lg">{{ staff.totalSalary?.toLocaleString() }}</span>
+                     <td class="px-3 py-2 text-center font-black text-slate-700 tabular-nums text-[10px]">{{ staff.totalGroups }}</td>
+                     <td class="px-3 py-2 text-center font-bold text-slate-500 tabular-nums text-[10px]">{{ staff.daysWorked }}<span class="text-[7px] text-slate-300 ml-0.5">D</span></td>
+                     <td class="px-3 py-2 text-right">
+                        <span class="font-black text-emerald-600 text-[10px] tracking-tighter tabular-nums px-2 py-0.5 bg-emerald-50 rounded border border-emerald-100">{{ staff.totalSalary?.toLocaleString() }}</span>
                      </td>
                   </tr>
                 </tbody>
@@ -192,67 +187,69 @@
         </div>
 
         <!-- 3.2 Finance Overview (CEO Analysis) -->
-        <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden flex flex-col group/finance">
-          <div class="p-8 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
+        <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden flex flex-col group/finance">
+          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/20">
             <div>
-              <h3 class="font-black text-slate-800 uppercase tracking-tighter text-lg italic">Phân tích Lợi nhuận Hợp đồng</h3>
-              <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Cơ cấu doanh thu & chi phí trọng điểm</p>
+              <h3 class="font-black text-slate-800 uppercase tracking-tight text-sm italic">Phân tích Lợi nhuận</h3>
+              <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Cơ cấu doanh thu & chi phí trọng điểm</p>
             </div>
-            <div class="p-3 bg-emerald-50 rounded-2xl shadow-sm">
-              <TrendingUp class="w-6 h-6 text-emerald-500" />
+            <div class="p-1.5 bg-emerald-50 rounded-lg shadow-sm">
+              <TrendingUp class="w-4 h-4 text-emerald-500" />
             </div>
           </div>
           
-          <div class="flex-grow p-8">
-             <div class="grid grid-cols-3 gap-6 mb-10">
-                <div class="text-center p-6 bg-slate-50/50 rounded-[2.5rem] border border-slate-100 relative group overflow-hidden shadow-sm">
-                   <div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                   <p class="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Tỷ lệ Lãi gộp</p>
-                   <p class="text-3xl font-black text-slate-900 transition-all group-hover:scale-110 tabular-nums">{{ financialReport.margin?.toFixed(1) || '0.0' }}%</p>
+          <div class="flex-grow p-3">
+             <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="text-center p-2 bg-slate-50 rounded-lg border border-slate-100 relative group overflow-hidden shadow-sm">
+                   <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest mb-0.5 italic">Lãi gộp</p>
+                   <p class="text-sm font-black text-slate-900 tabular-nums">{{ financialReport.margin?.toFixed(1) || '0.0' }}%</p>
                 </div>
-                <div class="text-center p-6 bg-rose-50/50 rounded-[2.5rem] border border-rose-100 group shadow-sm">
-                   <p class="text-[9px] font-black text-rose-400 uppercase tracking-[0.2em] mb-2">CP Nhân sự</p>
-                   <p class="text-3xl font-black text-rose-600 tabular-nums">{{ calculatePercentage(financialReport.staffCost, financialReport.revenue) }}%</p>
+                <div class="text-center p-2 bg-rose-50 rounded-lg border border-rose-100 group shadow-sm">
+                   <p class="text-[7px] font-black text-rose-400 uppercase tracking-widest mb-0.5 italic">CP Nhân sự</p>
+                   <p class="text-sm font-black text-rose-600 tabular-nums">{{ calculatePercentage(financialReport.staffCost, financialReport.revenue) }}%</p>
                 </div>
-                <div class="text-center p-6 bg-amber-50/50 rounded-[2.5rem] border border-amber-100 group shadow-sm col-span-2">
-                   <p class="text-[9px] font-black text-amber-500 uppercase tracking-[0.2em] mb-2">Số lượt khám mới (Tháng)</p>
-                   <p class="text-3xl font-black text-amber-600 tabular-nums">{{ kpis.newPatientsThisMonth || 0 }}</p>
+                <div class="text-center p-2 bg-amber-50 rounded-lg border border-amber-100 group shadow-sm">
+                   <p class="text-[7px] font-black text-amber-500 uppercase tracking-widest mb-0.5 italic">Lượt mới</p>
+                   <p class="text-sm font-black text-amber-600 tabular-nums">{{ kpis.newPatientsThisMonth || 0 }}</p>
                 </div>
              </div>
 
-             <div class="space-y-6">
+             <div class="space-y-2">
                 <div v-for="contract in financialReport.topContracts || []" :key="contract.companyName" class="relative group/item">
-                   <div class="flex justify-between text-[11px] font-black text-slate-700 uppercase tracking-tight mb-2">
-                      <span class="group-hover/item:text-primary transition-colors">{{ contract.companyName }}</span>
+                   <div class="flex justify-between text-[8px] font-black text-slate-700 uppercase tracking-tight mb-1">
+                      <span class="group-hover/item:text-primary transition-colors truncate max-w-[150px] italic">{{ contract.companyName }}</span>
                       <span class="text-emerald-600 tabular-nums">{{ formatCurrency(contract.amount) }}</span>
                    </div>
-                   <div class="w-full bg-slate-100 rounded-full h-2 flex overflow-hidden shadow-inner">
+                   <div class="w-full bg-slate-100 rounded-full h-1 flex overflow-hidden shadow-inner">
                       <div class="bg-primary h-full rounded-full shadow-lg shadow-primary/20 transition-all duration-1000" :style="{ width: (contract.amount / (financialReport.topContracts?.[0]?.amount || 1) * 100) + '%' }"></div>
                    </div>
                 </div>
              </div>
           </div>
-          <button class="m-8 py-5 bg-slate-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-[0.3em] hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/30 active:scale-95 group-hover/finance:shadow-primary/10">Báo cáo Tài chính chi tiết (PDF)</button>
+          <button class="mx-3 mb-3 py-2 bg-slate-900 text-white rounded-lg font-black text-[9px] uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md active:scale-95 flex items-center justify-center gap-2">
+            <FileText class="w-3.5 h-3.5 text-indigo-400" />
+            BÁO CÁO TÀI CHÍNH (PDF)
+          </button>
         </div>
       </div>
     </div>
 
     <!-- EXPORT MODAL & OVERLAYS (Simulated) -->
-    <div v-if="exporting" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-6">
-       <div class="bg-white rounded-[3rem] p-12 max-w-sm w-full text-center shadow-2xl animate-scale-up border border-white/20">
-          <div class="relative w-32 h-32 mx-auto mb-8">
-             <div class="absolute inset-0 border-[10px] border-slate-100 rounded-full shadow-inner"></div>
-             <div class="absolute inset-0 border-[10px] border-primary rounded-full border-t-transparent animate-spin"></div>
+    <div v-if="exporting" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-3">
+       <div class="bg-white rounded-xl p-8 max-w-sm w-full text-center shadow-2xl animate-scale-up border border-white/20">
+          <div class="relative w-24 h-24 mx-auto mb-6">
+             <div class="absolute inset-0 border-[6px] border-slate-100 rounded-full shadow-inner"></div>
+             <div class="absolute inset-0 border-[6px] border-primary rounded-full border-t-transparent animate-spin"></div>
              <div class="absolute inset-0 flex items-center justify-center">
-                <FileText class="w-12 h-12 text-primary" />
+                <FileText class="w-8 h-8 text-primary" />
              </div>
           </div>
-          <h3 class="text-2xl font-black text-slate-800 mb-2">Đang khởi tạo báo cáo...</h3>
-          <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-8">Vui lòng không đóng cửa sổ này</p>
-          <div class="w-full bg-slate-100 rounded-full h-3 mb-2 shadow-inner overflow-hidden p-0.5">
+          <h3 class="text-lg font-black text-slate-800 mb-1">Đang khởi tạo báo cáo...</h3>
+          <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-6">Vui lòng không đóng cửa sổ này</p>
+          <div class="w-full bg-slate-100 rounded-full h-2 mb-2 shadow-inner overflow-hidden p-0.5">
              <div class="bg-primary h-full rounded-full transition-all duration-300 shadow-lg shadow-primary/40" :style="{ width: exportProgress + '%' }"></div>
           </div>
-          <p class="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{{ exportProgress }}% Complete</p>
+          <p class="text-[8px] font-black text-primary uppercase tracking-widest">{{ exportProgress }}% Complete</p>
        </div>
     </div>
   </div>
