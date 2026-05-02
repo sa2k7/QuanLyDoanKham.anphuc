@@ -101,10 +101,13 @@ const fetchCounts = async () => {
       return end >= today && end <= in30days
     }).length
   } catch { /* giữ — */ }
-  try {
-    const res = await apiClient.get('/api/MedicalGroups')
-    counts.value.groups = (res.data || []).filter(g => g.status === 'Open').length
-  } catch { /* giữ — */ }
+  if (authStore.hasPermission('DoanKham.View')) {
+    try {
+      const res = await apiClient.get('/api/MedicalGroups')
+      counts.value.groups = (res.data || []).filter(g => g.status === 'Open').length
+    } catch { /* giữ — */ }
+  }
+  // Nếu không có DoanKham.View → counts.value.groups giữ nguyên '—'
 }
 
 onMounted(fetchCounts)

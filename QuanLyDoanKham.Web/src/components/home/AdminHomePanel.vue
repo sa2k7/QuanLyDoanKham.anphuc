@@ -72,18 +72,16 @@ const todayDateStr = computed(() =>
 const counts = ref({ groups: '—', contracts: '—', staff: '—', users: '—' })
 
 const fetchCounts = async () => {
-  try {
-    const [groups, contracts, staff, users] = await Promise.allSettled([
-      apiClient.get('/api/MedicalGroups'),
-      apiClient.get('/api/Contracts'),
-      apiClient.get('/api/Staffs'),
-      apiClient.get('/api/Auth/users')
-    ])
-    if (groups.status === 'fulfilled') counts.value.groups = groups.value.data.length
-    if (contracts.status === 'fulfilled') counts.value.contracts = contracts.value.data.length
-    if (staff.status === 'fulfilled') counts.value.staff = staff.value.data.length
-    if (users.status === 'fulfilled') counts.value.users = users.value.data.length
-  } catch { /* giữ nguyên — */ }
+  const calls = []
+  if (authStore.hasPermission('DoanKham.View'))
+    calls.push(apiClient.get('/api/MedicalGroups').then(r => { counts.value.groups = r.data.length }).catch(() => {}))
+  if (authStore.hasPermission('HopDong.View'))
+    calls.push(apiClient.get('/api/Contracts').then(r => { counts.value.contracts = r.data.length }).catch(() => {}))
+  if (authStore.hasPermission('NhanSu.View'))
+    calls.push(apiClient.get('/api/Staffs').then(r => { counts.value.staff = r.data.length }).catch(() => {}))
+  if (authStore.hasPermission('HeThong.UserManage'))
+    calls.push(apiClient.get('/api/Auth/users').then(r => { counts.value.users = r.data.length }).catch(() => {}))
+  await Promise.allSettled(calls)
 }
 
 onMounted(fetchCounts)

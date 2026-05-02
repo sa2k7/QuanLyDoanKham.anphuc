@@ -89,20 +89,24 @@ const todayDateStr = computed(() =>
 const stats = ref({ revenue: '—', unsettled: '—', activeContracts: '—', extraCost: '—' })
 
 const fetchStats = async () => {
-  try {
-    const now = new Date()
-    const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-    const end = now.toISOString().split('T')[0]
-    const res = await apiClient.get('/api/Reports/dashboard-kpis', { params: { startDate: start, endDate: end } })
-    const d = res.data
-    stats.value.revenue = d.totalRevenue ? d.totalRevenue.toLocaleString('vi-VN') + ' đ' : '0 đ'
-  } catch { /* giữ — */ }
-  try {
-    const res = await apiClient.get('/api/Contracts')
-    const contracts = res.data || []
-    stats.value.activeContracts = contracts.filter(c => c.status === 'Active' || c.status === 'Approved').length
-    stats.value.unsettled = contracts.filter(c => c.status === 'Active').length
-  } catch { /* giữ — */ }
+  if (authStore.hasPermission('BaoCao.View')) {
+    try {
+      const now = new Date()
+      const start = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+      const end = now.toISOString().split('T')[0]
+      const res = await apiClient.get('/api/Reports/dashboard-kpis', { params: { startDate: start, endDate: end } })
+      const d = res.data
+      stats.value.revenue = d.totalRevenue ? d.totalRevenue.toLocaleString('vi-VN') + ' đ' : '0 đ'
+    } catch { /* giữ — */ }
+  }
+  if (authStore.hasPermission('HopDong.View')) {
+    try {
+      const res = await apiClient.get('/api/Contracts')
+      const contracts = res.data || []
+      stats.value.activeContracts = contracts.filter(c => c.status === 'Active' || c.status === 'Approved').length
+      stats.value.unsettled = contracts.filter(c => c.status === 'Active').length
+    } catch { /* giữ — */ }
+  }
 }
 
 onMounted(fetchStats)
