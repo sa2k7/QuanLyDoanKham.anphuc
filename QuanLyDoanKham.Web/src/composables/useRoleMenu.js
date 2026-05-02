@@ -36,7 +36,7 @@ const ADMIN_MENU = [
   { id: 'users',            name: 'Tài khoản',   icon: User,         permission: 'HeThong.UserManage' },
   { id: 'permissions',      name: 'Phân quyền',  icon: ShieldCheck,  permission: 'HeThong.RoleManage' },
   { id: 'audit-logs',       name: 'Nhật ký',     icon: History,      permission: 'HeThong.AuditLog' },
-  { id: 'admin/permissions-debug', name: 'Debug Quyền', icon: ShieldCheck, permission: 'HeThong.RoleManage' },
+  { id: 'admin/permissions-debug', name: 'Debug Quyền', icon: ShieldCheck, permission: 'HeThong.RoleManage', devOnly: true },
 ]
 
 // Bác sĩ / Kỹ Thuật Viên - tập trung vào phòng khám
@@ -75,6 +75,15 @@ const QC_MENU = [
   { id: 'patients',      name: 'Bệnh nhân',     icon: UserRound,   permission: 'DoanKham.View' },
   { id: 'groups',        name: 'Đoàn khám',     icon: Stethoscope, permission: 'DoanKham.View' },
   { id: 'analytics',     name: 'Thống kê',      icon: BarChart3,   permission: 'BaoCao.View' },
+]
+
+// Medical Group Manager — quản lý đoàn khám, bệnh nhân, chấm công, thống kê
+const MEDICAL_GROUP_MANAGER_MENU = [
+  { id: 'home',               name: 'Tổng quan',   icon: LayoutDashboard },
+  { id: 'groups',             name: 'Đoàn khám',   icon: Stethoscope,    permission: 'DoanKham.View' },
+  { id: 'patients',           name: 'Bệnh nhân',   icon: UserRound,      permission: 'DoanKham.View' },
+  { id: 'attendance-summary', name: 'Chấm công',   icon: ClipboardCheck, permission: 'ChamCong.ViewAll' },
+  { id: 'analytics',          name: 'Thống kê',    icon: BarChart3,      permission: 'BaoCao.View' },
 ]
 
 // Contract Manager
@@ -118,7 +127,7 @@ const ROLE_PROFILES = {
     greeting: 'Bảng điều khiển toàn hệ thống'
   },
   MedicalGroupManager: {
-    menuItems: QC_MENU,
+    menuItems: MEDICAL_GROUP_MANAGER_MENU,
     homePanel: 'QcHomePanel',
     themeColor: 'text-emerald-700',
     themeBg: 'from-emerald-600 to-teal-500',
@@ -290,9 +299,11 @@ export function useRoleMenu() {
   /**
    * Lọc menuItems dựa trên permissions của user.
    * Nếu item không có `permission` field → luôn hiển thị.
+   * Items có `devOnly: true` chỉ hiển thị trong môi trường DEV.
    */
   const filteredMenuItems = computed(() =>
     menuItems.value.filter(item => {
+      if (item.devOnly && !import.meta.env.DEV) return false
       if (!item.permission) return true
       return authStore.hasPermission(item.permission)
     })
