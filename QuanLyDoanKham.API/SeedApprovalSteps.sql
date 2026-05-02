@@ -1,9 +1,9 @@
--- ThĂªm cĂ¡c bÆ°á»›c phĂª duyá»‡t máº·c Ä‘á»‹nh cho Há»£p Ä‘á»“ng
+-- Thêm các bước phê duyệt mặc định cho Hợp đồng
 INSERT INTO ContractApprovalSteps (StepOrder, StepName, RequiredPermission, IsActive)
 VALUES 
-(1, N'TrÆ°á»Ÿng phĂ²ng kinh doanh duyá»‡t', 'HopDong.Approve', 1),
-(2, N'Káº¿ toĂ¡n trÆ°á»Ÿng kiá»ƒm tra', 'HopDong.Approve', 1),
-(3, N'GiĂ¡m Ä‘á»‘c phĂª duyá»‡t cuá»‘i', 'HopDong.Approve', 1);
+(1, N'Trưởng phòng kinh doanh duyệt', 'HopDong.Approve', 1),
+(2, N'Kế toán trưởng kiểm tra', 'HopDong.Approve', 1),
+(3, N'Giám đốc phê duyệt cuối', 'HopDong.Approve', 1);
 
--- CĂ´ng bá»‘ káº¿t quáº£
+-- Công bố kết quả
 SELECT * FROM ContractApprovalSteps;

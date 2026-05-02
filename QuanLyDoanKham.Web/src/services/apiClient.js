@@ -46,11 +46,21 @@ const processQueue = (error, token = null) => {
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
-        if (error.response) {
-            console.error(`[API Error] ${error.config?.url}: Status ${error.response.status}`, error.response.data);
-        } else {
-            console.error(`[Network Error] Không thể kết nối tới server`);
+        // ── Phân loại log theo severity (Phase 3.1) ──────────────────────────
+        // Network error (không có response) → luôn log error
+        // 5xx Server error → luôn log error (cần điều tra)
+        // 4xx Client error (403/404) → chỉ warn trong DEV, im lặng trong PROD
+        //   Lý do: 403/404 là expected behavior khi role không có quyền,
+        //   không phải lỗi cần developer attention trong production demo
+        if (!error.response) {
+            console.error('[Network Error] Không thể kết nối tới server')
+        } else if (error.response.status >= 500) {
+            console.error(`[API Error] ${error.config?.url}: Status ${error.response.status}`, error.response.data)
+        } else if (import.meta.env.DEV) {
+            // 4xx trong DEV: warn thay vì error để phân biệt với lỗi thật
+            console.warn(`[API ${error.response.status}] ${error.config?.url}`)
         }
+        // 4xx trong PROD → im lặng hoàn toàn (không spam console khi demo)
 
         const originalRequest = error.config
 
