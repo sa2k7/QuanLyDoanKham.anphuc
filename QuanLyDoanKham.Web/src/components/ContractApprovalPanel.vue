@@ -24,12 +24,14 @@
       </button>
 
       <!-- PendingApproval → Approve/Reject (nếu có quyền) -->
-      <template v-if="contract.status === 'PendingApproval' && canApprove">
-        <button class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
+      <template v-if="contract.status === 'PendingApproval'">
+        <button v-if="canApprove"
+                class="flex-1 bg-gradient-to-r from-emerald-500 to-teal-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
                 @click="openApproveModal">
           <CheckCircle class="w-4 h-4" /> <span>PHÊ DUYỆT</span>
         </button>
-        <button class="flex-1 bg-gradient-to-r from-rose-500 to-red-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
+        <button v-if="canReject"
+                class="flex-1 bg-gradient-to-r from-rose-500 to-red-600 text-white px-5 py-2.5 rounded-xl font-black transition-all flex items-center justify-center gap-2 hover:-translate-y-1 active:scale-95 text-xs uppercase tracking-tight" 
                 @click="openRejectModal">
           <XCircle class="w-4 h-4" /> <span>TỪ CHỐI</span>
         </button>
@@ -159,6 +161,7 @@ const emit = defineEmits(['submit', 'reset', 'approved', 'rejected', 'refresh'])
 const { can } = usePermission()
 const canCreate = computed(() => can('HopDong.Create'))
 const canApprove = computed(() => can('HopDong.Approve'))
+const canReject = computed(() => can('HopDong.Reject'))
 
 const history = ref([])
 const showApproveModal = ref(false)

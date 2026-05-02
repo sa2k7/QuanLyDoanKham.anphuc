@@ -27,10 +27,10 @@
         <button @click="loadPayroll" class="w-10 h-10 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all flex items-center justify-center shadow-sm">
           <RefreshCw class="w-4 h-4 text-slate-500" :class="{ 'animate-spin': loading }" />
         </button>
-        <button @click="calculateAllPayroll" class="btn-premium primary !bg-indigo-600 !shadow-indigo-100" :disabled="loading">
+        <button @click="calculateAllPayroll" v-if="can('Luong.Manage')" class="btn-premium primary !bg-indigo-600 !shadow-indigo-100" :disabled="loading">
           <Calculator class="w-3.5 h-3.5" /> Chạy tính lương
         </button>
-        <button @click="exportExcel" class="btn-premium primary">
+        <button @click="exportExcel" v-if="can('BaoCao.Export')" class="btn-premium primary">
           <Download class="w-3.5 h-3.5" /> Xuất Excel
         </button>
       </div>
@@ -139,8 +139,10 @@ import { Wallet, Download, Search, RefreshCw, FileText, Loader2, Calculator } fr
 import apiClient from '../services/apiClient'
 import { useToast } from '../composables/useToast'
 import { parseApiError } from '../services/errorHelper'
+import { usePermission } from '../composables/usePermission'
 
 const toast = useToast()
+const { can } = usePermission()
 const loading = ref(false)
 
 // Selectors

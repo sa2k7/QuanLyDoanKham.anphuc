@@ -460,6 +460,11 @@
                                 class="w-8.5 h-8.5 rounded-lg bg-rose-50 text-rose-500 flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all border border-rose-100 shadow-sm">
                             <Trash2 class="w-3.5 h-3.5" />
                         </button>
+                        <button v-if="!isEditing && can('HopDong.Upload')"
+                                @click="triggerUpload(detailsModal.data.healthContractId)"
+                                class="px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg font-black text-[9px] uppercase tracking-widest flex items-center gap-1.5 hover:bg-indigo-600 hover:text-white transition-all border border-indigo-100 shadow-sm">
+                            <FileText class="w-3.5 h-3.5" /> UPLOAD
+                        </button>
                     </div>
 
                     <div class="flex items-center gap-2">

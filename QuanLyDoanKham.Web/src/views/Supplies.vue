@@ -135,10 +135,13 @@
                                 <button @click="openHistory(s)" class="p-2 rounded-lg hover:bg-indigo-50 text-slate-400 hover:text-indigo-600 transition-all group/btn" title="Lịch sử">
                                     <History class="w-3.5 h-3.5" />
                                 </button>
-                                <button v-if="can('Kho.Edit')" @click="openImportModal(s)" class="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm border border-emerald-100" title="Nhập bổ sung">
+                                <button v-if="can('Kho.View')" @click="openEditModal(s)" class="p-2 rounded-lg hover:bg-sky-50 text-slate-400 hover:text-sky-600 transition-all group/btn" title="Sửa/Cập nhật">
+                                    <Pencil class="w-3.5 h-3.5" />
+                                </button>
+                                <button v-if="can('Kho.Import')" @click="openImportModal(s)" class="p-2 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all shadow-sm border border-emerald-100" title="Nhập bổ sung">
                                     <ArrowDownLeft class="w-3.5 h-3.5" />
                                 </button>
-                                <button v-if="can('Kho.Edit')" @click="openExportModal(s)" class="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all shadow-sm border border-rose-100" title="Xuất cho đoàn">
+                                <button v-if="can('Kho.Export')" @click="openExportModal(s)" class="p-2 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 transition-all shadow-sm border border-rose-100" title="Xuất cho đoàn">
                                     <ArrowUpRight class="w-3.5 h-3.5" />
                                 </button>
                                 <button v-if="can('Kho.Edit')" @click="confirmDelete(s)" class="p-2 rounded-lg hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-all" title="Xóa">
@@ -360,6 +363,64 @@
             </div>
         </div>
 
+        <!-- Edit Modal -->
+        <div v-if="modals.edit.show" class="modal-overlay" @click.self="modals.edit.show = false">
+            <div class="modal-box max-w-lg animate-scale-up !rounded-2xl">
+                <div class="p-5 relative">
+                    <button @click="modals.edit.show = false" class="absolute top-5 right-5 text-slate-400 hover:rotate-90 transition-all duration-300">
+                        <X class="w-4 h-4" />
+                    </button>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-black text-slate-800 uppercase tracking-widest mb-1 flex items-center gap-2">
+                            <Pencil class="w-5 h-5 text-sky-500" /> Sửa / Cập Nhật Vật Tư
+                        </h3>
+                        <p class="text-[8px] font-black text-slate-400 uppercase tracking-widest italic">Cập nhật thông tin danh mục vật tư</p>
+                    </div>
+                    
+                    <form @submit.prevent="saveEditSupply" class="space-y-3">
+                        <div class="form-group">
+                            <label class="text-[9px]">Tên vật tư <span class="text-rose-500">*</span></label>
+                            <input v-model="modals.edit.data.itemName" required placeholder="VD: Kim tiêm G23, Cồn 70 độ..." class="form-input !py-2 !text-[13px]" />
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="form-group">
+                                <label class="text-[9px]">Phân loại</label>
+                                <select v-model="modals.edit.data.category" class="form-input !py-2 !text-[13px]">
+                                    <option value="Thuốc">Thuốc</option>
+                                    <option value="Vật tư y tế">Vật tư y tế</option>
+                                    <option value="Thiết bị">Thiết bị</option>
+                                    <option value="Khác">Khác</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="text-[9px]">Đơn vị <span class="text-rose-500">*</span></label>
+                                <input v-model="modals.edit.data.unit" placeholder="Cái, Hộp, Lọ..." required class="form-input !py-2 !text-[13px]" />
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="form-group">
+                                <label class="text-[9px]">Ngưỡng báo động</label>
+                                <input type="number" v-model="modals.edit.data.minStockLevel" class="form-input !py-2 !text-[13px]" />
+                            </div>
+                            <div class="form-group">
+                                <label class="text-[9px]">Giá nhập (VND)</label>
+                                <input type="number" v-model="modals.edit.data.typicalUnitPrice" class="form-input !py-2 !text-[13px]" />
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end gap-2 mt-4 border-t pt-4">
+                            <button type="button" @click="modals.edit.show = false" class="btn-premium secondary !py-2 !px-4 !text-[11px]">Hủy bỏ</button>
+                            <button type="submit" :disabled="saving" class="btn-premium primary !py-2 !px-4 !text-[11px]">
+                                <RefreshCw v-if="saving" class="w-3.5 h-3.5 animate-spin" />
+                                <Save v-else class="w-3.5 h-3.5" />
+                                <span>Lưu Thay Đổi</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- Import Modal -->
         <div v-if="modals.import.show" class="modal-overlay" @click.self="modals.import.show = false">
             <div class="modal-box max-w-md animate-scale-up !rounded-2xl">
@@ -499,7 +560,7 @@ import {
     Package, Box, AlertTriangle, TrendingUp, Search, Plus, 
     X, History, ArrowDownLeft, ArrowUpRight, Stethoscope,
     FlaskConical, Pill, Syringe, ClipboardList, RefreshCw,
-    Save, CheckCircle, Inbox, Trash2, Loader2, AlertCircle, FileText
+    Save, CheckCircle, Inbox, Trash2, Loader2, AlertCircle, FileText, Pencil
 } from 'lucide-vue-next'
 import { useI18nStore } from '../stores/i18n'
 import { usePermission } from '../composables/usePermission'
@@ -528,6 +589,7 @@ const reportFilters = ref({
 
 const modals = ref({
     add: { show: false, data: { itemName: '', unit: '', category: 'Vật tư y tế', minStockLevel: 10, typicalUnitPrice: 0 } },
+    edit: { show: false, supply: null, data: { itemName: '', unit: '', category: 'Vật tư y tế', minStockLevel: 10, typicalUnitPrice: 0 } },
     import: { show: false, supply: null, data: { quantity: 0, unitPrice: 0, note: '' } },
     export: { show: false, supply: null, data: { medicalGroupId: null, quantity: 0, unitPrice: 0, note: '' } },
     history: { show: false, supply: null, list: [] }
@@ -651,6 +713,26 @@ const saveNewSupply = async () => {
         await apiClient.post('/api/Supplies', modals.value.add.data)
         toast.success("Đã thêm vật tư mới")
         modals.value.add.show = false
+        fetchSupplies()
+    } catch (err) {
+        toast.error(parseApiError(err))
+    } finally {
+        saving.value = false
+    }
+}
+
+const openEditModal = (s) => {
+    modals.value.edit.supply = s
+    modals.value.edit.data = { itemName: s.itemName, unit: s.unit, category: s.category, minStockLevel: s.minStockLevel, typicalUnitPrice: s.typicalUnitPrice }
+    modals.value.edit.show = true
+}
+
+const saveEditSupply = async () => {
+    saving.value = true
+    try {
+        await apiClient.put(`/api/Supplies/${modals.value.edit.supply.supplyId}`, modals.value.edit.data)
+        toast.success("Đã cập nhật vật tư")
+        modals.value.edit.show = false
         fetchSupplies()
     } catch (err) {
         toast.error(parseApiError(err))

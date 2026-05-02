@@ -5,11 +5,11 @@
             <UsersIcon class="w-4 h-4" /> Đội ngũ đi đoàn
         </h5>
         <div class="flex items-center gap-2 pr-2">
-            <button v-if="status === 'Open' && can('DoanKham.StaffAssign')" 
+            <button v-if="status === 'Open' && can('DoanKham.AssignStaff')" 
                     @click="$emit('open-modal', 'staff', groupId)" 
                     class="btn-mini-action">Gán nhân sự</button>
-            <div v-if="can('DoanKham.StaffAssign')" class="divider"></div>
-            <button v-if="status === 'Open' && can('DoanKham.StaffAssign')" 
+            <div v-if="can('DoanKham.AssignStaff')" class="divider"></div>
+            <button v-if="status === 'Open' && can('DoanKham.AssignStaff')" 
                     @click="$emit('ai-suggest', groupId)" 
                     :disabled="isAiLoading" 
                     class="btn-mini-action text-primary">
@@ -121,7 +121,7 @@
                                     class="icon-btn-rose" title="Rời đoàn">
                                 <LogOut class="w-4 h-4" />
                             </button>
-                            <button v-if="status === 'Open' && can('DoanKham.StaffAssign')" 
+                            <button v-if="status === 'Open' && can('DoanKham.AssignStaff')" 
                                     @click="$emit('remove-staff', s.id, groupId)"
                                     class="icon-btn-slate" title="Xóa khỏi đoàn">
                                 <Trash2 class="w-4 h-4" />
