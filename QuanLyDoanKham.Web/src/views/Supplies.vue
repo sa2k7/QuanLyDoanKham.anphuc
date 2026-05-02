@@ -81,7 +81,11 @@
         </div>
         
         <div class="overflow-x-auto scrollbar-premium">
-            <table class="w-full text-left">
+            <div v-if="isLoading" class="p-4 space-y-3">
+              <div v-for="i in 3" :key="i"
+                   class="h-16 bg-slate-100 rounded-lg animate-pulse" />
+            </div>
+            <table v-else class="w-full text-left">
                 <thead>
                     <tr class="bg-slate-50/50 text-[9px] font-black text-slate-400 uppercase tracking-widest">
                         <th class="p-3 pl-5">Vật Tư & Phân Loại</th>

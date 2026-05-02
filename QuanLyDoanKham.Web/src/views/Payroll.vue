@@ -27,8 +27,10 @@
         <button @click="loadPayroll" class="w-10 h-10 bg-white hover:bg-slate-50 border border-slate-200 rounded-2xl transition-all flex items-center justify-center shadow-sm">
           <RefreshCw class="w-4 h-4 text-slate-500" :class="{ 'animate-spin': loading }" />
         </button>
-        <button @click="calculateAllPayroll" v-if="can('Luong.Manage')" class="btn-premium primary !bg-indigo-600 !shadow-indigo-100" :disabled="loading">
-          <Calculator class="w-3.5 h-3.5" /> Chạy tính lương
+        <button @click="calculateAllPayroll" v-if="can('Luong.Manage')" class="btn-premium primary !bg-indigo-600 !shadow-indigo-100" :disabled="isCalculating">
+          <Loader2 v-if="isCalculating" class="w-3.5 h-3.5 animate-spin" />
+          <Calculator v-else class="w-3.5 h-3.5" />
+          Chạy tính lương
         </button>
         <button @click="exportExcel" v-if="can('BaoCao.Export')" class="btn-premium primary">
           <Download class="w-3.5 h-3.5" /> Xuất Excel
@@ -144,6 +146,7 @@ import { usePermission } from '../composables/usePermission'
 const toast = useToast()
 const { can } = usePermission()
 const loading = ref(false)
+const isCalculating = ref(false)
 
 // Selectors
 const currentDt = new Date()
@@ -169,7 +172,7 @@ const loadPayroll = async () => {
 }
 
 const calculateAllPayroll = async () => {
-    loading.value = true
+    isCalculating.value = true
     try {
         const res = await apiClient.post('/api/Staffs/calculate-payroll-all', null, {
             params: { month: selectedMonth.value, year: selectedYear.value }
@@ -179,7 +182,7 @@ const calculateAllPayroll = async () => {
     } catch (err) {
         toast.show(parseApiError(err), 'error')
     } finally {
-        loading.value = false
+        isCalculating.value = false
     }
 }
 

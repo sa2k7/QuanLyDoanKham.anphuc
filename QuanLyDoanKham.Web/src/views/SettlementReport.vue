@@ -30,7 +30,12 @@
             </div>
         </div>
 
-        <div class="overflow-x-auto">
+        <div v-if="isLoading" class="p-4 space-y-3">
+          <div v-for="i in 3" :key="i"
+               class="h-16 bg-slate-100 rounded-lg animate-pulse" />
+        </div>
+
+        <div v-else class="overflow-x-auto">
           <table class="w-full text-left">
             <thead class="bg-slate-50 text-[8px] font-semibold uppercase tracking-widest text-slate-500 border-b border-slate-100">
               <tr>
@@ -291,6 +296,7 @@ const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
 const loading = ref(false)
+const isLoading = ref(false)
 const contracts = ref([])
 const searchQuery = ref('')
 const selectedSettlement = ref(null)
@@ -365,6 +371,7 @@ const saveExtraService = async () => {
 }
 
 const loadContracts = async () => {
+  isLoading.value = true
   loading.value = true
   try {
     const res = await apiClient.get('/api/Contracts')
@@ -372,6 +379,7 @@ const loadContracts = async () => {
   } catch (e) {
     toast.error(parseApiError(e))
   } finally {
+    isLoading.value = false
     loading.value = false
   }
 }
