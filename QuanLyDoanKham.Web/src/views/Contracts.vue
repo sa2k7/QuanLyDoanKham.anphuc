@@ -266,9 +266,10 @@
                     </tr>
                     <tr v-if="filteredList[activeTab].length === 0">
                         <td colspan="6" class="py-12 text-center">
-                            <div class="flex flex-col items-center justify-center gap-2.5">
-                                <FileText class="w-8 h-8 text-slate-200" />
-                                <p class="text-slate-300 font-black uppercase tracking-widest text-[9px]">Không tìm thấy hợp đồng nào</p>
+                            <div v-if="!loading && filteredList[activeTab].length === 0"
+                                 class="flex flex-col items-center justify-center py-16 text-slate-400">
+                                <component :is="Inbox" class="w-12 h-12 mb-3 opacity-40" />
+                                <p class="font-bold text-sm">Chưa có dữ liệu</p>
                             </div>
                         </td>
                     </tr>
@@ -525,7 +526,7 @@ import {
     Clock, CheckCircle, Activity, FileCheck, XCircle, X,
     ArrowRight, ArrowDown, History, Save, Lock, Unlock, Calculator,
     Building2, DollarSign, Users, ShieldCheck, Calendar, Settings2, Eye, Tag, Hash, CreditCard, Info,
-    Send, Award, Undo, Quote, Ban
+    Send, Award, Undo, Quote, Ban, Inbox
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { useToast } from '../composables/useToast'
@@ -614,7 +615,7 @@ const fetchCompanies = async () => {
     try {
         const res = await apiClient.get('/api/Companies')
         companies.value = res.data
-    } catch (e) { console.error(e) }
+    } catch (e) { toast.error(parseApiError(e)) }
 }
 
 const addContract = async () => {

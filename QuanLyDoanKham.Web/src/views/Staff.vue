@@ -145,9 +145,9 @@
                     </tr>
                     <tr v-if="filteredList.length === 0">
                         <td colspan="7" class="py-20 text-center">
-                            <div class="flex flex-col items-center justify-center gap-4">
-                                <UsersIcon class="w-10 h-10 text-slate-200" />
-                                <p class="text-slate-300 font-black uppercase tracking-widest text-xs">Không có dữ liệu nhân sự</p>
+                            <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+                                <component :is="Inbox" class="w-12 h-12 mb-3 opacity-40" />
+                                <p class="font-bold text-sm">Chưa có dữ liệu</p>
                             </div>
                         </td>
                     </tr>
@@ -430,7 +430,7 @@ import {
     History as HistoryIcon, Download, Upload as UploadIcon, Wallet, Stethoscope,
     Edit3, Trash2, RefreshCw, Filter, MoreHorizontal, UserPlus, FileSpreadsheet,
     Mail, Phone, MapPin, Briefcase, Calendar, ChevronRight, CheckCircle, CheckCircle2,
-    AlertCircle, Clock, Loader2, ShieldAlert, UserCheck, DollarSign, Activity, LogOut, LogIn, Package
+    AlertCircle, Clock, Loader2, ShieldAlert, UserCheck, DollarSign, Activity, LogOut, LogIn, Package, Inbox
 } from 'lucide-vue-next'
 import { useAuthStore } from '../stores/auth'
 import { usePermission } from '../composables/usePermission'

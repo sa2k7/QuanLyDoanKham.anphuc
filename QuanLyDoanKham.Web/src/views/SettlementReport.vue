@@ -90,9 +90,9 @@
               </tr>
               <tr v-if="filteredContracts.length === 0">
                 <td colspan="7" class="py-20 text-center">
-                  <div class="flex flex-col items-center justify-center gap-4">
-                    <Calculator class="w-12 h-12 text-slate-200" />
-                    <p class="text-slate-400 font-semibold uppercase tracking-widest text-xs">Không tìm thấy hợp đồng phù hợp</p>
+                  <div class="flex flex-col items-center justify-center py-16 text-slate-400">
+                    <component :is="Inbox" class="w-12 h-12 mb-3 opacity-40" />
+                    <p class="font-bold text-sm">Chưa có dữ liệu</p>
                   </div>
                 </td>
               </tr>
@@ -281,10 +281,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { RefreshCw, FileText, Building2, X, Calculator, Users, Clock, Download, CheckCircle, AlertTriangle, Activity, Package, ArrowRight, Trash2, Search } from 'lucide-vue-next'
+import { RefreshCw, FileText, Building2, X, Calculator, Users, Clock, Download, CheckCircle, AlertTriangle, Activity, Package, ArrowRight, Trash2, Search, Inbox } from 'lucide-vue-next'
 import apiClient from '../services/apiClient'
 import { useToast } from '@/composables/useToast'
 import { useAuthStore } from '@/stores/auth'
+import { parseApiError } from '../services/errorHelper'
 
 const route = useRoute()
 const toast = useToast()
@@ -357,7 +358,7 @@ const saveExtraService = async () => {
         // Tải lại để tính toán phần lợi nhuận (Revenue)
         await viewSettlement(contracts.value.find(c => c.healthContractId === selectedSettlement.value.contractId))
     } catch (e) {
-        toast.error('Có lỗi xảy ra khi lưu chi phí phát sinh.')
+        toast.error(parseApiError(e))
     } finally {
         savingExtra.value = false
     }
@@ -369,7 +370,7 @@ const loadContracts = async () => {
     const res = await apiClient.get('/api/Contracts')
     contracts.value = res.data
   } catch (e) {
-    toast.error('Lỗi tải danh sách hợp đồng')
+    toast.error(parseApiError(e))
   } finally {
     loading.value = false
   }
@@ -384,11 +385,7 @@ const viewSettlement = async (contract) => {
     // Add extra details JSON from the original contract to keep editing capability
     selectedSettlement.value.extraServiceDetails = contract.extraServiceDetails
   } catch (e) {
-    if (e.response && e.response.data && e.response.data.message) {
-      toast.error(`ServiceResult: ${e.response.data.message}`)
-    } else {
-      toast.error('Không thể tính toán P&L cho hợp đồng này')
-    }
+    toast.error(parseApiError(e))
   } finally {
     loading.value = false
   }
@@ -403,11 +400,7 @@ const settleContract = async (contractId) => {
     selectedSettlement.value = null
     await loadContracts()
   } catch (e) {
-    if (e.response?.status === 403) {
-      toast.error('Bạn không có quyền chốt hợp đồng (HopDong.Approve).')
-    } else {
-      toast.error('Lỗi khi chốt quyết toán.')
-    }
+    toast.error(parseApiError(e))
   } finally {
     loading.value = false
   }

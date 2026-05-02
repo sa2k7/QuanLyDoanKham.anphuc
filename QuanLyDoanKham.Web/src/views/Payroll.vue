@@ -162,7 +162,6 @@ const loadPayroll = async () => {
         })
         payoutList.value = res.data || []
     } catch (err) {
-        console.error('Lỗi tải bảng lương', err)
         toast.show(parseApiError(err), 'error')
     } finally {
         loading.value = false
@@ -178,7 +177,6 @@ const calculateAllPayroll = async () => {
         toast.show(res.data.message, 'success')
         await loadPayroll()
     } catch (err) {
-        console.error('Lỗi tính lương', err)
         toast.show(parseApiError(err), 'error')
     } finally {
         loading.value = false

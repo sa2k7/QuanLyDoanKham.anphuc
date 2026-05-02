@@ -152,10 +152,10 @@
                     </tr>
                     <tr v-if="filteredSupplies.length === 0">
                         <td colspan="6" class="p-10 text-center">
-                            <div class="flex flex-col items-center justify-center text-slate-300">
-                                <Inbox class="w-12 h-12 mb-3 opacity-10" />
-                                <p class="text-[10px] font-black uppercase tracking-[0.2em]">{{ searchQuery ? 'Không tìm thấy vật tư phù hợp' : 'Chưa có dữ liệu vật tư' }}</p>
-                                <button v-if="!searchQuery && can('Kho.Edit')" @click="openAddModal" class="mt-4 btn-premium secondary !py-2 !text-[11px]">Thêm vật tư đầu tiên</button>
+                            <div v-if="!isLoading && filteredSupplies.length === 0"
+                                 class="flex flex-col items-center justify-center py-16 text-slate-400">
+                                <component :is="Inbox" class="w-12 h-12 mb-3 opacity-40" />
+                                <p class="font-bold text-sm">Chưa có dữ liệu</p>
                             </div>
                         </td>
                     </tr>

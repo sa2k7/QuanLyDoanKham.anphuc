@@ -57,10 +57,11 @@
         </div>
 
         <div v-else-if="filteredGroups.length === 0" class="py-20 text-center">
-            <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search class="w-6 h-6 text-slate-200" />
+            <div v-if="!loading && filteredGroups.length === 0"
+                 class="flex flex-col items-center justify-center py-16 text-slate-400">
+                <component :is="Inbox" class="w-12 h-12 mb-3 opacity-40" />
+                <p class="font-bold text-sm">Chưa có dữ liệu</p>
             </div>
-            <h3 class="text-[11px] font-black text-slate-400 uppercase tracking-widest">Không tìm thấy đoàn khám nào</h3>
         </div>
 
         <div v-else class="grid gap-0">
@@ -216,7 +217,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import apiClient from '../services/apiClient'
 import { 
-    Building2, Plus, Download, Loader2, Search, Sparkles, X
+    Building2, Plus, Download, Loader2, Search, Sparkles, X, Inbox
 } from 'lucide-vue-next'
 
 // Atomic Components
@@ -378,21 +379,21 @@ const fetchGroupStaff = async (id) => {
     try {
         const res = await apiClient.get(`/api/MedicalGroups/${id}/staffs`)
         staffDetails.value[id] = res.data
-    } catch (e) { console.error(e) }
+    } catch (e) { /* silent — background fetch */ }
 }
 
 const fetchGroupPositions = async (id) => {
     try {
         const res = await apiClient.get(`/api/MedicalGroups/${id}/positions`)
         groupPositions.value[id] = res.data
-    } catch (e) { console.error(e) }
+    } catch (e) { /* silent — background fetch */ }
 }
 
 const fetchLockStatus = async (groupId) => {
     try {
         const res = await apiClient.get(`/api/MedicalGroups/${groupId}/lock-status`)
         lockStatuses.value[groupId] = res.data
-    } catch (e) { console.error(e) }
+    } catch (e) { /* silent — background fetch */ }
 }
 
 const updateStatus = async (id, status) => {

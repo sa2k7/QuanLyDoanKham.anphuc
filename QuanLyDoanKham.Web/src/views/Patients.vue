@@ -413,6 +413,7 @@ import { ref, computed, onMounted } from 'vue'
 import { Search, Plus, RefreshCw, UserRound, ArrowLeft, ArrowRight, UserPlus, FileText, CheckCircle, Clock, Calendar, Hash, Phone, Building2, Eye, Edit, Trash2, X, AlertCircle, FileDigit, Users, Save, History, Inbox, Upload, Download } from 'lucide-vue-next'
 import apiClient from '@/services/apiClient'
 import { useToast } from '@/composables/useToast'
+import { parseApiError } from '@/services/errorHelper'
 
 const toast = useToast()
 
@@ -540,8 +541,7 @@ const loadPatients = async () => {
     patients.value = res.data.items
     total.value = res.data.total
   } catch (e) {
-    console.error('Lỗi tải danh sách bệnh nhân:', e.response?.data || e.message)
-    toast.error('Không thể tải danh sách bệnh nhân. Vui lòng kiểm tra quyền truy cập.')
+    toast.error(parseApiError(e))
   } finally {
     loading.value = false
   }
@@ -612,7 +612,7 @@ const submitForm = async () => {
     showModal.value = false
     await loadPatients()
   } catch (e) {
-    formError.value = e.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
+    formError.value = parseApiError(e)
   } finally {
     saving.value = false
   }
@@ -629,7 +629,7 @@ const doDelete = async () => {
     deleteTarget.value = null
     await loadPatients()
   } catch (e) {
-    toast.error(e.response?.data?.message || 'Không thể xóa bệnh nhân này.')
+    toast.error(parseApiError(e))
   } finally {
     saving.value = false
   }
@@ -688,8 +688,7 @@ const handleExport = async () => {
         window.URL.revokeObjectURL(url)
         toast.success('Đã xuất file Excel thành công!')
     } catch (e) {
-        console.error('Lỗi xuất Excel:', e)
-        toast.error('Không thể xuất Excel. Vui lòng thử lại sau.')
+        toast.error(parseApiError(e))
     }
 }
 
