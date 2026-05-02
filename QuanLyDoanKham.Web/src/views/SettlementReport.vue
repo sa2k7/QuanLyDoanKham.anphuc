@@ -268,7 +268,7 @@
                   <button class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 transition-all">
                     <Download class="w-3.5 h-3.5 text-emerald-500" /> Xuất Excel
                   </button>
-                  <button v-if="authStore.hasPermission('HopDong.Approve')" @click="settleContract(selectedSettlement.contractId)" class="flex-2 h-9 flex items-center justify-center gap-1.5 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
+                  <button v-if="authStore.hasPermission('QuyetToan.Finalize')" @click="settleContract(selectedSettlement.contractId)" class="flex-2 h-9 flex items-center justify-center gap-1.5 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
                     <CheckCircle class="w-3.5 h-3.5" /> Chốt Quyết Toán
                   </button>
                   <button @click="selectedSettlement = null" class="h-9 px-4 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-50 transition-all">

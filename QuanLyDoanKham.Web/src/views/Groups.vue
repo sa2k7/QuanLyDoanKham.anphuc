@@ -169,7 +169,7 @@
                                 <tbody>
                                     <tr v-for="s in aiSuggestions" :key="s.staffId" class="text-[10px] border-t border-indigo-100/50">
                                         <td class="py-2 font-black text-slate-700 uppercase">
-                                            {{ staffList.find(st => st.staffId === sid)?.fullName || 'Không xác định' }}
+                                            {{ staffList.find(st => st.staffId === s.staffId)?.fullName || 'Không xác định' }}
                                         </td>
                                         <td class="py-2">
                                             <span class="px-1.5 py-0.5 bg-white text-indigo-600 rounded font-black uppercase tracking-widest text-[7px] border border-indigo-100/50">
