@@ -126,8 +126,8 @@ const currentYear  = ref(now.getFullYear())
 const details  = ref([])
 const loading  = ref(false)
 
-// Tìm staffId từ profile — API trả kèm staffId nếu linked
-const staffId = ref(null)
+// Lấy staffId trực tiếp từ auth store (đã được set khi login)
+const staffId = ref(auth.staffId)
 
 const summary = computed(() => ({
   totalGroups:     details.value.length,
@@ -196,20 +196,8 @@ const loadSchedule = async () => {
   finally { loading.value = false }
 }
 
-const loadStaffId = async () => {
-  try {
-    const res = await apiClient.get('/api/Auth/profile')
-    staffId.value = res.data.staffId || null
-    if (!staffId.value) {
-      // Fallback: tìm staff theo employeeCode = username
-      const sRes = await apiClient.get('/api/Staffs', { params: { search: auth.username } })
-      if (sRes.data.length > 0) staffId.value = sRes.data[0].staffId
-    }
-  } catch { staffId.value = null }
-}
-
 watch([currentMonth, currentYear], loadSchedule)
-onMounted(async () => { await loadStaffId(); await loadSchedule() })
+onMounted(async () => { await loadSchedule() })
 </script>
 
 <style scoped>
