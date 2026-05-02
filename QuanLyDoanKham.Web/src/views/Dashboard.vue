@@ -39,7 +39,8 @@
           <ArrowRight v-if="activeMenu !== item.id && !isSidebarCollapsed" class="w-3 h-3 ml-auto opacity-0 group-hover:opacity-100 transition-all translate-x-1 group-hover:translate-x-0" />
         </button>
       </nav>
-      <!-- User Profile Card -->
+
+      <!-- User Profile Card -->
       <div :class="['border-t border-slate-100 bg-slate-50/50 transition-all duration-300', isSidebarCollapsed ? 'p-2' : 'p-3']">
         <div :class="['bg-white rounded-lg shadow-sm border border-slate-100 group relative transition-all duration-300', isSidebarCollapsed ? 'p-1 flex justify-center' : 'p-2']">
           <div class="flex items-center gap-1.5">
@@ -219,7 +220,7 @@
                     </div>
                 </div>
 
-                    <p class="text-[9px] font-black text-slate-400 text-center uppercase tracking-widest ">Mật khẩu mặc định sau khi cấp lại: <span class="text-indigo-600 font-black">HealthCare2026</span></p>
+                    <p class="text-[9px] font-black text-slate-400 text-center uppercase tracking-widest ">Mật khẩu mới sẽ được thông báo trực tiếp.</p>
             </div>
         </div>
       </Teleport>
@@ -487,7 +488,7 @@ const allData = ref({ companies: [], contracts: [], staff: [], groups: [] })
 const resetRequests = ref([])
 const showResetModal = ref(false)
 const processingResetId = ref(null)
-const newPasswordForReset = ref('HealthCare2026')
+const newPasswordForReset = ref('')
 
 const fetchResetRequests = async () => {
     if (!authStore.isAdmin) return
@@ -505,7 +506,7 @@ const handleProcessReset = async (id) => {
             id: id,
             newPassword: newPasswordForReset.value
         })
-        toast.success(`Đã cấp lại mật khẩu mới cho tài khoản. Mật khẩu mặc định là: ${newPasswordForReset.value}`)
+        toast.success(`Đã cấp lại mật khẩu mới cho tài khoản. Mật khẩu mới sẽ được thông báo trực tiếp.`)
         fetchResetRequests()
     } catch (err) {
         toast.error("Lỗi khi xử lý yêu cầu")

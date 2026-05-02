@@ -56,7 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (isAdmin.value) return true
     const result = userPermissions.value.includes(permissionKey)
 
-    if (import.meta.env.DEV) {
+    if (import.meta.env.DEV && localStorage.getItem('DISABLE_PERM_LOGS') !== 'true') {
       console.log(`[Permission Check] ${permissionKey}: ${result ? '✅ GRANTED' : '❌ DENIED'}`)
       if (!result) {
         console.log(`[Available Permissions]`, userPermissions.value)

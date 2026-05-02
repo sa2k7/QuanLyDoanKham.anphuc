@@ -373,7 +373,7 @@ const fetchResets = async () => {
     } catch (e) {}
 }
 
-const DEFAULT_PASSWORD = 'HealthCare2026'
+const DEFAULT_PASSWORD = ''
 
 const removeDiacritics = (str) => str
     .normalize('NFD')
@@ -447,7 +447,7 @@ const handleSubmit = async () => {
         } else {
             const createdPassword = form.value.password || DEFAULT_PASSWORD
             await apiClient.post('/api/Auth/register', payload)
-            toast.success(`✅ Đã tạo tài khoản @${form.value.username} — Mật khẩu: ${createdPassword} (Copy ngay, chỉ hiển thị 1 lần!)`)
+            toast.success(`✅ Đã tạo tài khoản @${form.value.username} thành công!`)
             modal.value.show = false
         }
         fetchUsers()
