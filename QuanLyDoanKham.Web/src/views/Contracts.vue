@@ -261,6 +261,19 @@
                                         title="Xóa">
                                     <Trash2 class="w-3.5 h-3.5" />
                                 </button>
+                                <!-- Quick Approve/Reject — chỉ hiện khi PendingApproval và có quyền HopDong.Approve -->
+                                <button v-if="contract.status === 'PendingApproval' && can('HopDong.Approve')"
+                                        @click.stop="quickApprove(contract.healthContractId)"
+                                        class="p-1.5 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-lg transition-all border border-emerald-100 shadow-sm active:scale-95"
+                                        title="Duyệt nhanh">
+                                    <CheckCircle class="w-3.5 h-3.5" />
+                                </button>
+                                <button v-if="contract.status === 'PendingApproval' && can('HopDong.Approve')"
+                                        @click.stop="quickReject(contract.healthContractId)"
+                                        class="p-1.5 bg-rose-50 text-rose-400 hover:bg-rose-600 hover:text-white rounded-lg transition-all border border-rose-100 shadow-sm active:scale-95"
+                                        title="Từ chối nhanh">
+                                    <XCircle class="w-3.5 h-3.5" />
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -766,6 +779,27 @@ const handleSubmitForApproval = async (id) => {
         fetchList()
         detailsModal.value.show = false
     } catch (e) { toast.error(parseApiError(e)) }
+}
+
+// Quick inline approve/reject — không cần mở modal
+const quickApprove = async (contractId) => {
+    try {
+        await apiClient.post(`/api/Contracts/${contractId}/approve`, { note: 'Phê duyệt nhanh' })
+        toast.success('Đã duyệt hợp đồng thành công!')
+        await fetchList()
+    } catch (e) {
+        toast.error(parseApiError(e))
+    }
+}
+
+const quickReject = async (contractId) => {
+    try {
+        await apiClient.post(`/api/Contracts/${contractId}/reject`, { note: 'Từ chối nhanh' })
+        toast.success('Đã từ chối hợp đồng.')
+        await fetchList()
+    } catch (e) {
+        toast.error(parseApiError(e))
+    }
 }
 
 const handleSaveApproved = () => {

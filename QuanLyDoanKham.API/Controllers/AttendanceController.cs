@@ -587,5 +587,134 @@ namespace QuanLyDoanKham.API.Controllers
         // HELPERS
         // ================================================================
         // Method TryDecodeQrToken cũ đã bị thay thế bởi QrService.ValidateSignedToken
+
+        // ================================================================
+        // GET api/attendance/summary-my-groups?month=4&year=2026
+        // GroupLeader: chỉ thấy attendance của các đoàn mình quản lý
+        // Hiển thị TẤT CẢ nhân sự được phân công, kể cả chưa check-in
+        // ================================================================
+        [HttpGet("summary-my-groups")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.ViewAll")]
+        public async Task<IActionResult> GetMyGroupsAttendanceSummary(
+            [FromQuery] int month = 0,
+            [FromQuery] int year = 0)
+        {
+            if (month == 0) month = DateTime.Now.Month;
+            if (year == 0) year = DateTime.Now.Year;
+
+            // Xác định Staff của user hiện tại qua EmployeeCode
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var currentStaff = await _context.Staffs
+                .FirstOrDefaultAsync(s => s.EmployeeCode != null
+                    && s.EmployeeCode.ToLower() == username.ToLower());
+
+            if (currentStaff == null)
+                return NotFound(new { message = "Không tìm thấy hồ sơ nhân sự." });
+
+            // Lấy danh sách GroupId mà user này là GroupLeader (WorkPosition chứa "trưởng đoàn")
+            var myGroupIds = await _context.GroupStaffDetails
+                .Include(gsd => gsd.MedicalGroup)
+                .Where(gsd => gsd.StaffId == currentStaff.StaffId
+                    && gsd.WorkPosition != null
+                    && gsd.WorkPosition.ToLower().Contains("trưởng đoàn")
+                    && gsd.MedicalGroup!.ExamDate.Month == month
+                    && gsd.MedicalGroup!.ExamDate.Year == year)
+                .Select(gsd => gsd.GroupId)
+                .Distinct()
+                .ToListAsync();
+
+            if (!myGroupIds.Any())
+                return Ok(new
+                {
+                    Month = month,
+                    Year = year,
+                    TotalStaff = 0,
+                    TotalPayroll = 0m,
+                    Staffs = new List<object>()
+                });
+
+            // Lấy TẤT CẢ GroupStaffDetails trong các đoàn của GroupLeader (kể cả chưa check-in)
+            var allGroupDetails = await _context.GroupStaffDetails
+                .Include(gd => gd.Staff)
+                .Include(gd => gd.MedicalGroup)
+                .Where(gd => myGroupIds.Contains(gd.GroupId))
+                .ToListAsync();
+
+            // Lấy ScheduleCalendars (check-in records) cho các đoàn đó
+            var schedules = await _context.ScheduleCalendars
+                .Include(sc => sc.MedicalGroup)
+                .Where(sc => myGroupIds.Contains(sc.GroupId)
+                    && sc.ExamDate.Month == month && sc.ExamDate.Year == year)
+                .ToListAsync();
+
+            // Group by nhân sự — dùng GroupStaffDetails làm nguồn chính (không bỏ sót ai)
+            var staffSummaries = allGroupDetails
+                .GroupBy(gd => gd.StaffId)
+                .Select(g =>
+                {
+                    var firstDetail = g.First();
+                    var staffName = firstDetail.Staff?.FullName ?? $"Staff #{g.Key}";
+                    var employeeCode = firstDetail.Staff?.EmployeeCode ?? "";
+                    var dailyRate = firstDetail.Staff?.DailyRate ?? 0;
+
+                    var workdays = g.Select(gd =>
+                    {
+                        // Tìm schedule record tương ứng (nếu có)
+                        var sc = schedules.FirstOrDefault(s => s.GroupId == gd.GroupId && s.StaffId == gd.StaffId);
+
+                        // Xác định trạng thái
+                        string workStatus;
+                        if (sc == null || sc.CheckInTime == null)
+                            workStatus = "Chưa chấm công";
+                        else if (sc.CheckOutTime == null)
+                            workStatus = "Đã check-in";
+                        else
+                            workStatus = "Đã hoàn thành";
+
+                        var shift = gd.ShiftType;
+                        // Nếu chưa check-out, không tính công
+                        var earnedShift = (sc?.IsConfirmed == true) ? shift : 0.0;
+
+                        return new
+                        {
+                            gd.GroupId,
+                            GroupName = gd.MedicalGroup?.GroupName ?? $"Đoàn #{gd.GroupId}",
+                            ExamDate = gd.MedicalGroup?.ExamDate ?? DateTime.MinValue,
+                            ShiftType = shift,
+                            CheckInTime = sc?.CheckInTime,
+                            CheckOutTime = sc?.CheckOutTime,
+                            WorkStatus = workStatus,
+                            EarnedAmount = (decimal)earnedShift * dailyRate
+                        };
+                    }).ToList();
+
+                    var totalDays = workdays.Where(w => w.WorkStatus == "Đã hoàn thành").Sum(w => w.ShiftType);
+                    var totalEarned = workdays.Sum(w => w.EarnedAmount);
+
+                    return new
+                    {
+                        StaffId = g.Key,
+                        StaffName = staffName,
+                        EmployeeCode = employeeCode,
+                        DailyRate = dailyRate,
+                        TotalDays = totalDays,
+                        TotalEarned = totalEarned,
+                        Workdays = workdays.OrderBy(w => w.ExamDate).ToList()
+                    };
+                })
+                .OrderBy(s => s.StaffName)
+                .ToList();
+
+            return Ok(new
+            {
+                Month = month,
+                Year = year,
+                TotalStaff = staffSummaries.Count,
+                TotalPayroll = staffSummaries.Sum(s => s.TotalEarned),
+                Staffs = staffSummaries
+            });
+        }
     }
 }

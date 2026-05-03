@@ -198,8 +198,10 @@ import { ClipboardCheck, RefreshCw, Search, Loader2, Wallet, ChevronDown } from 
 import apiClient from '../services/apiClient'
 import { useToast } from '../composables/useToast'
 import { parseApiError } from '../services/errorHelper'
+import { useAuthStore } from '../stores/auth'
 
 const toast = useToast()
+const authStore = useAuthStore()
 const loading = ref(false)
 
 // Period state
@@ -229,7 +231,16 @@ const loadData = async () => {
   loading.value = true
   expandedStaff.value = null
   try {
-    const res = await apiClient.get('/api/Attendance/summary-all', {
+    // GroupLeader chỉ thấy đoàn của mình — Admin/MedicalGroupManager thấy tất cả
+    const isGroupLeaderOnly = authStore.hasRole('GroupLeader')
+      && !authStore.hasRole('Admin')
+      && !authStore.hasRole('MedicalGroupManager')
+
+    const endpoint = isGroupLeaderOnly
+      ? '/api/Attendance/summary-my-groups'
+      : '/api/Attendance/summary-all'
+
+    const res = await apiClient.get(endpoint, {
       params: { month: selectedMonth.value, year: selectedYear.value }
     })
     summary.value = res.data
