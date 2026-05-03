@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Äá»‹nh nghÄ©a bÆ°á»›c phĂª duyá»‡t Ä‘a cáº¥p theo há»£p Ä‘á»“ng</summary>
+    /// <summary>Định nghĩa bưá»›c phê duyệt đa cấp theo hợp đá»“ng</summary>
     public class ApprovalStep
     {
         [Key]

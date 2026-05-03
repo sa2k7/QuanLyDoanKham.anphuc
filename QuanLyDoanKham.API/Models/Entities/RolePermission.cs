@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Mapping nhiá»u-nhiá»u: Role â†” Permission</summary>
+    /// <summary>Mapping nhiều-nhiều: Role â†” Permission</summary>
     public class RolePermission
     {
         [Key]

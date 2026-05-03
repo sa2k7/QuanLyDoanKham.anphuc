@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations;
 namespace QuanLyDoanKham.API.Models
 {
     /// <summary>
-    /// Danh má»¥c tráº¡m khĂ¡m (lookup table).
-    /// VĂ­ dá»¥: CHECKIN, SINH_HIEU, LAY_MAU, XQUANG, SIEU_AM, ECG, NOI_KHOA, QC
+    /// Danh mục trạm khám (lookup table).
+    /// Ví dụ: CHECKIN, SINH_HIEU, LAY_MAU, XQUANG, SIEU_AM, ECG, NOI_KHOA, QC
     /// </summary>
     public class Station
     {
@@ -20,13 +20,13 @@ namespace QuanLyDoanKham.API.Models
         [MaxLength(50)]
         public string ServiceType { get; set; } = "CLINICAL";
 
-        /// <summary>Sá»‘ phĂºt trung bĂ¬nh phá»¥c vá»¥ 1 bá»‡nh nhĂ¢n táº¡i tráº¡m nĂ y</summary>
+        /// <summary>Sá»‘ phút trung bình phục vụ 1 bệnh nhân tại trạm nĂ y</summary>
         public decimal DefaultMinutesPerPatient { get; set; } = 5;
 
-        /// <summary>Work-in-progress limit: sá»‘ BN tá»‘i Ä‘a Ä‘ang thá»±c hiá»‡n Ä‘á»“ng thá»i táº¡i tráº¡m</summary>
+        /// <summary>Work-in-progress limit: sử‘ BN tá»‘i đa đang thực hiện đá»“ng thời tại trạm</summary>
         public int WipLimit { get; set; } = 1;
 
-        /// <summary>Thá»© tá»± máº·c Ä‘á»‹nh trong luá»“ng khĂ¡m</summary>
+        /// <summary>Thứ tự mặc định trong luá»“ng khám</summary>
         public int SortOrder { get; set; } = 0;
 
         /// <summary>

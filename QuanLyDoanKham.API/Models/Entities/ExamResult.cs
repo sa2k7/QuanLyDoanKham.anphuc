@@ -18,7 +18,7 @@ namespace QuanLyDoanKham.API.Models
         public MedicalGroup MedicalGroup { get; set; } = null!;
 
         [MaxLength(100)]
-        public string ExamType { get; set; } = null!; // VĂ­ dá»¥: KhĂ¡m ná»™i, XĂ©t nghiá»‡m mĂ¡u, X-Quang
+        public string ExamType { get; set; } = null!; // Ví dụ: Khám ná»™i, Xét nghiệm máu, X-Quang
 
         public string Result { get; set; } = null!;
 

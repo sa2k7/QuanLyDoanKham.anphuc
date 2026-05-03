@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Mapping nhiá»u-nhiá»u: User â†” Role</summary>
+    /// <summary>Mapping nhiều-nhiều: User â†” Role</summary>
     public class UserRole
     {
         [Key]
@@ -15,7 +15,7 @@ namespace QuanLyDoanKham.API.Models
         [ForeignKey("UserId")]
         public AppUser User { get; set; } = null!;
 
-        // Primary role (backward compat) - optional khi Ä‘Ă£ dĂ¹ng multi-role
+        // Primary role (backward compat) - optional khi đã dùng multi-role
         public int? RoleId { get; set; }
         [ForeignKey("RoleId")]
         public AppRole Role { get; set; } = null!;

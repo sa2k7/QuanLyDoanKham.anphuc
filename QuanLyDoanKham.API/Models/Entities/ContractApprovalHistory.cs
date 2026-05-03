@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Lá»‹ch sá»­ duyá»‡t tá»«ng há»£p Ä‘á»“ng theo bÆ°á»›c</summary>
+    /// <summary>Lịch sử duyệt từng hợp đá»“ng theo bưá»›c</summary>
     public class ContractApprovalHistory
     {
         [Key]

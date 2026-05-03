@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Lá»‹ch khĂ¡m - sinh tá»± Ä‘á»™ng khi táº¡o Ä‘oĂ n</summary>
+    /// <summary>Lịch khám - sinh tự đá»™ng khi tạo đoĂ n</summary>
     public class ScheduleCalendar
     {
         [Key]
@@ -16,12 +16,12 @@ namespace QuanLyDoanKham.API.Models
 
         public DateTime ExamDate { get; set; }
 
-        // NULL = toĂ n Ä‘oĂ n, cĂ³ StaffId = lá»‹ch riĂªng nhĂ¢n viĂªn
+        // NULL = toĂ n đoĂ n, có StaffId = lịch riêng nhân viên
         public int? StaffId { get; set; }
         [ForeignKey("StaffId")]
         public Staff Staff { get; set; } = null!;
 
-        // ---- Cháº¥m cĂ´ng QR ----
+        // ---- Chấm công QR ----
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
 

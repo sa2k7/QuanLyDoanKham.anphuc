@@ -2,7 +2,7 @@
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Cáº¥u hĂ¬nh bÆ°á»›c phĂª duyá»‡t há»£p Ä‘á»“ng (1..N cáº¥p)</summary>
+    /// <summary>Cấu hình bưá»›c phê duyệt hợp đá»“ng (1..N cấp)</summary>
     public class ContractApprovalStep
     {
         [Key]
@@ -12,9 +12,9 @@ namespace QuanLyDoanKham.API.Models
 
         [Required]
         [MaxLength(100)]
-        public string StepName { get; set; } = null!; // "TrÆ°á»Ÿng phĂ²ng duyá»‡t", "Ban giĂ¡m Ä‘á»‘c duyá»‡t"
+        public string StepName { get; set; } = null!; // "Trưởng phòng duyệt", "Ban giám đá»‘c duyệt"
 
-        // Permission cáº§n cĂ³ Ä‘á»ƒ duyá»‡t bÆ°á»›c nĂ y
+        // Permission cần có để duyệt bưá»›c nĂ y
         [MaxLength(100)]
         public string RequiredPermission { get; set; } = null!; // "HopDong.Approve"
 

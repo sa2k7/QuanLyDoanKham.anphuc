@@ -10,7 +10,7 @@ namespace QuanLyDoanKham.API.Models
         [MaxLength(100)]
         public string? ShortName { get; set; }
 
-        [Required(ErrorMessage = "TĂªn cĂ´ng ty khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+        [Required(ErrorMessage = "Tên công ty không được để trống.")]
         [MaxLength(200)]
         public string CompanyName { get; set; } = null!;
 

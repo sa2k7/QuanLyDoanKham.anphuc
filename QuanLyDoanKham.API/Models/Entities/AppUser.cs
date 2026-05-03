@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>NgÆ°á»i dĂ¹ng há»‡ thá»‘ng</summary>
+    /// <summary>Người dùng hệ thống</summary>
     public class AppUser
     {
         [Key]
@@ -15,13 +15,13 @@ namespace QuanLyDoanKham.API.Models
         [MaxLength(50)]
         public string Username { get; set; } = null!;
 
-        [Required(ErrorMessage = "Máº­t kháº©u khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+        [Required(ErrorMessage = "Mật khẩu không được để trống.")]
         public string PasswordHash { get; set; } = null!;
 
         [MaxLength(100)]
         public string? FullName { get; set; }
 
-        // Primary role (backward compat) - váº«n giá»¯ Ä‘á»ƒ JWT Ä‘Æ¡n giáº£n hÆ¡n
+        // Primary role (backward compat) - vẫn giữ để JWT đơn giản hơn
         public int RoleId { get; set; }
         [ForeignKey("RoleId")]
         public AppRole? Role { get; set; }

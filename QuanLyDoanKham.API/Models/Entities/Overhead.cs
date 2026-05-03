@@ -15,7 +15,7 @@ namespace QuanLyDoanKham.API.Models
 
         [Required]
         [MaxLength(100)]
-        public string Name { get; set; } = ""; // ThuĂª xe, KhĂ¡ch sáº¡n, Tiá»n Äƒn
+        public string Name { get; set; } = ""; // Thuê xe, Khách sạn, Tiền ăn
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Amount { get; set; }

@@ -15,23 +15,23 @@ namespace QuanLyDoanKham.API.Models
         public string ItemName { get; set; } = "";
 
         [MaxLength(50)]
-        public string Unit { get; set; } = ""; // CĂ¡i, Há»™p, Lá», Chai
+        public string Unit { get; set; } = ""; // Cái, Há»™p, Lọ, Chai
 
         [MaxLength(100)]
-        public string Category { get; set; } = ""; // Thuá»‘c, Váº­t tÆ° y táº¿, Thiáº¿t bá»‹...
+        public string Category { get; set; } = ""; // Thuá»‘c, Vật tư y tế, Thiết bị...
 
         public int CurrentStock { get; set; } = 0;
 
-        public int MinStockLevel { get; set; } = 10; // NgÆ°á»¡ng bĂ¡o Ä‘á»™ng
+        public int MinStockLevel { get; set; } = 10; // Ngưỡng báo đá»™ng
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal TypicalUnitPrice { get; set; } // GiĂ¡ nháº­p tham kháº£o
+        public decimal TypicalUnitPrice { get; set; } // Giá nhập tham khảo
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         
         public DateTime? UpdatedAt { get; set; }
 
-        // Nháº­t kĂ½ biáº¿n Ä‘á»™ng kho liĂªn quan
+        // Nhật ký biến đá»™ng kho liên quan
         public ICollection<StockMovement> Movements { get; set; } = new List<StockMovement>();
     }
 }

@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>PhĂ¢n cĂ´ng nhĂ¢n sá»± vĂ o vá»‹ trĂ­ trong Ä‘oĂ n khĂ¡m</summary>
+    /// <summary>Phân công nhân sự vĂ o vị trí trong đoĂ n khám</summary>
     public class GroupStaffDetail
     {
         [Key]
@@ -27,18 +27,18 @@ namespace QuanLyDoanKham.API.Models
         public GroupPositionQuota? GroupPositionQuota { get; set; }
 
         [MaxLength(100)]
-        public string WorkPosition { get; set; } = null!; // TĂªn vá»‹ trĂ­ (denormalized Ä‘á»ƒ dá»… query)
+        public string WorkPosition { get; set; } = null!; // Tên vị trí (denormalized để dá»… query)
 
         [MaxLength(50)]
         public string WorkStatus { get; set; } = "Pending"; // Pending, Joined, Absent, Leave
 
         public DateTime ExamDate { get; set; }
 
-        // Cháº¥m cĂ´ng
+        // Chấm công
         public DateTime? CheckInTime { get; set; }
         public DateTime? CheckOutTime { get; set; }
 
-        // 0.5 = ná»­a ngĂ y, 1.0 = má»™t ngĂ y
+        // 0.5 = nửa ngĂ y, 1.0 = má»™t ngĂ y
         public double ShiftType { get; set; } = 1.0;
 
         [Column(TypeName = "decimal(18, 2)")]
@@ -48,7 +48,7 @@ namespace QuanLyDoanKham.API.Models
         public DateTime? AssignedAt { get; set; }
 
         [MaxLength(200)]
-        public string? PickupLocation { get; set; } // Ä Ă³n táº¡i
+        public string? PickupLocation { get; set; } // Ä ón tại
 
         public string? Note { get; set; }
     }

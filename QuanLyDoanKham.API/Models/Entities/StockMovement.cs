@@ -9,20 +9,20 @@ namespace QuanLyDoanKham.API.Models
         [Key]
         public int MovementId { get; set; }
 
-        public int? MedicalGroupId { get; set; } // Thuá»™c vá» Ä‘oĂ n khĂ¡m nĂ o
+        public int? MedicalGroupId { get; set; } // Thuá»™c về đoĂ n khám nĂ o
         [ForeignKey("MedicalGroupId")]
         public MedicalGroup MedicalGroup { get; set; } = null!;
 
-        public int? SupplyId { get; set; } // LiĂªn káº¿t vá»›i danh má»¥c váº­t tÆ°
+        public int? SupplyId { get; set; } // Liên kết vá»›i danh mục vật tư
         [ForeignKey("SupplyId")]
         public SupplyItem SupplyItem { get; set; } = null!;
 
         [Required]
         [MaxLength(100)]
-        public string ItemName { get; set; } = ""; // TĂªn váº­t tÆ° y táº¿
+        public string ItemName { get; set; } = ""; // Tên vật tư y tế
 
         [MaxLength(50)]
-        public string Unit { get; set; } = ""; // CĂ¡i, Há»™p, Lá»
+        public string Unit { get; set; } = ""; // Cái, Há»™p, Lọ
 
         public int Quantity { get; set; }
 

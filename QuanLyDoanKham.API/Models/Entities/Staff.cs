@@ -13,7 +13,7 @@ namespace QuanLyDoanKham.API.Models
         [MaxLength(20)]
         public string? EmployeeCode { get; set; }
 
-        [Required(ErrorMessage = "Há» vĂ  tĂªn nhĂ¢n sá»± khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+        [Required(ErrorMessage = "Họ vĂ  tên nhân sự không được để trống.")]
         [MaxLength(100)]
         public string FullName { get; set; } = null!;
 
@@ -54,10 +54,10 @@ namespace QuanLyDoanKham.API.Models
         public string? StaffType { get; set; }
 
         [MaxLength(100)]
-        public string? Specialty { get; set; } // ChuyĂªn khoa
+        public string? Specialty { get; set; } // Chuyên khoa
 
         [MaxLength(100)]
-        public string? DepartmentName { get; set; } // TĂªn phĂ²ng ban/bá»™ pháº­n (LÆ°u dáº¡ng chuá»—i)
+        public string? DepartmentName { get; set; } // Tên phòng ban/bá»™ phận (Lưu dạng chuá»—i)
 
         [MaxLength(50)]
         public string? CertificateNumber { get; set; } // Sá»‘ CCHN
@@ -66,14 +66,14 @@ namespace QuanLyDoanKham.API.Models
         public string? EmployeeType { get; set; } // NoiBo, ThueNgoai
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal DailyRate { get; set; } // ÄÆ¡n giĂ¡ ngĂ y
+        public decimal DailyRate { get; set; } // Đơn giá ngĂ y
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal BaseSalary { get; set; } // LÆ°Æ¡ng cÆ¡ báº£n thĂ¡ng
+        public decimal BaseSalary { get; set; } // Lương cơ bản tháng
 
-        public int StandardWorkDays { get; set; } = 26; // CĂ´ng chuáº©n máº·c Ä‘á»‹nh
+        public int StandardWorkDays { get; set; } = 26; // Công chuẩn mặc định
 
-        // Loáº¡i lÆ°Æ¡ng: ByDay (tĂ­nh theo DailyRate), ByMonth (BaseSalary Ă· StdDays Ă— actual)
+        // Loại lương: ByDay (tính theo DailyRate), ByMonth (BaseSalary Ă· StdDays Ă— actual)
         [MaxLength(20)]
         public string SalaryType { get; set; } = "ByDay";
 

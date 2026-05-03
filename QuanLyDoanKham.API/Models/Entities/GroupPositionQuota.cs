@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Äá»‹nh biĂªn vá»‹ trĂ­ cho tá»«ng Ä‘oĂ n</summary>
+    /// <summary>Định biên vị trí cho từng đoĂ n</summary>
     public class GroupPositionQuota
     {
         [Key]

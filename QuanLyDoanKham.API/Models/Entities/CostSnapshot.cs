@@ -14,7 +14,7 @@ namespace QuanLyDoanKham.API.Models
         public HealthContract HealthContract { get; set; } = null!;
 
         [MaxLength(20)]
-        public string SnapshotType { get; set; } = null!; // EST (Dá»± kiáº¿n), ACT (Thá»±c táº¿), SETTLE (Quyáº¿t toĂ¡n)
+        public string SnapshotType { get; set; } = null!; // EST (Dự kiến), ACT (Thực tế), SETTLE (Quyết toán)
 
         [Column(TypeName = "decimal(18, 2)")]
         public decimal Revenue { get; set; }

@@ -16,28 +16,28 @@ namespace QuanLyDoanKham.API.Models
         public Company? Company { get; set; }
 
         [MaxLength(200)]
-        public string ContractName { get; set; } = null!; // TĂªn há»£p Ä‘á»“ng
+        public string ContractName { get; set; } = null!; // Tên hợp đá»“ng
 
         [MaxLength(50)]
-        public string? ContractCode { get; set; } // Sá»‘ há»£p Ä‘á»“ng
+        public string? ContractCode { get; set; } // Sá»‘ hợp đá»“ng
 
-        public DateTime SigningDate { get; set; }   // NgĂ y kĂ½ HÄ
-        public DateTime StartDate { get; set; }     // NgĂ y báº¯t Ä‘áº§u khĂ¡m
-        public DateTime EndDate { get; set; }       // NgĂ y káº¿t thĂºc khĂ¡m
-
-        [Column(TypeName = "decimal(18, 2)")]
-        public decimal UnitPrice { get; set; } = 0; // GiĂ¡ cÅ©
-
-        public int ExpectedQuantity { get; set; } = 0; // Sá»‘ khĂ¡ch cÅ©
+        public DateTime SigningDate { get; set; }   // NgĂ y ký HĐ
+        public DateTime StartDate { get; set; }     // NgĂ y bắt đầu khám
+        public DateTime EndDate { get; set; }       // NgĂ y kết thúc khám
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal AdvancePayment { get; set; } = 0; // Tiá»n táº¡m á»©ng
+        public decimal UnitPrice { get; set; } = 0; // Giá cũ
+
+        public int ExpectedQuantity { get; set; } = 0; // Sá»‘ khách cũ
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal FinalSettlementValue { get; set; } = 0; // GiĂ¡ trá»‹ quyáº¿t toĂ¡n thá»±c táº¿
+        public decimal AdvancePayment { get; set; } = 0; // Tiền tạm ứng
+
+        [Column(TypeName = "decimal(18, 2)")]
+        public decimal FinalSettlementValue { get; set; } = 0; // Giá trị quyết toán thực tế
 
         [Column(TypeName = "decimal(5, 2)")]
-        public decimal DiscountPercent { get; set; } = 0; // % Chiáº¿t kháº¥u / Hoa há»“ng
+        public decimal DiscountPercent { get; set; } = 0; // % Chiết khấu / Hoa hồng
 
         [MaxLength(50)]
         public string? UnitName { get; set; }
@@ -56,9 +56,9 @@ namespace QuanLyDoanKham.API.Models
         // Trạng thái hợp đồng
         public ContractStatus Status { get; set; } = ContractStatus.Draft;
 
-        public int CurrentApprovalStep { get; set; } = 0; // BÆ°á»›c duyá»‡t hiá»‡n táº¡i
+        public int CurrentApprovalStep { get; set; } = 0; // Bưá»›c duyệt hiện tại
 
-        public string? FilePath { get; set; }  // File há»£p Ä‘á»“ng Ä‘Ă­nh kĂ¨m
+        public string? FilePath { get; set; }  // File hợp đá»“ng đính kèm
 
         // Audit
         public int? CreatedByUserId { get; set; }

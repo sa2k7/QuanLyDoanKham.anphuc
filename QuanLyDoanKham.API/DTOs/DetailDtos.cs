@@ -94,7 +94,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string? Note { get; set; }
         public string? PickupLocation { get; set; }
 
-        // ThĂ´ng tin thĂªm cho bĂ¡o cĂ¡o Excel
+        // Thông tin thêm cho báo cáo Excel
         public int? BirthYear { get; set; }
         public string? PhoneNumber { get; set; }
         public string? EmployeeType { get; set; } // NoiBo, ThueNgoai

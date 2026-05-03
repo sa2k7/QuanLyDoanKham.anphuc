@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Chi phĂ­ tá»«ng Ä‘oĂ n khĂ¡m</summary>
+    /// <summary>Chi phí từng đoĂ n khám</summary>
     public class GroupCost
     {
         [Key]
@@ -15,16 +15,16 @@ namespace QuanLyDoanKham.API.Models
         public MedicalGroup MedicalGroup { get; set; } = null!;
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal StaffCost { get; set; }      // Chi phĂ­ nhĂ¢n sá»±
+        public decimal StaffCost { get; set; }      // Chi phí nhân sự
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal SupplyCost { get; set; }     // Chi phĂ­ váº­t tÆ°
+        public decimal SupplyCost { get; set; }     // Chi phí vật tư
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal OtherCost { get; set; }      // Chi phĂ­ khĂ¡c
+        public decimal OtherCost { get; set; }      // Chi phí khác
 
         [Column(TypeName = "decimal(18, 2)")]
-        public decimal TotalCost { get; set; }      // Tá»•ng chi phĂ­
+        public decimal TotalCost { get; set; }      // Tổng chi phí
 
         public string Note { get; set; } = null!;
         public DateTime CalculatedAt { get; set; } = DateTime.Now;

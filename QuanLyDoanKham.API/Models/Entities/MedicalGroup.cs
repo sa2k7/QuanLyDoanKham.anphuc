@@ -10,7 +10,7 @@ namespace QuanLyDoanKham.API.Models
         [Key]
         public int GroupId { get; set; }
 
-        [Required(ErrorMessage = "TĂªn Ä‘oĂ n khĂ¡m khĂ´ng Ä‘Æ°á»£c Ä‘á»ƒ trá»‘ng.")]
+        [Required(ErrorMessage = "Tên đoĂ n khám không được để trống.")]
         [MaxLength(200)]
         public string GroupName { get; set; } = null!;
 
@@ -27,27 +27,27 @@ namespace QuanLyDoanKham.API.Models
         [ForeignKey("HealthContractId")]
         public HealthContract? HealthContract { get; set; }
 
-        // Tráº¡ng thĂ¡i: Draft, Open, InProgress, Finished, Locked
+        // Trạng thái: Draft, Open, InProgress, Finished, Locked
         [MaxLength(50)]
         public string Status { get; set; } = "Draft";
 
         [MaxLength(50)]
-        public string? StartTime { get; set; } // Giá»  khĂ¡m
+        public string? StartTime { get; set; } // Giá»  khám
 
         [MaxLength(50)]
-        public string? DepartureTime { get; set; } // Giá»  xuáº¥t phĂ¡t
+        public string? DepartureTime { get; set; } // Giá»  xuất phát
 
         [MaxLength(500)]
-        public string? ExamContent { get; set; } = "TỔNG QUÁT"; // Ná»™i dung khĂ¡m
+        public string? ExamContent { get; set; } = "TỔNG QUÁT"; // Ná»™i dung khám
 
         public string? ImportFilePath { get; set; }
 
-        // NgÆ°á»i quáº£n lĂ½ Ä‘oĂ n khĂ¡m (AppUser)
+        // Người quản lý đoĂ n khám (AppUser)
         public int? ManagerUserId { get; set; }
         [ForeignKey("ManagerUserId")]
         public AppUser? ManagerUser { get; set; }
 
-        // TrÆ°á»Ÿng Ä‘oĂ n (Staff - ngÆ°á»i cĂ³ thá»ƒ má»Ÿ QR)
+        // Trưởng đoĂ n (Staff - người có thể mở QR)
         public int? GroupLeaderStaffId { get; set; }
         [ForeignKey("GroupLeaderStaffId")]
         public Staff? GroupLeaderStaff { get; set; }

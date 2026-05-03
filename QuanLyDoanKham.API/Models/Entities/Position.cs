@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Danh má»¥c vá»‹ trĂ­ chuáº©n</summary>
+    /// <summary>Danh mục vị trí chuẩn</summary>
     public class Position
     {
         [Key]

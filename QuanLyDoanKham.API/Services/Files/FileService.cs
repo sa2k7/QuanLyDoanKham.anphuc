@@ -9,19 +9,19 @@ namespace QuanLyDoanKham.API.Services.Files
 
         public FileService(IWebHostEnvironment env, IConfiguration config)
         {
-            // [BUG-04 FIX] Láº­y base path tá»« config náº¿u cĂ³ (cho production persistent storage), 
-            // náº¿u khĂ´ng thĂ¬ máº·c Ä‘á»‹nh vĂ o wwwroot/uploads
+            // [BUG-04 FIX] Lậy base path từ config nếu có (cho production persistent storage), 
+            // nếu không thì mặc định vĂ o wwwroot/uploads
             _storageBasePath = config["Storage:BaseFolder"] ?? Path.Combine(env.WebRootPath, "uploads");
         }
 
         public async Task<(string? Path, string? Error)> SaveFileAsync(IFormFile file, string subFolder)
         {
             if (file == null || file.Length == 0)
-                return (null, "Tá»‡p khĂ´ng há»£p lá»‡.");
+                return (null, "Tệp không hợp lệ.");
 
             var ext = Path.GetExtension(file.FileName).ToLower();
             if (!_allowedExtensions.Contains(ext))
-                return (null, $"Ä á»‹nh dáº¡ng file khĂ´ng há»— trá»£. Chá»‰ nháº­n: {string.Join(", ", _allowedExtensions)}");
+                return (null, $"Ä ịnh dạng file không há»— trợ. Chỉ nhận: {string.Join(", ", _allowedExtensions)}");
 
             try
             {
@@ -34,8 +34,8 @@ namespace QuanLyDoanKham.API.Services.Files
                 using (var stream = new FileStream(filePath, FileMode.Create))
                     await file.CopyToAsync(stream);
 
-                // Náº¿u lÆ°u trong wwwroot thĂ¬ tráº£ vá»  path tÆ°Æ¡ng Ä‘á»‘i Ä‘á»ƒ browser render Ä‘Æ°á»£c
-                // Náº¿u lÆ°u ngoĂ i wwwroot thĂ¬ cáº§n API path Ä‘á»ƒ surrogate (sáº½ cáº§n thĂªm Download controller)
+                // Nếu lưu trong wwwroot thì trả vá»  path tương đá»‘i để browser render được
+                // Nếu lưu ngoĂ i wwwroot thì cần API path để surrogate (sẽ cần thêm Download controller)
                 var relativePath = $"uploads/{subFolder}/{fileName}";
                 return (relativePath, null);
             }
@@ -49,8 +49,8 @@ namespace QuanLyDoanKham.API.Services.Files
         {
             if (string.IsNullOrEmpty(relativePath)) return;
 
-            // relativePath thÆ°á» ng lĂ  "uploads/subFolder/file.ext"
-            // Ta cáº§n map pháº§n sau "uploads/" vĂ o _storageBasePath
+            // relativePath thưá» ng lĂ  "uploads/subFolder/file.ext"
+            // Ta cần map phần sau "uploads/" vĂ o _storageBasePath
             var normalizedPath = relativePath.Replace("/", Path.DirectorySeparatorChar.ToString());
             if (normalizedPath.StartsWith("uploads" + Path.DirectorySeparatorChar))
             {

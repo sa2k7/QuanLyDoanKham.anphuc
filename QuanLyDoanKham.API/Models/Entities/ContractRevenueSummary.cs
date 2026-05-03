@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>Tá»•ng há»£p doanh thu/lá»£i nhuáº­n theo há»£p Ä‘á»“ng</summary>
+    /// <summary>Tổng hợp doanh thu/lợi nhuận theo hợp đá»“ng</summary>
     public class ContractRevenueSummary
     {
         [Key]

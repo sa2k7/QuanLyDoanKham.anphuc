@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
-    /// <summary>File Ä‘Ă­nh kĂ¨m há»£p Ä‘á»“ng</summary>
+    /// <summary>File đính kèm hợp đá»“ng</summary>
     public class ContractAttachment
     {
         [Key]
