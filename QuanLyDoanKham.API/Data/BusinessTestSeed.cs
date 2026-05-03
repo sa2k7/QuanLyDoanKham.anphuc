@@ -13,7 +13,7 @@ public static class BusinessTestSeed
         ["ContractCreator"] = ["HopDong.View", "HopDong.Create", "HopDong.Edit", "HopDong.Upload"],
         ["ContractApprover"] = ["HopDong.View", "HopDong.Approve", "HopDong.Reject"],
         ["ContractManager"] = ["HopDong.View", "HopDong.Create", "HopDong.Edit", "HopDong.Upload", "HopDong.Approve", "HopDong.Reject", "PhongBan.View", "WorkRule.View"],
-        ["MedicalGroupManager"] = ["HopDong.View", "DoanKham.View", "DoanKham.Create", "DoanKham.Edit", "DoanKham.SetPosition", "DoanKham.AssignStaff", "DoanKham.ManageOwn", "DoanKham.Lock", "LichKham.ViewAll", "ChamCong.QR", "ChamCong.ViewAll", "AI.SuggestStaff", "BenhNhan.View", "DieuPhoi.Edit"],
+        ["MedicalGroupManager"] = ["HopDong.View", "DoanKham.View", "DoanKham.Create", "DoanKham.Edit", "DoanKham.SetPosition", "DoanKham.AssignStaff", "DoanKham.ManageOwn", "DoanKham.Lock", "LichKham.ViewAll", "ChamCong.QR", "ChamCong.ViewAll", "AI.SuggestStaff", "BenhNhan.View", "NhanSu.View", "DieuPhoi.Edit"],
         ["GroupLeader"] = ["HopDong.View", "DoanKham.View", "DoanKham.ManageOwn", "LichKham.ViewOwn", "LichKham.ViewAll", "ChamCong.QR", "ChamCong.CheckInOut", "ChamCong.ViewAll", "BenhNhan.View"],
         ["WarehouseManager"] = ["Kho.View", "Kho.Edit", "Kho.Reports", "Kho.Import", "Kho.Export"],
         ["Accountant"] = ["HopDong.View", "BaoCao.View", "BaoCao.ViewFinance", "BaoCao.Export", "Luong.View", "Luong.Manage", "QuyetToan.Edit", "QuyetToan.Calculate", "QuyetToan.Finalize", "PhongBan.View"],

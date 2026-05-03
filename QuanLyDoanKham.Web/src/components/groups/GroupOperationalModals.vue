@@ -22,13 +22,38 @@
                   <form id="staffForm" @submit.prevent="$emit('add-staff')" class="space-y-6">
                       <div class="space-y-4">
                           <div class="space-y-2">
+                              <label class="input-label"><ShieldCheck class="w-3 h-3 text-indigo-400" /> 0. Chọn vị trí</label>
+                              <select v-model="modals.staff.data.positionId" class="select-premium" @change="$emit('position-change')">
+                                  <option :value="null">-- Chọn vị trí trong đoàn --</option>
+                                  <option v-for="p in groupPositions" :key="p.positionId" :value="p.positionId">
+                                      {{ p.positionName }}
+                                  </option>
+                              </select>
+                          </div>
+
+                          <div class="space-y-2">
                               <label class="input-label"><UsersIcon class="w-3 h-3 text-indigo-400" /> 1. Chọn nhân sự</label>
                               <select v-model="modals.staff.data.staffId" required class="select-premium">
                                   <option :value="null" disabled>-- Chọn nhân sự tham gia --</option>
-                                  <option v-for="s in otherStaff" :key="s.staffId" :value="s.staffId">
-                                      {{ s.fullName }} ({{ s.jobTitle || s.staffType || '---' }})
+                                  <optgroup v-if="recommendedStaff.length > 0" label="Phù hợp vị trí">
+                                      <option v-for="s in recommendedStaff" :key="s.staffId" :value="s.staffId">
+                                          {{ s.fullName }} ({{ s.jobTitle || s.staffType || '---' }})
+                                      </option>
+                                  </optgroup>
+                                  <optgroup v-if="otherStaff.length > 0" label="Nhân sự khác">
+                                      <option v-for="s in otherStaff" :key="s.staffId" :value="s.staffId">
+                                          {{ s.fullName }} ({{ s.jobTitle || s.staffType || '---' }})
+                                      </option>
+                                  </optgroup>
+                                  <option v-if="recommendedStaff.length === 0 && otherStaff.length === 0" disabled>
+                                      Không có quyền xem danh sách nhân sự
                                   </option>
                               </select>
+                          </div>
+
+                          <div v-if="isRoleMismatch" class="alert-warning">
+                              <AlertTriangle class="w-4 h-4 flex-shrink-0" />
+                              Nhân sự được chọn không phù hợp với vị trí yêu cầu
                           </div>
 
                           <div class="space-y-2" v-if="modals.staff.data.staffId">
@@ -219,9 +244,9 @@
 </template>
 
 <script setup>
-import { 
-  X, Users as UsersIcon, Stethoscope, CheckCircle2, AlertCircle, 
-  ShieldCheck, QrCode, RefreshCw, MapPin, Settings2 
+import {
+  X, Users as UsersIcon, Stethoscope, CheckCircle2, AlertTriangle,
+  ShieldCheck, QrCode, RefreshCw, MapPin, Settings2
 } from 'lucide-vue-next'
 
 const props = defineProps({
@@ -324,15 +349,15 @@ defineEmits(['close', 'add-staff', 'add-position', 'position-change', 'copy-qr-u
 
 .alert-warning {
   padding: 0.5rem 0.75rem;
-  background: #fff1f2;
-  border: 1px solid #ffe4e6;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
   border-radius: 0.75rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 9px;
   font-weight: 900;
-  color: #e11d48;
+  color: #b45309;
   text-transform: uppercase;
 }
 

@@ -380,16 +380,17 @@ namespace QuanLyDoanKham.API.Controllers
 
 
 
-            // Kiểm tra trùng lịch theo ngày + ca (ShiftType)
+            // Kiểm tra tổng ca làm trong ngày để tránh phân công vượt quá 1 công.
             var examDate = group.ExamDate.Date;
-            var isOverlapping = await _context.GroupStaffDetails
+            var existingShifts = await _context.GroupStaffDetails
                 .Include(gsd => gsd.MedicalGroup)
-                .AnyAsync(gsd => gsd.StaffId == dto.StaffId
+                .Where(gsd => gsd.StaffId == dto.StaffId
                     && gsd.MedicalGroup!.ExamDate.Date == examDate
-                    && Math.Abs(gsd.ShiftType - dto.ShiftType) < 0.001);
+                    && gsd.GroupId != id)
+                .SumAsync(gsd => gsd.ShiftType);
 
-            if (isOverlapping)
-                return BadRequest($"Nhân viên {staff.FullName} đã được phân công vào đoàn khác trong ngày {examDate:dd/MM/yyyy}.");
+            if (existingShifts + dto.ShiftType > 1.0 + 0.001)
+                return BadRequest($"Nhân viên {staff.FullName} đã có tổng {existingShifts:0.##} ngày công trong ngày {examDate:dd/MM/yyyy}. Không thể thêm ca {dto.ShiftType:0.##}.");
 
             int? assignmentPositionId = null;
             if (dto.PositionId.HasValue)

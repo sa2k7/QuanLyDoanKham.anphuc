@@ -65,6 +65,7 @@ namespace QuanLyDoanKham.API.Controllers
                     BankName = s.BankName,
                     PhoneNumber = s.PhoneNumber,
                     JobTitle = s.JobTitle,
+                    StaffType = ResolveStaffType(s.StaffType, s.JobTitle, s.FullName),
                     Email = s.Email,
                     Department = s.DepartmentName,
                     EmployeeType = s.EmployeeType,
@@ -81,6 +82,17 @@ namespace QuanLyDoanKham.API.Controllers
         }
 
         // GET: api/Staffs/5 — Admin, MedicalStaff, PersonnelManager và MedicalGroupManager được xem
+        private static string ResolveStaffType(string? staffType, string? jobTitle, string? fullName)
+        {
+            if (!string.IsNullOrWhiteSpace(staffType)) return staffType;
+
+            var text = $"{jobTitle} {fullName}".ToLowerInvariant();
+            if (text.Contains("bác sĩ") || text.Contains("bac si")) return "BacSi";
+            if (text.Contains("kỹ thuật") || text.Contains("ky thuat") || text.Contains("x-quang") || text.Contains("xét nghiệm") || text.Contains("xet nghiem")) return "KyThuatVien";
+            if (text.Contains("điều dưỡng") || text.Contains("dieu duong")) return "DieuDuong";
+            return "NhanVienHoTro";
+        }
+
         [HttpGet("{id}")]
         [AuthorizePermission("NhanSu.View")]
         public async Task<ActionResult<StaffDetailDto>> GetStaff(int id)

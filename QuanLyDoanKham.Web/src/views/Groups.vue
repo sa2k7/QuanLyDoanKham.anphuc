@@ -312,9 +312,7 @@ const isRoleMismatch = computed(() => {
     if (!sid || !reqType) return false
     const staff = staffList.value.find(s => s.staffId === sid)
     if (!staff || !staff.staffType) return false
-    if (reqType === 'BacSi' && staff.staffType !== 'BacSi') return true
-    if (staff.staffType === 'BacSi' && reqType !== 'BacSi') return true
-    return false
+    return staff.staffType !== reqType
 })
 
 // Auto-fill workPosition when staffId changes
@@ -361,8 +359,12 @@ const fetchData = async () => {
         const cRes = await apiClient.get('/api/Contracts')
         contracts.value = cRes.data
 
-        const sRes = await apiClient.get('/api/Staffs')
-        staffList.value = sRes.data
+        if (authStore.hasPermission('NhanSu.View')) {
+            const sRes = await apiClient.get('/api/Staffs')
+            staffList.value = sRes.data
+        } else {
+            staffList.value = []
+        }
 
         groups.value.forEach(g => {
             fetchGroupStaff(g.groupId)

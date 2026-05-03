@@ -126,20 +126,23 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const logout = async () => {
-    // Fire-and-forget: invalidate refresh token on server
+    const tokenToInvalidate = token.value
+    token.value = null
+    refreshToken.value = null
+    user.value = null
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_refresh_token')
+    localStorage.removeItem('user')
+
+    // Fire-and-forget: local cleanup has already completed.
     try {
-      if (token.value) {
-        await apiClient.post('/api/Auth/logout')
+      if (tokenToInvalidate) {
+        await apiClient.post('/api/Auth/logout', null, {
+          headers: { Authorization: `Bearer ${tokenToInvalidate}` }
+        })
       }
     } catch {
-      // Ignore errors — local cleanup always happens
-    } finally {
-      token.value = null
-      refreshToken.value = null
-      user.value = null
-      localStorage.removeItem('auth_token')
-      localStorage.removeItem('auth_refresh_token')
-      localStorage.removeItem('user')
+      // Ignore errors — local cleanup already happened.
     }
   }
 
