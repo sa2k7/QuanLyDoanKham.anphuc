@@ -87,35 +87,36 @@ const fetchCounts = async () => {
 onMounted(fetchCounts)
 
 const systemStats = computed(() => [
-  {
+  authStore.hasPermission('DoanKham.View') ? {
     label: 'Đoàn khám', value: counts.value.groups, target: 'groups',
     icon: Stethoscope, bgClass: 'bg-primary/5', borderClass: 'border-primary/10',
     iconBg: 'bg-primary/10', iconColor: 'text-primary', valueColor: 'text-primary'
-  },
-  {
+  } : null,
+  authStore.hasPermission('HopDong.View') ? {
     label: 'Hợp đồng HĐ', value: counts.value.contracts, target: 'contracts',
     icon: FileText, bgClass: 'bg-teal-50', borderClass: 'border-teal-100',
     iconBg: 'bg-teal-100', iconColor: 'text-teal-600', valueColor: 'text-teal-700'
-  },
-  {
+  } : null,
+  authStore.hasPermission('NhanSu.View') ? {
     label: 'Nhân sự', value: counts.value.staff, target: 'staff',
     icon: UsersIcon, bgClass: 'bg-rose-50', borderClass: 'border-rose-100',
     iconBg: 'bg-rose-100', iconColor: 'text-rose-600', valueColor: 'text-rose-700'
-  },
-  {
+  } : null,
+  authStore.hasPermission('HeThong.UserManage') ? {
     label: 'Người dùng HT', value: counts.value.users, target: 'users',
     icon: User, bgClass: 'bg-slate-50', borderClass: 'border-slate-200',
     iconBg: 'bg-slate-200', iconColor: 'text-slate-600', valueColor: 'text-slate-800'
-  },
-])
+  } : null,
+].filter(Boolean))
 
-const quickNavItems = [
-  { id: 'companies',         name: 'Công ty',      desc: 'Đối tác',      icon: Building2,   bgClass: 'bg-sky-50',     borderClass: 'border-sky-100',     iconBg: 'bg-sky-100',     iconColor: 'text-sky-600' },
-  { id: 'contracts',         name: 'Hợp đồng',     desc: 'Pháp lý',      icon: FileText,    bgClass: 'bg-teal-50',    borderClass: 'border-teal-100',    iconBg: 'bg-teal-100',    iconColor: 'text-teal-600' },
-  { id: 'groups',            name: 'Đoàn khám',    desc: 'Vận hành',     icon: Stethoscope, bgClass: 'bg-primary/5',  borderClass: 'border-primary/10',  iconBg: 'bg-primary/10',  iconColor: 'text-primary' },
-  { id: 'patients',          name: 'Bệnh nhân',    desc: 'Hồ sơ',        icon: UserRound,   bgClass: 'bg-blue-50',    borderClass: 'border-blue-100',    iconBg: 'bg-blue-100',    iconColor: 'text-blue-600' },
-  { id: 'settlement-report', name: 'Quyết toán',   desc: 'Tài chính',    icon: Calculator,  bgClass: 'bg-emerald-50', borderClass: 'border-emerald-100', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
-  { id: 'analytics',         name: 'Thống kê',     desc: 'Báo cáo',      icon: BarChart3,   bgClass: 'bg-indigo-50',  borderClass: 'border-indigo-100',  iconBg: 'bg-indigo-100',  iconColor: 'text-indigo-600' },
-  { id: 'users',             name: 'Tài khoản',    desc: 'Quản trị',     icon: User,        bgClass: 'bg-slate-50',   borderClass: 'border-slate-200',   iconBg: 'bg-slate-200',   iconColor: 'text-slate-600' },
-]
+const quickNavItems = computed(() => [
+  authStore.hasPermission('HopDong.View') ? { id: 'companies',         name: 'Công ty',      desc: 'Đối tác',      icon: Building2,   bgClass: 'bg-sky-50',     borderClass: 'border-sky-100',     iconBg: 'bg-sky-100',     iconColor: 'text-sky-600' } : null,
+  authStore.hasPermission('HopDong.View') ? { id: 'contracts',         name: 'Hợp đồng',     desc: 'Pháp lý',      icon: FileText,    bgClass: 'bg-teal-50',    borderClass: 'border-teal-100',    iconBg: 'bg-teal-100',    iconColor: 'text-teal-600' } : null,
+  authStore.hasPermission('DoanKham.View') ? { id: 'groups',            name: 'Đoàn khám',    desc: 'Vận hành',     icon: Stethoscope, bgClass: 'bg-primary/5',  borderClass: 'border-primary/10',  iconBg: 'bg-primary/10',  iconColor: 'text-primary' } : null,
+  authStore.hasPermission('DoanKham.View') ? { id: 'patients',          name: 'Bệnh nhân',    desc: 'Hồ sơ',        icon: UserRound,   bgClass: 'bg-blue-50',    borderClass: 'border-blue-100',    iconBg: 'bg-blue-100',    iconColor: 'text-blue-600' } : null,
+  authStore.hasPermission('BaoCao.View') ? { id: 'settlement-report', name: 'Quyết toán',   desc: 'Tài chính',    icon: Calculator,  bgClass: 'bg-emerald-50', borderClass: 'border-emerald-100', iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' } : null,
+  authStore.hasPermission('BaoCao.View') ? { id: 'analytics',         name: 'Thống kê',     desc: 'Báo cáo',      icon: BarChart3,   bgClass: 'bg-indigo-50',  borderClass: 'border-indigo-100',  iconBg: 'bg-indigo-100',  iconColor: 'text-indigo-600' } : null,
+  authStore.hasPermission('HeThong.UserManage') ? { id: 'users',             name: 'Tài khoản',    desc: 'Quản trị',     icon: User,        bgClass: 'bg-slate-50',   borderClass: 'border-slate-200',   iconBg: 'bg-slate-200',   iconColor: 'text-slate-600' } : null,
+  authStore.hasPermission('Kho.View') ? { id: 'supplies',          name: 'Vật tư',       desc: 'Kho hàng',     icon: Package,     bgClass: 'bg-violet-50',  borderClass: 'border-violet-100',  iconBg: 'bg-violet-100',  iconColor: 'text-violet-600' } : null,
+].filter(Boolean))
 </script>

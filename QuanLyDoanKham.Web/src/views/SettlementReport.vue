@@ -265,7 +265,8 @@
              </div>
 
               <div class="flex gap-3">
-                  <button class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 transition-all">
+                  <button @click="exportSettlementExcel(selectedSettlement)"
+                          class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 transition-all">
                     <Download class="w-3.5 h-3.5 text-emerald-500" /> Xuất Excel
                   </button>
                   <button v-if="authStore.hasPermission('QuyetToan.Finalize')" @click="settleContract(selectedSettlement.contractId)" class="flex-2 h-9 flex items-center justify-center gap-1.5 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
@@ -414,15 +415,42 @@ const settleContract = async (contractId) => {
   }
 }
 
+const exportSettlementExcel = async (settlement) => {
+  if (!settlement) return
+  try {
+    toast.success('Đang xuất báo cáo quyết toán...')
+    const res = await apiClient.get(`/api/Contracts/${settlement.contractId}/export-settlement`, {
+      responseType: 'blob'
+    })
+    const url = URL.createObjectURL(new Blob([res.data]))
+    const link = document.createElement('a')
+    link.href = url
+    const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')
+    link.download = `QuyetToan_${settlement.contractId}_${dateStr}.xlsx`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  } catch (e) {
+    toast.error(parseApiError(e))
+  }
+}
+
 const formatCurrency = (val) => {
   if (val === undefined || val === null || isNaN(val)) return '0 ₫'
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
 }
 
 const getStatusBadgeClass = (status) => {
-  if (status === 'Completed') return 'success'
-  if (status === 'Settled' || status === 'Finalized') return 'info'
-  return 'warning'
+  if (['Completed', 'Settled', 'Finalized'].includes(status))
+    return 'bg-emerald-100 text-emerald-700 border border-emerald-200'
+  if (status === 'Active')
+    return 'bg-violet-100 text-violet-700 border border-violet-200'
+  if (status === 'Approved')
+    return 'bg-blue-100 text-blue-700 border border-blue-200'
+  if (status === 'PendingApproval')
+    return 'bg-amber-100 text-amber-700 border border-amber-200'
+  return 'bg-slate-100 text-slate-600 border border-slate-200'
 }
 
 onMounted(async () => {

@@ -482,9 +482,14 @@
                     <form @submit.prevent="processExport" class="space-y-3">
                         <div class="form-group">
                             <label class="text-[9px]">Đoàn khám thụ hưởng</label>
-                            <select v-model="modals.export.data.medicalGroupId" required class="form-input !py-2 !text-[13px] !border-rose-100 focus:!border-rose-500">
+                            <select v-if="activeGroups.length > 0" v-model="modals.export.data.medicalGroupId" required class="form-input !py-2 !text-[13px] !border-rose-100 focus:!border-rose-500">
+                                <option :value="null" disabled>-- Chọn đoàn khám --</option>
                                 <option v-for="g in activeGroups" :key="g.groupId" :value="g.groupId">{{ g.groupName }} ({{ g.companyName }})</option>
                             </select>
+                            <div v-else class="form-input !py-2 !text-[11px] bg-amber-50 border-amber-200 text-amber-700 flex items-center gap-2">
+                                <span>Nhập mã đoàn khám (GroupId):</span>
+                                <input type="number" v-model.number="modals.export.data.medicalGroupId" required class="flex-1 bg-transparent border-none outline-none font-black text-[13px]" placeholder="VD: 1, 2, 3..." />
+                            </div>
                         </div>
                         <div class="form-group">
                             <label class="text-[9px]">Số lượng xuất</label>
@@ -568,12 +573,14 @@ import {
 } from 'lucide-vue-next'
 import { useI18nStore } from '../stores/i18n'
 import { usePermission } from '../composables/usePermission'
+import { useAuthStore } from '../stores/auth'
 import apiClient from '../services/apiClient'
 import { useToast } from '../composables/useToast'
 import { parseApiError } from '../services/errorHelper'
 
 const i18n = useI18nStore()
 const { can } = usePermission()
+const authStore = useAuthStore()
 const toast = useToast()
 
 const supplies = ref([])
@@ -649,10 +656,16 @@ const fetchPeriodicReport = async () => {
 }
 
 const fetchData = async () => {
+    // Gate: chỉ fetch danh sách đoàn nếu có quyền DoanKham.View
+    // WarehouseManager không có quyền này — activeGroups sẽ rỗng
+    if (!authStore.hasPermission('DoanKham.View')) {
+        activeGroups.value = []
+        return
+    }
     try {
         const res = await apiClient.get('/api/MedicalGroups')
         activeGroups.value = (res.data || []).filter(g => g.status === 'Open')
-    } catch (err) {}
+    } catch (err) { /* silent — permission gate đã xử lý */ }
 }
 
 const filteredSupplies = computed(() => {
