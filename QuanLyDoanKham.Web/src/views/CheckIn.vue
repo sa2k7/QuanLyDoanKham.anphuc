@@ -211,8 +211,12 @@
                       <h3>{{ resultMessage }}</h3>
                     </div>
                     <p v-if="resultData" class="shift-info">Ca làm việc: {{ resultData.shiftType }}</p>
+                    <p class="text-xs text-slate-500 mt-3 text-center">
+                      Tự động chuyển về trang chủ sau 2.5 giây...
+                    </p>
                     <div class="actions vertical mt-4">
-                      <button class="btn-premium primary w-full" @click="resetStaffForm">Chấm công người khác</button>
+                      <button class="btn-premium primary w-full" @click="router.push('/')">Về trang chủ ngay</button>
+                      <button class="btn-premium secondary w-full mt-2" @click="resetStaffForm">Chấm công người khác</button>
                       <button class="btn-link mt-2" @click="resetScanner">Trở về Quét QR</button>
                     </div>
                  </div>
@@ -705,9 +709,15 @@ const submitStaffCheckIn = async () => {
         resultStatus.value = 'success'
         resultMessage.value = res.data?.message || 'Chấm công thành công!'
         resultData.value = res.data
+
+        // Tự động redirect về Dashboard sau 2.5 giây
+        setTimeout(() => {
+            router.push('/')
+        }, 2500)
     } catch (e) {
         errorMsg.value = e.response?.data?.message || e.response?.data || 'Có lỗi xảy ra khi chấm công.'
         resultStatus.value = 'error'
+        // Không redirect khi có lỗi
     } finally {
         loading.value = false
     }
