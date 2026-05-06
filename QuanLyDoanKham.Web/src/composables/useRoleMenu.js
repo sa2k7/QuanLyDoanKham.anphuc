@@ -14,7 +14,7 @@ import {
   LayoutDashboard, Building2, FileText, Stethoscope, UserRound,
   Package, Activity, Calculator, Users as UsersIcon, Wallet,
   BarChart3, User, ShieldCheck, ClipboardList, CalendarCheck,
-  History, ClipboardCheck
+  History, ClipboardCheck, QrCode
 } from 'lucide-vue-next'
 import { computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
@@ -26,7 +26,7 @@ const ADMIN_MENU = [
   { id: 'companies',        name: 'Công ty',      icon: Building2,    permission: 'HopDong.View' },
   { id: 'contracts',        name: 'Hợp đồng',    icon: FileText,     permission: 'HopDong.View' },
   { id: 'groups',           name: 'Đoàn khám',   icon: Stethoscope,  permission: 'DoanKham.View' },
-  { id: 'patients',         name: 'Bệnh nhân',   icon: UserRound,    permission: 'DoanKham.View' },
+  { id: 'patients',         name: 'Bệnh án',   icon: UserRound,    permission: 'DoanKham.View' },
   { id: 'settlement-report',name: 'Quyết toán',  icon: Calculator,   permission: 'BaoCao.View' },
   { id: 'staff',            name: 'Nhân sự',     icon: UsersIcon,    permission: 'NhanSu.View' },
   { id: 'payroll',          name: 'Tính lương',  icon: Wallet,       permission: 'Luong.View' },
@@ -36,21 +36,23 @@ const ADMIN_MENU = [
   { id: 'users',            name: 'Tài khoản',   icon: User,         permission: 'HeThong.UserManage' },
   { id: 'permissions',      name: 'Phân quyền',  icon: ShieldCheck,  permission: 'HeThong.RoleManage' },
   { id: 'audit-logs',       name: 'Nhật ký',     icon: History,      permission: 'HeThong.AuditLog' },
-  { id: 'admin/permissions-debug', name: 'Debug Quyền', icon: ShieldCheck, permission: 'HeThong.RoleManage', devOnly: true },
+  { id: 'check-in',         name: 'Quét mã QR',   icon: QrCode,       permission: 'DoanKham.CheckIn' },
+
 ]
 
 // Bác sĩ / Kỹ Thuật Viên - tập trung vào phòng khám
 const DOCTOR_MENU = [
   { id: 'home',          name: 'Hôm nay',       icon: CalendarCheck },
-  { id: 'patients',      name: 'Bệnh nhân',     icon: UserRound,  permission: 'DoanKham.View' },
+  { id: 'patients',      name: 'Bệnh án',     icon: UserRound,  permission: 'DoanKham.View' },
   { id: 'my-schedule',   name: 'Lịch của tôi',  icon: ClipboardList },
 ]
 
-// Lễ tân / Điều phối - check-in và danh sách bệnh nhân
+// Lễ tân / Điều phối - check-in và danh sách bệnh án
 const RECEPTIONIST_MENU = [
   { id: 'home',          name: 'Tổng quan',     icon: LayoutDashboard },
-  { id: 'patients',      name: 'Bệnh nhân',     icon: UserRound,   permission: 'DoanKham.View' },
+  { id: 'patients',      name: 'Bệnh án',     icon: UserRound,   permission: 'DoanKham.View' },
   { id: 'groups',        name: 'Đoàn khám',     icon: Stethoscope, permission: 'DoanKham.View' },
+  { id: 'check-in',      name: 'Quét mã QR',   icon: QrCode,      permission: 'DoanKham.CheckIn' },
 ]
 
 // Kế toán / Tài chính
@@ -72,17 +74,18 @@ const ACCOUNTANT_MENU = [
 // QC / OMS Manager
 const QC_MENU = [
   { id: 'home',          name: 'Giám sát',      icon: LayoutDashboard },
-  { id: 'patients',      name: 'Bệnh nhân',     icon: UserRound,   permission: 'DoanKham.View' },
+  { id: 'patients',      name: 'Bệnh án',     icon: UserRound,   permission: 'DoanKham.View' },
   { id: 'groups',        name: 'Đoàn khám',     icon: Stethoscope, permission: 'DoanKham.View' },
   { id: 'analytics',     name: 'Thống kê',      icon: BarChart3,   permission: 'BaoCao.View' },
 ]
 
-// Medical Group Manager — quản lý đoàn khám, bệnh nhân, chấm công, thống kê
+// Medical Group Manager — quản lý đoàn khám, bệnh án, chấm công, thống kê
 const MEDICAL_GROUP_MANAGER_MENU = [
   { id: 'home',               name: 'Tổng quan',   icon: LayoutDashboard },
   { id: 'groups',             name: 'Đoàn khám',   icon: Stethoscope,    permission: 'DoanKham.View' },
-  { id: 'patients',           name: 'Bệnh nhân',   icon: UserRound,      permission: 'DoanKham.View' },
+  { id: 'patients',           name: 'Bệnh án',   icon: UserRound,      permission: 'DoanKham.View' },
   { id: 'attendance-summary', name: 'Chấm công',   icon: ClipboardCheck, permission: 'ChamCong.ViewAll' },
+  { id: 'check-in',           name: 'Quét mã QR',   icon: QrCode,         permission: 'DoanKham.CheckIn' },
   { id: 'analytics',          name: 'Thống kê',    icon: BarChart3,      permission: 'BaoCao.View' },
 ]
 
@@ -110,7 +113,7 @@ const CONTRACT_APPROVE_MENU = [
 const GROUP_LEADER_MENU = [
   { id: 'home',      name: 'Tổng quan',    icon: LayoutDashboard },
   { id: 'groups',    name: 'Đoàn khám',    icon: Stethoscope, permission: 'DoanKham.View' },
-  { id: 'patients',  name: 'Bệnh nhân',    icon: UserRound,   permission: 'DoanKham.View' },
+  { id: 'patients',  name: 'Bệnh án',    icon: UserRound,   permission: 'DoanKham.View' },
   { id: 'my-schedule', name: 'Lịch của tôi', icon: ClipboardList },
   { id: 'attendance-summary', name: 'Chấm công', icon: ClipboardCheck, permission: 'ChamCong.ViewAll' },
 ]
@@ -239,7 +242,7 @@ const ROLE_PROFILES = {
 const DEFAULT_PROFILE = {
   menuItems: [
     { id: 'home',          name: 'Tổng quan',   icon: LayoutDashboard },
-    { id: 'patients',      name: 'Bệnh nhân',   icon: UserRound },
+    { id: 'patients',      name: 'Bệnh án',   icon: UserRound },
   ],
   homePanel: 'DoctorHomePanel',
   themeColor: 'text-primary',

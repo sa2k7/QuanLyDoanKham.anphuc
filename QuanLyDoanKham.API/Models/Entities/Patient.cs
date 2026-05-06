@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace QuanLyDoanKham.API.Models
 {
+    [Obsolete("Use MedicalBatch/MedicalBatchRecord for new flows. Patient table is kept for backward compatibility only.")]
     public class Patient
     {
         [Key]

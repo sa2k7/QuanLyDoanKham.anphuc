@@ -240,7 +240,7 @@
           <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center mb-3"><Stethoscope class="w-5 h-5" /></div>
           <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-200 mb-1">Số Đoàn Khám</p>
           <h3 class="text-2xl font-black">{{ periodSummary.totalGroups }}</h3>
-          <p class="text-[10px] text-indigo-200 mt-1">{{ periodSummary.totalPatients }} bệnh nhân</p>
+          <p class="text-[10px] text-indigo-200 mt-1">{{ periodSummary.totalPatients }} bệnh án</p>
         </div>
         <div class="bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-2xl p-5 text-white relative overflow-hidden shadow-lg shadow-emerald-200">
           <div class="absolute -right-4 -bottom-4 w-20 h-20 bg-white/10 rounded-full blur-xl"></div>
@@ -332,7 +332,7 @@
             <p class="text-xs text-slate-500 mt-1">{{ groupPnl.companyName }}</p>
             <div class="flex gap-3 mt-3 text-[10px]">
               <span class="px-2 py-1 bg-indigo-50 text-indigo-600 rounded-full font-bold">📅 {{ groupPnl.examDate }}</span>
-              <span class="px-2 py-1 bg-slate-50 text-slate-600 rounded-full font-bold">👥 {{ groupPnl.patientCount }} BN</span>
+              <span class="px-2 py-1 bg-slate-50 text-slate-600 rounded-full font-bold">👥 {{ groupPnl.patientCount }} BA</span>
             </div>
           </div>
 

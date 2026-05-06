@@ -21,7 +21,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo tồn kho theo kỳ (Đầu kỳ, Nhập, Xuất, Cuối kỳ)</summary>
         [HttpGet("periodic-stock-report")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetPeriodicStockReport([FromQuery] DateTime fromDate, [FromQuery] DateTime toDate)
         {
             var from = fromDate.Date;
@@ -76,7 +76,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo tồn kho hiện tại</summary>
         [HttpGet("stock-report")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetStockReport([FromQuery] DateTime? asOfDate)
         {
             var date = asOfDate?.Date ?? DateTime.Today;
@@ -144,7 +144,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo nhập/xuất kho trong kỳ</summary>
         [HttpGet("movement-report")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetMovementReport(
             [FromQuery] DateTime from,
             [FromQuery] DateTime to,
@@ -196,7 +196,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo tồn kho theo nhóm</summary>
         [HttpGet("by-category")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetReportByCategory()
         {
             // Group by Category field in SupplyItem
@@ -234,7 +234,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo vật tư sắp hết (cần đặt hàng)</summary>
         [HttpGet("reorder-alert")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetReorderAlert()
         {
             var items = await _context.SupplyItems
@@ -281,7 +281,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         /// <summary>Báo cáo sử dụng vật tư theo đoàn khám</summary>
         [HttpGet("by-medical-group/{groupId}")]
-        [AuthorizePermission("Kho.Reports")]
+        [AuthorizePermission("Kho.View")]
         public async Task<IActionResult> GetReportByMedicalGroup(int groupId)
         {
             var group = await _context.MedicalGroups.FindAsync(groupId);

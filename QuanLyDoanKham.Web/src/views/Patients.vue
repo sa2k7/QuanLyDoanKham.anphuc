@@ -5,18 +5,15 @@
       <div>
         <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
           <div class="w-7 h-7 bg-primary text-white rounded-lg flex items-center justify-center shadow-md">
-            <Users class="w-4 h-4" />
+            <FileText class="w-4 h-4" />
           </div>
-          Quản Lý Bệnh Nhân
+          Theo Dõi Bệnh Án
         </h2>
-        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">Lý lịch & Hồ sơ chuẩn y khoa (Medical Database)</p>
+        <p class="text-slate-400 font-semibold uppercase tracking-widest text-[7.5px] mt-0.5">Tiến độ khám sức khỏe theo hợp đồng &amp; đoàn khám</p>
       </div>
       <div class="flex gap-2">
         <button @click="handleExport" class="btn-premium secondary h-7.5 !rounded-lg !px-2.5 shadow-sm border border-white/40 text-[8px] font-black uppercase">
-          <Download class="w-3 h-3" /> XUẤT
-        </button>
-        <button @click="openAdd" class="btn-premium primary h-7.5 !rounded-lg !px-3 shadow-lg shadow-primary/20 text-[8px] font-black uppercase">
-          <UserPlus class="w-3.5 h-3.5" /> THÊM MỚI
+          <Download class="w-3 h-3" /> XUẤT EXCEL
         </button>
       </div>
     </div>
@@ -26,17 +23,52 @@
       <div class="relative flex-1 group">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300 w-3 h-3" />
         <input v-model="search" @input="debouncedSearch" type="text"
-          placeholder="Tìm tên, CCCD, số điện thoại..." class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white/50 border border-slate-100 focus:bg-white focus:border-primary/20 outline-none font-bold text-[11px] text-slate-600 shadow-sm transition-all" />
+          placeholder="Tìm tên, CCCD, số định danh..." class="w-full pl-9 pr-3 py-1.5 rounded-lg bg-white/50 border border-slate-100 focus:bg-white focus:border-primary/20 outline-none font-bold text-[11px] text-slate-600 shadow-sm transition-all" />
       </div>
-      <select v-model="filterContractId" @change="loadPatients" class="px-3 py-1.5 rounded-lg bg-white/50 border border-slate-100 font-bold text-[11px] text-slate-500 outline-none shadow-sm min-w-[160px]">
+      <select v-model="filterContractId" @change="onContractChange" class="px-3 py-1.5 rounded-lg bg-white/50 border border-slate-100 font-bold text-[11px] text-slate-500 outline-none shadow-sm min-w-[160px]">
         <option value="">Tất cả hợp đồng</option>
         <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-          {{ c.contractName }}
+          {{ c.contractName }} (Mã: {{ c.healthContractId }})
         </option>
       </select>
-      <button @click="loadPatients" class="w-7.5 h-7.5 bg-white rounded-lg shadow-sm border border-slate-100 text-slate-400 hover:text-primary transition-all flex items-center justify-center">
+      <select v-model="filterGroupId" @change="loadRecords" class="px-3 py-1.5 rounded-lg bg-white/50 border border-slate-100 font-bold text-[11px] text-slate-500 outline-none shadow-sm min-w-[160px]" :disabled="!filterContractId">
+        <option value="">Tất cả đoàn khám</option>
+        <option v-for="g in groups" :key="g.groupId" :value="g.groupId">
+          {{ g.groupName }}
+        </option>
+      </select>
+      <button @click="loadRecords" class="w-7.5 h-7.5 bg-white rounded-lg shadow-sm border border-slate-100 text-slate-400 hover:text-primary transition-all flex items-center justify-center">
         <RefreshCw class="w-3 h-3" :class="{ 'animate-spin': loading }" />
       </button>
+    </div>
+
+    <!-- Contract Progress Tracking -->
+    <div v-if="selectedContract" class="premium-card p-3 mb-3">
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-6 h-6 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center">
+            <Hash class="w-3.5 h-3.5" />
+          </div>
+          <div>
+            <p class="text-[10px] font-black text-slate-800 uppercase tracking-tight">{{ selectedContract.contractName }}</p>
+            <p class="text-[8px] font-bold text-slate-400 uppercase">{{ selectedContract.companyName || selectedContract.shortName || '' }}</p>
+          </div>
+        </div>
+        <div class="text-right">
+          <p class="text-[18px] font-black text-slate-900 tabular-nums leading-none">
+            {{ total }} <span class="text-[10px] font-bold text-slate-400">/ {{ selectedContract.expectedQuantity || '?' }}</span>
+          </p>
+          <p class="text-[7px] font-black uppercase tracking-widest" :class="progressPercent >= 100 ? 'text-emerald-600' : progressPercent >= 50 ? 'text-sky-600' : 'text-amber-600'">
+            {{ progressPercent }}% đã có bệnh án
+          </p>
+        </div>
+      </div>
+      <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+        <div class="h-full rounded-full transition-all duration-700 ease-out"
+          :class="progressPercent >= 100 ? 'bg-emerald-500' : progressPercent >= 50 ? 'bg-sky-500' : 'bg-amber-500'"
+          :style="{ width: Math.min(progressPercent, 100) + '%' }"
+        ></div>
+      </div>
     </div>
 
     <!-- Stats Summary -->
@@ -46,35 +78,35 @@
           <Users class="w-3.5 h-3.5" />
         </div>
         <div>
-          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Tổng bệnh nhân</p>
+          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Tổng bệnh án</p>
           <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ total.toLocaleString() }}</p>
         </div>
       </div>
       <div class="premium-card p-2 flex items-center gap-2.5">
         <div class="w-7 h-7 bg-emerald-100 text-emerald-600 rounded-lg flex items-center justify-center shadow-inner">
-          <FileText class="w-3.5 h-3.5" />
+          <CheckCircle class="w-3.5 h-3.5" />
         </div>
         <div>
-          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Có hồ sơ</p>
-          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.hasRecord).length }}</p>
+          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Hoàn thành</p>
+          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ stats.completed }}</p>
         </div>
       </div>
       <div class="premium-card p-2 flex items-center gap-2.5">
         <div class="w-7 h-7 bg-sky-100 text-sky-600 rounded-lg flex items-center justify-center shadow-inner">
-          <CheckCircle class="w-3.5 h-3.5" />
+          <Clock class="w-3.5 h-3.5" />
         </div>
         <div>
-          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Khám xong</p>
-          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.status === 'COMPLETED').length }}</p>
+          <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Đang khám</p>
+          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ stats.inProgress }}</p>
         </div>
       </div>
       <div class="premium-card p-2 flex items-center gap-2.5">
         <div class="w-7 h-7 bg-amber-100 text-amber-600 rounded-lg flex items-center justify-center shadow-inner">
-          <Clock class="w-3.5 h-3.5" />
+          <AlertCircle class="w-3.5 h-3.5" />
         </div>
         <div>
           <p class="text-[7px] font-black text-slate-400 uppercase tracking-widest">Chờ khám</p>
-          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ patients.filter(p => p.status !== 'COMPLETED' && p.status !== 'CREATED').length }}</p>
+          <p class="text-[14px] font-black text-slate-900 tabular-nums">{{ stats.created }}</p>
         </div>
       </div>
     </div>
@@ -91,17 +123,14 @@
       </div>
 
       <!-- Empty State -->
-      <div v-if="!loading && patients.length === 0" class="flex-grow flex flex-col items-center justify-center p-8 text-center animate-scale-up">
+      <div v-if="!loading && records.length === 0" class="flex-grow flex flex-col items-center justify-center p-8 text-center animate-scale-up">
         <div class="w-16 h-16 bg-slate-50 rounded-[1.5rem] flex items-center justify-center mb-4 shadow-inner border border-slate-100/50">
-          <UserRound class="w-8 h-8 text-slate-300" />
+          <FileText class="w-8 h-8 text-slate-300" />
         </div>
-        <h3 class="text-base font-black text-slate-800 uppercase tracking-tight mb-2 italic">Chưa có bệnh nhân nào</h3>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest max-w-sm leading-relaxed mb-6">
-          Hệ thống chưa ghi nhận dữ liệu bệnh nhân nào phù hợp. <br/> Bấm "Thêm Bệnh Nhân" để bắt đầu nhập liệu ngay.
+        <h3 class="text-base font-black text-slate-800 uppercase tracking-tight mb-2 italic">Chưa có bệnh án nào</h3>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest max-w-sm leading-relaxed mb-2">
+          Bệnh án được tạo tự động khi import danh sách vào Đoàn khám <br/> hoặc khi bệnh nhân check-in tại phòng khám.
         </p>
-        <button @click="openAdd" class="btn-premium primary shadow-lg shadow-primary/20 !px-6 !py-2.5 text-[11px]">
-          <UserPlus class="w-3.5 h-3.5" /> Thêm bệnh nhân mới
-        </button>
       </div>
 
       <!-- Data Table -->
@@ -110,44 +139,49 @@
           <thead class="text-left text-[7.5px] font-black uppercase tracking-widest text-slate-400 bg-slate-50/50 border-b border-slate-100">
             <tr>
               <th class="px-2 py-2 text-center w-8">#</th>
-              <th class="px-2 py-2">Bệnh nhân</th>
+              <th class="px-2 py-2">Bệnh án</th>
               <th class="px-2 py-2">GT</th>
               <th class="px-2 py-2">Ngày sinh</th>
               <th class="px-2 py-2">CCCD/CMND</th>
-              <th class="px-2 py-2">Điện thoại</th>
               <th class="px-2 py-2">Đơn vị</th>
-              <th class="px-2 py-2">Hợp đồng</th>
+              <th class="px-2 py-2">Trạng thái</th>
+              <th class="px-2 py-2">Đoàn khám</th>
               <th class="px-2 py-2 text-center">Thao tác</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
-            <tr v-for="(p, i) in patients" :key="p.patientId" class="group hover:bg-slate-50/50 transition-all duration-300">
+            <tr v-for="(r, i) in records" :key="r.medicalRecordId" class="group hover:bg-slate-50/50 transition-all duration-300">
               <td class="px-2 py-1 text-center text-slate-400 text-[9px] font-bold">{{ (page - 1) * pageSize + i + 1 }}</td>
               <td class="px-2 py-1">
                 <div class="flex items-center gap-1.5">
-                  <div class="avatar-circle w-5.5 h-5.5 text-[7px] font-black">{{ p.fullName?.charAt(0) }}</div>
-                  <span class="font-bold text-slate-800 text-[10.5px] uppercase tracking-tight">{{ p.fullName }}</span>
+                  <div class="avatar-circle w-5.5 h-5.5 text-[7px] font-black">{{ r.fullName?.charAt(0) }}</div>
+                  <span class="font-bold text-slate-800 text-[10.5px] uppercase tracking-tight">{{ r.fullName }}</span>
                 </div>
               </td>
               <td class="px-2 py-1">
-                <span :class="['badge inline-block text-[7px] font-black uppercase px-1 py-0.5', p.gender === 'Nam' ? 'badge-blue' : p.gender === 'Nữ' ? 'badge-pink' : 'badge-gray']">
-                  {{ p.gender === 'Nam' ? 'M' : p.gender === 'Nữ' ? 'F' : 'O' }}
+                <span :class="['badge inline-block text-[7px] font-black uppercase px-1 py-0.5', r.gender === 'Nam' ? 'badge-blue' : r.gender === 'Nữ' ? 'badge-pink' : 'badge-gray']">
+                  {{ r.gender === 'Nam' ? 'M' : r.gender === 'Nữ' ? 'F' : 'O' }}
                 </span>
               </td>
-              <td class="px-2 py-1 text-slate-600 text-[10px] tabular-nums font-medium">{{ formatDate(p.dateOfBirth) }}</td>
-              <td class="px-2 py-1 text-slate-600 font-mono text-[9.5px]">{{ p.iDCardNumber || '—' }}</td>
-              <td class="px-2 py-1 text-slate-600 text-[10px] tabular-nums font-medium">{{ p.phoneNumber || '—' }}</td>
-              <td class="px-2 py-1 text-slate-500 text-[9.5px] truncate max-w-[120px]">{{ p.department || '—' }}</td>
-              <td class="px-2 py-1 text-[9px] text-indigo-600 font-black truncate max-w-[140px] uppercase tracking-tighter">{{ p.contractName || '—' }}</td>
+              <td class="px-2 py-1 text-slate-600 text-[10px] tabular-nums font-medium">{{ formatDate(r.dateOfBirth) }}</td>
+              <td class="px-2 py-1 text-slate-600 font-mono text-[9.5px]">{{ r.idCardNumber || '—' }}</td>
+              <td class="px-2 py-1 text-slate-500 text-[9.5px] truncate max-w-[120px]">{{ r.department || '—' }}</td>
+              <td class="px-2 py-1">
+                <span :class="['badge', getStatusBadge(r.status)]">{{ formatStatus(r.status) }}</span>
+              </td>
+              <td class="px-2 py-1 text-[9px] text-indigo-600 font-black truncate max-w-[140px] uppercase tracking-tighter">
+                {{ r.groupName || '—' }}
+                <p class="text-[7px] text-slate-400 font-bold tracking-normal">{{ r.contractName }}</p>
+              </td>
               <td class="px-2 py-1 text-center">
                 <div class="flex items-center justify-center gap-1">
-                  <button @click="viewDetail(p)" class="p-1 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm border border-blue-100" title="Xem hồ sơ">
+                  <button @click="viewDetail(r)" class="p-1 rounded-lg bg-blue-50 text-blue-500 hover:bg-blue-500 hover:text-white transition-all shadow-sm border border-blue-100" title="Xem hồ sơ">
                     <Eye class="w-3 h-3" />
                   </button>
-                  <button @click="openEdit(p)" class="p-1 rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-indigo-100" title="Sửa">
+                  <button @click="openEdit(r)" class="p-1 rounded-lg bg-indigo-50 text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-indigo-100" title="Sửa">
                     <Edit class="w-3 h-3" />
                   </button>
-                  <button @click="confirmDelete(p)" class="p-1 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100" title="Xóa">
+                  <button @click="confirmDelete(r)" class="p-1 rounded-lg bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm border border-rose-100" title="Xóa">
                     <Trash2 class="w-3 h-3" />
                   </button>
                 </div>
@@ -160,7 +194,7 @@
       <!-- Pagination Footer -->
       <div v-if="totalPages > 1" class="p-3 border-t border-slate-100 bg-slate-50/30 flex items-center justify-between">
         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none">
-          Hiển thị {{ patients.length }} / {{ total }} bệnh nhân
+          Hiển thị {{ records.length }} / {{ total }} bệnh án
         </p>
         <div class="flex items-center gap-1.5">
           <button @click="goPage(page - 1)" :disabled="page <= 1" class="w-8.5 h-8.5 rounded-xl flex items-center justify-center border border-slate-200 bg-white text-slate-400 hover:text-primary disabled:opacity-30 transition-all">
@@ -176,241 +210,178 @@
       </div>
     </div>
 
-    <!-- MODAL: Thêm / Sửa Bệnh Nhân -->
+    <!-- Modals -->
     <Teleport to="body">
-      <div v-if="showModal" class="modal-overlay flex items-center justify-center p-3" @click.self="showModal = false">
-        <div class="modal-box max-w-lg animate-scale-up !rounded-xl overflow-hidden max-h-[95vh] flex flex-col">
-          <div class="bg-indigo-600 text-white p-3 shrink-0">
-            <div class="flex items-center justify-between w-full">
-              <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 bg-white/10 backdrop-blur-md rounded-lg flex items-center justify-center shadow-inner">
-                  <UserPlus v-if="!editMode" class="w-4 h-4" />
-                  <Edit v-else class="w-4 h-4" />
-                </div>
-                <div>
-                  <h2 class="text-base font-black uppercase tracking-tight italic leading-none">
-                    {{ editMode ? 'Cập Nhật Hồ Sơ' : 'Thêm Bệnh Nhân' }}
-                  </h2>
-                  <p class="text-[7.5px] font-bold text-white/60 uppercase tracking-widest mt-0.5">Khai báo thông tin bệnh nhân</p>
-                </div>
+      <!-- Edit Modal (only for editing existing records) -->
+      <div v-if="showModal && editMode" class="modal-overlay">
+        <div class="modal-box max-w-lg">
+          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-slate-50/30">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg flex items-center justify-center bg-amber-100 text-amber-600">
+                <Edit class="w-3.5 h-3.5" />
               </div>
-              <button @click="showModal = false" class="w-7 h-7 rounded-lg bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all">
-                <X class="w-4 h-4" />
-              </button>
+              CẬP NHẬT BỆNH ÁN
+            </h3>
+            <button @click="showModal = false" class="text-slate-300 hover:text-rose-500 transition-colors">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          
+          <div class="form-grid">
+            <div class="form-group col-span-2" style="grid-column: span 2;">
+              <label>Họ và tên <span class="text-rose-500">*</span></label>
+              <input v-model="form.fullName" type="text" class="form-input" placeholder="Nhập họ tên đầy đủ..." />
+            </div>
+            <div class="form-group">
+              <label>Giới tính</label>
+              <select v-model="form.gender" class="form-input">
+                <option value="">Chọn giới tính</option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+                <option value="Khác">Khác</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ngày sinh</label>
+              <input v-model="form.dateOfBirth" type="date" class="form-input" />
+            </div>
+            <div class="form-group">
+              <label>CCCD / CMND</label>
+              <input v-model="form.iDCardNumber" type="text" class="form-input" placeholder="Nhập số định danh..." />
+            </div>
+            <div class="form-group">
+              <label>Phòng ban / Tổ</label>
+              <input v-model="form.department" type="text" class="form-input" placeholder="Nhập phòng ban..." />
             </div>
           </div>
 
-          <form @submit.prevent="submitForm" class="p-3.5 overflow-y-auto">
-            <div class="grid grid-cols-2 gap-x-3 gap-y-2 mb-4">
-              <!-- Họ tên -->
-              <div class="form-group col-span-2">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Họ và tên <span class="text-rose-500">*</span></label>
-                <input v-model="form.fullName" type="text" required
-                  placeholder="Nguyễn Văn A" class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200" />
-              </div>
-
-              <!-- Giới tính -->
-              <div class="form-group">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Giới tính</label>
-                <select v-model="form.gender" class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200">
-                  <option value="">— Chọn —</option>
-                  <option>Nam</option>
-                  <option>Nữ</option>
-                  <option>Khác</option>
-                </select>
-              </div>
-
-              <!-- Ngày sinh -->
-              <div class="form-group">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Ngày sinh</label>
-                <input v-model="form.dateOfBirth" type="date" class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200" />
-              </div>
-
-              <!-- CCCD -->
-              <div class="form-group">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">CCCD / CMND</label>
-                <input v-model="form.iDCardNumber" type="text"
-                  placeholder="012345678901" class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200" />
-              </div>
-
-              <!-- SĐT -->
-              <div class="form-group">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Số điện thoại</label>
-                <input v-model="form.phoneNumber" type="tel" maxlength="10"
-                  @input="form.phoneNumber = form.phoneNumber.replace(/[^\d]/g, '').slice(0, 10)"
-                  placeholder="0901234567" class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200" />
-              </div>
-
-              <!-- Phòng ban -->
-              <div class="form-group col-span-2">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Phòng ban / Đơn vị</label>
-                <input v-model="form.department" type="text"
-                  placeholder="Phòng Kế toán, Ban Giám đốc..." class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200" />
-              </div>
-
-              <!-- Hợp đồng -->
-              <div class="form-group col-span-2">
-                <label class="text-[8px] font-black uppercase text-slate-400 tracking-widest">Thuộc Hợp Đồng <span class="text-rose-500">*</span></label>
-                <select v-model="form.healthContractId" required class="form-input !py-1.5 !text-[11px] font-bold bg-slate-50 border-slate-200">
-                  <option value="">— Chọn hợp đồng —</option>
-                  <option v-for="c in approvedContracts" :key="c.healthContractId" :value="c.healthContractId">
-                    {{ c.contractName }} ({{ c.companyName }})
-                  </option>
-                </select>
-              </div>
-            </div>
-
-            <div v-if="formError" class="flex items-center gap-2 p-2 bg-rose-50 border border-rose-100 rounded-lg mb-3 animate-shake">
-              <AlertCircle class="w-3.5 h-3.5 text-rose-500" />
-              <p class="text-[8px] font-black text-rose-600 uppercase tracking-widest">{{ formError }}</p>
-            </div>
-
-            <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button type="button" @click="showModal = false" class="px-4 py-1.5 text-slate-400 font-black text-[9px] uppercase tracking-widest hover:text-slate-600 transition-all">Hủy</button>
-              <button type="submit" :disabled="saving" class="btn-premium primary !px-5 !py-2 !rounded-lg text-[9px] font-black uppercase tracking-widest">
-                <RefreshCw v-if="saving" class="w-3 h-3 animate-spin mr-1.5" />
-                <Save v-else class="w-3 h-3 mr-1.5" />
-                <span>{{ editMode ? 'Lưu hồ sơ' : 'Tạo mới' }}</span>
-              </button>
-            </div>
-          </form>
+          <div v-if="formError" class="px-5 py-2 mx-5 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-2 text-rose-500 text-[10px] font-bold italic">
+            <AlertCircle class="w-3.5 h-3.5" /> {{ formError }}
+          </div>
+          
+          <div class="p-4 flex gap-3">
+            <button @click="showModal = false" class="flex-1 h-10 rounded-xl text-[11px] font-black uppercase text-slate-400 hover:bg-slate-50 transition-colors">
+              Hủy bỏ
+            </button>
+            <button @click="submitForm" :disabled="saving" class="flex-1 btn-premium primary h-10 shadow-lg shadow-primary/20">
+              <Save v-if="!saving" class="w-4 h-4" />
+              <RefreshCw v-else class="w-4 h-4 animate-spin" />
+              LƯU THAY ĐỔI
+            </button>
+          </div>
         </div>
       </div>
-    </Teleport>
 
-    <!-- MODAL: Chi tiết / Hồ sơ Bệnh Nhân -->
-    <Teleport to="body">
-      <div v-if="showDetail && detailData" class="modal-overlay flex items-center justify-center p-3 z-[100]" @click.self="showDetail = false">
-        <div class="modal-box max-w-xl w-full animate-scale-up overflow-hidden !rounded-xl max-h-[90vh] flex flex-col">
-          <div class="modal-header bg-indigo-600 text-white p-4 rounded-t-xl relative shrink-0">
-            <div class="flex items-center justify-between w-full relative z-10">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white/20 backdrop-blur-md rounded-lg flex items-center justify-center text-lg font-black shadow-inner border border-white/30">
+      <!-- Detail Modal -->
+      <div v-if="showDetail" class="modal-overlay">
+        <div class="modal-box max-w-2xl">
+          <div class="p-4 border-b border-slate-50 flex justify-between items-center bg-primary/5">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-tight flex items-center gap-2">
+              <div class="w-6 h-6 bg-primary text-white rounded-lg flex items-center justify-center">
+                <Eye class="w-3.5 h-3.5" />
+              </div>
+              CHI TIẾT BỆNH ÁN
+            </h3>
+            <button @click="showDetail = false" class="text-slate-300 hover:text-rose-500 transition-colors">
+              <X class="w-5 h-5" />
+            </button>
+          </div>
+          <div v-if="!detailData" class="p-20 flex flex-col items-center justify-center">
+            <RefreshCw class="w-8 h-8 text-primary/20 animate-spin" />
+          </div>
+          <div v-else class="p-6">
+            <div class="grid grid-cols-3 gap-6 mb-8">
+              <div class="col-span-1 flex flex-col items-center gap-3">
+                <div class="w-24 h-24 rounded-3xl bg-primary/10 flex items-center justify-center text-4xl font-black text-primary border-4 border-white shadow-xl shadow-primary/10">
                   {{ detailData.fullName?.charAt(0) }}
                 </div>
-                <div>
-                  <h2 class="text-base font-black italic uppercase tracking-tighter leading-none mb-1">{{ detailData.fullName }}</h2>
-                  <div class="flex items-center gap-2">
-                    <span class="px-1.5 py-0.5 bg-white/20 rounded-md text-[7px] font-black uppercase tracking-widest">{{ detailData.gender }}</span>
-                    <div class="w-1 h-1 rounded-full bg-white/40"></div>
-                    <span class="text-indigo-100 text-[9px] font-bold">{{ formatDate(detailData.dateOfBirth) }}</span>
+                <span :class="['badge', getStatusBadge(detailData.status)]">{{ formatStatus(detailData.status) }}</span>
+              </div>
+              <div class="col-span-2 space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Họ và Tên</label>
+                    <p class="text-sm font-black text-slate-800 uppercase italic">{{ detailData.fullName }}</p>
+                  </div>
+                  <div>
+                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">CCCD / CMND</label>
+                    <p class="text-sm font-black text-slate-600 tabular-nums">{{ detailData.idCardNumber || '—' }}</p>
+                  </div>
+                  <div>
+                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Giới tính / Ngày sinh</label>
+                    <p class="text-[11px] font-bold text-slate-600 uppercase">{{ detailData.gender }} • {{ formatDate(detailData.dateOfBirth) }}</p>
+                  </div>
+                  <div>
+                    <label class="text-[8px] font-black text-slate-400 uppercase tracking-widest block mb-1">Phòng ban</label>
+                    <p class="text-[11px] font-bold text-slate-600 uppercase">{{ detailData.department || '—' }}</p>
                   </div>
                 </div>
-              </div>
-              <button @click="showDetail = false" class="w-7 h-7 rounded-lg bg-black/10 hover:bg-black/20 flex items-center justify-center transition-all">
-                <X class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div class="p-4 overflow-y-auto">
-            <!-- Thông tin cơ bản -->
-            <div class="grid grid-cols-2 gap-2 mb-4">
-              <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                  <Hash class="w-2 h-2" /> CCCD/CMND
-                </p>
-                <p class="font-bold text-slate-800 text-[11px] tabular-nums">{{ detailData.iDCardNumber || '—' }}</p>
-              </div>
-              <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                  <Phone class="w-2 h-2" /> Điện thoại
-                </p>
-                <p class="font-bold text-slate-800 text-[11px] tabular-nums">{{ detailData.phoneNumber || '—' }}</p>
-              </div>
-              <div class="p-2.5 rounded-lg bg-slate-50 border border-slate-100">
-                <p class="text-[7.5px] font-black text-slate-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                  <Building2 class="w-2 h-2" /> Phòng ban
-                </p>
-                <p class="font-bold text-slate-700 text-[11px] truncate">{{ detailData.department || '—' }}</p>
-              </div>
-              <div class="p-2.5 rounded-lg bg-indigo-50/50 border border-indigo-100">
-                <p class="text-[7.5px] font-black text-indigo-400 uppercase tracking-widest mb-0.5 flex items-center gap-1">
-                  <FileText class="w-2 h-2" /> Hợp đồng
-                </p>
-                <p class="font-black text-indigo-600 text-[10px] truncate uppercase tracking-tighter">{{ detailData.contractName || '—' }}</p>
-              </div>
-            </div>
-
-            <!-- Lịch sử khám -->
-            <div class="flex flex-col">
-              <div class="flex items-center justify-between mb-2.5">
-                <h3 class="text-[11px] font-black text-slate-800 uppercase tracking-widest flex items-center gap-1.5 italic">
-                  <History class="w-3.5 h-3.5 text-indigo-500" /> Lịch Sử Khám
-                </h3>
-                <span class="px-1.5 py-0.5 bg-slate-100 rounded text-[7.5px] font-black text-slate-500 tabular-nums">
-                  {{ (detailData.medicalHistory || []).length }} PHIÊN
-                </span>
-              </div>
-
-              <div v-if="!detailData.medicalHistory?.length" class="flex flex-col items-center justify-center py-8 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-                <Inbox class="w-6 h-6 text-slate-300 mb-1.5" />
-                <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Trống</p>
-              </div>
-
-              <div v-else class="space-y-1.5">
-                <div v-for="h in detailData.medicalHistory" :key="h.medicalRecordId"
-                  class="p-2.5 bg-white rounded-lg border border-slate-100 flex gap-2.5 group hover:border-primary/20 transition-all shadow-sm">
-                  <div class="w-1 h-auto rounded-full shrink-0" :class="getStatusColor(h.status)"></div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex justify-between items-start gap-2">
-                      <p class="font-bold text-slate-800 text-[10.5px] truncate">{{ h.groupName || 'Đoàn khám' }}</p>
-                      <span :class="getStatusBadge(h.status)" class="badge text-[7px] px-1 py-0.5 font-black uppercase shrink-0">
-                        {{ formatStatus(h.status) }}
-                      </span>
-                    </div>
-                    <div class="flex items-center gap-2 mt-0.5 text-[8.5px] text-slate-400 font-bold">
-                      <span>{{ formatDate(h.examDate) }}</span>
-                    </div>
+                <div class="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div class="flex items-center gap-2 mb-2">
+                    <Building2 class="w-3.5 h-3.5 text-primary" />
+                    <span class="text-[9px] font-black text-slate-800 uppercase tracking-widest">Thông tin đoàn khám</span>
                   </div>
+                  <p class="text-[11px] font-black text-slate-700 uppercase italic">{{ detailData.groupName }}</p>
+                  <p class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{{ detailData.contractName }}</p>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div class="p-3 border-t bg-slate-50 flex justify-end gap-2 shrink-0">
-            <button @click="openEdit(detailData); showDetail = false" class="btn-premium secondary !px-4 !py-1.5 text-[9px] font-black uppercase tracking-widest">
-              <Edit class="w-3 h-3 mr-1" /> Sửa
+            <!-- Medical History -->
+            <div class="space-y-3">
+              <div class="flex items-center gap-2">
+                <History class="w-4 h-4 text-slate-400" />
+                <h4 class="text-[10px] font-black text-slate-800 uppercase tracking-widest">Diễn biến hồ sơ</h4>
+              </div>
+              <div v-if="detailData.medicalHistory && detailData.medicalHistory.length > 0" class="space-y-2">
+                <div v-for="h in detailData.medicalHistory" :key="h.medicalRecordId" class="p-3 rounded-xl border border-slate-100 flex justify-between items-center">
+                  <div>
+                    <p class="text-[10px] font-black text-slate-700 uppercase">{{ h.groupName }}</p>
+                    <p class="text-[8px] font-bold text-slate-400">{{ formatDate(h.examDate) }}</p>
+                  </div>
+                  <span :class="['badge', getStatusBadge(h.status)]">{{ formatStatus(h.status) }}</span>
+                </div>
+              </div>
+              <div v-else class="p-8 bg-slate-50 rounded-xl text-center">
+                <p class="text-[9px] font-bold text-slate-400 uppercase italic">Chưa có lịch sử khám khác</p>
+              </div>
+            </div>
+          </div>
+          <div class="p-4 bg-slate-50/50 flex justify-end gap-2">
+            <button @click="showDetail = false" class="px-6 h-9 rounded-xl text-[10px] font-black uppercase text-slate-400 hover:bg-slate-100 transition-colors">Đóng</button>
+            <button v-if="detailData && (detailData.status === 'COMPLETED' || detailData.status === 'QC_PASSED')" @click="handleExportPdf(detailData.medicalRecordId)" class="btn-premium primary h-9 px-4">
+              <Download class="w-3.5 h-3.5" /> XUẤT KẾT QUẢ PDF
             </button>
-            <button @click="showDetail = false" class="btn-premium primary !px-5 !py-1.5 text-[9px] font-black uppercase tracking-widest">Đóng</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Delete Confirm -->
+      <div v-if="deleteTarget" class="modal-overlay">
+        <div class="modal-box max-w-sm p-6 text-center">
+          <div class="w-16 h-16 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-4 border-2 border-rose-100 shadow-lg shadow-rose-500/10">
+            <Trash2 class="w-8 h-8" />
+          </div>
+          <h3 class="text-base font-black text-slate-800 uppercase italic mb-2">XÁC NHẬN XÓA?</h3>
+          <p class="text-[11px] font-bold text-slate-400 leading-relaxed mb-8">
+            Bạn đang yêu cầu xóa bệnh án của <span class="text-slate-900 font-black uppercase">{{ deleteTarget.fullName }}</span>.<br/> Hành động này không thể hoàn tác.
+          </p>
+          <div class="flex gap-3">
+            <button @click="deleteTarget = null" class="flex-1 h-11 rounded-2xl text-[11px] font-black uppercase text-slate-400 hover:bg-slate-50 transition-all">Hủy</button>
+            <button @click="doDelete" :disabled="saving" class="flex-1 h-11 rounded-2xl bg-rose-500 text-white font-black text-[11px] uppercase tracking-widest shadow-lg shadow-rose-500/20 hover:bg-rose-600 transition-all flex items-center justify-center gap-2">
+              <RefreshCw v-if="saving" class="w-4 h-4 animate-spin" />
+              XÁC NHẬN XÓA
+            </button>
           </div>
         </div>
       </div>
     </Teleport>
-
-    <!-- Delete Confirm Modal -->
-    <Teleport to="body">
-      <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget = null">
-        <div class="modal-box max-w-sm animate-scale-up !rounded-2xl">
-          <div class="p-6 text-center">
-            <div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-inner">
-              <Trash2 class="w-7 h-7" />
-            </div>
-            <h3 class="text-lg font-black text-slate-800 italic uppercase tracking-tight mb-1">Xác nhận xóa</h3>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 leading-relaxed">
-              Xóa bệnh nhân <span class="text-rose-500 underline">{{ deleteTarget.fullName }}</span>? <br/>
-              Hành động này không thể khôi phục.
-            </p>
-            <div class="flex gap-2 justify-center">
-              <button @click="deleteTarget = null" class="btn-premium secondary !px-5 !py-2 text-[10px]">Hủy</button>
-              <button @click="doDelete" :disabled="saving" class="btn-premium primary !bg-rose-500 !shadow-rose-200 !px-6 !py-2 text-[10px]">
-                <RefreshCw v-if="saving" class="w-3.5 h-3.5 animate-spin" />
-                <Trash2 v-else class="w-3.5 h-3.5" />
-                <span>Xóa vĩnh viễn</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Teleport>
-
-
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { Search, Plus, RefreshCw, UserRound, ArrowLeft, ArrowRight, UserPlus, FileText, CheckCircle, Clock, Calendar, Hash, Phone, Building2, Eye, Edit, Trash2, X, AlertCircle, FileDigit, Users, Save, History, Inbox, Upload, Download } from 'lucide-vue-next'
+import { Search, RefreshCw, UserRound, ArrowLeft, ArrowRight, Eye, Edit, Trash2, X, AlertCircle, Users, UserPlus, Save, History, Download, CheckCircle, Clock, Hash, Building2, FileText } from 'lucide-vue-next'
 import apiClient from '@/services/apiClient'
 import { useToast } from '@/composables/useToast'
 import { parseApiError } from '@/services/errorHelper'
@@ -420,99 +391,104 @@ const toast = useToast()
 // ─── State ────────────────────────────────────────────────────────────────────
 const loading = ref(false)
 const saving = ref(false)
-const patients = ref([])
+const records = ref([])
 const contracts = ref([])
+const groups = ref([])
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(30)
 const search = ref('')
 const filterContractId = ref('')
+const filterGroupId = ref('')
 
-// Modals & UI State
+const stats = ref({
+  completed: 0,
+  inProgress: 0,
+  created: 0
+})
+
 const showModal = ref(false)
-const editMode = ref(false)
 const showDetail = ref(false)
+const editMode = ref(false)
 const detailData = ref(null)
 const deleteTarget = ref(null)
 const formError = ref('')
-const importing = ref(false)
-const fileInput = ref(null)
-
+const modalGroups = ref([])
 
 const form = ref(resetForm())
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
+// Hiển thị các hợp đồng đang hoạt động (Active) để theo dõi tiến độ
 const approvedContracts = computed(() => {
-  // Ưu tiên hiển thị các hợp đồng đã được phê duyệt hoặc đang hoạt động.
-  // Loại bỏ các 'Hợp đồng chưa đặt tên' trừ khi chúng đang ở trạng thái Active để giảm nhiễu.
-  return contracts.value.filter(c => {
-    const isUnnamed = c.contractName?.toLowerCase().includes('chưa đặt tên')
-    const isRejected = c.status === 'REJECTED'
-    
-    if (isRejected) return false
-    if (isUnnamed && c.status !== 'ACTIVE' && c.status !== 'Active') return false
-    
-    return true
-  }).sort((a, b) => {
-    // Đưa các hợp đồng có tên thật lên đầu
-    const aUnnamed = a.contractName?.toLowerCase().includes('chưa đặt tên')
-    const bUnnamed = b.contractName?.toLowerCase().includes('chưa đặt tên')
-    if (aUnnamed && !bUnnamed) return 1
-    if (!aUnnamed && bUnnamed) return -1
-    return 0
-  })
+  return contracts.value
+    .filter(c => c.status === 'Active')
+    .sort((a, b) => a.contractName.localeCompare(b.contractName))
+})
+
+// Modal chỉ hiện HĐ đã duyệt (Approved) hoặc đang hoạt động (Active) để tạo đoàn khám
+const modalContracts = computed(() => {
+  return contracts.value
+    .filter(c => ['Approved', 'Active'].includes(c.status))
+    .sort((a, b) => a.contractName.localeCompare(b.contractName))
+})
+
+// Hợp đồng đang được chọn trong bộ lọc
+const selectedContract = computed(() => {
+  if (!filterContractId.value) return null
+  return contracts.value.find(c => c.healthContractId === parseInt(filterContractId.value)) || null
+})
+
+// Phần trăm tiến độ: tổng bệnh án / số lượng dự kiến HĐ
+const progressPercent = computed(() => {
+  if (!selectedContract.value || !selectedContract.value.expectedQuantity) return 0
+  return Math.round((total.value / selectedContract.value.expectedQuantity) * 100)
 })
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 onMounted(async () => {
-  await Promise.all([loadContracts(), loadPatients()])
+  await Promise.all([loadContracts(), loadRecords()])
 })
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function resetForm() {
   return {
-    patientId: null,
+    medicalRecordId: null,
+    contractId: filterContractId.value || '',
+    groupId: filterGroupId.value || '',
     fullName: '',
     gender: '',
     dateOfBirth: '',
     iDCardNumber: '',
-    phoneNumber: '',
-    department: '',
-    healthContractId: ''
+    department: ''
   }
 }
 
 let searchTimer = null
 function debouncedSearch() {
   clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => { page.value = 1; loadPatients() }, 400)
+  searchTimer = setTimeout(() => { page.value = 1; loadRecords() }, 400)
 }
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('vi-VN') : '—'
-const formatDateShort = (d) => d ? new Date(d).toLocaleDateString('vi-VN', {day:'2-digit', month:'2-digit'}) : '—'
-const formatDateTime = (d) => d ? new Date(d).toLocaleString('vi-VN') : '—'
 
 const formatStatus = (s) => {
   const map = {
-    CREATED: 'Mới tạo', READY: 'Sẵn sàng', CHECKED_IN: 'Đã check-in',
+    CREATED: 'Mới tạo', READY: 'Sẵn sàng', CHECKED_IN: 'Đã tiếp đón',
     IN_PROGRESS: 'Đang khám', STATION_DONE: 'Xong trạm',
-    QC_PENDING: 'Chờ QC', QC_PASSED: 'QC đạt', COMPLETED: 'Hoàn thành'
+    QC_PENDING: 'Chờ QC', QC_PASSED: 'QC đạt', QC_REWORK: 'QC trả về',
+    COMPLETED: 'Hoàn thành', REPORTED: 'Đã trả KQ', CLOSED: 'Đã đóng',
+    NO_SHOW: 'Vắng mặt', CANCELLED: 'Đã hủy'
   }
   return map[s] || s
 }
 
-const getStatusColor = (s) => {
-  if (['COMPLETED', 'QC_PASSED'].includes(s)) return 'bg-emerald-400'
-  if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'bg-blue-400'
-  if (s === 'CHECKED_IN') return 'bg-indigo-400'
-  return 'bg-slate-300'
-}
-
 const getStatusBadge = (s) => {
-  if (['COMPLETED', 'QC_PASSED'].includes(s)) return 'badge-green'
+  if (['COMPLETED', 'QC_PASSED', 'REPORTED', 'CLOSED'].includes(s)) return 'badge-green'
   if (['IN_PROGRESS', 'STATION_DONE'].includes(s)) return 'badge-blue'
-  if (s === 'CHECKED_IN') return 'badge-indigo'
+  if (s === 'CHECKED_IN' || s === 'READY') return 'badge-indigo'
+  if (s === 'QC_PENDING' || s === 'QC_REWORK') return 'badge-pink'
+  if (s === 'NO_SHOW' || s === 'CANCELLED') return 'badge-gray'
   return 'badge-gray'
 }
 
@@ -526,8 +502,22 @@ const loadContracts = async () => {
   }
 }
 
+const onContractChange = async () => {
+  filterGroupId.value = ''
+  groups.value = []
+  if (filterContractId.value) {
+    try {
+      const res = await apiClient.get(`/api/MedicalGroups/by-contract/${filterContractId.value}`)
+      groups.value = res.data
+    } catch (e) {
+      console.warn('Không tải được danh sách đoàn:', e)
+    }
+  }
+  page.value = 1
+  loadRecords()
+}
 
-const loadPatients = async () => {
+const loadRecords = async () => {
   loading.value = true
   try {
     const params = new URLSearchParams({
@@ -536,10 +526,19 @@ const loadPatients = async () => {
     })
     if (search.value) params.append('search', search.value)
     if (filterContractId.value) params.append('contractId', filterContractId.value)
+    if (filterGroupId.value) params.append('groupId', filterGroupId.value)
 
-    const res = await apiClient.get(`/api/Patients?${params}`)
-    patients.value = res.data.items
+    const res = await apiClient.get(`/api/MedicalRecords/all?${params}`)
+    records.value = res.data.items
     total.value = res.data.total
+    
+    // Update stats from the records currently in view (or we could fetch aggregate stats)
+    // For simplicity, we use the ones in the current result set
+    stats.value = {
+        completed: records.value.filter(r => ['COMPLETED', 'QC_PASSED', 'REPORTED', 'CLOSED'].includes(r.status)).length,
+        inProgress: records.value.filter(r => ['IN_PROGRESS', 'STATION_DONE', 'CHECKED_IN'].includes(r.status)).length,
+        created: records.value.filter(r => r.status === 'CREATED' || r.status === 'READY').length
+    }
   } catch (e) {
     toast.error(parseApiError(e))
   } finally {
@@ -547,70 +546,93 @@ const loadPatients = async () => {
   }
 }
 
-const viewDetail = async (p) => {
+const viewDetail = async (r) => {
   detailData.value = null
   showDetail.value = true
   try {
-    const res = await apiClient.get(`/api/Patients/${p.patientId}`)
+    const res = await apiClient.get(`/api/MedicalRecords/${r.medicalRecordId}`)
     detailData.value = res.data
   } catch (e) {
-    toast.error('Không thể tải hồ sơ bệnh nhân')
+    toast.error('Không thể tải hồ sơ bệnh án')
     showDetail.value = false
   }
 }
 
-
 // ─── Form Actions ─────────────────────────────────────────────────────────────
-const openAdd = () => {
-  form.value = resetForm()
+const openAdd = async () => {
   editMode.value = false
+  form.value = resetForm()
   formError.value = ''
+  modalGroups.value = []
+  
+  if (form.value.contractId) {
+    await onModalContractChange()
+  }
+  
   showModal.value = true
 }
 
-const openEdit = (p) => {
-  form.value = {
-    patientId: p.patientId,
-    fullName: p.fullName,
-    gender: p.gender || '',
-    dateOfBirth: p.dateOfBirth ? p.dateOfBirth.split('T')[0] : '',
-    iDCardNumber: p.iDCardNumber || '',
-    phoneNumber: p.phoneNumber || '',
-    department: p.department || '',
-    healthContractId: p.healthContractId
+const onModalContractChange = async () => {
+  form.value.groupId = ''
+  modalGroups.value = []
+  if (form.value.contractId) {
+    try {
+      const res = await apiClient.get(`/api/MedicalGroups/by-contract/${form.value.contractId}`)
+      modalGroups.value = res.data
+    } catch (e) {
+      console.warn('Không tải được danh sách đoàn trong modal:', e)
+    }
   }
+}
+
+const openEdit = (r) => {
   editMode.value = true
+  form.value = {
+    medicalRecordId: r.medicalRecordId,
+    fullName: r.fullName,
+    gender: r.gender || '',
+    dateOfBirth: r.dateOfBirth ? r.dateOfBirth.split('T')[0] : '',
+    iDCardNumber: r.idCardNumber || '',
+    department: r.department || ''
+  }
   formError.value = ''
   showModal.value = true
 }
 
 const submitForm = async () => {
-  if (!form.value.fullName.trim()) { formError.value = 'Họ tên không được để trống.'; return }
-  if (!form.value.healthContractId) { formError.value = 'Vui lòng chọn hợp đồng.'; return }
+  if (!form.value.fullName?.trim()) { formError.value = 'Họ tên không được để trống.'; return }
+  if (!editMode.value && !form.value.groupId) { formError.value = 'Vui lòng chọn đoàn khám.'; return }
 
   saving.value = true
   formError.value = ''
   try {
-    const payload = {
-      healthContractId: Number(form.value.healthContractId),
-      fullName: form.value.fullName.trim(),
-      gender: form.value.gender || null,
-      dateOfBirth: form.value.dateOfBirth || null,
-      iDCardNumber: form.value.iDCardNumber || null,
-      phoneNumber: form.value.phoneNumber || null,
-      department: form.value.department || null
-    }
-
     if (editMode.value) {
-      await apiClient.put(`/api/Patients/${form.value.patientId}`, payload)
-      toast.success('Cập nhật thông tin thành công!')
+      const payload = {
+        fullName: form.value.fullName.trim(),
+        gender: form.value.gender || null,
+        dateOfBirth: form.value.dateOfBirth || null,
+        iDCardNumber: form.value.iDCardNumber || null,
+        department: form.value.department || null
+      }
+      await apiClient.put(`/api/MedicalRecords/${form.value.medicalRecordId}/basic`, payload)
+      toast.success('Cập nhật bệnh án thành công!')
     } else {
-      await apiClient.post('/api/Patients', payload)
-      toast.success('Thêm bệnh nhân thành công!')
+      const payload = {
+        groupId: form.value.groupId,
+        records: [{
+          fullName: form.value.fullName.trim(),
+          gender: form.value.gender || null,
+          dateOfBirth: form.value.dateOfBirth || null,
+          iDCardNumber: form.value.iDCardNumber || null,
+          department: form.value.department || null
+        }]
+      }
+      await apiClient.post('/api/MedicalRecords/batch-ingest', payload)
+      toast.success('Thêm bệnh án mới thành công!')
     }
-
+    
     showModal.value = false
-    await loadPatients()
+    await loadRecords()
   } catch (e) {
     formError.value = parseApiError(e)
   } finally {
@@ -618,16 +640,16 @@ const submitForm = async () => {
   }
 }
 
-const confirmDelete = (p) => { deleteTarget.value = p }
+const confirmDelete = (r) => { deleteTarget.value = r }
 
 const doDelete = async () => {
   if (!deleteTarget.value) return
   saving.value = true
   try {
-    await apiClient.delete(`/api/Patients/${deleteTarget.value.patientId}`)
-    toast.success('Đã xóa bệnh nhân thành công!')
+    await apiClient.delete(`/api/MedicalRecords/${deleteTarget.value.medicalRecordId}`)
+    toast.success('Đã xóa bệnh án thành công!')
     deleteTarget.value = null
-    await loadPatients()
+    await loadRecords()
   } catch (e) {
     toast.error(parseApiError(e))
   } finally {
@@ -635,55 +657,24 @@ const doDelete = async () => {
   }
 }
 
-const onFileChange = async (e) => {
-    const file = e.target.files[0]
-    if (!file) return
-    
-    // Nếu chưa chọn hợp đồng ở filter thì yêu cầu sếp chọn để biết import vào đâu
-    if (!filterContractId.value) {
-        toast.warning('Vui lòng chọn Hợp đồng ở mục lọc trước khi nhập Excel để hệ thống biết bệnh nhân thuộc hợp đồng nào.')
-        e.target.value = ''
-        return
-    }
-
-    importing.value = true
-    const formData = new FormData()
-    formData.append('file', file)
-
-    try {
-        const res = await apiClient.post(`/api/Patients/import?contractId=${filterContractId.value}`, formData, {
-            headers: { 'Content-Type': 'multipart/form-data' }
-        })
-        toast.success(res.data.message)
-        await loadPatients()
-    } catch (err) {
-        toast.error(err.response?.data?.message || 'Lỗi khi nhập Excel')
-    } finally {
-        importing.value = false
-        e.target.value = ''
-    }
-}
-
 const handleExport = async () => {
     try {
         const params = new URLSearchParams()
         if (filterContractId.value) params.append('contractId', filterContractId.value)
+        if (filterGroupId.value) params.append('groupId', filterGroupId.value)
         if (search.value) params.append('search', search.value)
 
-        const res = await apiClient.get('/api/Patients/export', {
+        const res = await apiClient.get('/api/MedicalRecords/export', {
             params,
             responseType: 'blob'
         })
         
-        // Tạo URL tạm thời để trigger download
         const url = window.URL.createObjectURL(new Blob([res.data]))
         const link = document.createElement('a')
         link.href = url
-        link.setAttribute('download', `DanhSachBenhNhan_${new Date().toISOString().slice(0,10)}.xlsx`)
+        link.setAttribute('download', `DanhSachBenhAn_${new Date().toISOString().slice(0,10)}.xlsx`)
         document.body.appendChild(link)
         link.click()
-        
-        // Dọn dẹp
         link.remove()
         window.URL.revokeObjectURL(url)
         toast.success('Đã xuất file Excel thành công!')
@@ -692,15 +683,30 @@ const handleExport = async () => {
     }
 }
 
+const handleExportPdf = async (id) => {
+    try {
+        const res = await apiClient.get(`/api/MedicalRecords/${id}/export-pdf`, { responseType: 'blob' })
+        const url = window.URL.createObjectURL(new Blob([res.data]))
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `KetQuaKham_${id}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+        window.URL.revokeObjectURL(url)
+    } catch (e) {
+        toast.error('Lỗi khi xuất PDF')
+    }
+}
+
 const goPage = (p) => {
   if (p < 1 || p > totalPages.value) return
   page.value = p
-  loadPatients()
+  loadRecords()
 }
 </script>
 
 <style scoped>
-/* Keeping only locally scoped unique logic if any, but transitioning to global classes */
 .patients-page { padding: 0; }
 .avatar-circle {
   width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--primary), #8b5cf6);
@@ -708,7 +714,11 @@ const goPage = (p) => {
   font-weight: 800; font-size: 0.75rem; flex-shrink: 0;
 }
 
-/* Modal Premium Styles */
+.premium-card {
+  background: white; border-radius: 1.25rem; border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
 .modal-overlay {
   position: fixed; inset: 0; background: rgba(15, 23, 42, 0.4);
   backdrop-filter: blur(8px); z-index: 9999;

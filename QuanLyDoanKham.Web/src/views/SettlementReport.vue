@@ -82,7 +82,7 @@
                 </td>
                 <td class="px-3 py-1.5 text-center">
                   <span :class="getStatusBadgeClass(c.status)" class="px-1.5 py-0.5 rounded-full text-[7px] font-black uppercase tracking-widest shadow-sm">
-                    {{ c.status === 'Completed' || c.status === 'Active' ? 'HOÀN TẤT' : 'ĐANG XỬ LÝ' }}
+                    {{ getStatusLabel(c.status) }}
                   </span>
                 </td>
                 <td class="px-3 py-1.5 text-center">
@@ -107,15 +107,25 @@
       </div>
 
       <Teleport to="body">
-        <div v-if="selectedSettlement" class="modal-overlay flex items-center justify-center p-4" @click.self="selectedSettlement = null">
-          <div class="modal-box w-full max-w-xl overflow-hidden animate-scale-up !rounded-xl flex flex-col max-h-[90vh]">
-            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-5 text-white relative overflow-hidden shrink-0">
-              <div class="absolute -right-10 -top-10 w-48 h-48 bg-primary/20 rounded-full blur-[60px]"></div>
-              <button @click="selectedSettlement = null" class="absolute top-4 right-4 w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-all group z-10">
-                <X class="w-3.5 h-3.5 text-white/70 group-hover:text-white group-hover:rotate-90 transition-all" />
+        <div v-if="selectedSettlement"
+          class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+          @click.self="closeModal">
+          <div class="w-full max-w-xl bg-white rounded-2xl shadow-2xl flex flex-col max-h-[92vh] animate-scale-up overflow-hidden">
+
+            <!-- ── HEADER ─────────────────────────────────────────────── -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 p-5 text-white relative shrink-0">
+              <!-- decorative glow — pointer-events-none so it never blocks clicks -->
+              <div class="absolute -right-10 -top-10 w-48 h-48 bg-primary/20 rounded-full blur-[60px] pointer-events-none"></div>
+
+              <!-- X button — outside overflow-hidden, high z-index, large hit area -->
+              <button
+                @click.stop="closeModal"
+                class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center transition-all group"
+                aria-label="Đóng">
+                <X class="w-4 h-4 text-white group-hover:rotate-90 transition-transform duration-200" />
               </button>
-              
-              <div class="relative z-10">
+
+              <div class="relative z-10 pr-10">
                 <div class="flex items-center gap-2 mb-2">
                   <div class="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
                     <Calculator class="w-5 h-5" />
@@ -125,11 +135,13 @@
                     <p class="text-[7px] font-bold opacity-60 uppercase tracking-[0.2em] mt-0.5">Audit Report Analysis</p>
                   </div>
                 </div>
-                <p class="text-xs font-black text-white/90 uppercase tracking-widest leading-tight max-w-md">{{ selectedSettlement.contractName }}</p>
+                <p class="text-xs font-black text-white/90 uppercase tracking-widest leading-tight">
+                  {{ selectedSettlement.contractName }}
+                </p>
               </div>
             </div>
             
-            <div class="p-4 overflow-y-auto custom-scrollbar flex-1">
+            <div class="p-4 overflow-y-auto scrollbar-premium flex-1">
              <!-- Revenue & Gross Profit -->
              <div class="grid grid-cols-2 gap-3 mb-4">
                 <!-- Net Revenue -->
@@ -269,10 +281,12 @@
                           class="flex-1 h-9 flex items-center justify-center gap-1.5 bg-slate-100 text-slate-600 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-200 transition-all">
                     <Download class="w-3.5 h-3.5 text-emerald-500" /> Xuất Excel
                   </button>
-                  <button v-if="authStore.hasPermission('QuyetToan.Finalize')" @click="settleContract(selectedSettlement.contractId)" class="flex-2 h-9 flex items-center justify-center gap-1.5 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
+                  <button v-if="authStore.hasPermission('QuyetToan.Finalize')"
+                    @click="settleContract(selectedSettlement.healthContractId)"
+                    class="flex-2 h-9 flex items-center justify-center gap-1.5 bg-emerald-600 text-white rounded-xl font-bold text-[10px] uppercase hover:bg-emerald-700 transition-all shadow-md shadow-emerald-100">
                     <CheckCircle class="w-3.5 h-3.5" /> Chốt Quyết Toán
                   </button>
-                  <button @click="selectedSettlement = null" class="h-9 px-4 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-50 transition-all">
+                  <button @click="closeModal" class="h-9 px-4 bg-white border border-slate-200 text-slate-500 rounded-xl font-bold text-[10px] uppercase hover:bg-slate-50 transition-all">
                     ĐÓNG
                   </button>
               </div>
@@ -285,7 +299,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { RefreshCw, FileText, Building2, X, Calculator, Users, Clock, Download, CheckCircle, AlertTriangle, Activity, Package, ArrowRight, Trash2, Search, Inbox } from 'lucide-vue-next'
 import apiClient from '../services/apiClient'
@@ -301,6 +315,25 @@ const isLoading = ref(false)
 const contracts = ref([])
 const searchQuery = ref('')
 const selectedSettlement = ref(null)
+
+// ── Close modal ───────────────────────────────────────────────────────────────
+const closeModal = () => {
+  selectedSettlement.value = null
+  isEditingExtra.value = false
+}
+
+// Close on Escape key
+const onKeydown = (e) => { if (e.key === 'Escape') closeModal() }
+onUnmounted(() => window.removeEventListener('keydown', onKeydown))
+
+onMounted(async () => {
+  window.addEventListener('keydown', onKeydown)
+  await loadContracts()
+  if (route.query.contractId) {
+    const contract = contracts.value.find(c => c.healthContractId == route.query.contractId)
+    if (contract) viewSettlement(contract)
+  }
+})
 
 const filteredContracts = computed(() => {
   if (!searchQuery.value) return contracts.value
@@ -350,20 +383,20 @@ const saveExtraService = async () => {
     savingExtra.value = true
     try {
         const totalAmount = tempExtraItems.value.reduce((sum, item) => sum + (Number(item.amount) || 0), 0)
-        
+        const id = selectedSettlement.value.healthContractId
         const payload = {
             extraServiceRevenue: totalAmount,
             extraServiceDetails: JSON.stringify(tempExtraItems.value),
             vatRate: tempVatRate.value || 0
         }
-        
-        await apiClient.put(`/api/Contracts/${selectedSettlement.value.contractId}/extra-service`, payload, {
+        await apiClient.put(`/api/Contracts/${id}/extra-service`, payload, {
             headers: { 'Content-Type': 'application/json' }
         })
         toast.success('Đã lưu dữ liệu phát sinh!')
         isEditingExtra.value = false
-        // Tải lại để tính toán phần lợi nhuận (Revenue)
-        await viewSettlement(contracts.value.find(c => c.healthContractId === selectedSettlement.value.contractId))
+        // Reload P&L with updated extra service
+        const contract = contracts.value.find(c => c.healthContractId === id)
+        if (contract) await viewSettlement(contract)
     } catch (e) {
         toast.error(parseApiError(e))
     } finally {
@@ -386,13 +419,15 @@ const loadContracts = async () => {
 }
 
 const viewSettlement = async (contract) => {
+  if (!contract?.healthContractId) return
   loading.value = true
   try {
     const res = await apiClient.get(`/api/Contracts/${contract.healthContractId}/pnl-report`)
-    selectedSettlement.value = res.data
-    
-    // Add extra details JSON from the original contract to keep editing capability
-    selectedSettlement.value.extraServiceDetails = contract.extraServiceDetails
+    // Merge P&L data with the original contract's extraServiceDetails for editing
+    selectedSettlement.value = {
+      ...res.data,
+      extraServiceDetails: contract.extraServiceDetails ?? null,
+    }
   } catch (e) {
     toast.error(parseApiError(e))
   } finally {
@@ -401,12 +436,15 @@ const viewSettlement = async (contract) => {
 }
 
 const settleContract = async (contractId) => {
-  if (!confirm('Bạn có chắc chắn muốn chốt quyết toán chi phí cho hợp đồng này không? Dữ liệu sau khi chốt sẽ không thể sửa chữa.')) return
+  if (!contractId) { toast.error('Không xác định được hợp đồng'); return }
+  if (!confirm('Bạn có chắc chắn muốn chốt quyết toán chi phí cho hợp đồng này không?\nDữ liệu sau khi chốt sẽ không thể sửa chữa.')) return
   loading.value = true
   try {
-    await apiClient.post(`/api/Contracts/${contractId}/costs/settle`, "Quyết toán hoàn tất", { headers: { 'Content-Type': 'application/json' } })
+    await apiClient.post(`/api/Contracts/${contractId}/costs/settle`, "Quyết toán hoàn tất", {
+      headers: { 'Content-Type': 'application/json' }
+    })
     toast.success('Đã chốt quyết toán thành công!')
-    selectedSettlement.value = null
+    closeModal()
     await loadContracts()
   } catch (e) {
     toast.error(parseApiError(e))
@@ -417,16 +455,18 @@ const settleContract = async (contractId) => {
 
 const exportSettlementExcel = async (settlement) => {
   if (!settlement) return
+  const id = settlement.healthContractId
+  if (!id) { toast.error('Không xác định được hợp đồng'); return }
   try {
     toast.success('Đang xuất báo cáo quyết toán...')
-    const res = await apiClient.get(`/api/Contracts/${settlement.contractId}/export-settlement`, {
+    const res = await apiClient.get(`/api/Contracts/${id}/export-settlement`, {
       responseType: 'blob'
     })
     const url = URL.createObjectURL(new Blob([res.data]))
     const link = document.createElement('a')
     link.href = url
     const dateStr = new Date().toLocaleDateString('vi-VN').replace(/\//g, '-')
-    link.download = `QuyetToan_${settlement.contractId}_${dateStr}.xlsx`
+    link.download = `QuyetToan_${id}_${dateStr}.xlsx`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -441,8 +481,18 @@ const formatCurrency = (val) => {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val)
 }
 
+const getStatusLabel = (status) => {
+  const map = {
+    Completed: 'HOÀN TẤT', Settled: 'ĐÃ QUYẾT TOÁN', Finalized: 'ĐÃ CHỐT',
+    Active: 'ĐANG HOẠT ĐỘNG', Approved: 'ĐÃ DUYỆT',
+    PendingApproval: 'CHỜ DUYỆT', Draft: 'NHÁP',
+    Rejected: 'TỪ CHỐI', Locked: 'ĐÃ KHÓA', Finished: 'KẾT THÚC',
+  }
+  return map[status] ?? 'ĐANG XỬ LÝ'
+}
+
 const getStatusBadgeClass = (status) => {
-  if (['Completed', 'Settled', 'Finalized'].includes(status))
+  if (['Completed', 'Settled', 'Finalized', 'Finished', 'Locked'].includes(status))
     return 'bg-emerald-100 text-emerald-700 border border-emerald-200'
   if (status === 'Active')
     return 'bg-violet-100 text-violet-700 border border-violet-200'
@@ -453,15 +503,7 @@ const getStatusBadgeClass = (status) => {
   return 'bg-slate-100 text-slate-600 border border-slate-200'
 }
 
-onMounted(async () => {
-  await loadContracts()
-  if (route.query.contractId) {
-    const contract = contracts.value.find(c => c.healthContractId == route.query.contractId)
-    if (contract) {
-      viewSettlement(contract)
-    }
-  }
-})
+// status badge helper is defined above — onMounted merged above
 </script>
 
 <style scoped>

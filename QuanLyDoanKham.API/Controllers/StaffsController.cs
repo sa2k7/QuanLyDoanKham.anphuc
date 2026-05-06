@@ -231,6 +231,7 @@ namespace QuanLyDoanKham.API.Controllers
                     RoleId = userRole.RoleId,
                     AvatarPath = staff.AvatarPath,
                     StaffId = staff.StaffId, // Gán StaffId liên kết mới
+                    Email = staff.Email, // Sync Email
                     IsActive = true // Đảm bảo tài khoản được kích hoạt ngay
                 };
 
@@ -316,6 +317,7 @@ namespace QuanLyDoanKham.API.Controllers
                         bool isRoleChanged = userAccount.RoleId != newRole.RoleId;
                         userAccount.RoleId = newRole.RoleId;
                         userAccount.FullName = staff.FullName;
+                        userAccount.Email = staff.Email; // Sync email
                         userAccount.AvatarPath = staff.AvatarPath;
                         userAccount.StaffId = staff.StaffId; // Đảm bảo đồng bộ StaffId
                         userAccount.IsActive = true; // Kích hoạt lại tài khoản nếu nhân viên được update
@@ -338,7 +340,8 @@ namespace QuanLyDoanKham.API.Controllers
                             PasswordHash = BCrypt.Net.BCrypt.HashPassword(initialPassword),
                             RoleId = newRole.RoleId,
                             AvatarPath = staff.AvatarPath,
-                            StaffId = staff.StaffId, // Gán lền kết
+                            StaffId = staff.StaffId, // Gán liên kết
+                            Email = staff.Email, // Sync Email
                             IsActive = true
                         };
                         _context.Users.Add(newUser);

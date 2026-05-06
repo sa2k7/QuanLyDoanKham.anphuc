@@ -716,5 +716,207 @@ namespace QuanLyDoanKham.API.Controllers
                 Staffs = staffSummaries
             });
         }
+        // ================================================================
+        // ── NEW: SIMPLIFIED ATTENDANCE APIs (health-check-domain-refactor) ──
+        // These 3 endpoints are ADDITIVE — no existing action is modified.
+        // The existing POST /api/attendance/checkin (QR-based, AllowAnonymous)
+        // is untouched. New endpoints use /staff/checkin and /staff/checkout
+        // routes to avoid collision.
+        // ================================================================
+
+        // GET api/attendance/today
+        // Returns all campaigns assigned to the current user for today.
+        // Returns [] (never 404) when no assignments exist.
+        [HttpGet("today")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.CheckInOut")]
+        public async Task<IActionResult> GetTodayCampaigns()
+        {
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var today = DateTime.Today;
+
+            // Resolve staff from username (EmployeeCode or linked StaffId claim)
+            var staffIdClaim = User.FindFirst("StaffId")?.Value;
+            int? staffId = int.TryParse(staffIdClaim, out var sid) && sid > 0 ? sid : null;
+
+            if (staffId == null)
+            {
+                var staff = await _context.Staffs
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(s => s.EmployeeCode != null
+                        && s.EmployeeCode.ToLower() == username.ToLower());
+                staffId = staff?.StaffId;
+            }
+
+            if (staffId == null)
+                return Ok(new List<object>()); // No staff record → no assignments
+
+            // Find all GroupStaffDetails for this staff on today's date
+            var assignments = await _context.GroupStaffDetails
+                .AsNoTracking()
+                .Include(g => g.MedicalGroup)
+                .Where(g => g.StaffId == staffId && g.ExamDate.Date == today)
+                .ToListAsync();
+
+            if (!assignments.Any())
+                return Ok(new List<object>());
+
+            var groupIds = assignments.Select(a => a.GroupId).ToList();
+
+            // Fetch today's schedule records to determine check-in/out state
+            var schedules = await _context.ScheduleCalendars
+                .AsNoTracking()
+                .Where(sc => groupIds.Contains(sc.GroupId)
+                    && sc.StaffId == staffId
+                    && sc.ExamDate.Date == today)
+                .ToDictionaryAsync(sc => sc.GroupId);
+
+            var result = assignments.Select(a =>
+            {
+                schedules.TryGetValue(a.GroupId, out var sc);
+                return new AttendanceTodayDto
+                {
+                    CampaignId = a.GroupId,
+                    CampaignName = a.MedicalGroup?.GroupName ?? $"Đoàn #{a.GroupId}",
+                    ExamDate = a.MedicalGroup?.ExamDate ?? today,
+                    CheckedIn = sc?.CheckInTime != null,
+                    CheckedOut = sc?.CheckOutTime != null
+                };
+            }).ToList();
+
+            return Ok(result);
+        }
+
+        // POST api/attendance/staff/checkin
+        // Simplified check-in for the current authenticated user.
+        // Returns 409 if already checked in for this campaign today.
+        [HttpPost("staff/checkin")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.CheckInOut")]
+        public async Task<IActionResult> StaffCheckIn([FromBody] AttendanceCheckInDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var today = DateTime.Today;
+            var now = dto.Timestamp?.ToUniversalTime() ?? DateTime.UtcNow;
+
+            // Resolve staffId
+            var staffIdClaim = User.FindFirst("StaffId")?.Value;
+            int? staffId = int.TryParse(staffIdClaim, out var sid) && sid > 0 ? sid : null;
+            if (staffId == null)
+            {
+                var staff = await _context.Staffs
+                    .FirstOrDefaultAsync(s => s.EmployeeCode != null
+                        && s.EmployeeCode.ToLower() == username.ToLower());
+                staffId = staff?.StaffId;
+            }
+            if (staffId == null)
+                return BadRequest(new { message = "Không tìm thấy hồ sơ nhân sự liên kết với tài khoản này." });
+
+            // Verify assignment exists
+            var assignment = await _context.GroupStaffDetails
+                .FirstOrDefaultAsync(g => g.GroupId == dto.CampaignId
+                    && g.StaffId == staffId
+                    && g.ExamDate.Date == today);
+            if (assignment == null)
+                return BadRequest(new { message = "Bạn không được phân công tham gia chiến dịch này hôm nay." });
+
+            // Idempotency guard — cannot check-in twice
+            var existing = await _context.ScheduleCalendars
+                .FirstOrDefaultAsync(sc => sc.GroupId == dto.CampaignId
+                    && sc.StaffId == staffId
+                    && sc.ExamDate.Date == today);
+
+            if (existing?.CheckInTime != null)
+                return Conflict(new { message = "Bạn đã điểm danh vào ca này rồi" });
+
+            if (existing == null)
+            {
+                _context.ScheduleCalendars.Add(new Models.ScheduleCalendar
+                {
+                    GroupId = dto.CampaignId,
+                    StaffId = staffId,
+                    ExamDate = today,
+                    MedicalGroup = null!,
+                    Staff = null!,
+                    CheckInTime = now.ToLocalTime(),
+                    IsConfirmed = false,
+                    Note = "Điểm danh vào ca (simplified API)"
+                });
+            }
+            else
+            {
+                existing.CheckInTime = now.ToLocalTime();
+            }
+
+            assignment.CheckInTime = now.ToLocalTime();
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"Điểm danh vào ca thành công lúc {now.ToLocalTime():HH:mm}.", campaignId = dto.CampaignId });
+        }
+
+        // POST api/attendance/staff/checkout
+        // Simplified check-out for the current authenticated user.
+        // Returns 400 if not yet checked in; 409 if already checked out.
+        [HttpPost("staff/checkout")]
+        [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.CheckInOut")]
+        public async Task<IActionResult> StaffCheckOut([FromBody] AttendanceCheckOutDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var username = User.Identity?.Name;
+            if (string.IsNullOrEmpty(username)) return Unauthorized();
+
+            var today = DateTime.Today;
+            var now = dto.Timestamp?.ToUniversalTime() ?? DateTime.UtcNow;
+
+            // Resolve staffId
+            var staffIdClaim = User.FindFirst("StaffId")?.Value;
+            int? staffId = int.TryParse(staffIdClaim, out var sid) && sid > 0 ? sid : null;
+            if (staffId == null)
+            {
+                var staff = await _context.Staffs
+                    .FirstOrDefaultAsync(s => s.EmployeeCode != null
+                        && s.EmployeeCode.ToLower() == username.ToLower());
+                staffId = staff?.StaffId;
+            }
+            if (staffId == null)
+                return BadRequest(new { message = "Không tìm thấy hồ sơ nhân sự liên kết với tài khoản này." });
+
+            var existing = await _context.ScheduleCalendars
+                .FirstOrDefaultAsync(sc => sc.GroupId == dto.CampaignId
+                    && sc.StaffId == staffId
+                    && sc.ExamDate.Date == today);
+
+            // Must have checked in first
+            if (existing?.CheckInTime == null)
+                return BadRequest(new { message = "Bạn chưa điểm danh vào ca, không thể điểm danh ra" });
+
+            // Idempotency guard — cannot check-out twice
+            if (existing.CheckOutTime != null)
+                return Conflict(new { message = "Bạn đã điểm danh ra ca này rồi" });
+
+            existing.CheckOutTime = now.ToLocalTime();
+            existing.IsConfirmed = true;
+
+            // Update GroupStaffDetail check-out and compute shift
+            var assignment = await _context.GroupStaffDetails
+                .FirstOrDefaultAsync(g => g.GroupId == dto.CampaignId
+                    && g.StaffId == staffId
+                    && g.ExamDate.Date == today);
+            if (assignment != null)
+            {
+                assignment.CheckOutTime = now.ToLocalTime();
+                var hours = (existing.CheckOutTime.Value - existing.CheckInTime.Value).TotalHours;
+                assignment.ShiftType = hours >= 4 ? 1.0 : 0.5;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"Điểm danh ra ca thành công lúc {now.ToLocalTime():HH:mm}.", campaignId = dto.CampaignId });
+        }
     }
 }

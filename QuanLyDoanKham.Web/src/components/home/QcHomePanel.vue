@@ -27,7 +27,7 @@
           <UserRound class="w-7 h-7 text-sky-500" />
         </div>
         <h3 class="text-base font-black text-slate-800 mb-1">Duyệt kết quả (QC)</h3>
-        <p class="text-xs text-slate-400 font-bold">Xem xét và phê duyệt hồ sơ bệnh nhân</p>
+        <p class="text-xs text-slate-400 font-bold">Xem xét và phê duyệt hồ sơ bệnh án</p>
         <div class="mt-4 flex items-center gap-2 text-sky-500 font-black text-xs uppercase tracking-widest">
           QC Ngay <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
         </div>

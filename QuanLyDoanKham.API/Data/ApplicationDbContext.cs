@@ -65,6 +65,15 @@ namespace QuanLyDoanKham.API.Data
         public DbSet<Station> Stations { get; set; }
         public DbSet<MedicalRecord> MedicalRecords { get; set; }
 
+        // ── NEW: MEDICAL BATCH DOMAIN (health-check-domain-refactor) ──────────
+        // Additive only — no existing DbSet modified or removed.
+        public DbSet<MedicalBatch> MedicalBatches { get; set; }
+        public DbSet<MedicalBatchRecord> MedicalBatchRecords { get; set; }
+        public DbSet<CampaignRoleRequirement> CampaignRoleRequirements { get; set; }
+        // ── BatchMedicalRecord bridge (Patient ↔ MedicalBatch) ───────────────
+        public DbSet<BatchMedicalRecord> BatchMedicalRecords { get; set; }
+        // ─────────────────────────────────────────────────────────────────────
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -491,6 +500,85 @@ namespace QuanLyDoanKham.API.Data
             allSeedPerms.AddRange(whRolePerms);
 
             modelBuilder.Entity<RolePermission>().HasData(allSeedPerms);
+
+            // ── NEW: MEDICAL BATCH DOMAIN fluent config ───────────────────────
+            // MedicalBatch → HealthContract (no cascade — contract must not delete batches)
+            modelBuilder.Entity<MedicalBatch>()
+                .HasOne(b => b.Contract)
+                .WithMany()
+                .HasForeignKey(b => b.ContractId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // MedicalBatchRecord → MedicalBatch (cascade — batch delete removes records)
+            modelBuilder.Entity<MedicalBatchRecord>()
+                .HasOne(r => r.Batch)
+                .WithMany(b => b.Records)
+                .HasForeignKey(r => r.BatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique index: (BatchId, Code) — prevents duplicate codes within a batch
+            modelBuilder.Entity<MedicalBatchRecord>()
+                .HasIndex(r => new { r.BatchId, r.Code })
+                .IsUnique()
+                .HasDatabaseName("UQ_MedicalBatchRecords_BatchId_Code");
+
+            // Performance index on Status for progress queries
+            modelBuilder.Entity<MedicalBatchRecord>()
+                .HasIndex(r => r.Status)
+                .HasDatabaseName("IX_MedicalBatchRecords_Status");
+
+            // CampaignRoleRequirement → MedicalGroup (cascade)
+            modelBuilder.Entity<CampaignRoleRequirement>()
+                .HasOne(c => c.Campaign)
+                .WithMany()
+                .HasForeignKey(c => c.CampaignId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique constraint: (CampaignId, Role) — one row per role per campaign
+            modelBuilder.Entity<CampaignRoleRequirement>()
+                .HasIndex(c => new { c.CampaignId, c.Role })
+                .IsUnique()
+                .HasDatabaseName("UQ_CampaignRoleRequirements_CampaignId_Role");
+
+            // RowVersion shadow property on HealthContract for optimistic concurrency.
+            // Additive: nullable column, no data loss on existing rows.
+            modelBuilder.Entity<HealthContract>()
+                .Property<byte[]>("RowVersion")
+                .IsRowVersion()
+                .IsRequired(false);
+
+            // ── BatchMedicalRecord bridge (Patient ↔ MedicalBatch) ───────────
+            // Patient → BatchMedicalRecord (cascade: deleting a patient removes assignments)
+            modelBuilder.Entity<BatchMedicalRecord>()
+                .HasOne(b => b.Patient)
+                .WithMany()
+                .HasForeignKey(b => b.PatientId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // MedicalBatch → BatchMedicalRecord (cascade: deleting a batch removes assignments)
+            modelBuilder.Entity<BatchMedicalRecord>()
+                .HasOne(b => b.MedicalBatch)
+                .WithMany()
+                .HasForeignKey(b => b.MedicalBatchId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Unique constraint: one patient per batch (no duplicate assignment)
+            modelBuilder.Entity<BatchMedicalRecord>()
+                .HasIndex(b => new { b.MedicalBatchId, b.PatientId })
+                .IsUnique()
+                .HasDatabaseName("UQ_BatchMedicalRecord_BatchId_PatientId");
+
+            // Performance index on PatientId for "get all batches for a patient"
+            modelBuilder.Entity<BatchMedicalRecord>()
+                .HasIndex(b => b.PatientId)
+                .HasDatabaseName("IX_BatchMedicalRecord_PatientId");
+
+            // Performance index on Status for progress queries
+            modelBuilder.Entity<BatchMedicalRecord>()
+                .HasIndex(b => b.Status)
+                .HasDatabaseName("IX_BatchMedicalRecord_Status");
+            // ─────────────────────────────────────────────────────────────────
+            // ─────────────────────────────────────────────────────────────────
         }
     }
 }

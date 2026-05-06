@@ -5,7 +5,7 @@
         <Hospital :size="64" class="text-indigo-500 relative z-10" />
     </div>
     <h2 class="text-2xl font-black text-slate-800 mb-2">CHÀO MỪNG ĐẾN TRẠM {{ stationName.toUpperCase() }}</h2>
-    <p class="text-slate-500 max-w-sm font-medium">Vui lòng chọn một bệnh nhân từ danh sách hàng chờ bên trái để bắt đầu quá trình thăm khám.</p>
+    <p class="text-slate-500 max-w-sm font-medium">Vui lòng chọn một bệnh án từ danh sách hàng chờ bên trái để bắt đầu quá trình thăm khám.</p>
   </div>
 </template>
 

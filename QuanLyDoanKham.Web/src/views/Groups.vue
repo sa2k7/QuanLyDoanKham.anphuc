@@ -132,6 +132,9 @@
         @position-change="onPositionChange"
         @copy-qr-url="copyQrUrl"
         @update-group="updateGroup"
+        @open-position-modal="modals.staff.show = false; openModalAction('position', modals.staff.groupId)"
+        @quick-init-positions="quickInitPositions(modals.staff.groupId)"
+        @remove-position="(pid, gid) => { removePosition(pid, gid); modals.position.show = false }"
     />
 
     <!-- AI Suggestion Result Modal -->
@@ -204,6 +207,7 @@
     <!-- Confirm Dialog -->
     <ConfirmDialog 
         v-if="confirmData.show"
+        v-model="confirmData.show"
         :title="confirmData.title"
         :message="confirmData.message"
         :variant="confirmData.variant"
@@ -297,22 +301,37 @@ const getRequiredStaffType = (posName) => {
 }
 
 const requiredTypeForSelectedPos = computed(() => getRequiredStaffType(currentPositionName.value))
-const recommendedStaff = computed(() => {
-    if (!requiredTypeForSelectedPos.value) return []
-    return staffList.value.filter(s => s.staffType === requiredTypeForSelectedPos.value)
+
+const excludedRoles = [
+  'system administrator', 'contract', 'payroll', 'accountant', 'admin', 
+  'quản trị', 'kế toán', 'duyệt', 'tạo hợp đồng', 'quan tri', 'ke toan', 
+  'tao hop dong', 'duyet hop dong', 'manager', 'quan ly doan',
+  'warehouse', 'kho', 'hỗ trợ', 'kiểm thử'
+]
+
+const medicalStaffList = computed(() => {
+    return staffList.value.filter(s => {
+        const textToSearch = `${s.jobTitle || ''} ${s.fullName || ''} ${s.staffType || ''}`.toLowerCase()
+        return !excludedRoles.some(role => textToSearch.includes(role))
+    })
 })
+
+const recommendedStaff = computed(() => {
+    if (!currentPositionName.value) return []
+    return medicalStaffList.value.filter(s => s.jobTitle === currentPositionName.value)
+})
+
 const otherStaff = computed(() => {
-    if (!requiredTypeForSelectedPos.value) return staffList.value
-    return staffList.value.filter(s => s.staffType !== requiredTypeForSelectedPos.value)
+    if (!currentPositionName.value) return medicalStaffList.value
+    return medicalStaffList.value.filter(s => s.jobTitle !== currentPositionName.value)
 })
 
 const isRoleMismatch = computed(() => {
     const sid = modals.value.staff.data.staffId
-    const reqType = requiredTypeForSelectedPos.value
-    if (!sid || !reqType) return false
+    if (!sid || !currentPositionName.value) return false
     const staff = staffList.value.find(s => s.staffId === sid)
-    if (!staff || !staff.staffType) return false
-    return staff.staffType !== reqType
+    if (!staff) return false
+    return staff.jobTitle !== currentPositionName.value
 })
 
 // Auto-fill workPosition when staffId changes
@@ -438,12 +457,16 @@ const handleLockGroup = async (groupId) => {
     }
 }
 
-const openModalAction = (type, gid) => {
+const openModalAction = (type, gid, extraData = null) => {
     modals.value[type].groupId = gid
     if (type === 'staff') {
-        modals.value.staff.data = { staffId: null, shiftType: 1.0, positionId: null, workPosition: '', workStatus: 'Đã tham gia' }
+        modals.value.staff.data = { staffId: null, shiftType: 1.0, positionId: null, workPosition: '', workStatus: 'Đã tham gia', pickupLocation: '' }
     } else if (type === 'position') {
-        modals.value.position.data = { positionName: '', requiredCount: 1 }
+        if (extraData) {
+            modals.value.position.data = { ...extraData }
+        } else {
+            modals.value.position.data = { positionName: '', requiredCount: 1 }
+        }
     } else if (type === 'qr') {
         openQrModal(gid)
     }
@@ -469,11 +492,58 @@ const addStaff = async () => {
     } catch (e) { toast.error(parseApiError(e)) }
 }
 
+const quickInitPositions = async (groupId) => {
+    try {
+        const existingPositions = groupPositions.value[groupId] || [];
+        if (existingPositions.length >= 7) {
+            toast.error("Đã đạt giới hạn 7 vị trí cho đoàn khám này.");
+            return;
+        }
+
+        const standardJobs = ['Tiếp nhận', 'Khám nội', 'Khám ngoại', 'Lấy máu', 'Khám sản', 'Siêu âm'];
+        let addedCount = 0;
+        
+        for (const posName of standardJobs) {
+            if (existingPositions.some(p => p.positionName.toLowerCase() === posName.toLowerCase())) continue;
+            
+            // Re-check limit
+            if (existingPositions.length + addedCount >= 7) break;
+
+            await apiClient.post(`/api/MedicalGroups/${groupId}/positions`, {
+                positionName: posName,
+                requiredCount: 1,
+                note: 'Khởi tạo nhanh'
+            });
+            addedCount++;
+        }
+        
+        if (addedCount > 0) {
+            toast.success(`Đã tự động khởi tạo thêm ${addedCount} vị trí!`);
+            fetchGroupPositions(groupId);
+        } else {
+            toast.info("Các vị trí chuẩn đã tồn tại hoặc đã đạt giới hạn 7 vị trí.");
+        }
+    } catch (e) { toast.error("Lỗi khởi tạo: " + parseApiError(e)) }
+}
+
 const addPosition = async () => {
     try {
         const gid = modals.value.position.groupId
-        await apiClient.post(`/api/MedicalGroups/${gid}/positions`, modals.value.position.data)
-        toast.success("Thêm vị trí thành công!")
+        const pid = modals.value.position.data.positionId
+        
+        if (pid) {
+            await apiClient.put(`/api/MedicalGroups/update-position/${pid}`, modals.value.position.data)
+            toast.success("Cập nhật vị trí thành công!")
+        } else {
+            const existingPositions = groupPositions.value[gid] || [];
+            if (existingPositions.length >= 7) {
+                toast.error("Chỉ được tạo tối đa 7 vị trí mỗi đoàn khám.");
+                return;
+            }
+            await apiClient.post(`/api/MedicalGroups/${gid}/positions`, modals.value.position.data)
+            toast.success("Thêm vị trí thành công!")
+        }
+        
         modals.value.position.show = false
         fetchGroupPositions(gid)
     } catch (e) { toast.error(parseApiError(e)) }
@@ -510,7 +580,7 @@ const removePosition = async (pid, gid) => {
         variant: 'danger',
         onConfirm: async () => {
             try {
-                await apiClient.delete(`/api/MedicalGroups/positions/${pid}`)
+                await apiClient.delete(`/api/MedicalGroups/remove-position/${pid}`)
                 toast.success("Đã xóa vị trí!")
                 fetchGroupPositions(gid)
             } catch (e) { toast.error(parseApiError(e)) }
@@ -653,7 +723,11 @@ const removeStaffAssignment = async (sid, gid) => {
     }
 }
 
-const onPositionChange = () => {}
+const onPositionChange = () => {
+    if (currentPositionName.value) {
+        modals.value.staff.data.workPosition = currentPositionName.value
+    }
+}
 
 onMounted(fetchData)
 </script>

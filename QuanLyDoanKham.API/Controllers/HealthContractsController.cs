@@ -102,14 +102,21 @@ namespace QuanLyDoanKham.API.Controllers
             int userId = int.TryParse(userIdClaim, out var uid) ? uid : 0;
 
             var (success, error, newStatus) = await _contractService.ApproveContractAsync(id, dto, username, userId);
-            if (!success) {
+
+            if (!success)
+            {
                 if (error == "Not Found") return NotFound();
-                return BadRequest(error);
+
+                // CONFLICT: prefix signals HTTP 409 (status gate or optimistic concurrency)
+                if (error != null && error.StartsWith("CONFLICT:"))
+                    return Conflict(new { message = error["CONFLICT:".Length..] });
+
+                return BadRequest(new { message = error });
             }
 
             if (newStatus == "Approved")
                 return Ok(new { message = "Hợp đồng đã được phê duyệt hoàn toàn!", status = "Approved" });
-            
+
             var parts = newStatus?.Split('_') ?? Array.Empty<string>();
             var step = parts.Length > 2 ? parts[2] : "";
             var next = parts.Length > 1 ? parts[1] : "";

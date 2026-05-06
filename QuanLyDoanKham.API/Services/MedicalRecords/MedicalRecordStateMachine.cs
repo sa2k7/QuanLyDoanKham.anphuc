@@ -30,7 +30,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             if (record.Status != RecordStatus.Created && record.Status != RecordStatus.Ready)
                 return ServiceResult<MedicalRecord>.Failure($"Hồ sơ đang ở trạng thái '{record.Status}', không thể check-in.");
 
-            record.Status = RecordStatus.InProgress;
+            record.Status = RecordStatus.CheckedIn;
             record.CheckInAt = DateTime.Now;
             record.UpdatedAt = DateTime.Now;
             
@@ -52,7 +52,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             var record = await _context.MedicalRecords.FindAsync(medicalRecordId);
             if (record == null) return ServiceResult<MedicalRecord>.Failure("Không tìm thấy hồ sơ.");
             
-            record.Status = RecordStatus.Completed;
+            record.Status = RecordStatus.QcPending;
             record.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
@@ -83,7 +83,7 @@ namespace QuanLyDoanKham.API.Services.MedicalRecords
             var record = await _context.MedicalRecords.FindAsync(medicalRecordId);
             if (record == null) return ServiceResult<MedicalRecord>.Failure("Không tìm thấy hồ sơ.");
 
-            record.Status = RecordStatus.Completed;
+            record.Status = RecordStatus.QcPassed;
             record.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();

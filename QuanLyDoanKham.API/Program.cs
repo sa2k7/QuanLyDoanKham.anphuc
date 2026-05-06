@@ -67,6 +67,14 @@ builder.Services.AddScoped<QuanLyDoanKham.API.Services.Exports.IExportService, Q
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Calendar.ICalendarService, QuanLyDoanKham.API.Services.Calendar.CalendarService>();
 builder.Services.AddScoped<QuanLyDoanKham.API.Services.Notifications.INotificationService, QuanLyDoanKham.API.Services.Notifications.NotificationService>();
 
+// ── NEW: MedicalBatch domain services (health-check-domain-refactor, Batch 5) ──
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalBatch.IMedicalBatchService, QuanLyDoanKham.API.Services.MedicalBatch.MedicalBatchService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalBatch.IMedicalBatchRecordService, QuanLyDoanKham.API.Services.MedicalBatch.MedicalBatchRecordService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalBatch.IStaffAssignmentValidationService, QuanLyDoanKham.API.Services.MedicalBatch.StaffAssignmentValidationService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalBatch.ICampaignRoleRequirementService, QuanLyDoanKham.API.Services.MedicalBatch.CampaignRoleRequirementService>();
+builder.Services.AddScoped<QuanLyDoanKham.API.Services.MedicalBatch.IWarehouseCampaignService, QuanLyDoanKham.API.Services.MedicalBatch.WarehouseCampaignService>();
+// ─────────────────────────────────────────────────────────────────────────────
+
 // SignalR
 builder.Services.AddSignalR();
 

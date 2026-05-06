@@ -179,19 +179,27 @@ namespace QuanLyDoanKham.API.Services.Reports
             var byMonth = await _context.Contracts
                 .Where(c => c.CreatedAt >= from && c.CreatedAt <= to)
                 .GroupBy(c => new { c.CreatedAt.Year, c.CreatedAt.Month })
-                .Select(g => new MonthCountDto
+                .Select(g => new
                 {
-                    Month = $"{g.Key.Month:D2}/{g.Key.Year}",
+                    g.Key.Year,
+                    g.Key.Month,
                     Count = g.Count(),
                     Value = g.Sum(c => c.TotalAmount)
                 })
-                .OrderBy(x => x.Month)
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
                 .ToListAsync();
+
+            var byMonthDto = byMonth.Select(x => new MonthCountDto
+            {
+                Month = $"{x.Month:D2}/{x.Year}",
+                Count = x.Count,
+                Value = x.Value
+            }).ToList();
 
             return new ContractChartDto
             {
                 ByStatus = byStatus,
-                ByMonth = byMonth
+                ByMonth = byMonthDto
             };
         }
 
@@ -210,18 +218,25 @@ namespace QuanLyDoanKham.API.Services.Reports
             var byMonth = await _context.MedicalGroups
                 .Where(g => g.ExamDate >= from && g.ExamDate <= to)
                 .GroupBy(g => new { g.ExamDate.Year, g.ExamDate.Month })
-                .Select(g => new MonthCountDto
+                .Select(g => new
                 {
-                    Month = $"{g.Key.Month:D2}/{g.Key.Year}",
+                    g.Key.Year,
+                    g.Key.Month,
                     Count = g.Count()
                 })
-                .OrderBy(x => x.Month)
+                .OrderBy(x => x.Year).ThenBy(x => x.Month)
                 .ToListAsync();
+
+            var byMonthDto = byMonth.Select(x => new MonthCountDto
+            {
+                Month = $"{x.Month:D2}/{x.Year}",
+                Count = x.Count
+            }).ToList();
 
             return new MedicalGroupChartDto
             {
                 ByStatus = byStatus,
-                ByMonth = byMonth
+                ByMonth = byMonthDto
             };
         }
 

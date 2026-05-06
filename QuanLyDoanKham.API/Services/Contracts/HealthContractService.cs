@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
@@ -9,10 +10,18 @@ namespace QuanLyDoanKham.API.Services.Contracts
     public class HealthContractService : IHealthContractService
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<HealthContractService> _logger;
 
-        public HealthContractService(ApplicationDbContext context)
+        // Sentinel error messages used by the controller to map to the correct HTTP status code.
+        // These are internal contracts — do NOT change without updating the controller.
+        internal const string ErrNotFound = "Not Found";
+        internal const string ErrNotPendingApproval = "CONFLICT:Hợp đồng không ở trạng thái chờ duyệt";
+        internal const string ErrConcurrencyConflict = "CONFLICT:Hợp đồng đã được cập nhật bởi người khác. Vui lòng tải lại và thử lại.";
+
+        public HealthContractService(ApplicationDbContext context, ILogger<HealthContractService> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task<IEnumerable<HealthContractDto>> GetAllContractsAsync(string? status, int? companyId)
@@ -169,9 +178,19 @@ namespace QuanLyDoanKham.API.Services.Contracts
 
         public async Task<(bool Success, string? ErrorMessage, string? NewStatus)> ApproveContractAsync(int id, ApprovalActionDto dto, string username, int userId)
         {
-            var contract = await _context.Contracts.FindAsync(id);
-            if (contract == null) return (false, "Not Found", null);
-            if (contract.Status != ContractStatus.PendingApproval) return (false, "Hợp đồng không ở trạng thái chờ duyệt.", null);
+            // ── Load contract with RowVersion for optimistic concurrency ──────
+            // Use FirstOrDefaultAsync (not FindAsync) so EF Core tracks the RowVersion
+            // shadow property that was configured in OnModelCreating.
+            var contract = await _context.Contracts
+                .FirstOrDefaultAsync(c => c.HealthContractId == id);
+
+            if (contract == null) return (false, ErrNotFound, null);
+
+            // ── Status gate (idempotency check) ───────────────────────────────
+            // Only PendingApproval contracts may be approved.
+            // If already Approved, return a conflict signal — not an error.
+            if (contract.Status != ContractStatus.PendingApproval)
+                return (false, ErrNotPendingApproval, null);
 
             var user = await _context.Users.FindAsync(userId);
             bool isAdmin = user?.RoleId == 1;
@@ -188,46 +207,79 @@ namespace QuanLyDoanKham.API.Services.Contracts
                 .OrderBy(s => s.StepOrder)
                 .FirstOrDefaultAsync();
 
-            _context.ContractApprovalHistories.Add(new ContractApprovalHistory
+            // ── Wrap in transaction ───────────────────────────────────────────
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
             {
-                HealthContractId = id,
-                StepOrder = contract.CurrentApprovalStep,
-                StepName = currentStep?.StepName ?? $"Bước {contract.CurrentApprovalStep}",
-                Action = "Approved",
-                Note = dto.Note ?? "",
-                ApprovedByUserId = userId,
-                ActionDate = DateTime.Now
-            });
+                _context.ContractApprovalHistories.Add(new ContractApprovalHistory
+                {
+                    HealthContractId = id,
+                    StepOrder = contract.CurrentApprovalStep,
+                    StepName = currentStep?.StepName ?? $"Bước {contract.CurrentApprovalStep}",
+                    Action = "Approved",
+                    Note = dto.Note ?? "",
+                    ApprovedByUserId = userId,
+                    ActionDate = DateTime.Now
+                });
 
-            if (nextStep != null)
-            {
-                contract.CurrentApprovalStep = nextStep.StepOrder;
-                _context.ContractStatusHistories.Add(new ContractStatusHistory
+                string newStatusValue;
+
+                if (nextStep != null)
                 {
-                    HealthContractId = id,
-                    OldStatus = ContractStatus.PendingApproval.ToString(),
-                    NewStatus = ContractStatus.PendingApproval.ToString(),
-                    ChangedBy = username,
-                    ChangedAt = DateTime.Now,
-                    Note = $"Đã duyệt bước {currentStep?.StepOrder}. Đang chờ: {nextStep.StepName}"
-                });
+                    contract.CurrentApprovalStep = nextStep.StepOrder;
+                    _context.ContractStatusHistories.Add(new ContractStatusHistory
+                    {
+                        HealthContractId = id,
+                        OldStatus = ContractStatus.PendingApproval.ToString(),
+                        NewStatus = ContractStatus.PendingApproval.ToString(),
+                        ChangedBy = username,
+                        ChangedAt = DateTime.Now,
+                        Note = $"Đã duyệt bước {currentStep?.StepOrder}. Đang chờ: {nextStep.StepName}"
+                    });
+                    newStatusValue = $"PendingApproval_Next_{nextStep.StepName}_{currentStep?.StepOrder}";
+                }
+                else
+                {
+                    contract.Status = ContractStatus.Approved;
+                    _context.ContractStatusHistories.Add(new ContractStatusHistory
+                    {
+                        HealthContractId = id,
+                        OldStatus = ContractStatus.PendingApproval.ToString(),
+                        NewStatus = ContractStatus.Approved.ToString(),
+                        ChangedBy = username,
+                        ChangedAt = DateTime.Now,
+                        Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
+                    });
+                    newStatusValue = "Approved";
+                }
+
+                // SaveChanges will throw DbUpdateConcurrencyException if RowVersion
+                // has changed since we loaded the contract (concurrent approval).
                 await _context.SaveChangesAsync();
-                return (true, null, $"PendingApproval_Next_{nextStep.StepName}_{currentStep?.StepOrder}");
+                await tx.CommitAsync();
+
+                // ── Audit log ─────────────────────────────────────────────────
+                _logger.LogInformation(
+                    "Contract {ContractId} approved by user {UserId} ({Username}) at {Time}. NewStatus={NewStatus}",
+                    id, userId, username, DateTime.UtcNow, newStatusValue);
+
+                return (true, null, newStatusValue);
             }
-            else
+            catch (DbUpdateConcurrencyException ex)
             {
-                contract.Status = ContractStatus.Approved;
-                _context.ContractStatusHistories.Add(new ContractStatusHistory
-                {
-                    HealthContractId = id,
-                    OldStatus = ContractStatus.PendingApproval.ToString(),
-                    NewStatus = ContractStatus.Approved.ToString(),
-                    ChangedBy = username,
-                    ChangedAt = DateTime.Now,
-                    Note = dto.Note ?? "Phê duyệt hợp đồng hoàn tất"
-                });
-                await _context.SaveChangesAsync();
-                return (true, null, "Approved");
+                await tx.RollbackAsync();
+                _logger.LogWarning(ex,
+                    "Optimistic concurrency conflict on Contract {ContractId} approval by user {UserId}",
+                    id, userId);
+                return (false, ErrConcurrencyConflict, null);
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                _logger.LogError(ex,
+                    "Unexpected error approving Contract {ContractId} by user {UserId}",
+                    id, userId);
+                return (false, "Lỗi hệ thống khi phê duyệt hợp đồng. Vui lòng thử lại.", null);
             }
         }
 

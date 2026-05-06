@@ -211,16 +211,20 @@
                                         <option value="Nữ">Nữ</option>
                                     </select>
                                 </div>
-                                <div class="flex flex-col gap-0.5">
-                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Chức danh</label>
-                                    <select v-model="jobCategory" required class="input-premium py-1.5 bg-slate-50 border-slate-200 focus:bg-white w-full text-[11px] font-bold">
+                                <div class="flex flex-col gap-0.5" v-if="currentStaff.systemRole === 'MedicalStaff'">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-indigo-500 ">Chuyên môn đi đoàn *</label>
+                                    <select v-model="jobCategory" required class="input-premium py-1.5 bg-indigo-50 border-indigo-200 focus:bg-white w-full text-[11px] font-bold text-indigo-700">
                                         <option v-for="job in standardJobs" :key="job" :value="job">{{ job }}</option>
                                         <option value="Khác">Khác...</option>
                                     </select>
                                 </div>
-                                <div v-if="jobCategory === 'Khác'" class="flex flex-col gap-0.5">
-                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-indigo-400 italic">Chức danh cụ thể *</label>
+                                <div v-if="currentStaff.systemRole === 'MedicalStaff' && jobCategory === 'Khác'" class="flex flex-col gap-0.5">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-indigo-400 italic">Chuyên môn cụ thể *</label>
                                     <input v-model="currentStaff.jobTitle" required class="input-premium py-1.5 bg-slate-50 focus:bg-white w-full border-indigo-200 text-[11px] font-bold" placeholder="VD: Lái xe..." />
+                                </div>
+                                <div class="flex flex-col gap-0.5" v-if="currentStaff.systemRole !== 'MedicalStaff'">
+                                    <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Chức danh</label>
+                                    <input v-model="currentStaff.jobTitle" required class="input-premium py-1.5 bg-slate-50 focus:bg-white w-full border-slate-200 text-[11px] font-bold" placeholder="VD: Quản lý, Kế toán..." />
                                 </div>
                                 <div class="flex flex-col gap-0.5">
                                     <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ">Lương / Ngày công *</label>
@@ -454,11 +458,18 @@ const importInput = ref(null)
 const confirmData = ref({ show: false, title: '', message: '', variant: 'warning', onConfirm: () => {} })
 
 const activeModalTab = ref('info')
-const modalTabs = [
-    { id: 'info', label: 'Thông tin' },
-    { id: 'payroll', label: 'Bảng lương' },
-    { id: 'attendance', label: 'Chấm công' },
-]
+const modalTabs = computed(() => {
+    if (currentStaff.value.staffId) {
+        return [
+            { id: 'info', label: 'Thông tin' },
+            { id: 'payroll', label: 'Bảng lương' },
+            { id: 'attendance', label: 'Chấm công' },
+        ]
+    }
+    return [
+        { id: 'info', label: 'Thông tin' }
+    ]
+})
 
 // Payroll tab state
 const payrollLoading = ref(false)
@@ -471,8 +482,8 @@ const attendanceYear = ref(new Date().getFullYear())
 const attendanceMonth = ref('')
 const yearOptions = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
-const standardJobs = ['Bác sĩ', 'Điều dưỡng', 'Kỹ thuật viên', 'Dược sĩ', 'Nhân viên hỗ trợ']
-const jobCategory = ref('Bác sĩ')
+const standardJobs = ['Tiếp nhận', 'Khám nội', 'Khám ngoại', 'Lấy máu', 'Khám sản', 'Siêu âm']
+const jobCategory = ref('Tiếp nhận')
 
 const roles = computed(() => {
     if (!list.value) return []
@@ -524,8 +535,8 @@ const openModal = async (staff = null) => {
             }
         }
     } else {
-        currentStaff.value = { fullName: '', email: '', phoneNumber: '', gender: 'Nam', jobTitle: 'Bác sĩ', baseSalary: 1000000, systemRole: 'MedicalStaff' }
-        jobCategory.value = 'Bác sĩ'
+        currentStaff.value = { fullName: '', email: '', phoneNumber: '', gender: 'Nam', jobTitle: 'Tiếp nhận', baseSalary: 1000000, systemRole: 'MedicalStaff' }
+        jobCategory.value = 'Tiếp nhận'
     }
     showModal.value = true
     activeModalTab.value = 'info'

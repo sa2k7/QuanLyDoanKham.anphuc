@@ -10,15 +10,7 @@
          <p class="subtitle">Tích hợp Chấm công & Đón bệnh nhân (Check-in)</p>
       </header>
 
-      <!-- Mode Selector -->
-      <div class="mode-selector">
-         <button :class="['mode-btn', { active: scanMode === 'patient' }]" @click="switchMode('patient')">
-           <UserCheck :size="18" /> Bệnh nhân
-         </button>
-         <button :class="['mode-btn', { active: scanMode === 'staff' }]" @click="switchMode('staff')">
-           <Fingerprint :size="18" /> Nhân sự
-         </button>
-      </div>
+      <!-- Mode Selector removed by user request, defaulting to staff mode -->
 
       <!-- Kiosk Mode Toggle (Admin/Receptionist Only) -->
       <div v-if="can('ChamCong.QR')" class="kiosk-toggle-row">
@@ -116,77 +108,11 @@
              </button>
            </div>
          </div>
-
-         <!-- WALK-IN CHECKIN -->
-         <div v-if="scanMode === 'patient'" class="mt-4 p-4 border border-slate-200 rounded-2xl bg-white/50">
-             <label class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2 block">Tra cứu thông tin bệnh nhân ngoại lệ (SĐT/CCCD/Tên)</label>
-             <div class="flex gap-2">
-                <input v-model="walkInSearchText" @keyup.enter="searchWalkIn" type="text" placeholder="Nhập từ khóa tìm kiếm..." class="premium-input flex-1 !py-3 !text-sm" />
-                <button @click="searchWalkIn" class="btn-premium secondary px-6 !py-3" style="width: auto">
-                    <Loader2 v-if="searchingWalkIn" :size="16" class="animate-spin" />
-                    <span v-else>Tìm kiếm</span>
-                </button>
-             </div>
-             
-             <div v-if="walkInResults.length > 0" class="mt-4 max-h-48 overflow-y-auto w-full bg-white rounded-xl border border-slate-200">
-                <div v-for="patient in walkInResults.slice(0, 5)" :key="patient.medicalRecordId" class="flex justify-between items-center p-3 border-b border-slate-100 hover:bg-slate-50">
-                   <div>
-                     <p class="font-bold text-sm text-slate-800">{{ patient.fullName }}</p>
-                     <p class="text-xs text-slate-500">{{ patient.idCardNumber || 'Chưa cập nhật' }} - {{ patient.gender || '?' }} - Trạng thái: <strong>{{ patient.status }}</strong></p>
-                   </div>
-                   <button v-if="patient.status === 'CREATED' || patient.status === 'READY'" @click="manualCheckInPatient(patient.medicalRecordId)" class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-sky-600 transition">
-                     Báo Danh
-                   </button>
-                   <span v-else class="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg">Đã Báo Danh</span>
-                </div>
-             </div>
-             <p v-else-if="hasSearchedWalkIn" class="mt-3 text-xs text-slate-500 text-center">Không tìm thấy bệnh nhân nào.</p>
-         </div>
       </div>
 
       <!-- Result View -->
       <div v-if="scannedToken" class="result-display">
-          <!-- PATIENT MODE RESULT -->
-          <div v-if="scanMode === 'patient'" class="patient-result">
-              <div v-if="loading" class="loading-state">
-                 <div class="spinner-premium"></div>
-                 <p>Đang xác thực thông tin...</p>
-              </div>
-              
-              <div v-else-if="resultStatus" class="result-card-premium" :class="resultStatus">
-                  <div class="result-header">
-                    <div class="icon-circle">
-                      <Check v-if="resultStatus === 'success'" :size="32" />
-                      <X v-else :size="32" />
-                    </div>
-                    <h2>{{ resultMessage }}</h2>
-                  </div>
-
-                  <div v-if="resultData" class="premium-info-box">
-                      <div class="info-row">
-                        <span class="label">Bệnh nhân</span>
-                        <span class="value">{{ resultData.fullName }}</span>
-                      </div>
-                      <div class="queue-display">
-                        <span class="q-label">SỐ THỨ TỰ</span>
-                        <span class="q-number">{{ resultData.queueNo }}</span>
-                      </div>
-                      <div class="info-row">
-                        <span class="label">Dịch vụ</span>
-                        <span class="value">{{ resultData.serviceName || 'Khám tổng quát' }}</span>
-                      </div>
-                  </div>
-                  
-                  <div class="actions">
-                    <button v-if="resultStatus === 'success'" class="btn-premium primary w-full mb-3" @click="printReceipt(resultData)">
-                      <Printer :size="18" class="mr-2" /> IN PHIẾU KHÁM
-                    </button>
-                    <button class="btn-premium secondary w-full" @click="resetScanner">
-                      <RefreshCw :size="18" class="mr-2" /> {{ resultStatus === 'success' ? 'QUÉT NGƯỜI TIẾP THEO' : 'THỬ LẠI' }}
-                    </button>
-                  </div>
-              </div>
-          </div>
+          <!-- PATIENT MODE RESULT REMOVED -->
 
           <!-- STAFF MODE RESULT -->
           <div v-if="scanMode === 'staff'" class="staff-result">
@@ -286,7 +212,7 @@ const authStore = useAuthStore()
 const can = authStore.hasPermission
 
 // UI State
-const scanMode = ref('patient') 
+const scanMode = ref('staff') 
 const isKioskMode = ref(localStorage.getItem('kiosk_mode') === 'true')
 const scannedToken = ref(null)
 const manualValue = ref('')

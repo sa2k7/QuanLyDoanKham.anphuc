@@ -55,6 +55,7 @@ namespace QuanLyDoanKham.API.Controllers
             var users = await _context.Users
                 .Include(u => u.Role)
                 .Include(u => u.Company)
+                .Include(u => u.Staff)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                 .OrderBy(u => u.FullName)
                 .ToListAsync();
@@ -70,9 +71,10 @@ namespace QuanLyDoanKham.API.Controllers
                 CompanyId = u.CompanyId,
                 StaffId = u.StaffId,
                 CompanyName = u.Company?.CompanyName,
-                Email = u.Email,
+                Email = u.Email ?? u.Staff?.Email,
                 AvatarPath = u.AvatarPath,
-                IsActive = u.IsActive
+                IsActive = u.IsActive,
+                Specialty = u.Staff?.Specialty ?? u.Staff?.JobTitle
             }).ToList();
 
             return Ok(list);
@@ -90,6 +92,7 @@ namespace QuanLyDoanKham.API.Controllers
                 .Include(u => u.Role)
                     .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .Include(u => u.Company)
+                .Include(u => u.Staff)
                 .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
                     .ThenInclude(r => r!.RolePermissions).ThenInclude(rp => rp.Permission)
                 .FirstOrDefaultAsync(u => u.Username == username || u.Email == username);
@@ -112,21 +115,25 @@ namespace QuanLyDoanKham.API.Controllers
                     foreach (var rp in ur.Role.RolePermissions)
                         if (rp.Permission != null) allPerms.Add(rp.Permission.PermissionKey);
 
+            var primaryRoleName = user.Role?.RoleName;
+            var allPermissions = allPerms;
+
             return Ok(new UserProfileDto
             {
                 UserId = user.UserId,
                 Username = user.Username,
                 FullName = user.FullName,
-                RoleName = user.Role?.RoleName,
+                RoleName = primaryRoleName,
                 RoleId = user.RoleId,
                 Roles = allRoles.ToList(),
-                Permissions = allPerms.ToList(),
+                Permissions = allPermissions.ToList(),
                 CompanyId = user.CompanyId,
                 StaffId = user.StaffId,
                 CompanyName = user.Company?.CompanyName,
-                Email = user.Email,
+                Email = user.Email ?? user.Staff?.Email,
                 AvatarPath = user.AvatarPath,
-                IsActive = user.IsActive
+                IsActive = user.IsActive,
+                Specialty = user.Staff?.Specialty ?? user.Staff?.JobTitle
             });
         }
 
@@ -168,6 +175,7 @@ namespace QuanLyDoanKham.API.Controllers
             }
 
             await _context.SaveChangesAsync();
+            await HandleStaffSpecialty(user, dto.Specialty);
 
             if (oldRoleId != user.RoleId)
             {
@@ -434,6 +442,8 @@ namespace QuanLyDoanKham.API.Controllers
                 }
                 await _context.SaveChangesAsync();
             }
+            
+            await HandleStaffSpecialty(newUser, request.Specialty);
 
             // Return DTO to avoid circular reference and match GET responses
             return Ok(new UserProfileDto
@@ -535,6 +545,20 @@ namespace QuanLyDoanKham.API.Controllers
                 return BadRequest(new { message = result.Message });
 
             return Ok(new { message = result.Message });
+        }
+        private async Task HandleStaffSpecialty(AppUser user, string? specialty)
+        {
+            if (user.StaffId.HasValue && !string.IsNullOrEmpty(specialty))
+            {
+                var staff = await _context.Staffs.FindAsync(user.StaffId.Value);
+                if (staff != null)
+                {
+                    staff.Specialty = specialty;
+                    // Also update JobTitle as fallback if needed
+                    if (string.IsNullOrEmpty(staff.JobTitle)) staff.JobTitle = specialty;
+                    await _context.SaveChangesAsync();
+                }
+            }
         }
     }
 }

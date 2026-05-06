@@ -449,7 +449,7 @@ const menuItems = computed(() => [
     { id: 'companies',        name: 'Công ty',      icon: Building2,       color: 'bg-sky-50 text-sky-600',           desc: 'Quản lý thông tin công ty.',    permission: 'HopDong.View' },
     { id: 'contracts',        name: 'Hợp đồng',    icon: FileText,        color: 'bg-teal-50 text-teal-600',        desc: 'Pháp lý & Ký kết.',             permission: 'HopDong.View' },
     { id: 'groups',           name: 'Đoàn khám',   icon: Stethoscope,     color: 'bg-primary/10 text-primary',      desc: 'Vận hành tuyến đầu.',           permission: 'DoanKham.View' },
-    { id: 'patients',         name: 'Bệnh nhân',   icon: UserRound,       color: 'bg-sky-50 text-sky-600',           desc: 'Hồ sơ sức khỏe.',               permission: 'DoanKham.View' },
+    { id: 'patients',         name: 'Bệnh án',     icon: UserRound,       color: 'bg-sky-50 text-sky-600',           desc: 'Hồ sơ sức khỏe.',               permission: 'DoanKham.View' },
     { id: 'supplies',         name: 'Vật tư',      icon: Package,         color: 'bg-violet-50 text-violet-600',    desc: 'Kho dược & Thiết bị.',          permission: 'Kho.View' },
     { id: 'settlement-report',name: 'Quyết toán',  icon: Calculator,      color: 'bg-emerald-50 text-emerald-600',  desc: 'Đối soát doanh thu.',           permission: 'BaoCao.View' },
     { id: 'staff',            name: 'Nhân sự',     icon: UsersIcon,       color: 'bg-rose-50 text-rose-600',        desc: 'Đội ngũ y tế.',                 permission: 'NhanSu.View' },

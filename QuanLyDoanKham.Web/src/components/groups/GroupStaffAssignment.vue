@@ -36,9 +36,16 @@
     <div v-if="positions && positions.length > 0" class="mb-2">
         <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
             <div v-for="p in positions" :key="p.positionId" 
-                 class="p-3 bg-white border rounded-xl flex flex-col gap-1 transition-all shadow-sm"
+                 class="p-3 bg-white border rounded-xl flex flex-col gap-1 transition-all shadow-sm group/poscard relative"
                  :class="getStaffCount(p.positionName) >= p.requiredCount ? 'border-emerald-200 bg-emerald-50/30' : 'border-amber-200 bg-amber-50/30'">
-                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 truncate" :title="p.positionName">
+                
+                <button v-if="can('DoanKham.AssignStaff') && status === 'Open'" 
+                        @click="$emit('open-modal', 'position', groupId, p)"
+                        class="absolute top-2 right-2 opacity-0 group-hover/poscard:opacity-100 transition-opacity p-1 bg-white border border-indigo-100 shadow-sm rounded text-indigo-600 hover:bg-indigo-50 z-10" title="Sửa vị trí">
+                    <Edit class="w-3 h-3" />
+                </button>
+
+                <span class="text-[9px] font-black uppercase tracking-widest text-slate-500 truncate pr-5" :title="p.positionName">
                     {{ p.positionName }}
                 </span>
                 <div class="flex items-baseline gap-1">
@@ -123,7 +130,7 @@
                             </button>
                             <button v-if="status === 'Open' && can('DoanKham.AssignStaff')" 
                                     @click="$emit('remove-staff', s.id, groupId)"
-                                    class="icon-btn-slate" title="Xóa khỏi đoàn">
+                                    class="icon-btn-rose" title="Xóa khỏi đoàn">
                                 <Trash2 class="w-4 h-4" />
                             </button>
                         </div>
@@ -137,7 +144,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Users as UsersIcon, Sparkles, RefreshCw, QrCode, LogIn, LogOut, Trash2, MapPin } from 'lucide-vue-next'
+import { Users as UsersIcon, Sparkles, RefreshCw, QrCode, LogIn, LogOut, Trash2, MapPin, Edit } from 'lucide-vue-next'
 
 const props = defineProps({
   groupId: { type: Number, required: true },
@@ -215,8 +222,16 @@ const canCheckOut = (s) => {
   background: #e0e7ff;
 }
 
+.icon-btn-rose {
+  padding: 0.5rem;
+  color: #ef4444;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
 .icon-btn-rose:hover {
-  background: #fff1f2;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .icon-btn-slate {

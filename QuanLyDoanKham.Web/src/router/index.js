@@ -129,6 +129,13 @@ const routes = [
         component: () => import('../views/UnifiedReports.vue'),
         meta: { requiresAuth: true, permission: 'BaoCao.View' }
     },
+    // ── Báo cáo tài chính (Settlement-based) ─────────────────────────
+    {
+        path: '/financial-dashboard',
+        name: 'FinancialDashboard',
+        component: () => import('../views/FinancialDashboard.vue'),
+        meta: { requiresAuth: true, permission: 'BaoCao.ViewFinance' }
+    },
 
     // ── Quản trị hệ thống ────────────────────────────────────────────
     {
@@ -149,12 +156,7 @@ const routes = [
         component: () => import('../views/AuditLogView.vue'),
         meta: { requiresAuth: true, permission: 'HeThong.AuditLog' }
     },
-    {
-        path: '/admin/permissions-debug',
-        name: 'PermissionDebug',
-        component: () => import('../views/admin/PermissionDebug.vue'),
-        meta: { requiresAuth: true, permission: 'HeThong.RoleManage' }
-    },
+
 
     // ── 404 ─────────────────────────────────────────────────────────
     {

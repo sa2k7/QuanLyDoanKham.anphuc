@@ -48,7 +48,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Supplies/import
         [HttpPost("import")]
-        [AuthorizePermission("Kho.Edit")]
+        [AuthorizePermission("Kho.Import")]
         public async Task<IActionResult> ImportStock([FromBody] StockMovementDto dto)
         {
             var item = await _context.SupplyItems.FindAsync(dto.SupplyId);
@@ -81,7 +81,7 @@ namespace QuanLyDoanKham.API.Controllers
 
         // POST: api/Supplies/export
         [HttpPost("export")]
-        [AuthorizePermission("Kho.Edit")]
+        [AuthorizePermission("Kho.Export")]
         public async Task<IActionResult> ExportStock([FromBody] StockMovementDto dto)
         {
             var item = await _context.SupplyItems.FindAsync(dto.SupplyId);
@@ -142,6 +142,42 @@ namespace QuanLyDoanKham.API.Controllers
                 .Include(m => m.MedicalGroup)
                 .ToListAsync();
             return Ok(movements);
+        }
+        // PUT: api/Supplies/{id}
+        [HttpPut("{id}")]
+        [AuthorizePermission("Kho.Edit")]
+        public async Task<IActionResult> UpdateSupply(int id, [FromBody] SupplyItem dto)
+        {
+            var item = await _context.SupplyItems.FindAsync(id);
+            if (item == null) return NotFound("Không tìm thấy vật tư");
+
+            item.ItemName = dto.ItemName;
+            item.Unit = dto.Unit;
+            item.Category = dto.Category;
+            item.MinStockLevel = dto.MinStockLevel;
+            item.TypicalUnitPrice = dto.TypicalUnitPrice;
+            item.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return Ok(item);
+        }
+
+        // DELETE: api/Supplies/{id}
+        [HttpDelete("{id}")]
+        [AuthorizePermission("Kho.Edit")]
+        public async Task<IActionResult> DeleteSupply(int id)
+        {
+            var item = await _context.SupplyItems.FindAsync(id);
+            if (item == null) return NotFound("Không tìm thấy vật tư");
+
+            // Check if there are stock movements referencing this supply
+            var hasMovements = await _context.StockMovements.AnyAsync(m => m.SupplyId == id);
+            if (hasMovements)
+                return BadRequest("Không thể xóa vật tư đã có lịch sử nhập/xuất. Hãy liên hệ quản trị viên.");
+
+            _context.SupplyItems.Remove(item);
+            await _context.SaveChangesAsync();
+            return Ok(new { message = "Đã xóa vật tư thành công" });
         }
     }
 }

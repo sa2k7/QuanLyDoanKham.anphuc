@@ -6,6 +6,7 @@ using QuanLyDoanKham.API.Data;
 using QuanLyDoanKham.API.DTOs;
 using QuanLyDoanKham.API.Models;
 using QuanLyDoanKham.API.Models.Enums;
+using QuanLyDoanKham.API.Services.MedicalBatch;
 using QuanLyDoanKham.API.Services.MedicalGroups;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -23,6 +24,7 @@ namespace QuanLyDoanKham.API.Controllers
         private readonly IGroupLifecycleService _lifecycleService;
         private readonly Services.QrService _qrService;
         private readonly Services.Exports.IExportService _exportService;
+        private readonly IStaffAssignmentValidationService _assignmentValidator;
 
         public MedicalGroupsController(
             ApplicationDbContext context,
@@ -30,7 +32,8 @@ namespace QuanLyDoanKham.API.Controllers
             IMedicalGroupAutoAssignmentService autoAssignmentService,
             IGroupLifecycleService lifecycleService,
             Services.QrService qrService,
-            Services.Exports.IExportService exportService)
+            Services.Exports.IExportService exportService,
+            IStaffAssignmentValidationService assignmentValidator)
         {
             _context = context;
             _geminiService = geminiService;
@@ -38,6 +41,7 @@ namespace QuanLyDoanKham.API.Controllers
             _lifecycleService = lifecycleService;
             _qrService = qrService;
             _exportService = exportService;
+            _assignmentValidator = assignmentValidator;
         }
 
         // GET: api/MedicalGroups
@@ -87,6 +91,24 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(data);
         }
 
+        // GET: api/MedicalGroups/by-contract/{contractId}
+        [HttpGet("by-contract/{contractId}")]
+        [AuthorizePermission("DoanKham.View")]
+        public async Task<IActionResult> GetByContract(int contractId)
+        {
+            var data = await _context.MedicalGroups
+                .Where(g => g.HealthContractId == contractId)
+                .OrderByDescending(g => g.ExamDate)
+                .Select(g => new
+                {
+                    g.GroupId,
+                    g.GroupName,
+                    g.ExamDate,
+                    g.Status
+                }).ToListAsync();
+            return Ok(data);
+        }
+
         [HttpGet("{id}/qr")]
         [QuanLyDoanKham.API.Authorization.AuthorizePermission("ChamCong.QR")]
         public async Task<IActionResult> GetQr(int id, [FromServices] QuanLyDoanKham.API.Services.QrService qr)
@@ -128,8 +150,84 @@ namespace QuanLyDoanKham.API.Controllers
             };
 
             _context.MedicalGroups.Add(entity);
+            
+            // TỰ ĐỘNG CHUYỂN TRẠNG THÁI HỢP ĐỒNG SANG 'ACTIVE' KHI BẮT ĐẦU TẠO ĐOÀN KHÁM
+            if (contract.Status == ContractStatus.Approved)
+            {
+                contract.Status = ContractStatus.Active;
+            }
+
             await _context.SaveChangesAsync();
+
+            // TỰ ĐỘNG TẠO BỆNH ÁN TỪ HỢP ĐỒNG (Bulk Ingestion)
+            // Lấy toàn bộ danh sách bệnh nhân thuộc hợp đồng này
+            var patients = await _context.Patients
+                .Where(p => p.HealthContractId == dto.HealthContractId)
+                .ToListAsync();
+
+            if (patients.Any())
+            {
+                foreach (var patient in patients)
+                {
+                    var record = new MedicalRecord
+                    {
+                        GroupId = entity.GroupId,
+                        PatientId = patient.PatientId,
+                        FullName = patient.FullName,
+                        DateOfBirth = patient.DateOfBirth,
+                        Gender = patient.Gender,
+                        IDCardNumber = patient.IDCardNumber,
+                        Department = patient.Department,
+                        Status = "READY",
+                        QrToken = Guid.NewGuid().ToString("N"),
+                        CreatedAt = DateTime.Now
+                    };
+                    _context.MedicalRecords.Add(record);
+                }
+                await _context.SaveChangesAsync();
+            }
+
             return Ok(entity);
+        }
+
+        // POST: api/MedicalGroups/{id}/sync-patients
+        [HttpPost("{id}/sync-patients")]
+        [AuthorizePermission("DoanKham.Edit")]
+        public async Task<IActionResult> SyncPatientsFromContract(int id)
+        {
+            var group = await _context.MedicalGroups.FindAsync(id);
+            if (group == null) return NotFound();
+
+            var patients = await _context.Patients
+                .Where(p => p.HealthContractId == group.HealthContractId)
+                .ToListAsync();
+
+            int count = 0;
+            foreach (var patient in patients)
+            {
+                // Kiểm tra xem bệnh nhân đã có trong đoàn chưa (tránh trùng)
+                var exists = await _context.MedicalRecords.AnyAsync(mr => mr.GroupId == id && mr.PatientId == patient.PatientId);
+                if (exists) continue;
+
+                var record = new MedicalRecord
+                {
+                    GroupId = id,
+                    PatientId = patient.PatientId,
+                    FullName = patient.FullName,
+                    DateOfBirth = patient.DateOfBirth,
+                    Gender = patient.Gender,
+                    IDCardNumber = patient.IDCardNumber,
+                    Department = patient.Department,
+                    Status = "READY",
+                    QrToken = Guid.NewGuid().ToString("N"),
+                    CreatedAt = DateTime.Now
+                };
+                _context.MedicalRecords.Add(record);
+                count++;
+            }
+
+            if (count > 0) await _context.SaveChangesAsync();
+            return Ok(new { message = $"Đã đồng bộ thêm {count} bệnh án mới từ hợp đồng vào đoàn khám.", count });
         }
 
         // PUT: api/MedicalGroups/{id}
@@ -378,7 +476,16 @@ namespace QuanLyDoanKham.API.Controllers
             var staff = await _context.Staffs.FindAsync(dto.StaffId);
             if (staff == null) return NotFound("Nhân viên không tồn tại.");
 
+            // ── NEW: Role compatibility + double-booking validation ───────────
+            var (validAssignment, assignmentError) = await _assignmentValidator.ValidateAssignmentAsync(
+                dto.StaffId,
+                id,
+                group.ExamDate,
+                dto.WorkPosition ?? string.Empty);
 
+            if (!validAssignment)
+                return BadRequest(new { message = assignmentError });
+            // ─────────────────────────────────────────────────────────────────
 
             // Kiểm tra tổng ca làm trong ngày để tránh phân công vượt quá 1 công.
             var examDate = group.ExamDate.Date;
@@ -416,7 +523,7 @@ namespace QuanLyDoanKham.API.Controllers
                 ShiftType = dto.ShiftType,
                 CalculatedSalary = staff.BaseSalary * (decimal)dto.ShiftType,
                 ExamDate = examDate,
-                WorkPosition = dto.WorkPosition,
+                WorkPosition = dto.WorkPosition ?? "N/A",
                 PositionId = assignmentPositionId,
                 WorkStatus = dto.WorkStatus ?? "Đang chờ",
                 PickupLocation = dto.PickupLocation,
@@ -1028,8 +1135,43 @@ namespace QuanLyDoanKham.API.Controllers
             return Ok(entity);
         }
 
-        // DELETE: api/MedicalGroups/positions/{id}
-        [HttpDelete("positions/{id}")]
+        // PUT: api/MedicalGroups/update-position/{id}
+        [HttpPut("update-position/{id}")]
+        [AuthorizePermission("DoanKham.SetPosition")]
+        public async Task<IActionResult> PutPosition(int id, MedicalGroupPositionDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.PositionName))
+                return BadRequest("Tên vị trí không được để trống.");
+
+            var entity = await _context.MedicalGroupPositions.FindAsync(id);
+            if (entity == null) return NotFound("Vị trí không tồn tại");
+
+            // Cập nhật thông tin
+            entity.PositionName = dto.PositionName;
+            entity.RequiredCount = dto.RequiredCount;
+            entity.Description = dto.Description ?? "";
+            entity.SortOrder = dto.SortOrder;
+
+            // Cập nhật basePositionId nếu tên thay đổi
+            var basePositionId = await _context.Positions
+                .Where(p => p.Name.ToLower() == dto.PositionName.ToLower() || (p.Code != null && p.Code.ToLower() == dto.PositionName.ToLower()))
+                .Select(p => (int?)p.PositionId)
+                .FirstOrDefaultAsync();
+            entity.PositionId = basePositionId;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(entity);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest("Lỗi khi lưu dữ liệu: " + ex.Message);
+            }
+        }
+
+        // DELETE: api/MedicalGroups/remove-position/{id}
+        [HttpDelete("remove-position/{id}")]
         [AuthorizePermission("DoanKham.SetPosition")]
         public async Task<IActionResult> DeletePosition(int id)
         {
@@ -1161,6 +1303,17 @@ namespace QuanLyDoanKham.API.Controllers
                     message = $"Nhân sự đã được phân công vào đoàn khám khác trong ngày này: {otherGroup?.GroupName}"
                 });
             }
+
+            // ── NEW: Role compatibility validation ────────────────────────────
+            var (validRole, roleError) = await _assignmentValidator.ValidateAssignmentAsync(
+                request.StaffId,
+                id,
+                group.ExamDate,
+                request.PositionName ?? string.Empty);
+
+            if (!validRole)
+                return BadRequest(new { message = roleError });
+            // ─────────────────────────────────────────────────────────────────
 
             // Tạo phân công mới
             var assignment = new GroupStaffDetail

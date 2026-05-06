@@ -11,12 +11,13 @@ export const useI18nStore = defineStore('i18n', () => {
                 companies: 'Quản lý Công ty',
                 contracts: 'Hợp đồng & Ký kết',
                 groups: 'Quản lý Đoàn khám',
-                patients: 'Hồ sơ Bệnh nhân',
+                patients: 'Hồ sơ Bệnh án',
                 staff: 'Nhân sự & Chấm công',
                 payroll: 'Bảng lương Tháng',
                 reports: 'Thống kê & Báo cáo',
                 accounts: 'Tài khoản Hệ thống',
                 permissions: 'Quyền hạn & Bảo mật',
+                checkIn: 'Quét mã QR',
                 logout: 'Đăng xuất'
             },
             common: {
@@ -199,6 +200,7 @@ export const useI18nStore = defineStore('i18n', () => {
                 staff: 'Staff',
                 supplies: 'Supplies',
                 accounts: 'Accounts',
+                checkIn: 'QR Check-in',
                 logout: 'Logout'
             },
             common: {
@@ -333,14 +335,14 @@ export const useI18nStore = defineStore('i18n', () => {
                 cancelBtn: 'CANCEL'
             },
             roles: {
-                Admin: 'Quản trị hệ thống',
-                PersonnelManager: 'Quản lý Nhân sự',
-                ContractManager: 'Quản lý Hợp đồng',
-                MedicalGroupManager: 'Quản lý Đoàn khám',
-                WarehouseManager: 'Quản lý Kho vật tư',
-                PayrollManager: 'Quản lý Tiền lương',
-                MedicalStaff: 'Nhân viên Y tế',
-                Customer: 'Đại diện Công ty'
+                Admin: 'System Admin',
+                PersonnelManager: 'HR Manager',
+                ContractManager: 'Contract Manager',
+                MedicalGroupManager: 'Group Manager',
+                WarehouseManager: 'Warehouse Manager',
+                PayrollManager: 'Payroll Manager',
+                MedicalStaff: 'Medical Staff',
+                Customer: 'Corporate Account'
             },
             schedule: {
                 title: 'My Schedule',

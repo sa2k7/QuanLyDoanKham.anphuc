@@ -29,7 +29,7 @@
             </button>
         </div>
 
-        <button v-if="can('Kho.Edit') && activeTab === 'inventory'" 
+        <button v-if="(can('Kho.Edit') || can('Kho.Import')) && activeTab === 'inventory'" 
                 @click="openAddModal" class="btn-premium primary !px-5 !py-2 !text-[11px]">
             <Plus class="w-4 h-4" />
             <span>Thêm Vật Tư</span>
@@ -169,7 +169,7 @@
     </div>
 
     <!-- Global History Section -->
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in-up">
+    <div v-if="activeTab === 'history'" class="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in-up">
         <!-- Import History (Left) -->
         <div class="premium-card bg-white border border-slate-100 overflow-hidden flex flex-col h-[600px]">
             <div class="p-4 border-b border-emerald-50 bg-emerald-50/20 flex justify-between items-center">
@@ -559,12 +559,35 @@
                 </div>
             </div>
         </div>
+        <!-- Delete Confirm Modal -->
+        <div v-if="deleteTarget" class="modal-overlay" @click.self="deleteTarget = null">
+            <div class="modal-box max-w-sm animate-scale-up !rounded-2xl">
+                <div class="p-6 text-center">
+                    <div class="w-14 h-14 bg-rose-100 text-rose-500 rounded-xl flex items-center justify-center mx-auto mb-4 shadow-inner">
+                        <Trash2 class="w-7 h-7" />
+                    </div>
+                    <h3 class="text-lg font-black text-slate-800 italic uppercase tracking-tight mb-1">Xác nhận xóa</h3>
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-6 leading-relaxed">
+                        Xóa vật tư <span class="text-rose-500 underline">{{ deleteTarget.itemName }}</span>?<br/>
+                        Hành động này không thể khôi phục.
+                    </p>
+                    <div class="flex gap-2 justify-center">
+                        <button @click="deleteTarget = null" class="btn-premium secondary !py-2 !px-5 !text-[11px]">Hủy</button>
+                        <button @click="deleteSupply" :disabled="saving" class="btn-premium primary !bg-rose-500 !shadow-rose-200 !py-2 !px-6 !text-[11px]">
+                            <RefreshCw v-if="saving" class="w-3.5 h-3.5 animate-spin" />
+                            <Trash2 v-else class="w-3.5 h-3.5" />
+                            <span>Xóa vĩnh viễn</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </Teleport>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { 
     Package, Box, AlertTriangle, TrendingUp, Search, Plus, 
     X, History, ArrowDownLeft, ArrowUpRight, Stethoscope,
@@ -618,11 +641,12 @@ const fetchGlobalHistory = async () => {
     }
 }
 
-// Watch tab change to fetch history
-import { watch } from 'vue'
+// Watch tab change to fetch history or reports
 watch(activeTab, (newTab) => {
     if (newTab === 'history') {
         fetchGlobalHistory()
+    } else if (newTab === 'report') {
+        fetchPeriodicReport()
     }
 })
 
@@ -656,16 +680,28 @@ const fetchPeriodicReport = async () => {
 }
 
 const fetchData = async () => {
-    // Gate: chỉ fetch danh sách đoàn nếu có quyền DoanKham.View
-    // WarehouseManager không có quyền này — activeGroups sẽ rỗng
-    if (!authStore.hasPermission('DoanKham.View')) {
+    // Users with DoanKham.View use the full MedicalGroups endpoint (existing behaviour).
+    // Users with Kho.Export but NOT DoanKham.View (e.g. WarehouseManager) use the
+    // warehouse-scoped endpoint so they never hit a 403.
+    if (authStore.hasPermission('DoanKham.View')) {
+        try {
+            const res = await apiClient.get('/api/MedicalGroups')
+            activeGroups.value = (res.data || []).filter(g => g.status === 'Open')
+        } catch (err) { /* silent */ }
+    } else if (authStore.hasPermission('Kho.Export')) {
+        try {
+            const res = await apiClient.get('/api/warehouse/campaigns')
+            // Warehouse endpoint returns Active/Completed campaigns.
+            // Map to the same shape the export modal expects (groupId, groupName, companyName).
+            activeGroups.value = (res.data || []).map(g => ({
+                groupId:     g.groupId,
+                groupName:   g.groupName,
+                companyName: g.companyName ?? g.company?.companyName ?? ''
+            }))
+        } catch (err) { /* silent */ }
+    } else {
         activeGroups.value = []
-        return
     }
-    try {
-        const res = await apiClient.get('/api/MedicalGroups')
-        activeGroups.value = (res.data || []).filter(g => g.status === 'Open')
-    } catch (err) { /* silent — permission gate đã xử lý */ }
 }
 
 const filteredSupplies = computed(() => {
@@ -673,6 +709,9 @@ const filteredSupplies = computed(() => {
     const q = searchQuery.value.toLowerCase()
     return supplies.value.filter(s => s.itemName.toLowerCase().includes(q) || s.category.toLowerCase().includes(q))
 })
+
+const importHistory = computed(() => historyList.value.filter(m => m.movementType === 'IN'))
+const exportHistory = computed(() => historyList.value.filter(m => m.movementType === 'OUT'))
 
 const lowStockItems = computed(() => supplies.value.filter(s => s.currentStock <= s.minStockLevel))
 const totalValue = computed(() => {
@@ -727,7 +766,12 @@ const openAddModal = () => {
 const saveNewSupply = async () => {
     saving.value = true
     try {
-        await apiClient.post('/api/Supplies', modals.value.add.data)
+        const payload = {
+            ...modals.value.add.data,
+            minStockLevel: Number(modals.value.add.data.minStockLevel) || 0,
+            typicalUnitPrice: Number(modals.value.add.data.typicalUnitPrice) || 0
+        }
+        await apiClient.post('/api/Supplies', payload)
         toast.success("Đã thêm vật tư mới")
         modals.value.add.show = false
         fetchSupplies()
@@ -747,7 +791,12 @@ const openEditModal = (s) => {
 const saveEditSupply = async () => {
     saving.value = true
     try {
-        await apiClient.put(`/api/Supplies/${modals.value.edit.supply.supplyId}`, modals.value.edit.data)
+        const payload = {
+            ...modals.value.edit.data,
+            minStockLevel: Number(modals.value.edit.data.minStockLevel) || 0,
+            typicalUnitPrice: Number(modals.value.edit.data.typicalUnitPrice) || 0
+        }
+        await apiClient.put(`/api/Supplies/${modals.value.edit.supply.supplyId}`, payload)
         toast.success("Đã cập nhật vật tư")
         modals.value.edit.show = false
         fetchSupplies()
@@ -807,6 +856,23 @@ const openHistory = async (s) => {
         modals.value.history.list = res.data
     } catch (err) {
         toast.error("Không thể tải lịch sử biến động")
+    }
+}
+
+const deleteTarget = ref(null)
+const confirmDelete = (s) => { deleteTarget.value = s }
+const deleteSupply = async () => {
+    if (!deleteTarget.value) return
+    saving.value = true
+    try {
+        await apiClient.delete(`/api/Supplies/${deleteTarget.value.supplyId}`)
+        toast.success('Đã xóa vật tư thành công!')
+        deleteTarget.value = null
+        fetchSupplies()
+    } catch (err) {
+        toast.error(parseApiError(err))
+    } finally {
+        saving.value = false
     }
 }
 

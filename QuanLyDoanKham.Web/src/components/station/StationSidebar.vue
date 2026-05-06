@@ -7,7 +7,7 @@
 
     <nav class="queue-list">
       <header>HÀNG CHỜ ({{ queue.length }})</header>
-      <div v-if="queue.length === 0" class="empty-queue">Chưa có bệnh nhân</div>
+      <div v-if="queue.length === 0" class="empty-queue">Chưa có bệnh án</div>
       <div 
         v-for="patient in queue" 
         :key="patient.taskId" 

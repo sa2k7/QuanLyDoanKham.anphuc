@@ -46,6 +46,8 @@ namespace QuanLyDoanKham.API.DTOs
 
         /// <summary>Liên kết với bảng Staff (Chỉ dùng cho MedicalStaff)</summary>
         public int? StaffId { get; set; }
+
+        public string? Specialty { get; set; }
     }
 
     /// <summary>Response khi đăng nhập thành công - bao gồm roles[] và permissions[]</summary>
@@ -102,6 +104,8 @@ namespace QuanLyDoanKham.API.DTOs
 
         /// <summary>Liên kết với bảng Staff (Chỉ dùng cho MedicalStaff)</summary>
         public int? StaffId { get; set; }
+
+        public string? Specialty { get; set; }
     }
 
     public class UserProfileDto
@@ -126,6 +130,7 @@ namespace QuanLyDoanKham.API.DTOs
         public string? Email { get; set; }
         public string? AvatarPath { get; set; }
         public bool IsActive { get; set; }
+        public string? Specialty { get; set; }
     }
 
     public class ChangePasswordDto

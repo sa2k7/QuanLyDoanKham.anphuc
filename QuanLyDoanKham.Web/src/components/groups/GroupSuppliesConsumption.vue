@@ -5,7 +5,7 @@
             <Package class="w-4 h-4" /> THỰC TẾ TIÊU HAO SO VỚI QUY MÔ ĐOÀN
         </h5>
         <div v-if="suppliesData" class="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest bg-slate-50 text-slate-500 px-3 py-1.5 rounded-lg border border-slate-100">
-            Quy mô: <span class="bg-primary text-white px-2 py-0.5 rounded-md">{{ suppliesData.totalPatients || 0 }}</span> bệnh nhân
+            Quy mô: <span class="bg-primary text-white px-2 py-0.5 rounded-md">{{ suppliesData.totalPatients || 0 }}</span> bệnh án
         </div>
     </div>
 

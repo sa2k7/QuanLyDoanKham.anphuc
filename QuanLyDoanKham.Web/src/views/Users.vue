@@ -213,6 +213,16 @@
                         </div>
 
                         <div class="flex flex-col gap-1 md:col-span-2">
+                            <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Liên kết Nhân sự (Đồng bộ Email/Chức danh)</label>
+                            <select v-model="form.staffId" class="w-full px-3 py-1.5 rounded-lg bg-indigo-50/50 border border-indigo-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner">
+                                <option :value="null">-- Không liên kết --</option>
+                                <option v-for="s in availableStaff" :key="s.staffId" :value="s.staffId">
+                                    {{ s.fullName }} ({{ s.employeeCode || 'No Code' }}) - {{ s.jobTitle || s.staffType }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col gap-1 md:col-span-2">
                             <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">Email (Gmail)</label>
                             <input v-model="form.email" type="email" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold text-[11px] text-slate-700 shadow-inner" placeholder="vidu@gmail.com..." />
                         </div>
@@ -237,13 +247,28 @@
                             </select>
                         </div>
 
+                        <div v-if="form.selectedRoleIds.includes(7)" class="flex flex-col gap-1 md:col-span-2 bg-indigo-50/50 p-4 rounded-2xl border border-indigo-100 animate-fade-in">
+                            <label class="text-[8px] font-black uppercase tracking-widest text-indigo-600 ml-1 flex items-center gap-1.5 mb-2">
+                                <Stethoscope class="w-3.5 h-3.5" /> Vị trí chuyên môn (Đi đoàn)
+                            </label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button v-for="job in ['Tiếp nhận', 'Khám nội', 'Khám ngoại', 'Lấy máu', 'Khám sản', 'Siêu âm']" 
+                                        :key="job"
+                                        type="button"
+                                        @click="form.specialty = job"
+                                        class="px-2 py-2.5 rounded-xl border text-[9px] font-black uppercase tracking-tight transition-all flex items-center justify-center text-center"
+                                        :class="form.specialty === job ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-100 scale-[1.02]' : 'bg-white border-slate-200 text-slate-500 hover:border-indigo-300'">
+                                    {{ job }}
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="flex flex-col gap-1 md:col-span-2">
                             <label class="text-[7.5px] font-black uppercase tracking-widest text-slate-400 ml-1">
                                 {{ modal.isEdit ? 'Đổi mật khẩu' : 'Mật khẩu' }}
                             </label>
                             <div class="relative">
                                 <input v-model="form.password" 
-                                       @input="form.password = $event.target.value.replace(/[^\x00-\x7F]/g, '')"
                                        :required="!modal.isEdit" type="text" class="w-full px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-100 focus:border-indigo-300 focus:bg-white outline-none transition-all font-bold font-mono text-[11px] text-slate-700 shadow-inner" />
                                 <span v-if="!modal.isEdit" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[6px] font-black text-emerald-500 uppercase tracking-widest">Default</span>
                             </div>
@@ -301,6 +326,7 @@ const profile = computed(() => authStore.profile)
 
 const users = ref([])
 const companies = ref([])
+const availableStaff = ref([])
 const resetRequests = ref([])
 const showDeleteConfirm = ref(false)
 const userToDelete = ref(null)
@@ -323,7 +349,9 @@ const form = ref({
     email: '',
     companyId: null,
     avatarPath: '',
-    selectedRoleIds: [2]
+    selectedRoleIds: [2],
+    specialty: '',
+    staffId: null
 })
 
 const selectedFile = ref(null)
@@ -373,6 +401,16 @@ const fetchResets = async () => {
     } catch (e) {}
 }
 
+const fetchStaff = async () => {
+    if (!isAdmin.value) return
+    try {
+        const res = await apiClient.get('/api/Staffs')
+        availableStaff.value = res.data
+    } catch (e) {
+        console.error("Lỗi lấy danh sách nhân sự:", e)
+    }
+}
+
 const DEFAULT_PASSWORD = ''
 
 const removeDiacritics = (str) => str
@@ -395,7 +433,7 @@ const generateUsername = async (fullName) => {
 
 const openCreateModal = () => {
     modal.value = { show: true, isEdit: false }
-    form.value = { username: '', password: DEFAULT_PASSWORD, fullName: '', email: '', companyId: null, avatarPath: '', selectedRoleIds: [2] }
+    form.value = { username: '', password: DEFAULT_PASSWORD, fullName: '', email: '', companyId: null, avatarPath: '', selectedRoleIds: [2], specialty: '', staffId: null }
     selectedFile.value = null
     avatarPreview.value = null
 }
@@ -416,7 +454,9 @@ const openEditModal = (u) => {
         email: u.email || '',
         companyId: u.companyId,
         avatarPath: u.avatarPath || '',
-        selectedRoleIds: [...new Set(roleIds)]
+        selectedRoleIds: [...new Set(roleIds)],
+        specialty: u.specialty || '',
+        staffId: u.staffId
     }
     selectedFile.value = null
     avatarPreview.value = u.avatarPath ? `/${u.avatarPath}` : null
@@ -437,7 +477,8 @@ const handleSubmit = async () => {
             ...form.value,
             roleId: form.value.selectedRoleIds.length > 0 ? form.value.selectedRoleIds[0] : 2,
             additionalRoleIds: form.value.selectedRoleIds,
-            roleIds: form.value.selectedRoleIds
+            roleIds: form.value.selectedRoleIds,
+            specialty: form.value.specialty
         }
 
         if (modal.value.isEdit) {
@@ -477,6 +518,7 @@ onMounted(async () => {
         await fetchUsers()
         await fetchCompanies()
         await fetchResets()
+        await fetchStaff()
     } else {
         await authStore.fetchProfile()
     }

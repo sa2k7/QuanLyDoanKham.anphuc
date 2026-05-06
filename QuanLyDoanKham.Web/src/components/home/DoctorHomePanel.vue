@@ -81,7 +81,7 @@
         <div class="w-14 h-14 bg-indigo-50 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
           <UserRound class="w-7 h-7 text-indigo-500" />
         </div>
-        <h3 class="text-lg font-black text-slate-800 mb-1">Danh sách bệnh nhân</h3>
+        <h3 class="text-lg font-black text-slate-800 mb-1">Danh sách bệnh án</h3>
         <p class="text-sm text-slate-400 font-bold">Tra cứu hồ sơ và thực hiện nhập kết quả khám</p>
         <div class="mt-4 flex items-center gap-2 text-indigo-500 font-black text-xs uppercase tracking-widest">
           Xem ngay <ArrowRight class="w-4 h-4 group-hover:translate-x-1 transition-transform" />
